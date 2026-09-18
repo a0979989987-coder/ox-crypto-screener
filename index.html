@@ -409,8 +409,8 @@ const CONFIG = {
   productType: "USDT-FUTURES",
   
   liquidity: {
-    minUsdtVolume24h: 3_000_000,
-    t1MinUsdtVolume: 12_000_000,
+    minUsdtVolume24h: 3000000,
+    t1MinUsdtVolume: 12000000,
     topPercentileCutoff: 0.65,
     lowLiqPenaltyRatio: 0.35,
   },
@@ -493,16 +493,19 @@ const BitgetAPI = {
     const json = await res.json();
     if (json.code !== "00000" || !Array.isArray(json.data)) return [];
     
-    // 關鍵修復：正確讀取 d=open, d=high, d=low, d=close
-    return json.data.map(d => ({
-      time: Math.floor(num(d[0]) / 1000),
-      open: num(d),
-      high: num(d),
-      low: num(d),
-      close: num(d),
-      volume: num(d[5]),
-      quoteVolume: num(d[6])
-    })).filter(c => [c.open, c.high, c.low, c.close].every(v => Number.isFinite(v) && v > 0))
+    // 使用 ES6 陣列解構，百分之百避免任何下標被誤刪
+    return json.data.map(d => {
+      const [rawTime, rawOpen, rawHigh, rawLow, rawClose, rawVol, rawQuoteVol] = d;
+      return {
+        time: Math.floor(num(rawTime) / 1000),
+        open: num(rawOpen),
+        high: num(rawHigh),
+        low: num(rawLow),
+        close: num(rawClose),
+        volume: num(rawVol),
+        quoteVolume: num(rawQuoteVol)
+      };
+    }).filter(c => Number.isFinite(c.open) && Number.isFinite(c.close) && c.open > 0 && c.close > 0)
       .sort((a, b) => a.time - b.time);
   }
 };
@@ -849,7 +852,7 @@ async function runScanQueueLoop() {
         );
 
         const reasons = [
-          `24H 成交額前 ${liq.percentileStr}% (${fmtUsd(liq.quoteVol)} USDT)`,
+          `24H 成交額市場前 ${liq.percentileStr}% (${fmtUsd(liq.quoteVol)} USDT)`,
           `1H 放量比率: ${moneyFlow.volRatio1h}x`,
           ...setup.reasons
         ];
@@ -1005,7 +1008,7 @@ function initChart() {
     rightPriceScale: {
       borderColor: "#223147",
       autoScale: true,
-      scaleMargins: { top: 0.08, bottom: 0.25 } // 為底部成交量預留空間，保持主K線獨立自適應
+      scaleMargins: { top: 0.08, bottom: 0.25 }
     },
     timeScale: {
       borderColor: "#223147",
@@ -1015,7 +1018,6 @@ function initChart() {
     crosshair: { mode: LightweightCharts.CrosshairMode.Normal }
   });
 
-  // 主圖：標準 K 線系列
   state.candleSeries = state.chart.addCandlestickSeries({
     upColor: "#38c99b",
     downColor: "#ee617c",
@@ -1024,7 +1026,6 @@ function initChart() {
     wickDownColor: "#ee617c"
   });
 
-  // 成交量柱體：使用獨立分軸 vol，避免干擾價格坐標
   state.volumeSeries = state.chart.addHistogramSeries({
     priceFormat: { type: "volume" },
     priceScaleId: "vol"
@@ -1033,7 +1034,6 @@ function initChart() {
     scaleMargins: { top: 0.8, bottom: 0 }
   });
 
-  // 均線系統
   state.maSeries = {
     5: state.chart.addLineSeries({ color: "#f7bd52", lineWidth: 1.5, lastValueVisible: false }),
     10: state.chart.addLineSeries({ color: "#5ca5ff", lineWidth: 1.5, lastValueVisible: false }),
@@ -1167,7 +1167,7 @@ function updatePriceTimer() {
   const h = Math.floor(left / 3600);
   const m = Math.floor((left % 3600) / 60);
   const s = left % 60;
-  const timeStr = `${h > 0 ? `${h}h ` : ''}${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+  const timeStr = `${h > 0 ? `${h}h ` : ''}${String(m).padStart(2, "0")}m ${String(s).padStart(2, "0")}s`;
   
   const y = state.candleSeries.priceToCoordinate(last.close);
   timerEl.innerHTML = `${fmtPrice(last.close)}<small>倒數 ${timeStr}</small>`;
