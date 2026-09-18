@@ -44,6 +44,7 @@
     a { color: inherit; }
     .wrap { max-width: 1480px; margin: auto; padding: 0 20px; }
     
+    /* Header */
     header { border-bottom: 1px solid var(--line); background: #0a101b; position: sticky; top: 0; z-index: 10; }
     .nav { height: 62px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
     .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; font-weight: 750; font-size: 18px; }
@@ -52,7 +53,7 @@
     .live { display: flex; align-items: center; gap: 7px; font-size: 12px; }
     .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--gold); display: inline-block; }
     
-    /* 獨立市場基準列 (BTC / ETH / Market Bias) */
+    /* 市場基準列 (Benchmark Bar) */
     .benchmark-bar {
       display: flex;
       gap: 12px;
@@ -75,6 +76,7 @@
       background: #111a27;
       border: 1px solid #233349;
       white-space: nowrap;
+      transition: border-color .15s;
     }
     .bench-item:hover { border-color: var(--gold); }
     .bench-item.active { border-color: var(--gold); background: var(--gold-dim); color: var(--gold); }
@@ -107,7 +109,7 @@
     .positive { color: var(--green) !important; }
     .negative { color: var(--red) !important; }
 
-    /* Workspace: 70% Chart / 30% Screener */
+    /* 工作區排版：左側 70% K線與詳情 / 右側 30% 篩選池 */
     .workspace {
       display: grid;
       grid-template-columns: minmax(0, 1fr) 400px;
@@ -139,7 +141,7 @@
       color: var(--muted);
     }
 
-    /* 圖表工作區 */
+    /* 圖表工具列 */
     .chart-box { position: relative; }
     .chart-controls {
       padding: 8px 16px;
@@ -195,7 +197,7 @@
     }
     .chart-loading-overlay.show { display: flex; }
     
-    /* 第十一項：點擊 OX 訊號出現的原因 Tooltip 浮窗 */
+    /* 點擊 OX 訊號出現的 Tooltip 浮窗 */
     .signal-tooltip {
       position: absolute;
       display: none;
@@ -420,7 +422,7 @@
   <div class="wrap nav">
     <a class="brand" href="#">
       <img class="brand-logo" src="ox-logo.png" alt="OX Logo" onerror="this.style.display='none'">
-      <span>OX 幣種篩選器 <small style="font-size:12px;color:var(--gold);font-weight:600">v2.2 旗艦版</small></span>
+      <span>OX 幣種篩選器 <small style="font-size:12px;color:var(--gold);font-weight:600">v2.3 獨立解耦版</small></span>
     </a>
     <div class="nav-stats">
       <div class="live"><i class="dot" id="dot"></i><span id="scan-status">全市場輪巡佇列準備中…</span></div>
@@ -430,6 +432,7 @@
 </header>
 
 <main class="wrap" style="padding-top:12px;padding-bottom:40px">
+  <!-- 市場基準列 -->
   <section class="benchmark-bar">
     <div class="bench-item" id="bench-btc" title="點擊切換 BTCUSDT K 線">
       <span class="bench-tag" style="color:var(--gold)">[ BTC ]</span>
@@ -450,6 +453,7 @@
     </div>
   </section>
 
+  <!-- 頂部數據 HUD -->
   <section class="top-summary">
     <div class="metric-card">
       <label id="ticker-pair">BTCUSDT · Bitget 永續</label>
@@ -486,6 +490,8 @@
           <span class="pill" id="tf-pill">1D 日線</span>
         </h2>
         <div style="display:flex;gap:8px;align-items:center">
+          <button class="btn-act" id="btn-chart-view-recent" title="回到最近約 100 根 K 線">近期視野</button>
+          <button class="btn-act" id="btn-chart-view-all" title="檢視已載入之全部歷史">完整歷史</button>
           <button class="btn-act" id="btn-chart-fullscreen">全螢幕</button>
           <a class="btn-act" id="tv-ext-link" href="https://www.tradingview.com/" target="_blank" rel="noopener">TradingView ↗</a>
         </div>
@@ -513,7 +519,6 @@
       <div id="chart" class="chart-container">
         <div id="chart-loading" class="chart-loading-overlay">載入歷史 K 線中…</div>
         <div id="price-timer" class="price-timer">—</div>
-        <!-- 第十一項：點擊 OX 訊號出現的原因 Tooltip 浮窗 -->
         <div id="signal-tooltip" class="signal-tooltip"></div>
       </div>
 
@@ -549,47 +554,46 @@
         <div class="detail-grid">
           <div class="detail-cell">
             <span>方向與階段</span>
-            <b id="dt-side-stage">LONG · 已確認</b>
+            <b id="dt-side-stage">LONG · 等待分析</b>
           </div>
           <div class="detail-cell">
             <span>Setup Progress</span>
             <div>
-              <b id="dt-progress-text">85%</b>
-              <div class="progress-bar-wrap"><div class="progress-bar-fill" id="dt-progress-bar" style="width:85%"></div></div>
+              <b id="dt-progress-text">0%</b>
+              <div class="progress-bar-wrap"><div class="progress-bar-fill" id="dt-progress-bar" style="width:0%"></div></div>
             </div>
           </div>
           <div class="detail-cell">
             <span>Signal Confidence (可信度)</span>
-            <b id="dt-confidence">86%</b>
+            <b id="dt-confidence">—%</b>
           </div>
           <div class="detail-cell">
             <span>Trigger 狀態</span>
-            <b id="dt-trigger-status" style="color:var(--green)">OX 放量突破 (已確認)</b>
+            <b id="dt-trigger-status" style="color:var(--gold)">等待 Trigger 訊號</b>
           </div>
 
           <div class="detail-cell">
             <span>Relative Strength 對照</span>
-            <b id="dt-rs-comp">vs BTC +6.8% · vs ETH +4.2%</b>
+            <b id="dt-rs-comp">vs BTC: — · vs ETH: —</b>
           </div>
           <div class="detail-cell">
             <span>Volume Ratio 放量倍數</span>
-            <b id="dt-vol-ratios">15m: 2.1x · 1H: 2.4x · 4H: 1.6x</b>
+            <b id="dt-vol-ratios">15m: 1.0x · 1H: 1.0x · 4H: 1.0x</b>
           </div>
           <div class="detail-cell">
             <span>價格結構 (Structure)</span>
-            <b id="dt-structure">HH / HL 多頭順排</b>
+            <b id="dt-structure">結構分析中</b>
           </div>
           <div class="detail-cell">
             <span>關鍵位置</span>
-            <b id="dt-key-levels">距前高 1.2% · 距前低 8.5%</b>
+            <b id="dt-key-levels">距前高 —% · 距前低 —%</b>
           </div>
         </div>
 
         <div class="reasons-box">
           <div class="reasons-title">OX 入選原因檢核</div>
           <div id="dt-reasons-list">
-            <div class="reason-item"><span class="chk-ok">✓</span> <span>24H 成交額市場前段，具備大資金流動性基礎</span></div>
-            <div class="reason-item"><span class="chk-ok">✓</span> <span>結構持續維持，等待信號觸發</span></div>
+            <div class="reason-item"><span class="chk-wait">△</span> <span>等待深度掃描數據載入…</span></div>
           </div>
         </div>
       </section>
@@ -603,9 +607,9 @@
       </div>
 
       <div class="scanner-tabs" role="tablist">
-        <button class="tab-btn active" data-tab="t1">T1 首選 <span class="tab-badge" id="badge-t1">10</span></button>
-        <button class="tab-btn" data-tab="t2">T2 觀察 <span class="tab-badge" id="badge-t2">10</span></button>
-        <button class="tab-btn" data-tab="t3">T3 儲備 <span class="tab-badge" id="badge-t3">10</span></button>
+        <button class="tab-btn active" data-tab="t1">T1 首選 <span class="tab-badge" id="badge-t1">0</span></button>
+        <button class="tab-btn" data-tab="t2">T2 觀察 <span class="tab-badge" id="badge-t2">0</span></button>
+        <button class="tab-btn" data-tab="t3">T3 儲備 <span class="tab-badge" id="badge-t3">0</span></button>
         <button class="tab-btn" data-tab="watchlist">⭐ 觀察 <span class="tab-badge" id="badge-watchlist">0</span></button>
         <button class="tab-btn" data-tab="surge">🔥 異動 <span class="tab-badge" id="badge-surge">0</span></button>
         <button class="tab-btn" data-tab="gainers">漲幅</button>
@@ -622,6 +626,11 @@
 <script>
 "use strict";
 
+/**
+ * ============================================================================
+ * 1. CONFIGURATION
+ * ============================================================================
+ */
 const CONFIG = {
   apiBase: "https://api.bitget.com/api/v2/mix/market",
   productType: "USDT-FUTURES",
@@ -644,9 +653,24 @@ const CONFIG = {
 
   queueBatchSize: 10,
   batchIntervalMs: 2500,
-  tickerRefreshMs: 15000
+  tickerRefreshMs: 15000,
+
+  initialBars: {
+    "1m": 180,
+    "5m": 180,
+    "15m": 160,
+    "1H": 140,
+    "4H": 120,
+    "1D": 100,
+    "1W": 80
+  }
 };
 
+/**
+ * ============================================================================
+ * 2. STATE
+ * ============================================================================
+ */
 const state = {
   symbol: "BTCUSDT",
   period: "1D",
@@ -662,9 +686,9 @@ const state = {
   analyzedCache: new Map(),
   isQueueRunning: false,
   
-  watchlist: new Set(JSON.parse(localStorage.getItem("ox_watchlist") || "[]")),
+  watchlist: new Set(),
   tierMap: { t1: [], t2: [], t3: [], watchlist: [], surge: [], gainers: [], losers: [] },
-  candleMarkersMap: new Map(), // 第十一項：存儲 Marker 詳情
+  candleMarkersMap: new Map(),
 
   chart: null,
   candleSeries: null,
@@ -677,10 +701,26 @@ const state = {
   abortCtrl: null
 };
 
+// 安全初始化 Watchlist
+try {
+  const saved = localStorage.getItem("ox_watchlist");
+  if (saved) {
+    const arr = JSON.parse(saved);
+    if (Array.isArray(arr)) arr.forEach(item => state.watchlist.add(item));
+  }
+} catch (e) {
+  console.warn("無法讀取本機 Watchlist", e);
+}
+
 const periods = {
   "1m": 60, "5m": 300, "15m": 900, "1H": 3600, "4H": 14400, "1D": 86400, "1W": 604800
 };
 
+/**
+ * ============================================================================
+ * 3. UTILS
+ * ============================================================================
+ */
 const num = v => Number(v) || 0;
 const fmtUsd = v => new Intl.NumberFormat("en-US", { notation: "compact", maximumFractionDigits: 2 }).format(num(v));
 const fmtPrice = v => {
@@ -691,45 +731,90 @@ const fmtPrice = v => {
 };
 const fmtPct = v => `${num(v) >= 0 ? "+" : ""}${(num(v) * 100).toFixed(2)}%`;
 
+/**
+ * ============================================================================
+ * 4. BITGET API SERVICE (含超時與詳細錯誤診斷)
+ * ============================================================================
+ */
 const BitgetAPI = {
+  async fetchWithTimeout(url, timeoutMs = 9000) {
+    const controller = new AbortController();
+    const id = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      const res = await fetch(url, { signal: controller.signal, cache: "no-store" });
+      clearTimeout(id);
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status} ${res.statusText}`);
+      }
+      const json = await res.json();
+      if (json.code !== "00000") {
+        throw new Error(`Bitget [${json.code}]: ${json.msg || "未知錯誤"}`);
+      }
+      return json.data;
+    } catch (err) {
+      clearTimeout(id);
+      console.error(`API 請求失敗: ${url}`, err);
+      throw err;
+    }
+  },
+
   async fetchTickers() {
-    const res = await fetch(`${CONFIG.apiBase}/tickers?productType=${CONFIG.productType}`, { cache: "no-store" });
-    const json = await res.json();
-    if (json.code !== "00000" || !Array.isArray(json.data)) throw new Error("Ticker 格式錯誤");
-    return json.data;
+    return await this.fetchWithTimeout(`${CONFIG.apiBase}/tickers?productType=${CONFIG.productType}`);
   },
 
   async fetchContracts() {
-    const res = await fetch(`${CONFIG.apiBase}/contracts?productType=${CONFIG.productType}`, { cache: "no-store" });
-    const json = await res.json();
-    if (json.code !== "00000" || !Array.isArray(json.data)) return [];
-    return json.data.filter(x => x.symbolStatus === "normal" && x.symbolType === "perpetual" && x.quoteCoin === "USDT");
+    try {
+      const data = await this.fetchWithTimeout(`${CONFIG.apiBase}/contracts?productType=${CONFIG.productType}`);
+      if (!Array.isArray(data)) return [];
+      return data.filter(x => x.symbolStatus === "normal" && x.symbolType === "perpetual" && x.quoteCoin === "USDT");
+    } catch (e) {
+      console.warn("合約列表讀取失敗，降級使用所有回傳合約", e);
+      return [];
+    }
   },
 
   async fetchCandles(symbol, granularity, limit = 100, endTime = null) {
     let url = `${CONFIG.apiBase}/candles?symbol=${symbol}&productType=${CONFIG.productType}&granularity=${granularity}&limit=${limit}`;
     if (endTime) url += `&endTime=${endTime}`;
-    const res = await fetch(url, { cache: "no-store" });
-    const json = await res.json();
-    if (json.code !== "00000" || !Array.isArray(json.data)) return [];
     
-    // 使用標準解構語法
-    return json.data.map(d => {
+    const data = await this.fetchWithTimeout(url, 8000);
+    if (!Array.isArray(data)) return [];
+
+    // 解構賦值解析 K 線，並過濾非法資料
+    const parsed = [];
+    for (const d of data) {
+      if (!Array.isArray(d) || d.length < 5) continue;
       const [rawTime, rawOpen, rawHigh, rawLow, rawClose, rawVol, rawQuoteVol] = d;
-      return {
-        time: Math.floor(num(rawTime) / 1000),
-        open: num(rawOpen),
-        high: num(rawHigh),
-        low: num(rawLow),
-        close: num(rawClose),
-        volume: num(rawVol),
-        quoteVolume: num(rawQuoteVol)
-      };
-    }).filter(c => Number.isFinite(c.open) && Number.isFinite(c.close) && c.open > 0 && c.close > 0)
-      .sort((a, b) => a.time - b.time);
+      const t = Math.floor(num(rawTime) / 1000);
+      const o = num(rawOpen);
+      const h = num(rawHigh);
+      const l = num(rawLow);
+      const c = num(rawClose);
+      const v = num(rawVol);
+      const qv = num(rawQuoteVol);
+
+      if (t > 0 && o > 0 && h > 0 && l > 0 && c > 0 && h >= l) {
+        parsed.push({ time: t, open: o, high: h, low: l, close: c, volume: v, quoteVolume: qv });
+      }
+    }
+
+    // 依時間升序並排除重複
+    parsed.sort((a, b) => a.time - b.time);
+    const deduplicated = [];
+    for (let i = 0; i < parsed.length; i++) {
+      if (i === 0 || parsed[i].time !== parsed[i - 1].time) {
+        deduplicated.push(parsed[i]);
+      }
+    }
+    return deduplicated;
   }
 };
 
+/**
+ * ============================================================================
+ * 5. OX ANALYSIS ENGINES
+ * ============================================================================
+ */
 const OXEngine = {
   computeLiquidity(ticker, allTickers) {
     const quoteVol = num(ticker.usdtVolume);
@@ -776,7 +861,9 @@ const OXEngine = {
   },
 
   computeMoneyFlow(candles) {
-    if (!candles || candles.length < 22) return { score: 50, volRatio15m: 1.0, volRatio1h: 1.0, volRatio4h: 1.0, isSurge: false };
+    if (!candles || candles.length < 22) {
+      return { score: 50, volRatio15m: 1.0, volRatio1h: 1.0, volRatio4h: 1.0, isSurge: false, healthyLongVol: false, healthyShortVol: false };
+    }
     
     const n = candles.length;
     const last = candles[n - 1];
@@ -894,21 +981,21 @@ const OXEngine = {
 
       if (structure.isHHHL && moneyFlow.healthyLongVol) {
         matched.push({ name: "強勢趨勢延續", score: 88, progress: 85, side: "LONG" });
-        reasons.push({ ok: true, text: "高低點階梯式抬高，多頭結構順排" });
+        reasons.push({ type: "ok", text: "高低點階梯式抬高，多頭結構順排" });
       }
       if (distHigh <= 0.025 && distHigh >= -0.015) {
         matched.push({ name: "關鍵前高突破", score: 92, progress: 90, side: "LONG" });
-        reasons.push({ ok: true, text: `距離關鍵前高 ${fmtPrice(structure.swingHigh)} 僅 ${(distHigh * 100).toFixed(1)}%` });
+        reasons.push({ type: "ok", text: `距離關鍵前高 ${fmtPrice(structure.swingHigh)} 僅 ${(distHigh * 100).toFixed(1)}%` });
       }
       const range5 = (Math.max(...highs.slice(-5)) - Math.min(...lows.slice(-5))) / last.close;
       const range20 = (Math.max(...highs.slice(-20)) - Math.min(...lows.slice(-20))) / last.close;
       if (range5 < range20 * 0.55 && moneyFlow.volRatio1h < 1.0) {
         matched.push({ name: "收斂壓縮待變盤", score: 80, progress: 75, side: "LONG" });
-        reasons.push({ ok: true, text: "ATR 波動顯著收窄，進入極度壓制狀態" });
+        reasons.push({ type: "ok", text: "ATR 波動顯著收窄，進入極度壓制狀態" });
       }
       if (last.low < structure.swingLow && last.close > structure.swingLow) {
         matched.push({ name: "假跌破流動性獵取", score: 84, progress: 80, side: "LONG" });
-        reasons.push({ ok: true, text: "下插刺破前低支撐後強勢收回" });
+        reasons.push({ type: "ok", text: "下插刺破前低支撐後強勢收回" });
       }
     }
 
@@ -917,21 +1004,21 @@ const OXEngine = {
 
       if (structure.isLHLL && moneyFlow.healthyShortVol) {
         matched.push({ name: "弱勢趨勢延續", score: 88, progress: 85, side: "SHORT" });
-        reasons.push({ ok: true, text: "高低點階梯式走低，空頭結構順排" });
+        reasons.push({ type: "ok", text: "高低點階梯式走低，空頭結構順排" });
       }
       if (distLow <= 0.025 && distLow >= -0.015) {
         matched.push({ name: "關鍵前低跌破", score: 92, progress: 90, side: "SHORT" });
-        reasons.push({ ok: true, text: `距離關鍵前低 ${fmtPrice(structure.swingLow)} 僅 ${(distLow * 100).toFixed(1)}%` });
+        reasons.push({ type: "ok", text: `距離關鍵前低 ${fmtPrice(structure.swingLow)} 僅 ${(distLow * 100).toFixed(1)}%` });
       }
       if (last.high > structure.swingHigh && last.close < structure.swingHigh) {
         matched.push({ name: "假突破上掃誘多", score: 84, progress: 80, side: "SHORT" });
-        reasons.push({ ok: true, text: "上刺前高誘多後迅速收回跌破" });
+        reasons.push({ type: "ok", text: "上刺前高誘多後迅速收回跌破" });
       }
     }
 
     if (!matched.length) {
       matched.push({ name: "常態結構整理", score: 50, progress: 45, side: structure.side });
-      reasons.push({ ok: false, text: "目前處於常態整理區間，等待進一步突破" });
+      reasons.push({ type: "wait", text: "目前處於常態整理區間，等待進一步突破" });
     }
 
     matched.sort((a, b) => b.score - a.score);
@@ -945,13 +1032,15 @@ const OXEngine = {
   },
 
   detectTrigger(candles, structure, moneyFlow) {
-    if (!candles || candles.length < 20) return { active: false, type: "", confidence: 50, triggerReason: "" };
+    if (!candles || candles.length < 20) {
+      return { active: false, type: "等待 Trigger 訊號", confidence: 50, triggerReason: "尚未產生確認信號" };
+    }
     const last = candles[candles.length - 1];
     const prev = candles[candles.length - 2];
 
     if (structure.side === "LONG") {
       if (last.close >= structure.swingHigh && moneyFlow.volRatio1h >= 1.35) {
-        return { active: true, type: "OX 放量突破", confidence: 88, triggerReason: "突破前 20 根 K 線高點且放量" };
+        return { active: true, type: "OX 放量突破", confidence: 88, triggerReason: "收盤放量突破前 20 根 K 線高點" };
       }
       if (prev.close < prev.open && last.close > prev.high && moneyFlow.volRatio1h >= 1.2) {
         return { active: true, type: "OX 回調結束反轉", confidence: 82, triggerReason: "陽線實體反包前根陰線且增量" };
@@ -960,16 +1049,17 @@ const OXEngine = {
 
     if (structure.side === "SHORT") {
       if (last.close <= structure.swingLow && moneyFlow.volRatio1h >= 1.35) {
-        return { active: true, type: "OX 放量跌破", confidence: 88, triggerReason: "跌破前 20 根 K 線低點且放量" };
+        return { active: true, type: "OX 放量跌破", confidence: 88, triggerReason: "收盤放量跌破前 20 根 K 線低點" };
       }
       if (prev.close > prev.open && last.close < prev.low && moneyFlow.volRatio1h >= 1.2) {
-        return { active: true, type: "OX 反抽受阻下破", confidence: 82, triggerReason: "陰線實體反包破位" };
+        return { active: true, type: "OX 反抽受阻下破", confidence: 82, triggerReason: "陰線實體反包跌破" };
       }
     }
 
     return { active: false, type: "等待 Trigger 訊號", confidence: 60, triggerReason: "目前仍在結構內醞釀" };
   },
 
+  // 獨立計算 T1 / T2 / T3 契合度評分
   computeTierScores(liq, moneyFlow, structure, setup, trigger) {
     const t1Score = Math.round(
       (trigger.active ? 40 : 15) +
@@ -996,452 +1086,511 @@ const OXEngine = {
   }
 };
 
-async function refreshMarketTickers() {
-  try {
-    const rawTickers = await BitgetAPI.fetchTickers();
-    if (!state.contracts.size) {
-      const contractList = await BitgetAPI.fetchContracts();
-      contractList.forEach(c => state.contracts.set(c.symbol, c));
+/**
+ * ============================================================================
+ * 6. CHART ENGINE
+ * ============================================================================
+ */
+const ChartEngine = {
+  init() {
+    const container = document.getElementById("chart");
+    state.chart = LightweightCharts.createChart(container, {
+      width: container.clientWidth,
+      height: container.clientHeight,
+      layout: {
+        background: { type: "solid", color: "#090e17" },
+        textColor: "#8b9db7"
+      },
+      grid: {
+        vertLines: { color: "#162335" },
+        horzLines: { color: "#162335" }
+      },
+      rightPriceScale: {
+        borderColor: "#223147",
+        autoScale: true,
+        scaleMargins: { top: 0.08, bottom: 0.25 }
+      },
+      timeScale: {
+        borderColor: "#223147",
+        timeVisible: true,
+        secondsVisible: false
+      },
+      crosshair: { mode: LightweightCharts.CrosshairMode.Normal }
+    });
+
+    state.candleSeries = state.chart.addCandlestickSeries({
+      upColor: "#38c99b",
+      downColor: "#ee617c",
+      borderVisible: false,
+      wickUpColor: "#38c99b",
+      wickDownColor: "#ee617c"
+    });
+
+    state.volumeSeries = state.chart.addHistogramSeries({
+      priceFormat: { type: "volume" },
+      priceScaleId: "vol"
+    });
+    state.chart.priceScale("vol").applyOptions({
+      scaleMargins: { top: 0.8, bottom: 0 }
+    });
+
+    state.maSeries = {
+      5: state.chart.addLineSeries({ color: "#f7bd52", lineWidth: 1.5, lastValueVisible: false }),
+      10: state.chart.addLineSeries({ color: "#5ca5ff", lineWidth: 1.5, lastValueVisible: false }),
+      20: state.chart.addLineSeries({ color: "#ad7cff", lineWidth: 1.5, lastValueVisible: false })
+    };
+
+    // 點擊 Marker 顯示 Tooltip 浮窗
+    state.chart.subscribeClick(param => {
+      const tooltip = document.getElementById("signal-tooltip");
+      if (!param || !param.time || !param.point) {
+        tooltip.classList.remove("show");
+        return;
+      }
+      const match = state.candleMarkersMap.get(param.time);
+      if (match) {
+        tooltip.innerHTML = `
+          <button class="close-btn" onclick="document.getElementById('signal-tooltip').classList.remove('show')">✕</button>
+          <b>${match.text}</b>
+          <div>• 觸發依據：${match.reason}</div>
+          <div>• 訊號可信度：${match.confidence}%</div>
+          <div>• 當時放量：${match.volRatio}x 均量</div>
+          <div>• 當時價格：${fmtPrice(match.price)}</div>
+          <div>• 結構判定：${match.structure}</div>
+        `;
+        tooltip.style.left = `${Math.min(container.clientWidth - 280, Math.max(10, param.point.x - 120))}px`;
+        tooltip.style.top = `${Math.max(10, param.point.y - 140)}px`;
+        tooltip.classList.add("show");
+      } else {
+        tooltip.classList.remove("show");
+      }
+    });
+
+    // 向左拖曳 Lazy Load 歷史 K 線 (不重置當前視野)
+    state.chart.timeScale().subscribeVisibleLogicalRangeChange(range => {
+      if (!range || state.isLoadingOlder || !state.hasMoreHistory) return;
+      if (range.from <= 2) this.loadMoreCandles();
+    });
+
+    new ResizeObserver(entries => {
+      for (const entry of entries) {
+        state.chart.applyOptions({
+          width: entry.contentRect.width,
+          height: entry.contentRect.height
+        });
+        this.updatePriceTimer();
+      }
+    }).observe(container);
+  },
+
+  async loadCandles(symbol, period, isInitial = true) {
+    state.abortCtrl?.abort();
+    state.abortCtrl = new AbortController();
+    const overlay = document.getElementById("chart-loading");
+    if (isInitial) overlay.classList.add("show");
+
+    try {
+      const raw = await BitgetAPI.fetchCandles(symbol, period, 140);
+      if (!raw.length) throw new Error("無可用 K 線數據");
+
+      state.candleData = raw;
+      state.oldestCandleTime = raw[0].time;
+      state.hasMoreHistory = true;
+
+      this.renderCandles(raw, isInitial);
+    } catch (err) {
+      if (err.name === "AbortError") return;
+      console.warn(`載入 ${symbol} K 線中斷或失敗:`, err.message);
+    } finally {
+      overlay.classList.remove("show");
+    }
+  },
+
+  async loadMoreCandles() {
+    if (state.isLoadingOlder || !state.hasMoreHistory) return;
+    state.isLoadingOlder = true;
+    const overlay = document.getElementById("chart-loading");
+    overlay.classList.add("show");
+
+    try {
+      const older = await BitgetAPI.fetchCandles(state.symbol, state.period, 100, (state.oldestCandleTime - 1) * 1000);
+      if (!older.length) {
+        state.hasMoreHistory = false;
+        return;
+      }
+
+      state.oldestCandleTime = older[0].time;
+      const combined = [...older, ...state.candleData];
+      
+      // 去重
+      const deduplicated = [];
+      for (let i = 0; i < combined.length; i++) {
+        if (i === 0 || combined[i].time !== combined[i - 1].time) {
+          deduplicated.push(combined[i]);
+        }
+      }
+      state.candleData = deduplicated;
+
+      // 保持目前使用者觀看位置，不調用 fitContent()
+      const currentRange = state.chart.timeScale().getVisibleLogicalRange();
+      this.renderCandles(deduplicated, false);
+      if (currentRange) {
+        const addedBars = older.length;
+        state.chart.timeScale().setVisibleLogicalRange({
+          from: currentRange.from + addedBars,
+          to: currentRange.to + addedBars
+        });
+      }
+    } catch (e) {
+      console.warn("載入更早歷史 K 線失敗", e);
+    } finally {
+      state.isLoadingOlder = false;
+      overlay.classList.remove("show");
+    }
+  },
+
+  renderCandles(candles, isInitial = false) {
+    state.candleSeries.setData(candles);
+
+    // 成交量柱體
+    const volData = candles.map(c => ({
+      time: c.time,
+      value: c.volume,
+      color: c.close >= c.open ? "#38c99b40" : "#ee617c40"
+    }));
+    state.volumeSeries.setData(volData);
+
+    // MA 計算
+    const calcMa = len => {
+      let sum = 0;
+      return candles.map((c, idx) => {
+        sum += c.close;
+        if (idx >= len) sum -= candles[idx - len].close;
+        return idx >= len - 1 ? { time: c.time, value: sum / len } : null;
+      }).filter(Boolean);
+    };
+
+    const maLens =;
+    for (const len of maLens) {
+      if (state.maSeries[len]) {
+        state.maSeries[len].setData(calcMa(len));
+      }
     }
 
-    state.tickers = rawTickers.filter(t => 
-      state.contracts.has(t.symbol) && 
-      [t.lastPr, t.change24h, t.usdtVolume].every(v => Number.isFinite(num(v)))
-    );
+    // OX 訊號標記 (同一區域只顯示較高優先訊號)
+    state.candleMarkersMap.clear();
+    if (document.getElementById("chk-ox-markers").checked) {
+      const markers = [];
+      const vols = candles.map(c => c.volume);
 
-    state.btcTicker = state.tickers.find(t => t.symbol === "BTCUSDT") || null;
-    state.ethTicker = state.tickers.find(t => t.symbol === "ETHUSDT") || null;
+      for (let i = 15; i < candles.length - 1; i++) {
+        const c = candles[i];
+        const avgVol = vols.slice(i - 15, i).reduce((a, b) => a + b, 0) / 15 || 1;
+        const ratio = (c.volume / avgVol).toFixed(1);
 
-    updateBenchmarkBar();
+        if (c.close > candles[i - 1].high && c.volume > avgVol * 1.6) {
+          const item = {
+            time: c.time,
+            position: "belowBar",
+            color: "#38c99b",
+            shape: "arrowUp",
+            text: "OX 放量突破",
+            reason: "收盤放量突破前根 K 線高點",
+            confidence: 88,
+            volRatio: ratio,
+            price: c.close,
+            structure: "多頭突破"
+          };
+          markers.push(item);
+          state.candleMarkersMap.set(c.time, item);
+        } else if (c.close < candles[i - 1].low && c.volume > avgVol * 1.6) {
+          const item = {
+            time: c.time,
+            position: "aboveBar",
+            color: "#ee617c",
+            shape: "arrowDown",
+            text: "OX 放量跌破",
+            reason: "收盤放量跌破前根 K 線低點",
+            confidence: 88,
+            volRatio: ratio,
+            price: c.close,
+            structure: "空頭破位"
+          };
+          markers.push(item);
+          state.candleMarkersMap.set(c.time, item);
+        }
+      }
+      state.candleSeries.setMarkers(markers.slice(-8));
+    } else {
+      state.candleSeries.setMarkers([]);
+    }
 
-    const eligible = state.tickers.filter(t => num(t.usdtVolume) >= CONFIG.liquidity.minUsdtVolume24h);
-    eligible.sort((a, b) => num(b.usdtVolume) - num(a.usdtVolume));
+    if (isInitial) {
+      this.setViewRecent();
+    }
+    this.updatePriceTimer();
+  },
+
+  // 近期視野按鈕：自適應設定為約 80~140 根 K 線
+  setViewRecent() {
+    if (!state.candleData.length || !state.chart) return;
+    const targetBars = CONFIG.initialBars[state.period] || 100;
+    const totalBars = state.candleData.length;
+    state.chart.timeScale().setVisibleLogicalRange({
+      from: Math.max(0, totalBars - targetBars),
+      to: totalBars + 5
+    });
+  },
+
+  // 完整歷史按鈕：檢視目前載入的全部 K 線
+  setViewAll() {
+    if (!state.candleData.length || !state.chart) return;
+    state.chart.timeScale().fitContent();
+  },
+
+  updatePriceTimer() {
+    const timerEl = document.getElementById("price-timer");
+    if (!state.candleData.length || !timerEl) return;
+    const last = state.candleData[state.candleData.length - 1];
+    const step = periods[state.period] || 60;
+    const now = Math.floor(Date.now() / 1000);
+    const left = step - (now % step);
+    const h = Math.floor(left / 3600);
+    const m = Math.floor((left % 3600) / 60);
+    const s = left % 60;
+    const timeStr = `${h > 0 ? `${h}h ` : ''}${String(m).padStart(2, "0")}m ${String(s).padStart(2, "0")}s`;
     
-    if (!state.scanQueue.length) {
-      state.scanQueue = eligible.map(t => t.symbol);
-      state.scanIndex = 0;
+    const y = state.candleSeries.priceToCoordinate(last.close);
+    timerEl.innerHTML = `${fmtPrice(last.close)}<small>倒數 ${timeStr}</small>`;
+    if (Number.isFinite(y)) {
+      timerEl.style.top = `${Math.max(16, Math.min(document.getElementById("chart").clientHeight - 24, y))}px`;
     }
-
-    rebuildTierLists();
-    renderCurrentTab();
-    updateHeaderHUD();
-    updateDetailPanel();
-
-    if (!state.isQueueRunning) {
-      state.isQueueRunning = true;
-      runScanQueueLoop();
-    }
-  } catch (e) {
-    document.getElementById("scan-status").textContent = `行情連線中斷：${e.message}`;
-    document.getElementById("dot").style.background = "#ee617c";
   }
-}
+};
 
-function updateBenchmarkBar() {
-  if (state.btcTicker) {
-    document.getElementById("bench-btc-price").textContent = `$${fmtPrice(state.btcTicker.lastPr)}`;
-    const chg = document.getElementById("bench-btc-chg");
-    chg.textContent = fmtPct(state.btcTicker.change24h);
-    chg.className = num(state.btcTicker.change24h) >= 0 ? "positive" : "negative";
-    document.getElementById("bench-btc-trend").textContent = num(state.btcTicker.change24h) >= 0 ? "4H 多頭偏強" : "4H 空頭調整";
-  }
-  if (state.ethTicker) {
-    document.getElementById("bench-eth-price").textContent = `$${fmtPrice(state.ethTicker.lastPr)}`;
-    const chg = document.getElementById("bench-eth-chg");
-    chg.textContent = fmtPct(state.ethTicker.change24h);
-    chg.className = num(state.ethTicker.change24h) >= 0 ? "positive" : "negative";
-    document.getElementById("bench-eth-trend").textContent = num(state.ethTicker.change24h) >= 0 ? "4H 多頭偏強" : "4H 空頭調整";
-  }
+/**
+ * ============================================================================
+ * 7. MARKET SCANNER & QUEUE
+ * ============================================================================
+ */
+const MarketScanner = {
+  async refreshTickers() {
+    try {
+      const raw = await BitgetAPI.fetchTickers();
+      if (!Array.isArray(raw)) return;
 
-  const btcChg = state.btcTicker ? num(state.btcTicker.change24h) : 0;
-  const biasEl = document.getElementById("market-bias-text");
-  if (btcChg >= 0.02) {
-    biasEl.textContent = "Risk-On (多頭推進)";
-    biasEl.style.color = "var(--green)";
-  } else if (btcChg <= -0.02) {
-    biasEl.textContent = "Risk-Off (避險防禦)";
-    biasEl.style.color = "var(--red)";
-  } else {
-    biasEl.textContent = "Neutral (區間震盪)";
-    biasEl.style.color = "var(--gold)";
-  }
+      if (!state.contracts.size) {
+        const contracts = await BitgetAPI.fetchContracts();
+        contracts.forEach(c => state.contracts.set(c.symbol, c));
+      }
 
-  document.getElementById("last-scan-time").textContent = `最後掃描: ${new Date().toLocaleTimeString("zh-TW", { hour12: false })}`;
-}
+      state.tickers = raw.filter(t => 
+        [t.lastPr, t.change24h, t.usdtVolume].every(v => Number.isFinite(num(v)))
+      );
 
-async function runScanQueueLoop() {
-  while (true) {
-    if (!state.scanQueue.length) {
-      await new Promise(r => setTimeout(r, 1000));
-      continue;
-    }
+      state.btcTicker = state.tickers.find(t => t.symbol === "BTCUSDT") || null;
+      state.ethTicker = state.tickers.find(t => t.symbol === "ETHUSDT") || null;
 
-    const batchSymbols = [];
-    for (let i = 0; i < CONFIG.queueBatchSize; i++) {
-      if (state.scanIndex >= state.scanQueue.length) {
+      UIRenderer.updateBenchmarkBar();
+
+      // 建立流動性合格輪巡清單
+      const eligible = state.tickers.filter(t => num(t.usdtVolume) >= CONFIG.liquidity.minUsdtVolume24h);
+      eligible.sort((a, b) => num(b.usdtVolume) - num(a.usdtVolume));
+
+      if (!state.scanQueue.length) {
+        state.scanQueue = eligible.map(t => t.symbol);
         state.scanIndex = 0;
       }
-      batchSymbols.push(state.scanQueue[state.scanIndex]);
-      state.scanIndex++;
+
+      RankingEngine.rebuild();
+      UIRenderer.renderCurrentTab();
+      UIRenderer.updateHeaderHUD();
+      UIRenderer.updateDetailPanel();
+
+      if (!state.isQueueRunning) {
+        state.isQueueRunning = true;
+        this.runQueueLoop();
+      }
+    } catch (e) {
+      document.getElementById("scan-status").textContent = `行情取得失敗：${e.message}`;
+      document.getElementById("dot").style.background = "#ee617c";
     }
+  },
 
-    const pct = Math.round((state.scanIndex / state.scanQueue.length) * 100);
-    document.getElementById("scan-status").textContent = `全市場輪巡：${state.scanIndex}/${state.scanQueue.length} (${pct}%) · ${batchSymbols.slice(0, 3).join(', ')}…`;
-    document.getElementById("dot").style.background = "#38c99b";
+  async runQueueLoop() {
+    while (true) {
+      if (!state.scanQueue.length) {
+        await new Promise(r => setTimeout(r, 1000));
+        continue;
+      }
 
-    await Promise.allSettled(batchSymbols.map(async symbol => {
-      const ticker = state.tickers.find(t => t.symbol === symbol);
-      if (!ticker) return;
-
-      try {
-        const candles = await BitgetAPI.fetchCandles(symbol, "1H", 35);
-        if (!candles.length) return;
-
-        const liq = OXEngine.computeLiquidity(ticker, state.tickers);
-        const rs = OXEngine.computeRelativeStrength(ticker, state.btcTicker, state.ethTicker);
-        const moneyFlow = OXEngine.computeMoneyFlow(candles);
-        const structure = OXEngine.computeStructure(candles);
-        const setup = OXEngine.evaluateSetupMatch(candles, structure, moneyFlow);
-        const trigger = OXEngine.detectTrigger(candles, structure, moneyFlow);
-        const tierScores = OXEngine.computeTierScores(liq, moneyFlow, structure, setup, trigger);
-
-        const oxScore = Math.round(
-          liq.score * CONFIG.weights.liquidity +
-          moneyFlow.score * CONFIG.weights.moneyFlow +
-          structure.score * CONFIG.weights.structure +
-          setup.setupScore * CONFIG.weights.setupMatch +
-          rs.score * CONFIG.weights.relativeStrength +
-          (trigger.active ? 5 : 0)
-        );
-
-        const last = candles[candles.length - 1];
-        const distHighPct = Math.abs((structure.swingHigh - last.close) / structure.swingHigh * 100).toFixed(1);
-        const distLowPct = Math.abs((last.close - structure.swingLow) / structure.swingLow * 100).toFixed(1);
-
-        state.analyzedCache.set(symbol, {
-          symbol,
-          ticker,
-          oxScore,
-          liqScore: liq.score,
-          flowScore: moneyFlow.score,
-          structScore: structure.score,
-          setupScore: setup.setupScore,
-          rsScore: rs.score,
-          side: setup.side,
-          setupName: setup.setupName,
-          setupProgress: setup.progress,
-          triggerActive: trigger.active,
-          triggerType: trigger.type,
-          triggerReason: trigger.triggerReason,
-          confidence: trigger.confidence,
-          tierScores,
-          isSurge: moneyFlow.isSurge,
-          volRatio15m: moneyFlow.volRatio15m,
-          volRatio1h: moneyFlow.volRatio1h,
-          volRatio4h: moneyFlow.volRatio4h,
-          structureDesc: structure.desc,
-          distHighPct,
-          distLowPct,
-          reasons: setup.reasons,
-          change24h: num(ticker.change24h),
-          quoteVol: liq.quoteVol,
-          liqPercentile: liq.percentileStr,
-          diffBtcPct: rs.diffBtcPct,
-          diffEthPct: rs.diffEthPct
-        });
-
-        if (moneyFlow.isSurge && !state.scanQueue.slice(state.scanIndex, state.scanIndex + 5).includes(symbol)) {
-          state.scanQueue.splice(state.scanIndex, 0, symbol);
+      const batch = [];
+      for (let i = 0; i < CONFIG.queueBatchSize; i++) {
+        if (state.scanIndex >= state.scanQueue.length) {
+          state.scanIndex = 0;
         }
-      } catch (e) {}
+        batch.push(state.scanQueue[state.scanIndex]);
+        state.scanIndex++;
+      }
+
+      const pct = Math.round((state.scanIndex / state.scanQueue.length) * 100);
+      document.getElementById("scan-status").textContent = `全市場輪巡：${state.scanIndex}/${state.scanQueue.length} (${pct}%) · ${batch.slice(0, 3).join(', ')}…`;
+      document.getElementById("dot").style.background = "#38c99b";
+
+      await Promise.allSettled(batch.map(async symbol => {
+        const ticker = state.tickers.find(t => t.symbol === symbol);
+        if (!ticker) return;
+
+        try {
+          const candles = await BitgetAPI.fetchCandles(symbol, "1H", 35);
+          if (!candles.length) return;
+
+          const liq = OXEngine.computeLiquidity(ticker, state.tickers);
+          const rs = OXEngine.computeRelativeStrength(ticker, state.btcTicker, state.ethTicker);
+          const moneyFlow = OXEngine.computeMoneyFlow(candles);
+          const structure = OXEngine.computeStructure(candles);
+          const setup = OXEngine.evaluateSetupMatch(candles, structure, moneyFlow);
+          const trigger = OXEngine.detectTrigger(candles, structure, moneyFlow);
+          const tierScores = OXEngine.computeTierScores(liq, moneyFlow, structure, setup, trigger);
+
+          const oxScore = Math.round(
+            liq.score * CONFIG.weights.liquidity +
+            moneyFlow.score * CONFIG.weights.moneyFlow +
+            structure.score * CONFIG.weights.structure +
+            setup.setupScore * CONFIG.weights.setupMatch +
+            rs.score * CONFIG.weights.relativeStrength +
+            (trigger.active ? 5 : 0)
+          );
+
+          const last = candles[candles.length - 1];
+          const distHighPct = Math.abs((structure.swingHigh - last.close) / structure.swingHigh * 100).toFixed(1);
+          const distLowPct = Math.abs((last.close - structure.swingLow) / structure.swingLow * 100).toFixed(1);
+
+          state.analyzedCache.set(symbol, {
+            symbol,
+            ticker,
+            oxScore,
+            liqScore: liq.score,
+            flowScore: moneyFlow.score,
+            structScore: structure.score,
+            setupScore: setup.setupScore,
+            rsScore: rs.score,
+            side: setup.side,
+            setupName: setup.setupName,
+            setupProgress: setup.progress,
+            triggerActive: trigger.active,
+            triggerType: trigger.type,
+            triggerReason: trigger.triggerReason,
+            confidence: trigger.confidence,
+            tierScores,
+            isSurge: moneyFlow.isSurge,
+            volRatio15m: moneyFlow.volRatio15m,
+            volRatio1h: moneyFlow.volRatio1h,
+            volRatio4h: moneyFlow.volRatio4h,
+            structureDesc: structure.desc,
+            distHighPct,
+            distLowPct,
+            reasons: setup.reasons,
+            change24h: num(ticker.change24h),
+            quoteVol: liq.quoteVol,
+            liqPercentile: liq.percentileStr,
+            diffBtcPct: rs.diffBtcPct,
+            diffEthPct: rs.diffEthPct
+          });
+
+          // 若偵測到資金異動，插入佇列前方優先掃描
+          if (moneyFlow.isSurge && !state.scanQueue.slice(state.scanIndex, state.scanIndex + 5).includes(symbol)) {
+            state.scanQueue.splice(state.scanIndex, 0, symbol);
+          }
+        } catch (e) {}
+      }));
+
+      RankingEngine.rebuild();
+      UIRenderer.renderCurrentTab();
+      UIRenderer.updateHeaderHUD();
+      UIRenderer.updateDetailPanel();
+
+      await new Promise(r => setTimeout(r, CONFIG.batchIntervalMs));
+    }
+  }
+};
+
+/**
+ * ============================================================================
+ * 8. RANKING ENGINE (T1/T2/T3 各自保證 Top 10)
+ * ============================================================================
+ */
+const RankingEngine = {
+  rebuild() {
+    const all = Array.from(state.analyzedCache.values());
+
+    // T1: 依據 T1FitScore 排序，區分 CONFIRMED 與 WATCH
+    const t1Sorted = all.slice().sort((a, b) => b.tierScores.t1Score - a.tierScores.t1Score).slice(0, 10);
+    const t1 = t1Sorted.map(c => ({
+      ...c,
+      statusLabel: c.triggerActive ? "T1 CONFIRMED" : "T1 WATCH"
     }));
 
-    rebuildTierLists();
-    renderCurrentTab();
-    updateHeaderHUD();
-    updateDetailPanel();
+    // T2: 依據 T2FitScore 排序
+    const t2Sorted = all.slice().sort((a, b) => b.tierScores.t2Score - a.tierScores.t2Score).slice(0, 10);
+    const t2 = t2Sorted.map(c => ({
+      ...c,
+      statusLabel: c.setupProgress >= 80 ? "T2 READY" : "T2 WATCH"
+    }));
 
-    await new Promise(r => setTimeout(r, CONFIG.batchIntervalMs));
+    // T3: 依據 T3FitScore 排序
+    const t3Sorted = all.slice().sort((a, b) => b.tierScores.t3Score - a.tierScores.t3Score).slice(0, 10);
+    const t3 = t3Sorted.map(c => ({
+      ...c,
+      statusLabel: "T3 EARLY"
+    }));
+
+    const watchlist = all.filter(c => state.watchlist.has(c.symbol));
+    const surge = all.filter(c => c.isSurge).sort((a, b) => b.flowScore - a.flowScore).slice(0, 15);
+
+    const gainers = state.tickers.filter(t => num(t.change24h) > 0)
+      .sort((a, b) => num(b.change24h) - num(a.change24h)).slice(0, 15);
+    const losers = state.tickers.filter(t => num(t.change24h) < 0)
+      .sort((a, b) => num(a.change24h) - num(b.change24h)).slice(0, 15);
+
+    state.tierMap = { t1, t2, t3, watchlist, surge, gainers, losers };
+
+    document.getElementById("badge-t1").textContent = t1.length;
+    document.getElementById("badge-t2").textContent = t2.length;
+    document.getElementById("badge-t3").textContent = t3.length;
+    document.getElementById("badge-watchlist").textContent = watchlist.length;
+    document.getElementById("badge-surge").textContent = surge.length;
   }
-}
+};
 
-function rebuildTierLists() {
-  const all = Array.from(state.analyzedCache.values());
-
-  const t1Sorted = all.slice().sort((a, b) => b.tierScores.t1Score - a.tierScores.t1Score).slice(0, 10);
-  const t1 = t1Sorted.map(c => ({
-    ...c,
-    statusLabel: c.triggerActive ? "T1 已確認" : "T1 候補"
-  }));
-
-  const t2Sorted = all.slice().sort((a, b) => b.tierScores.t2Score - a.tierScores.t2Score).slice(0, 10);
-  const t2 = t2Sorted.map(c => ({
-    ...c,
-    statusLabel: c.setupProgress >= 80 ? "T2 準備完畢" : "T2 蓄勢中"
-  }));
-
-  const t3Sorted = all.slice().sort((a, b) => b.tierScores.t3Score - a.tierScores.t3Score).slice(0, 10);
-  const t3 = t3Sorted.map(c => ({
-    ...c,
-    statusLabel: "T3 早期醞釀"
-  }));
-
-  const watchlist = all.filter(c => state.watchlist.has(c.symbol));
-  const surge = all.filter(c => c.isSurge).sort((a, b) => b.flowScore - a.flowScore).slice(0, 15);
-
-  const gainers = state.tickers.filter(t => num(t.change24h) > 0)
-    .sort((a, b) => num(b.change24h) - num(a.change24h)).slice(0, 15);
-  const losers = state.tickers.filter(t => num(t.change24h) < 0)
-    .sort((a, b) => num(a.change24h) - num(b.change24h)).slice(0, 15);
-
-  state.tierMap = { t1, t2, t3, watchlist, surge, gainers, losers };
-
-  document.getElementById("badge-t1").textContent = t1.length;
-  document.getElementById("badge-t2").textContent = t2.length;
-  document.getElementById("badge-t3").textContent = t3.length;
-  document.getElementById("badge-watchlist").textContent = watchlist.length;
-  document.getElementById("badge-surge").textContent = surge.length;
-}
-
-function renderCurrentTab() {
-  const container = document.getElementById("screener-list");
-  const tab = state.currentTab;
-
-  if (tab === "gainers" || tab === "losers") {
-    const list = state.tierMap[tab] || [];
-    if (!list.length) {
-      container.innerHTML = `<div style="padding:24px;text-align:center;color:var(--muted)">暫無資料</div>`;
-      return;
+/**
+ * ============================================================================
+ * 9. UI RENDERER
+ * ============================================================================
+ */
+const UIRenderer = {
+  updateBenchmarkBar() {
+    if (state.btcTicker) {
+      document.getElementById("bench-btc-price").textContent = `$${fmtPrice(state.btcTicker.lastPr)}`;
+      const chg = document.getElementById("bench-btc-chg");
+      chg.textContent = fmtPct(state.btcTicker.change24h);
+      chg.className = num(state.btcTicker.change24h) >= 0 ? "positive" : "negative";
+      document.getElementById("bench-btc-trend").textContent = num(state.btcTicker.change24h) >= 0 ? "4H 多頭偏強" : "4H 空頭調整";
     }
-    container.innerHTML = list.map((t, idx) => `
-      <div class="trad-row ${t.symbol === state.symbol ? 'selected' : ''}" data-symbol="${t.symbol}">
-        <span style="color:var(--muted)">${idx + 1}</span>
-        <div>
-          <b style="font-size:13px">${t.symbol}</b>
-          <small style="display:block;color:var(--muted)">${fmtUsd(t.usdtVolume)} USDT</small>
-        </div>
-        <div style="text-align:right">${fmtPrice(t.lastPr)}</div>
-        <div style="text-align:right;font-weight:700" class="${num(t.change24h) >= 0 ? 'positive' : 'negative'}">
-          ${fmtPct(t.change24h)}
-        </div>
-      </div>
-    `).join('');
-    return;
-  }
-
-  const list = state.tierMap[tab] || [];
-  document.getElementById("pool-count").textContent = `${list.length} 檔標的`;
-
-  if (!list.length) {
-    container.innerHTML = `
-      <div style="padding:36px 20px;text-align:center;color:var(--muted)">
-        <div style="font-size:24px;margin-bottom:8px">⭐</div>
-        <b>${tab === 'watchlist' ? '尚未加入任何觀察標的' : '標的計算中'}</b>
-        <p style="font-size:12px;margin:6px 0 0">${tab === 'watchlist' ? '在右側卡片點擊 ☆ 即可加入收藏。' : '全市場輪巡持續評估中…'}</p>
-      </div>`;
-    return;
-  }
-
-  container.innerHTML = list.map((c, idx) => {
-    const isStarred = state.watchlist.has(c.symbol);
-    const tierBadgeClass = tab === 't1' ? 'badge-t1' : tab === 't2' ? 'badge-t2' : 'badge-t3';
-    return `
-      <div class="coin-card ${c.symbol === state.symbol ? 'selected' : ''}" data-symbol="${c.symbol}">
-        <div class="coin-card-top">
-          <div class="coin-main-info">
-            <button class="btn-star ${isStarred ? 'active' : ''}" data-star="${c.symbol}" title="加入/取消觀察">${isStarred ? '★' : '☆'}</button>
-            <span style="color:var(--muted);font-size:11.5px">#${idx + 1}</span>
-            <span>${c.symbol}</span>
-            <span class="badge badge-${c.side === 'SHORT' ? 'short' : 'long'}">${c.side}</span>
-            <span class="badge ${tierBadgeClass}">${c.statusLabel || tab.toUpperCase()}</span>
-            ${c.isSurge ? '<span class="badge badge-surge">🔥 ' + c.volRatio1h + 'x</span>' : ''}
-          </div>
-          <span class="coin-score-val">OX ${c.oxScore}</span>
-        </div>
-        <div class="coin-card-sub">
-          <span>Setup: <b>${c.setupName}</b> (${c.setupProgress}%)</span>
-          <span class="${c.change24h >= 0 ? 'positive' : 'negative'}" style="font-weight:700">${fmtPct(c.change24h)}</span>
-        </div>
-        <div class="score-pills">
-          <span class="score-pill">流動 ${c.liqScore}</span>
-          <span class="score-pill">資金 ${c.flowScore}</span>
-          <span class="score-pill">結構 ${c.structScore}</span>
-          <span class="score-pill">RS ${c.rsScore}</span>
-          <span class="score-pill">距前高 ${c.distHighPct}%</span>
-        </div>
-      </div>
-    `;
-  }).join('');
-}
-
-function updateDetailPanel() {
-  const c = state.analyzedCache.get(state.symbol);
-  const ticker = state.tickers.find(t => t.symbol === state.symbol);
-  if (!c || !ticker) {
-    document.getElementById("dt-setup-name").textContent = "常規觀察中";
-    return;
-  }
-
-  const tierTag = document.getElementById("dt-tier");
-  tierTag.textContent = c.triggerActive ? "T1" : (c.setupProgress >= 75 ? "T2" : "T3");
-  tierTag.className = `tier-tag-pill ${tierTag.textContent === 'T2' ? 'tier-t2-pill' : tierTag.textContent === 'T3' ? 'tier-t3-pill' : ''}`;
-
-  document.getElementById("dt-ox-score").textContent = `${c.oxScore} / 100`;
-  document.getElementById("dt-liq-score").textContent = `${c.liqScore} / 100`;
-  document.getElementById("dt-flow-score").textContent = `${c.flowScore} / 100 · ${c.volRatio1h}x量`;
-  document.getElementById("dt-rs-score").textContent = `${c.rsScore} / 100`;
-  document.getElementById("dt-setup-name").textContent = c.setupName;
-
-  document.getElementById("dt-side-stage").textContent = `${c.side} · ${c.statusLabel || (c.triggerActive ? 'Trigger 已觸發' : '等待確認')}`;
-  document.getElementById("dt-progress-text").textContent = `${c.setupProgress}%`;
-  document.getElementById("dt-progress-bar").style.width = `${c.setupProgress}%`;
-  document.getElementById("dt-confidence").textContent = `${c.confidence}%`;
-  
-  const trgEl = document.getElementById("dt-trigger-status");
-  trgEl.textContent = c.triggerType;
-  trgEl.style.color = c.triggerActive ? "var(--green)" : "var(--gold)";
-
-  document.getElementById("dt-rs-comp").textContent = `vs BTC: ${c.diffBtcPct}% · vs ETH: ${c.diffEthPct}%`;
-  document.getElementById("dt-vol-ratios").textContent = `15m: ${c.volRatio15m}x · 1H: ${c.volRatio1h}x · 4H: ${c.volRatio4h}x`;
-  document.getElementById("dt-structure").textContent = c.structureDesc;
-  document.getElementById("dt-key-levels").textContent = `距前高 ${c.distHighPct}% · 距前低 ${c.distLowPct}%`;
-
-  const rList = document.getElementById("dt-reasons-list");
-  const reasonsHtml = [];
-  reasonsHtml.push(`<div class="reason-item"><span class="chk-ok">✓</span> <span>24H 成交額市場前 ${c.liqPercentile}% (${fmtUsd(c.quoteVol)} USDT)，流動性充足</span></div>`);
-  reasonsHtml.push(`<div class="reason-item"><span class="chk-ok">✓</span> <span>1H 成交量放大 ${c.volRatio1h}x，有大資金推進痕跡</span></div>`);
-  if (num(c.diffBtcPct) > 0) {
-    reasonsHtml.push(`<div class="reason-item"><span class="chk-ok">✓</span> <span>相對 BTC 表現強勢 (+${c.diffBtcPct}%)</span></div>`);
-  } else {
-    reasonsHtml.push(`<div class="reason-item"><span class="chk-wait">△</span> <span>相對 BTC 偏弱 (${c.diffBtcPct}%)，需留意大盤拖累</span></div>`);
-  }
-  if (c.triggerActive) {
-    reasonsHtml.push(`<div class="reason-item"><span class="chk-ok">✓</span> <span>Trigger 已確認觸發：${c.triggerType}（${c.triggerReason}）</span></div>`);
-  } else {
-    reasonsHtml.push(`<div class="reason-item"><span class="chk-wait">△</span> <span>Trigger 等待中：距前高/前低 ${c.distHighPct}%，尚未正式放量突破</span></div>`);
-  }
-  rList.innerHTML = reasonsHtml.join('');
-}
-
-function initChart() {
-  const container = document.getElementById("chart");
-  state.chart = LightweightCharts.createChart(container, {
-    width: container.clientWidth,
-    height: container.clientHeight,
-    layout: {
-      background: { type: "solid", color: "#090e17" },
-      textColor: "#8b9db7"
-    },
-    grid: {
-      vertLines: { color: "#162335" },
-      horzLines: { color: "#162335" }
-    },
-    rightPriceScale: {
-      borderColor: "#223147",
-      autoScale: true,
-      scaleMargins: { top: 0.08, bottom: 0.25 }
-    },
-    timeScale: {
-      borderColor: "#223147",
-      timeVisible: true,
-      secondsVisible: false
-    },
-    crosshair: { mode: LightweightCharts.CrosshairMode.Normal }
-  });
-
-  state.candleSeries = state.chart.addCandlestickSeries({
-    upColor: "#38c99b",
-    downColor: "#ee617c",
-    borderVisible: false,
-    wickUpColor: "#38c99b",
-    wickDownColor: "#ee617c"
-  });
-
-  state.volumeSeries = state.chart.addHistogramSeries({
-    priceFormat: { type: "volume" },
-    priceScaleId: "vol"
-  });
-  state.chart.priceScale("vol").applyOptions({
-    scaleMargins: { top: 0.8, bottom: 0 }
-  });
-
-  state.maSeries = {
-    5: state.chart.addLineSeries({ color: "#f7bd52", lineWidth: 1.5, lastValueVisible: false }),
-    10: state.chart.addLineSeries({ color: "#5ca5ff", lineWidth: 1.5, lastValueVisible: false }),
-    20: state.chart.addLineSeries({ color: "#ad7cff", lineWidth: 1.5, lastValueVisible: false })
-  };
-
-  // 第十一項：點擊圖表偵測 OX 訊號並顯示原因 Tooltip 浮窗
-  state.chart.subscribeClick(param => {
-    const tooltip = document.getElementById("signal-tooltip");
-    if (!param || !param.time || !param.point) {
-      tooltip.classList.remove("show");
-      return;
+    if (state.ethTicker) {
+      document.getElementById("bench-eth-price").textContent = `$${fmtPrice(state.ethTicker.lastPr)}`;
+      const chg = document.getElementById("bench-eth-chg");
+      chg.textContent = fmtPct(state.ethTicker.change24h);
+      chg.className = num(state.ethTicker.change24h) >= 0 ? "positive" : "negative";
+      document.getElementById("bench-eth-trend").textContent = num(state.ethTicker.change24h) >= 0 ? "4H 多頭偏強" : "4H 空頭調整";
     }
-    const match = state.candleMarkersMap.get(param.time);
-    if (match) {
-      tooltip.innerHTML = `
-        <button class="close-btn" onclick="document.getElementById('signal-tooltip').classList.remove('show')">✕</button>
-        <b>${match.text}</b>
-        <div>• 觸發依據：${match.reason}</div>
-        <div>• 訊號可信度：${match.confidence}%</div>
-        <div>• 當時放量：${match.volRatio}x 均量</div>
-        <div>• 當時價格：${fmtPrice(match.price)}</div>
-        <div>• 結構判定：${match.structure}</div>
-      `;
-      tooltip.style.left = `${Math.min(container.clientWidth - 280, Math.max(10, param.point.x - 120))}px`;
-      tooltip.style.top = `${Math.max(10, param.point.y - 140)}px`;
-      tooltip.classList.add("show");
+
+    const btcChg = state.btcTicker ? num(state.btcTicker.change24h) : 0;
+    const biasEl = document.getElementById("market-bias-text");
+    if (btcChg >= 0.02) {
+      biasEl.textContent = "Risk-On (多頭推進)";
+      biasEl.style.color = "var(--green)";
+    } else if (btcChg <= -0.02) {
+      biasEl.textContent = "Risk-Off (避險防禦)";
+      biasEl.style.color = "var(--red)";
     } else {
-      tooltip.classList.remove("show");
-    }
-  });
-
-  state.chart.timeScale().subscribeVisibleLogicalRangeChange(range => {
-    if (!range || state.isLoadingOlder || !state.hasMoreHistory) return;
-    if (range.from <= 2) loadMoreHistoricalCandles();
-  });
-
-  new ResizeObserver(entries => {
-    for (const entry of entries) {
-      state.chart.applyOptions({
-        width: entry.contentRect.width,
-        height: entry.contentRect.height
-      });
-      updatePriceTimer();
-    }
-  }).observe(container);
-}
-
-async function loadSymbolCandles(isInitial = true) {
-  state.abortCtrl?.abort();
-  state.abortCtrl = new AbortController();
-  const overlay = document.getElementById("chart-loading");
-  if (isInitial) overlay.classList.add("show");
-
-  try {
-    const raw = await BitgetAPI.fetchCandles(state.symbol, state.period, 100);
-    if (!raw.length) throw new Error("無可用 K 線");
-
-    state.candleData = raw;
-    state.oldestCandleTime = raw[0].time;
-    state.hasMoreHistory = true;
-    renderChartData(raw, isInitial);
-  } catch (err) {
-    if (err.name === "AbortError") return;
-  } finally {
-    overlay.classList.remove("show");
-  }
-}
-
-async function loadMoreHistoricalCandles() {
-  if (state.isLoadingOlder || !state.hasMoreHistory) return;
-  state.isLoadingOlder = true;
-  const overlay = document.getElementById("chart-loading");
-  overlay.classList.add("show");
-
-  try {
-    const older = await BitgetAPI.fetchCandles(state.symbol, state.period, 100, (state.oldestCandleTime - 1) * 1000);
-    if (!older.length) {
-      state.hasMoreHistory = false;
-      return;
