@@ -255,6 +255,108 @@
     .badge-long { background: #38c99b24; color: var(--green); border: 1px solid #38c99b55; }
     .badge-short { background: #ee617c24; color: var(--red); border: 1px solid #ee617c55; }
 
+    .benchmark-bar {
+      display: grid;
+      grid-template-columns: 1fr 1fr minmax(220px, .9fr);
+      gap: 10px;
+      margin: 14px 0 0;
+    }
+    .benchmark-card, .market-bias-card {
+      min-height: 58px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #0d1522;
+      color: var(--ink);
+      padding: 10px 13px;
+    }
+    .benchmark-card {
+      cursor: pointer;
+      text-align: left;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: border-color .15s, background .15s;
+    }
+    .benchmark-card:hover, .benchmark-card.active {
+      border-color: #3e5878;
+      background: #111c2b;
+    }
+    .benchmark-symbol {
+      font-weight: 800;
+      color: var(--gold);
+      min-width: 38px;
+    }
+    .benchmark-main { flex: 1; min-width: 0; }
+    .benchmark-price { font-weight: 750; font-variant-numeric: tabular-nums; }
+    .benchmark-sub { color: var(--muted); font-size: 11px; margin-top: 2px; }
+    .benchmark-change { font-weight: 800; font-variant-numeric: tabular-nums; }
+    .market-bias-card { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .bias-value { font-weight: 850; color: var(--gold); }
+
+    .ox-detail {
+      border-top: 1px solid var(--line);
+      background: #0b121d;
+    }
+    .detail-grid {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      border-bottom: 1px solid var(--line);
+    }
+    .detail-cell {
+      min-height: 68px;
+      padding: 11px 13px;
+      border-right: 1px solid var(--line);
+      min-width: 0;
+    }
+    .detail-cell:last-child { border-right: 0; }
+    .detail-cell label {
+      display: block;
+      color: var(--muted);
+      font-size: 10px;
+      margin-bottom: 4px;
+      white-space: nowrap;
+    }
+    .detail-cell strong {
+      display: block;
+      font-size: 15px;
+      line-height: 1.25;
+      overflow-wrap: anywhere;
+      font-variant-numeric: tabular-nums;
+    }
+    .detail-cell small { display: block; color: var(--muted); font-size: 10px; margin-top: 3px; }
+    .detail-tier {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 44px;
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: var(--gold);
+      color: #101722;
+      font-weight: 850;
+    }
+    .detail-progress {
+      height: 5px;
+      margin-top: 7px;
+      border-radius: 999px;
+      background: #1a293d;
+      overflow: hidden;
+    }
+    .detail-progress > i { display: block; height: 100%; background: var(--gold); border-radius: inherit; }
+    .detail-reasons { padding: 12px 14px 14px; }
+    .detail-reasons h4 { margin: 0 0 8px; font-size: 12px; color: var(--ink); }
+    .reason-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 12px; }
+    .reason-item { color: #b8c7da; font-size: 11px; line-height: 1.45; }
+    .reason-item.ok { color: var(--green); }
+    .reason-item.warn { color: var(--gold); }
+    .reason-item.bad { color: var(--red); }
+    .rank-state { font-size: 9px; padding: 1px 5px; border-radius: 4px; border: 1px solid #40536c; color: #afc0d7; }
+    .rank-state.confirmed { color: var(--green); border-color: #2c765d; }
+    .rank-state.ready { color: var(--blue); border-color: #376a9d; }
+    .rank-state.early { color: var(--purple); border-color: #694f99; }
+    .rank-state.watch { color: var(--gold); border-color: #81652e; }
+    .progress-inline { color: var(--muted); font-size: 10px; margin-top: 3px; }
+
     .extra-section { margin-top: 24px; }
     .toast {
       position: fixed;
@@ -278,11 +380,21 @@
       .workspace { grid-template-columns: 1fr; }
       .chart-container { height: 480px; }
       .scanner-body { max-height: 450px; }
+      .detail-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .detail-cell:nth-child(3n) { border-right: 0; }
+      .benchmark-bar { grid-template-columns: 1fr 1fr; }
+      .market-bias-card { grid-column: 1 / -1; }
     }
     @media (max-width: 720px) {
       .top-summary { grid-template-columns: 1fr 1fr; }
       .chart-controls { flex-direction: column; align-items: flex-start; }
       .chart-container { height: 400px; }
+      .benchmark-bar { grid-template-columns: 1fr; }
+      .market-bias-card { grid-column: auto; }
+      .detail-grid { grid-template-columns: 1fr 1fr; }
+      .detail-cell:nth-child(3n) { border-right: 1px solid var(--line); }
+      .detail-cell:nth-child(2n) { border-right: 0; }
+      .reason-list { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -292,7 +404,7 @@
   <div class="wrap nav">
     <a class="brand" href="#">
       <img class="brand-logo" src="ox-logo.png" alt="OX Logo" onerror="this.style.display='none'">
-      <span>OX 幣種篩選器 <small style="font-size:12px;color:var(--gold);font-weight:600">v2.1 全市場輪巡版</small></span>
+      <span>OX 幣種篩選器 <small style="font-size:12px;color:var(--gold);font-weight:600">v2.2 穩定擴充版</small></span>
     </a>
     <div class="nav-stats">
       <div class="live"><i class="dot" id="dot"></i><span id="scan-status">全市場輪巡佇列準備中…</span></div>
@@ -302,6 +414,29 @@
 </header>
 
 <main class="wrap" style="padding-top:16px;padding-bottom:40px">
+  <section class="benchmark-bar" aria-label="市場基準">
+    <button class="benchmark-card active" id="benchmark-btc" data-benchmark-symbol="BTCUSDT" type="button">
+      <span class="benchmark-symbol">BTC</span>
+      <span class="benchmark-main">
+        <span class="benchmark-price" id="btc-benchmark-price">—</span>
+        <span class="benchmark-sub" id="btc-benchmark-trend">4H：等待資料</span>
+      </span>
+      <span class="benchmark-change" id="btc-benchmark-change">—</span>
+    </button>
+    <button class="benchmark-card" id="benchmark-eth" data-benchmark-symbol="ETHUSDT" type="button">
+      <span class="benchmark-symbol">ETH</span>
+      <span class="benchmark-main">
+        <span class="benchmark-price" id="eth-benchmark-price">—</span>
+        <span class="benchmark-sub" id="eth-benchmark-trend">4H：等待資料</span>
+      </span>
+      <span class="benchmark-change" id="eth-benchmark-change">—</span>
+    </button>
+    <div class="market-bias-card">
+      <div><div class="benchmark-sub">市場環境 Market Bias</div><strong id="market-bias" class="bias-value">評估中…</strong></div>
+      <small id="benchmark-updated" class="benchmark-sub">等待 BTC / ETH</small>
+    </div>
+  </section>
+
   <section class="top-summary">
     <div class="metric-card">
       <label id="ticker-pair">BTCUSDT · Bitget 永續</label>
@@ -366,6 +501,31 @@
         <div id="chart-loading" class="chart-loading-overlay">載入歷史 K 線中…</div>
         <div id="price-timer" class="price-timer">—</div>
       </div>
+
+      <section class="ox-detail" id="ox-detail" aria-label="OX 幣種詳情">
+        <div class="detail-grid">
+          <div class="detail-cell"><label>優先級</label><strong id="detail-tier"><span class="detail-tier">Benchmark</span></strong><small id="detail-rank-state">市場基準</small></div>
+          <div class="detail-cell"><label>OX Score</label><strong id="detail-score">— / 100</strong><small>綜合條件分</small></div>
+          <div class="detail-cell"><label>流動性</label><strong id="detail-liq">— / 100</strong><small id="detail-liq-rank">市場百分位 —</small></div>
+          <div class="detail-cell"><label>資金活躍</label><strong id="detail-flow">— / 100</strong><small id="detail-vol-ratio">1H Volume —</small></div>
+          <div class="detail-cell"><label>相對強弱</label><strong id="detail-rs">— / 100</strong><small id="detail-rs-text">vs BTC —</small></div>
+          <div class="detail-cell"><label>Setup</label><strong id="detail-setup">等待分析</strong><small id="detail-side">方向 —</small></div>
+        </div>
+        <div class="detail-grid">
+          <div class="detail-cell"><label>方向 / 階段</label><strong id="detail-stage">—</strong><small id="detail-status">等待分析</small></div>
+          <div class="detail-cell"><label>Setup Progress</label><strong id="detail-progress-text">—%</strong><div class="detail-progress"><i id="detail-progress-bar" style="width:0%"></i></div></div>
+          <div class="detail-cell"><label>Signal Confidence</label><strong id="detail-confidence">—%</strong><small>條件符合度，不代表勝率</small></div>
+          <div class="detail-cell"><label>Trigger</label><strong id="detail-trigger">等待確認</strong><small id="detail-surge">資金異動 —</small></div>
+          <div class="detail-cell"><label>24H / 成交額</label><strong id="detail-change">—</strong><small id="detail-quote">— USDT</small></div>
+          <div class="detail-cell"><label>Structure</label><strong id="detail-structure">—</strong><small id="detail-key-levels">Swing H/L —</small></div>
+        </div>
+        <div class="detail-reasons">
+          <h4>OX 入選原因</h4>
+          <div id="detail-reasons" class="reason-list">
+            <div class="reason-item warn">△ 等待全市場分析資料</div>
+          </div>
+        </div>
+      </section>
     </article>
 
     <aside class="panel">
@@ -438,6 +598,9 @@ const state = {
   contracts: new Map(),
   btcTicker: null,
   ethTicker: null,
+  benchmark4h: { BTCUSDT: null, ETHUSDT: null },
+  benchmarkUpdatedAt: 0,
+  tierTotals: { t1: 0, t2: 0, t3: 0, surge: 0 },
   
   scanQueue: [],
   scanIndex: 0,
@@ -470,6 +633,8 @@ const fmtPrice = v => {
   return new Intl.NumberFormat("en-US", { maximumFractionDigits: d }).format(x);
 };
 const fmtPct = v => `${num(v) >= 0 ? "+" : ""}${(num(v) * 100).toFixed(2)}%`;
+const clamp = (v, min = 0, max = 100) => Math.max(min, Math.min(max, v));
+const BENCHMARK_SYMBOLS = new Set(["BTCUSDT", "ETHUSDT"]);
 
 const BitgetAPI = {
   async fetchTickers() {
@@ -591,6 +756,7 @@ const OXEngine = {
     return {
       score: Math.min(100, Math.max(10, Math.round(baseFlow))),
       volRatio1h: Number(volRatio1h.toFixed(2)),
+      volRatio4h: Number(volRatio4h.toFixed(2)),
       isSurge,
       healthyLongVol,
       healthyShortVol
@@ -766,6 +932,49 @@ const OXEngine = {
     }
 
     return { tier: "none", statusText: "常規觀察" };
+  },
+
+  computeFitScores(liq, moneyFlow, structure, setup, trigger, rs) {
+    const directionalRs = structure.side === "SHORT" ? (100 - rs.score) : rs.score;
+    const triggerScore = trigger.active ? 100 : 0;
+
+    const setupProgress = Math.round(clamp(
+      liq.score * 0.10 +
+      moneyFlow.score * 0.15 +
+      structure.score * 0.25 +
+      setup.setupScore * 0.30 +
+      directionalRs * 0.10 +
+      triggerScore * 0.10
+    ));
+
+    const checks = [
+      liq.score >= 60,
+      moneyFlow.score >= 60,
+      structure.score >= 60,
+      setup.setupScore >= 65,
+      directionalRs >= 55,
+      moneyFlow.volRatio1h >= 1.2,
+      trigger.active
+    ];
+    const signalConfidence = Math.round(checks.filter(Boolean).length / checks.length * 100);
+
+    const t1Fit = Math.round(clamp(
+      liq.score * 0.18 + moneyFlow.score * 0.18 + structure.score * 0.20 +
+      setup.setupScore * 0.20 + directionalRs * 0.14 + triggerScore * 0.10
+    ));
+
+    const t2Fit = Math.round(clamp(
+      liq.score * 0.15 + moneyFlow.score * 0.18 + structure.score * 0.24 +
+      setup.setupScore * 0.25 + directionalRs * 0.18 - (trigger.active ? 8 : 0)
+    ));
+
+    const t3Fit = Math.round(clamp(
+      liq.score * 0.20 + moneyFlow.score * 0.27 + structure.score * 0.16 +
+      setup.setupScore * 0.12 + directionalRs * 0.15 +
+      (moneyFlow.isSurge ? 10 : 0) - (trigger.active ? 8 : 0)
+    ));
+
+    return { t1Fit, t2Fit, t3Fit, setupProgress, signalConfidence, directionalRs };
   }
 };
 
@@ -785,7 +994,13 @@ async function refreshMarketTickers() {
     state.btcTicker = state.tickers.find(t => t.symbol === "BTCUSDT") || null;
     state.ethTicker = state.tickers.find(t => t.symbol === "ETHUSDT") || null;
 
-    const eligible = state.tickers.filter(t => num(t.usdtVolume) >= CONFIG.liquidity.minUsdtVolume24h);
+    renderBenchmarkBar();
+    refreshBenchmark4H();
+
+    const eligible = state.tickers.filter(t =>
+      !BENCHMARK_SYMBOLS.has(t.symbol) &&
+      num(t.usdtVolume) >= CONFIG.liquidity.minUsdtVolume24h
+    );
     eligible.sort((a, b) => num(b.usdtVolume) - num(a.usdtVolume));
     
     if (!state.scanQueue.length) {
@@ -796,6 +1011,7 @@ async function refreshMarketTickers() {
     rebuildTierLists();
     renderCurrentTab();
     updateHeaderHUD();
+    renderOxDetail();
 
     if (!state.isQueueRunning) {
       state.isQueueRunning = true;
@@ -841,6 +1057,7 @@ async function runScanQueueLoop() {
         const setup = OXEngine.evaluateSetupMatch(candles, structure, moneyFlow);
         const trigger = OXEngine.detectTrigger(candles, structure, moneyFlow);
         const lifecycle = OXEngine.classifyLifecycle(liq, moneyFlow, structure, setup, trigger);
+        const fit = OXEngine.computeFitScores(liq, moneyFlow, structure, setup, trigger, rs);
 
         const oxScore = Math.round(
           liq.score * CONFIG.weights.liquidity +
@@ -878,7 +1095,18 @@ async function runScanQueueLoop() {
           reasons,
           change24h: num(ticker.change24h),
           quoteVol: liq.quoteVol,
-          liqPercentile: liq.percentileStr
+          liqPercentile: liq.percentileStr,
+          volRatio1h: moneyFlow.volRatio1h,
+          volRatio4h: moneyFlow.volRatio4h,
+          swingHigh: structure.swingHigh,
+          swingLow: structure.swingLow,
+          isHHHL: structure.isHHHL,
+          isLHLL: structure.isLHLL,
+          t1Fit: fit.t1Fit,
+          t2Fit: fit.t2Fit,
+          t3Fit: fit.t3Fit,
+          setupProgress: fit.setupProgress,
+          signalConfidence: fit.signalConfidence
         });
 
         if (moneyFlow.isSurge && !state.scanQueue.slice(state.scanIndex, state.scanIndex + 5).includes(symbol)) {
@@ -890,29 +1118,82 @@ async function runScanQueueLoop() {
     rebuildTierLists();
     renderCurrentTab();
     updateHeaderHUD();
+    renderOxDetail();
 
     await new Promise(r => setTimeout(r, CONFIG.batchIntervalMs));
   }
 }
 
 function rebuildTierLists() {
-  const allAnalyzed = Array.from(state.analyzedCache.values());
+  const allAnalyzed = Array.from(state.analyzedCache.values())
+    .filter(c => !BENCHMARK_SYMBOLS.has(c.symbol));
 
-  const t1 = allAnalyzed.filter(c => c.tier === "t1").sort((a, b) => b.oxScore - a.oxScore).slice(0, 10);
-  const t2 = allAnalyzed.filter(c => c.tier === "t2").sort((a, b) => b.oxScore - a.oxScore).slice(0, 10);
-  const t3 = allAnalyzed.filter(c => c.tier === "t3").sort((a, b) => b.oxScore - a.oxScore).slice(0, 10);
-  const surge = allAnalyzed.filter(c => c.isSurge).sort((a, b) => b.flowScore - a.flowScore).slice(0, 15);
+  const fitKey = { t1: "t1Fit", t2: "t2Fit", t3: "t3Fit" };
+  const statusFor = (tier, isPrimary) => {
+    if (!isPrimary) return "WATCH";
+    if (tier === "t1") return "CONFIRMED";
+    if (tier === "t2") return "READY";
+    return "EARLY";
+  };
 
-  const gainers = state.tickers.filter(t => num(t.change24h) > 0)
-    .sort((a, b) => num(b.change24h) - num(a.change24h)).slice(0, 15);
-  const losers = state.tickers.filter(t => num(t.change24h) < 0)
-    .sort((a, b) => num(a.change24h) - num(b.change24h)).slice(0, 15);
+  const lists = { t1: [], t2: [], t3: [] };
+  const used = new Set();
 
-  state.tierMap = { t1, t2, t3, surge, gainers, losers };
+  // 先保留真正 lifecycle 所屬 Tier，避免三榜變成同一批幣。
+  for (const tier of ["t1", "t2", "t3"]) {
+    const primary = allAnalyzed
+      .filter(c => c.tier === tier)
+      .sort((a, b) => (b[fitKey[tier]] || 0) - (a[fitKey[tier]] || 0));
 
-  document.getElementById("badge-t1").textContent = t1.length;
-  document.getElementById("badge-t2").textContent = t2.length;
-  document.getElementById("badge-t3").textContent = t3.length;
+    for (const c of primary) {
+      if (lists[tier].length >= 10) break;
+      if (used.has(c.symbol)) continue;
+      lists[tier].push({ ...c, rankTier: tier, rankState: statusFor(tier, true), rankFit: c[fitKey[tier]] || 0 });
+      used.add(c.symbol);
+    }
+  }
+
+  // 不足 10 顆才由 Near Match 補位，清楚標 WATCH，不冒充正式達標。
+  for (const tier of ["t1", "t2", "t3"]) {
+    if (lists[tier].length >= 10) continue;
+    const backups = allAnalyzed
+      .filter(c => !used.has(c.symbol))
+      .sort((a, b) => (b[fitKey[tier]] || 0) - (a[fitKey[tier]] || 0));
+
+    for (const c of backups) {
+      if (lists[tier].length >= 10) break;
+      lists[tier].push({ ...c, rankTier: tier, rankState: statusFor(tier, false), rankFit: c[fitKey[tier]] || 0 });
+      used.add(c.symbol);
+    }
+  }
+
+  const surge = allAnalyzed
+    .filter(c => c.isSurge)
+    .sort((a, b) => (b.flowScore - a.flowScore) || (b.oxScore - a.oxScore))
+    .slice(0, 15)
+    .map(c => ({ ...c, rankTier: c.tier, rankState: c.tier === "t1" ? "CONFIRMED" : c.tier === "t2" ? "READY" : c.tier === "t3" ? "EARLY" : "WATCH" }));
+
+  const gainers = state.tickers
+    .filter(t => !BENCHMARK_SYMBOLS.has(t.symbol) && num(t.change24h) > 0)
+    .sort((a, b) => num(b.change24h) - num(a.change24h))
+    .slice(0, 15);
+
+  const losers = state.tickers
+    .filter(t => !BENCHMARK_SYMBOLS.has(t.symbol) && num(t.change24h) < 0)
+    .sort((a, b) => num(a.change24h) - num(b.change24h))
+    .slice(0, 15);
+
+  state.tierMap = { t1: lists.t1, t2: lists.t2, t3: lists.t3, surge, gainers, losers };
+  state.tierTotals = {
+    t1: allAnalyzed.filter(c => c.tier === "t1").length,
+    t2: allAnalyzed.filter(c => c.tier === "t2").length,
+    t3: allAnalyzed.filter(c => c.tier === "t3").length,
+    surge: allAnalyzed.filter(c => c.isSurge).length
+  };
+
+  document.getElementById("badge-t1").textContent = lists.t1.length;
+  document.getElementById("badge-t2").textContent = lists.t2.length;
+  document.getElementById("badge-t3").textContent = lists.t3.length;
   document.getElementById("badge-surge").textContent = surge.length;
 }
 
@@ -922,6 +1203,7 @@ function renderCurrentTab() {
 
   if (tab === "gainers" || tab === "losers") {
     const list = state.tierMap[tab] || [];
+    document.getElementById("pool-count").textContent = `${list.length} 檔標的`;
     if (!list.length) {
       container.innerHTML = `<div style="padding:24px;text-align:center;color:var(--muted)">暫無資料</div>`;
       return;
@@ -949,47 +1231,48 @@ function renderCurrentTab() {
     container.innerHTML = `
       <div style="padding:36px 20px;text-align:center;color:var(--muted)">
         <div style="font-size:26px;margin-bottom:8px">⚖️</div>
-        <b>符合該生命週期階段的標的為 0</b>
-        <p style="font-size:12px;margin:6px 0 0">恪守寧缺勿濫原則。全市場輪巡深度分析持續進行中…</p>
+        <b>目前尚未累積足夠深度分析結果</b>
+        <p style="font-size:12px;margin:6px 0 0">全市場輪巡持續進行，候選會逐批補進排行榜。</p>
       </div>`;
     return;
   }
 
-  container.innerHTML = list.map((c, idx) => `
-    <button class="coin-card ${c.symbol === state.symbol ? 'selected' : ''}" data-symbol="${c.symbol}" type="button">
-      <div class="coin-top">
-        <span class="coin-title">
-          <span style="color:var(--muted);font-size:12px">#${idx + 1}</span>
-          <span>${c.symbol}</span>
-          <span class="badge badge-${c.side === 'SHORT' ? 'short' : 'long'}">
-            ${c.side}
+  container.innerHTML = list.map((c, idx) => {
+    const rankTier = c.rankTier || c.tier || "t3";
+    const stateClass = (c.rankState || "WATCH").toLowerCase();
+    const rankState = c.rankState || "WATCH";
+    const fit = c.rankFit ?? c[`${rankTier}Fit`] ?? c.oxScore;
+    const topReasons = (c.reasons || []).slice(0, 2);
+    return `
+      <button class="coin-card ${c.symbol === state.symbol ? 'selected' : ''}" data-symbol="${c.symbol}" type="button">
+        <div class="coin-top">
+          <span class="coin-title">
+            <span style="color:var(--muted);font-size:12px">#${idx + 1}</span>
+            <span>${c.symbol}</span>
+            <span class="badge badge-${c.side === 'SHORT' ? 'short' : 'long'}">${c.side}</span>
+            <span class="badge badge-${rankTier}">${rankTier.toUpperCase()}</span>
+            <span class="rank-state ${stateClass}">${rankState}</span>
+            ${c.isSurge ? '<span class="badge badge-surge">🔥 異動</span>' : ''}
           </span>
-          <span class="badge badge-${c.tier !== 'none' ? c.tier : 't3'}">
-            ${c.tier.toUpperCase()}
-          </span>
-          ${c.isSurge ? '<span class="badge badge-surge">🔥 異動</span>' : ''}
-        </span>
-        <span class="coin-ox">OX ${c.oxScore}</span>
-      </div>
-      <div class="coin-mid">
-        <span class="meta">${fmtPrice(c.ticker.lastPr)} · <small style="color:var(--gold)">${c.statusText}</small></span>
-        <span class="${c.change24h >= 0 ? 'positive' : 'negative'}" style="font-weight:700">
-          ${fmtPct(c.change24h)}
-        </span>
-      </div>
-      <div class="coin-reason">
-        <div class="setup-head">${c.setupName}</div>
-        <div>• ${c.reasons.join('</div><div>• ')}</div>
-      </div>
-      <div class="score-pills">
-        <span class="score-pill">流動 ${c.liqScore}</span>
-        <span class="score-pill">資金 ${c.flowScore}</span>
-        <span class="score-pill">結構 ${c.structScore}</span>
-        <span class="score-pill">型態 ${c.setupScore}</span>
-        <span class="score-pill">RS ${c.rsScore}</span>
-      </div>
-    </button>
-  `).join('');
+          <span class="coin-ox">OX ${c.oxScore}</span>
+        </div>
+        <div class="coin-mid">
+          <span class="meta">${fmtPrice(c.ticker.lastPr)} · Fit ${fit}</span>
+          <span class="${c.change24h >= 0 ? 'positive' : 'negative'}" style="font-weight:700">${fmtPct(c.change24h)}</span>
+        </div>
+        <div class="coin-reason">
+          <div class="setup-head">${c.setupName}</div>
+          ${topReasons.length ? `<div>• ${topReasons.join('</div><div>• ')}</div>` : ''}
+        </div>
+        <div class="score-pills">
+          <span class="score-pill">流動 ${c.liqScore}</span>
+          <span class="score-pill">資金 ${c.flowScore}</span>
+          <span class="score-pill">結構 ${c.structScore}</span>
+          <span class="score-pill">RS ${c.rsScore}</span>
+        </div>
+        <div class="progress-inline">Setup Progress ${c.setupProgress ?? '—'}% · Confidence ${c.signalConfidence ?? '—'}%</div>
+      </button>`;
+  }).join('');
 }
 
 function initChart() {
@@ -1176,12 +1459,199 @@ function updatePriceTimer() {
   }
 }
 
+function trendLabelFromStructure(structure) {
+  if (!structure) return "等待資料";
+  if (structure.side === "LONG") return "偏多";
+  if (structure.side === "SHORT") return "偏空";
+  return "中性";
+}
+
+function renderBenchmarkBar() {
+  const btc = state.btcTicker;
+  const eth = state.ethTicker;
+
+  const setOne = (prefix, ticker, symbol) => {
+    const priceEl = document.getElementById(`${prefix}-benchmark-price`);
+    const changeEl = document.getElementById(`${prefix}-benchmark-change`);
+    const trendEl = document.getElementById(`${prefix}-benchmark-trend`);
+    if (priceEl) priceEl.textContent = ticker ? fmtPrice(ticker.lastPr) : "—";
+    if (changeEl) {
+      changeEl.textContent = ticker ? fmtPct(ticker.change24h) : "—";
+      changeEl.className = `benchmark-change ${ticker ? (num(ticker.change24h) >= 0 ? 'positive' : 'negative') : ''}`;
+    }
+    const structure = state.benchmark4h[symbol];
+    if (trendEl) trendEl.textContent = `4H：${trendLabelFromStructure(structure)}`;
+  };
+
+  setOne("btc", btc, "BTCUSDT");
+  setOne("eth", eth, "ETHUSDT");
+
+  document.querySelectorAll("[data-benchmark-symbol]").forEach(el => {
+    el.classList.toggle("active", el.dataset.benchmarkSymbol === state.symbol);
+  });
+
+  const btcTrend = state.benchmark4h.BTCUSDT?.side;
+  const ethTrend = state.benchmark4h.ETHUSDT?.side;
+  let bias = "評估中…";
+  if (btcTrend && ethTrend) {
+    if (btcTrend === "LONG" && ethTrend === "LONG") bias = "Risk On";
+    else if (btcTrend === "SHORT" && ethTrend === "SHORT") bias = "Risk Off";
+    else bias = "Neutral";
+  }
+  const biasEl = document.getElementById("market-bias");
+  if (biasEl) biasEl.textContent = bias;
+  const updated = document.getElementById("benchmark-updated");
+  if (updated && state.benchmarkUpdatedAt) {
+    updated.textContent = `更新 ${new Date(state.benchmarkUpdatedAt).toLocaleTimeString('zh-TW', { hour12: false })}`;
+  }
+}
+
+let benchmarkRefreshing = false;
+async function refreshBenchmark4H() {
+  if (benchmarkRefreshing) return;
+  benchmarkRefreshing = true;
+  try {
+    const [btcBars, ethBars] = await Promise.all([
+      BitgetAPI.fetchCandles("BTCUSDT", "4H", 35),
+      BitgetAPI.fetchCandles("ETHUSDT", "4H", 35)
+    ]);
+    if (btcBars.length >= 25) state.benchmark4h.BTCUSDT = OXEngine.computeStructure(btcBars);
+    if (ethBars.length >= 25) state.benchmark4h.ETHUSDT = OXEngine.computeStructure(ethBars);
+    state.benchmarkUpdatedAt = Date.now();
+    renderBenchmarkBar();
+  } catch (e) {
+    console.warn("BTC/ETH 4H Benchmark 載入失敗:", e);
+  } finally {
+    benchmarkRefreshing = false;
+  }
+}
+
+function renderOxDetail() {
+  const ticker = state.tickers.find(t => t.symbol === state.symbol);
+  const scored = state.analyzedCache.get(state.symbol);
+  const benchmark = BENCHMARK_SYMBOLS.has(state.symbol);
+
+  const put = (id, value) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = value;
+  };
+
+  if (!ticker) {
+    put("detail-score", "— / 100");
+    put("detail-setup", "等待行情資料");
+    return;
+  }
+
+  if (benchmark) {
+    const liq = state.tickers.length ? OXEngine.computeLiquidity(ticker, state.tickers) : null;
+    const structure = state.benchmark4h[state.symbol];
+    document.getElementById("detail-tier").innerHTML = '<span class="detail-tier">Benchmark</span>';
+    put("detail-rank-state", "BTC / ETH 市場基準");
+    put("detail-score", "— / 100");
+    put("detail-liq", liq ? `${liq.score} / 100` : "— / 100");
+    put("detail-liq-rank", liq ? `市場前 ${liq.percentileStr}%` : "市場百分位 —");
+    put("detail-flow", "— / 100");
+    put("detail-vol-ratio", "由市場基準用途獨立觀察");
+    put("detail-rs", "Benchmark");
+    put("detail-rs-text", "相對強弱基準");
+    put("detail-setup", "Market Benchmark");
+    put("detail-side", `4H ${trendLabelFromStructure(structure)}`);
+    put("detail-stage", structure?.side || "NEUTRAL");
+    put("detail-status", "不參與 T1 / T2 / T3 排名");
+    put("detail-progress-text", "—%");
+    document.getElementById("detail-progress-bar").style.width = "0%";
+    put("detail-confidence", "—%");
+    put("detail-trigger", "市場基準");
+    put("detail-surge", "用於判斷大盤方向");
+    put("detail-change", fmtPct(ticker.change24h));
+    put("detail-quote", `${fmtUsd(ticker.usdtVolume)} USDT`);
+    put("detail-structure", structure ? (structure.isHHHL ? "HH / HL" : structure.isLHLL ? "LH / LL" : trendLabelFromStructure(structure)) : "等待 4H");
+    put("detail-key-levels", structure ? `H ${fmtPrice(structure.swingHigh)} · L ${fmtPrice(structure.swingLow)}` : "Swing H/L —");
+    document.getElementById("detail-reasons").innerHTML = `
+      <div class="reason-item ok">✓ ${state.symbol.replace('USDT','')} 作為全市場方向與 Relative Strength 基準</div>
+      <div class="reason-item ${structure ? 'ok' : 'warn'}">${structure ? '✓' : '△'} 4H 市場結構 ${structure ? trendLabelFromStructure(structure) : '等待資料'}</div>
+      <div class="reason-item warn">△ Benchmark 不進入 T1 / T2 / T3 候選排名</div>`;
+    return;
+  }
+
+  if (!scored) {
+    document.getElementById("detail-tier").innerHTML = '<span class="detail-tier">待掃描</span>';
+    put("detail-rank-state", "全市場輪巡中");
+    put("detail-score", "— / 100");
+    put("detail-liq", "— / 100");
+    put("detail-liq-rank", "市場百分位 —");
+    put("detail-flow", "— / 100");
+    put("detail-vol-ratio", "1H Volume —");
+    put("detail-rs", "— / 100");
+    put("detail-rs-text", "vs BTC —");
+    put("detail-setup", "等待分析");
+    put("detail-side", "方向 —");
+    put("detail-stage", "—");
+    put("detail-status", "等待深度掃描");
+    put("detail-progress-text", "—%");
+    document.getElementById("detail-progress-bar").style.width = "0%";
+    put("detail-confidence", "—%");
+    put("detail-trigger", "等待確認");
+    put("detail-surge", "資金異動 —");
+    put("detail-change", fmtPct(ticker.change24h));
+    put("detail-quote", `${fmtUsd(ticker.usdtVolume)} USDT`);
+    put("detail-structure", "—");
+    put("detail-key-levels", "Swing H/L —");
+    document.getElementById("detail-reasons").innerHTML = '<div class="reason-item warn">△ 已取得行情，等待 OX 深度輪巡分析</div>';
+    return;
+  }
+
+  const tierText = (scored.tier || "none").toUpperCase();
+  const stageText = scored.tier === "t1" ? "T1 CONFIRMED" : scored.tier === "t2" ? "T2 READY" : scored.tier === "t3" ? "T3 EARLY" : "WATCH";
+  const diffBtc = state.btcTicker ? (num(ticker.change24h) - num(state.btcTicker.change24h)) * 100 : null;
+  const lastPrice = num(ticker.lastPr);
+  const distHigh = scored.swingHigh > 0 ? ((scored.swingHigh - lastPrice) / scored.swingHigh * 100) : null;
+  const distLow = scored.swingLow > 0 ? ((lastPrice - scored.swingLow) / scored.swingLow * 100) : null;
+
+  document.getElementById("detail-tier").innerHTML = `<span class="detail-tier">${tierText === 'NONE' ? 'WATCH' : tierText}</span>`;
+  put("detail-rank-state", stageText);
+  put("detail-score", `${scored.oxScore} / 100`);
+  put("detail-liq", `${scored.liqScore} / 100`);
+  put("detail-liq-rank", `市場前 ${scored.liqPercentile}%`);
+  put("detail-flow", `${scored.flowScore} / 100`);
+  put("detail-vol-ratio", `1H ${scored.volRatio1h ?? '—'}x · 4H ${scored.volRatio4h ?? '—'}x`);
+  put("detail-rs", `${scored.rsScore} / 100`);
+  put("detail-rs-text", diffBtc == null ? "vs BTC —" : `vs BTC ${diffBtc >= 0 ? '+' : ''}${diffBtc.toFixed(2)}%`);
+  put("detail-setup", scored.setupName);
+  put("detail-side", `方向 ${scored.side}`);
+  put("detail-stage", scored.side);
+  put("detail-status", scored.statusText);
+  put("detail-progress-text", `${scored.setupProgress ?? '—'}%`);
+  document.getElementById("detail-progress-bar").style.width = `${scored.setupProgress || 0}%`;
+  put("detail-confidence", `${scored.signalConfidence ?? '—'}%`);
+  put("detail-trigger", scored.triggerActive ? scored.triggerType : "等待確認");
+  put("detail-surge", scored.isSurge ? `🔥 資金異動 · 1H ${scored.volRatio1h}x` : "目前無明顯異動");
+  put("detail-change", fmtPct(ticker.change24h));
+  put("detail-quote", `${fmtUsd(ticker.usdtVolume)} USDT`);
+  put("detail-structure", scored.isHHHL ? "HH / HL" : scored.isLHLL ? "LH / LL" : `${scored.side} 結構`);
+  put("detail-key-levels", `距 H ${distHigh == null ? '—' : distHigh.toFixed(1)+'%'} · 距 L ${distLow == null ? '—' : distLow.toFixed(1)+'%'}`);
+
+  const reasons = [
+    { cls: scored.liqScore >= 60 ? "ok" : "warn", icon: scored.liqScore >= 60 ? "✓" : "△", text: `流動性 ${scored.liqScore}/100，24H 成交額市場前 ${scored.liqPercentile}%` },
+    { cls: scored.flowScore >= 60 ? "ok" : "warn", icon: scored.flowScore >= 60 ? "✓" : "△", text: `資金活躍 ${scored.flowScore}/100，1H Volume ${scored.volRatio1h ?? '—'}x` },
+    { cls: scored.structScore >= 60 ? "ok" : "warn", icon: scored.structScore >= 60 ? "✓" : "△", text: `結構 ${scored.structScore}/100 · ${scored.isHHHL ? 'HH / HL' : scored.isLHLL ? 'LH / LL' : scored.side}` },
+    { cls: scored.triggerActive ? "ok" : "warn", icon: scored.triggerActive ? "✓" : "△", text: scored.triggerActive ? `Trigger：${scored.triggerType}` : "Trigger 尚待確認" },
+    ...((scored.reasons || []).slice(0, 3).map(text => ({ cls: "ok", icon: "✓", text })))
+  ];
+
+  document.getElementById("detail-reasons").innerHTML = reasons
+    .map(r => `<div class="reason-item ${r.cls}">${r.icon} ${r.text}</div>`)
+    .join("");
+}
+
 function updateHeaderHUD() {
   const ticker = state.tickers.find(t => t.symbol === state.symbol);
   if (!ticker) return;
 
   document.getElementById("ticker-pair").textContent = `${ticker.symbol} · Bitget 永續`;
   document.getElementById("price").textContent = fmtPrice(ticker.lastPr);
+  const tickerMeta = document.getElementById("ticker-meta");
+  if (tickerMeta) tickerMeta.textContent = `行情更新 ${new Date().toLocaleTimeString('zh-TW', { hour12: false })}`;
   
   const chgEl = document.getElementById("change");
   chgEl.textContent = fmtPct(ticker.change24h);
@@ -1192,7 +1662,15 @@ function updateHeaderHUD() {
   document.getElementById("tv-ext-link").href = `https://www.tradingview.com/symbols/${ticker.symbol}.P/?exchange=BITGET`;
 
   const scored = state.analyzedCache.get(state.symbol);
-  if (scored) {
+  const isBenchmark = BENCHMARK_SYMBOLS.has(state.symbol);
+  if (isBenchmark) {
+    const liq = OXEngine.computeLiquidity(ticker, state.tickers);
+    document.getElementById("ox-score").textContent = "—";
+    document.getElementById("ox-tier-label").textContent = "Benchmark · 不參與 Tier";
+    document.getElementById("ox-setup").textContent = "Market Benchmark";
+    document.getElementById("ox-rs-desc").textContent = `4H ${trendLabelFromStructure(state.benchmark4h[state.symbol])}`;
+    document.getElementById("quote-rank").textContent = `全市場前 ${liq.percentileStr}%`;
+  } else if (scored) {
     document.getElementById("ox-score").textContent = scored.oxScore;
     document.getElementById("ox-tier-label").textContent = `${scored.statusText} · 結構:${scored.structScore}`;
     document.getElementById("ox-setup").textContent = scored.setupName;
@@ -1210,17 +1688,30 @@ function updateHeaderHUD() {
     const diff = num(ticker.change24h) - num(state.btcTicker.change24h);
     document.getElementById("btc-rel").textContent = `相對 BTC: ${diff >= 0 ? '+' : ''}${(diff * 100).toFixed(2)}%`;
   }
+  renderBenchmarkBar();
 }
 
 function switchSymbol(symbol) {
-  if (symbol === state.symbol) return;
+  if (symbol === state.symbol) {
+    renderOxDetail();
+    renderBenchmarkBar();
+    return;
+  }
   state.symbol = symbol;
   updateHeaderHUD();
   renderCurrentTab();
+  renderOxDetail();
+  renderBenchmarkBar();
   loadSymbolCandles(true);
 }
 
 document.addEventListener("click", e => {
+  const benchmarkBtn = e.target.closest("[data-benchmark-symbol]");
+  if (benchmarkBtn) {
+    switchSymbol(benchmarkBtn.dataset.benchmarkSymbol);
+    return;
+  }
+
   const card = e.target.closest(".coin-card") || e.target.closest(".trad-row");
   if (card && card.dataset.symbol) {
     switchSymbol(card.dataset.symbol);
@@ -1269,7 +1760,13 @@ document.getElementById("chk-ox-markers").addEventListener("change", () => rende
 
 window.addEventListener("DOMContentLoaded", () => {
   initChart();
-  refreshMarketTickers().then(() => loadSymbolCandles(true));
+  renderOxDetail();
+  renderBenchmarkBar();
+  refreshMarketTickers().then(() => {
+    loadSymbolCandles(true);
+    renderOxDetail();
+    refreshBenchmark4H();
+  });
   setInterval(refreshMarketTickers, CONFIG.tickerRefreshMs);
   setInterval(updatePriceTimer, 1000);
 });
