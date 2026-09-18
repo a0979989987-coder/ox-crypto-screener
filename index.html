@@ -160,7 +160,7 @@
       z-index: 4;
       transform: translateY(-50%);
       pointer-events: none;
-      min-width: 84px;
+      min-width: 90px;
       padding: 3px 6px;
       border-radius: 3px;
       background: #06090e;
@@ -217,14 +217,15 @@
     .coin-mid { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px; }
     .coin-reason {
       font-size: 11px;
-      color: var(--muted);
+      color: #9cb1cc;
       background: #0a1019;
-      border-radius: 4px;
-      padding: 5px 8px;
+      border-radius: 5px;
+      padding: 6px 9px;
       line-height: 1.45;
       border-left: 2px solid #2e435f;
     }
-    .score-pills { display: flex; gap: 4px; margin-top: 5px; flex-wrap: wrap; }
+    .coin-reason .setup-head { font-weight: 700; color: var(--ink); margin-bottom: 3px; }
+    .score-pills { display: flex; gap: 4px; margin-top: 6px; flex-wrap: wrap; }
     .score-pill { font-size: 10px; padding: 1px 5px; border-radius: 4px; background: #182436; color: #a5b7ce; }
 
     .trad-row {
@@ -403,23 +404,17 @@
 <script>
 "use strict";
 
-/**
- * ============================================================================
- * CONFIGURATION & PARAMETERS
- * ============================================================================
- */
 const CONFIG = {
   apiBase: "https://api.bitget.com/api/v2/mix/market",
   productType: "USDT-FUTURES",
   
   liquidity: {
-    minUsdtVolume24h: 3_000_000,      // 最低安全門檻 (3M USDT)
-    t1MinUsdtVolume: 12_000_000,      // T1 建議成交額
+    minUsdtVolume24h: 3_000_000,
+    t1MinUsdtVolume: 12_000_000,
     topPercentileCutoff: 0.65,
     lowLiqPenaltyRatio: 0.35,
   },
 
-  // OX Score 子項權重
   weights: {
     liquidity: 0.25,
     moneyFlow: 0.25,
@@ -429,16 +424,11 @@ const CONFIG = {
     momentum: 0.05
   },
 
-  queueBatchSize: 10,                 // 每批深度分析數量
-  batchIntervalMs: 2500,              // 輪巡批次間隔
-  tickerRefreshMs: 15000              // 全市場 Tickers 輪詢
+  queueBatchSize: 10,
+  batchIntervalMs: 2500,
+  tickerRefreshMs: 15000
 };
 
-/**
- * ============================================================================
- * STATE MANAGEMENT
- * ============================================================================
- */
 const state = {
   symbol: "BTCUSDT",
   period: "1D",
@@ -449,16 +439,13 @@ const state = {
   btcTicker: null,
   ethTicker: null,
   
-  // 全市場輪巡佇列 & 深度快取
   scanQueue: [],
   scanIndex: 0,
-  analyzedCache: new Map(),           // symbol -> analysisResult
+  analyzedCache: new Map(),
   isQueueRunning: false,
   
-  // T1 / T2 / T3 / 異動榜
   tierMap: { t1: [], t2: [], t3: [], surge: [], gainers: [], losers: [] },
 
-  // Chart objects
   chart: null,
   candleSeries: null,
   volumeSeries: null,
@@ -484,11 +471,6 @@ const fmtPrice = v => {
 };
 const fmtPct = v => `${num(v) >= 0 ? "+" : ""}${(num(v) * 100).toFixed(2)}%`;
 
-/**
- * ============================================================================
- * BITGET API
- * ============================================================================
- */
 const BitgetAPI = {
   async fetchTickers() {
     const res = await fetch(`${CONFIG.apiBase}/tickers?productType=${CONFIG.productType}`, { cache: "no-store" });
@@ -510,25 +492,22 @@ const BitgetAPI = {
     const res = await fetch(url, { cache: "no-store" });
     const json = await res.json();
     if (json.code !== "00000" || !Array.isArray(json.data)) return [];
+    
+    // 關鍵修復：正確讀取 d=open, d=high, d=low, d=close
     return json.data.map(d => ({
       time: Math.floor(num(d[0]) / 1000),
       open: num(d),
       high: num(d),
-      low: num(d[3]),
-      close: num(d[4]),
+      low: num(d),
+      close: num(d),
       volume: num(d[5]),
       quoteVolume: num(d[6])
-    })).sort((a, b) => a.time - b.time);
+    })).filter(c => [c.open, c.high, c.low, c.close].every(v => Number.isFinite(v) && v > 0))
+      .sort((a, b) => a.time - b.time);
   }
 };
 
-/**
- * ============================================================================
- * ANALYSIS ENGINES (Money Flow, Structure, Setup, Trigger, Lifecycle)
- * ============================================================================
- */
 const OXEngine = {
-  // 1. 流動性初篩與百分位計算 (修復小數精度 toFixed(1))
   computeLiquidity(ticker, allTickers) {
     const quoteVol = num(ticker.usdtVolume);
     const sorted = allTickers.map(t => num(t.usdtVolume)).sort((a, b) => b - a);
@@ -539,7 +518,6 @@ const OXEngine = {
     if (quoteVol >= CONFIG.liquidity.t1MinUsdtVolume) liqScore += 20;
     else if (quoteVol >= CONFIG.liquidity.minUsdtVolume24h) liqScore += 10;
     
-    // 低流動性暴漲懲罰
     const change = num(ticker.change24h);
     let penaltyApplied = false;
     if (Math.abs(change) > 0.12 && percentile < 40) {
@@ -555,7 +533,6 @@ const OXEngine = {
     };
   },
 
-  // 2. 相對強弱 RS
   computeRelativeStrength(ticker, btcTicker) {
     const chg = num(ticker.change24h);
     const btcChg = btcTicker ? num(btcTicker.change24h) : 0;
@@ -572,7 +549,6 @@ const OXEngine = {
     };
   },
 
-  // 3. Money Flow 重做：真實多週期放量、衝刺推進放量與回調縮量
   computeMoneyFlow(candles) {
     if (!candles || candles.length < 22) return { score: 50, volRatio1h: 1.0, isSurge: false };
     
@@ -581,15 +557,12 @@ const OXEngine = {
     const vols = candles.map(c => c.volume);
     const avgVol20 = vols.slice(-21, -1).reduce((a, b) => a + b, 0) / 20 || 1;
     const volRatio1h = last.volume / avgVol20;
-    
-    // 最近 4 根 K 棒量能加乘
     const recent4Vol = vols.slice(-4).reduce((a, b) => a + b, 0) / 4;
     const volRatio4h = recent4Vol / avgVol20;
 
-    // 分析衝刺推進段 vs 回調段的量價配合 (Volume Expansion on Impulses, Drying on Pullbacks)
     let upVolSum = 0, upCount = 0;
     let downVolSum = 0, downCount = 0;
-    for (let i = n - 12; i < n; i++) {
+    for (let i = Math.max(0, n - 12); i < n; i++) {
       if (candles[i].close >= candles[i].open) {
         upVolSum += candles[i].volume;
         upCount++;
@@ -606,7 +579,6 @@ const OXEngine = {
     else if (volRatio1h >= 1.25) baseFlow += 12;
     else if (volRatio1h < 0.6) baseFlow -= 10;
 
-    // 量價配合健康度 (多頭希望陽線有量陰線縮量，空頭反之)
     const healthyLongVol = avgUpVol > avgDownVol * 1.15;
     const healthyShortVol = avgDownVol > avgUpVol * 1.15;
     if (healthyLongVol || healthyShortVol) baseFlow += 15;
@@ -622,7 +594,6 @@ const OXEngine = {
     };
   },
 
-  // 4. Structure Score 獨立計算：Swing High/Low, HH/HL, LH/LL, 回調深度與結構維持
   computeStructure(candles) {
     if (!candles || candles.length < 25) {
       return { score: 50, side: "NEUTRAL", swingHigh: 0, swingLow: 0, isHHHL: false, isLHLL: false };
@@ -639,11 +610,9 @@ const OXEngine = {
     const swingHigh = Math.max(...highs.slice(-21, -1));
     const swingLow = Math.min(...lows.slice(-21, -1));
 
-    // 多頭結構：Higher High & Higher Low
     const isHHHL = last.high >= prev.high && prev.high >= candles[n - 3].high &&
                    last.low >= prev.low && prev.low >= candles[n - 3].low;
 
-    // 空頭結構：Lower High & Lower Low
     const isLHLL = last.high <= prev.high && prev.high <= candles[n - 3].high &&
                    last.low <= prev.low && prev.low <= candles[n - 3].low;
 
@@ -653,16 +622,15 @@ const OXEngine = {
     if (last.close > ma20) {
       side = "LONG";
       if (isHHHL) structScore += 25;
-      // 回調深度檢驗 (健康回調維持在 23.6% ~ 50% 範圍內)
       const pullback = (swingHigh - last.close) / (swingHigh - swingLow || 1);
       if (pullback >= 0.05 && pullback <= 0.45) structScore += 18;
-      else if (pullback < 0.05) structScore += 12; // 逼近頂部強勢
+      else if (pullback < 0.05) structScore += 12;
     } else if (last.close < ma20) {
       side = "SHORT";
       if (isLHLL) structScore += 25;
       const bounce = (last.close - swingLow) / (swingHigh - swingLow || 1);
       if (bounce >= 0.05 && bounce <= 0.45) structScore += 18;
-      else if (bounce < 0.05) structScore += 12; // 逼近破位
+      else if (bounce < 0.05) structScore += 12;
     }
 
     return {
@@ -675,7 +643,6 @@ const OXEngine = {
     };
   },
 
-  // 5. Setup Match Score 獨立計算 (支援多空雙向對稱 Setup A ~ F)
   evaluateSetupMatch(candles, structure, moneyFlow) {
     if (!candles || candles.length < 25) {
       return { setupName: "區間整理", setupScore: 45, side: "NEUTRAL", reasons: ["K線資料分析中"] };
@@ -685,58 +652,47 @@ const OXEngine = {
     const last = candles[n - 1];
     const highs = candles.map(c => c.high);
     const lows = candles.map(c => c.low);
-    const vols = candles.map(c => c.volume);
-    const avgVol = vols.slice(-21, -1).reduce((a, b) => a + b, 0) / 20 || 1;
 
     const matched = [];
     const reasons = [];
 
-    // [多頭 Setup]
     if (structure.side === "LONG") {
       const distHigh = (structure.swingHigh - last.close) / structure.swingHigh;
 
-      // Setup A: 強勢趨勢延續 (HHHL + 順排 + 淺回調)
       if (structure.isHHHL && moneyFlow.healthyLongVol) {
         matched.push({ name: "[多] 強勢趨勢延續", score: 85, side: "LONG" });
-        reasons.push("高低點階梯式抬高，陽線放量且回調受支撐");
+        reasons.push("高低點階梯式抬高，多頭結構順排");
       }
-      // Setup B: 前高關鍵突破
       if (distHigh <= 0.025 && distHigh >= -0.015) {
         matched.push({ name: "[多] 關鍵前高突破", score: 88, side: "LONG" });
         reasons.push(`距離關鍵前高 ${fmtPrice(structure.swingHigh)} 僅 ${(distHigh * 100).toFixed(1)}%`);
       }
-      // Setup C: 波動收斂壓縮
       const range5 = (Math.max(...highs.slice(-5)) - Math.min(...lows.slice(-5))) / last.close;
       const range20 = (Math.max(...highs.slice(-20)) - Math.min(...lows.slice(-20))) / last.close;
       if (range5 < range20 * 0.55 && moneyFlow.volRatio1h < 1.0) {
         matched.push({ name: "[多/平] 波動壓縮待變盤", score: 78, side: "LONG" });
-        reasons.push("ATR 波動顯著收窄，進入爆發前極度壓制狀態");
+        reasons.push("ATR 波動顯著收窄，進入極度壓制狀態");
       }
-      // Setup F: 假跌破流動性獵取
       if (last.low < structure.swingLow && last.close > structure.swingLow) {
         matched.push({ name: "[多] 假跌破流動性獵取", score: 82, side: "LONG" });
         reasons.push("下插刺破前低支撐後強勢收回");
       }
     }
 
-    // [空頭 Setup]
     if (structure.side === "SHORT") {
       const distLow = (last.close - structure.swingLow) / structure.swingLow;
 
-      // Setup A-Short: 弱勢趨勢延續 (LHLL + 陰線放量)
       if (structure.isLHLL && moneyFlow.healthyShortVol) {
         matched.push({ name: "[空] 弱勢趨勢延續", score: 85, side: "SHORT" });
-        reasons.push("高低點階梯式走低，陰線放量且反彈無力");
+        reasons.push("高低點階梯式走低，空頭結構順排");
       }
-      // Setup B-Short: 前低關鍵跌破
       if (distLow <= 0.025 && distLow >= -0.015) {
         matched.push({ name: "[空] 關鍵前低跌破", score: 88, side: "SHORT" });
         reasons.push(`距離關鍵前低 ${fmtPrice(structure.swingLow)} 僅 ${(distLow * 100).toFixed(1)}%`);
       }
-      // Setup F-Short: 假突破上掃跌回
       if (last.high > structure.swingHigh && last.close < structure.swingHigh) {
         matched.push({ name: "[空] 假突破上掃誘多", score: 82, side: "SHORT" });
-        reasons.push("上刺突破前高誘多後迅速跳水收回");
+        reasons.push("上刺突破前高誘多後迅速收回跌破");
       }
     }
 
@@ -754,31 +710,24 @@ const OXEngine = {
     };
   },
 
-  // 6. OX Trigger 偵測：放量突破、放量跌破、回調反轉確認
   detectTrigger(candles, structure, moneyFlow) {
     if (!candles || candles.length < 20) return { active: false, type: "" };
     const last = candles[candles.length - 1];
     const prev = candles[candles.length - 2];
 
-    // 多頭 Trigger
     if (structure.side === "LONG") {
-      // Trigger 1: 放量突破前高
       if (last.close >= structure.swingHigh && moneyFlow.volRatio1h >= 1.35) {
         return { active: true, type: "OX 放量突破" };
       }
-      // Trigger 2: 回調結束轉強 (前根黑 K，本根實體紅 K 包覆放量)
       if (prev.close < prev.open && last.close > prev.high && moneyFlow.volRatio1h >= 1.2) {
         return { active: true, type: "OX 回調結束反轉" };
       }
     }
 
-    // 空頭 Trigger
     if (structure.side === "SHORT") {
-      // Trigger 1: 放量跌破前低
       if (last.close <= structure.swingLow && moneyFlow.volRatio1h >= 1.35) {
         return { active: true, type: "OX 放量跌破" };
       }
-      // Trigger 2: 反抽失敗轉弱 (前根紅 K，本根實體黑 K 破位放量)
       if (prev.close > prev.open && last.close < prev.low && moneyFlow.volRatio1h >= 1.2) {
         return { active: true, type: "OX 反抽受阻下破" };
       }
@@ -787,9 +736,7 @@ const OXEngine = {
     return { active: false, type: "" };
   },
 
-  // 7. Lifecycle 分級 (T1 = 觸發確認, T2 = 準備就緒等待 Trigger, T3 = 早期醞釀)
   classifyLifecycle(liq, moneyFlow, structure, setup, trigger) {
-    // T1: 條件高度完整 + 出現 Trigger
     if (
       liq.score >= 60 &&
       structure.score >= 62 &&
@@ -799,7 +746,6 @@ const OXEngine = {
       return { tier: "t1", statusText: `T1 · ${trigger.type}已確認` };
     }
 
-    // T2: 結構與 Setup 就緒 (60%~90%)，但 Trigger 尚未發動 (等待突破/確認)
     if (
       liq.score >= 50 &&
       structure.score >= 55 &&
@@ -809,7 +755,6 @@ const OXEngine = {
       return { tier: "t2", statusText: "T2 · 結構就緒等待觸發" };
     }
 
-    // T3: 早期形成階段 (30%~60%) 或量能初露端倪
     if (
       liq.score >= 40 &&
       (structure.score >= 45 || setup.setupScore >= 45 || moneyFlow.isSurge)
@@ -817,15 +762,10 @@ const OXEngine = {
       return { tier: "t3", statusText: "T3 · 早期資金/結構醞釀" };
     }
 
-    return { tier: "none", statusText: "觀察池" };
+    return { tier: "none", statusText: "常規觀察" };
   }
 };
 
-/**
- * ============================================================================
- * FULL MARKET SCAN QUEUE (全市場輪巡佇列)
- * ============================================================================
- */
 async function refreshMarketTickers() {
   try {
     const rawTickers = await BitgetAPI.fetchTickers();
@@ -842,19 +782,14 @@ async function refreshMarketTickers() {
     state.btcTicker = state.tickers.find(t => t.symbol === "BTCUSDT") || null;
     state.ethTicker = state.tickers.find(t => t.symbol === "ETHUSDT") || null;
 
-    // 建立符合基本流動性安全門檻的合格池
     const eligible = state.tickers.filter(t => num(t.usdtVolume) >= CONFIG.liquidity.minUsdtVolume24h);
-
-    // 依據成交額與短時間波動初始化輪巡佇列
     eligible.sort((a, b) => num(b.usdtVolume) - num(a.usdtVolume));
     
-    // 如果佇列為空或需要補充，重設佇列
     if (!state.scanQueue.length) {
       state.scanQueue = eligible.map(t => t.symbol);
       state.scanIndex = 0;
     }
 
-    // 全市場即時異動資金偵測 (未進深度隊列前先由 Ticker 初篩)
     rebuildTierLists();
     renderCurrentTab();
     updateHeaderHUD();
@@ -869,7 +804,6 @@ async function refreshMarketTickers() {
   }
 }
 
-// 輪巡佇列背景工作器：持續循環掃描全市場
 async function runScanQueueLoop() {
   while (true) {
     if (!state.scanQueue.length) {
@@ -877,11 +811,10 @@ async function runScanQueueLoop() {
       continue;
     }
 
-    // 取出一批標的進行深度分析
     const batchSymbols = [];
     for (let i = 0; i < CONFIG.queueBatchSize; i++) {
       if (state.scanIndex >= state.scanQueue.length) {
-        state.scanIndex = 0; // 循環回頭
+        state.scanIndex = 0;
       }
       batchSymbols.push(state.scanQueue[state.scanIndex]);
       state.scanIndex++;
@@ -890,7 +823,6 @@ async function runScanQueueLoop() {
     document.getElementById("scan-status").textContent = `輪巡中：${state.scanIndex}/${state.scanQueue.length} 檔 (${batchSymbols.slice(0, 3).join(', ')}…)`;
     document.getElementById("dot").style.background = "#38c99b";
 
-    // 並行深度拉取 1H K 線
     await Promise.allSettled(batchSymbols.map(async symbol => {
       const ticker = state.tickers.find(t => t.symbol === symbol);
       if (!ticker) return;
@@ -907,7 +839,6 @@ async function runScanQueueLoop() {
         const trigger = OXEngine.detectTrigger(candles, structure, moneyFlow);
         const lifecycle = OXEngine.classifyLifecycle(liq, moneyFlow, structure, setup, trigger);
 
-        // OX 綜合得分 (各子項權重平衡，不重複計分)
         const oxScore = Math.round(
           liq.score * CONFIG.weights.liquidity +
           moneyFlow.score * CONFIG.weights.moneyFlow +
@@ -917,9 +848,8 @@ async function runScanQueueLoop() {
           (trigger.active ? 5 : 0)
         );
 
-        // 整理理由
         const reasons = [
-          `24H 成交額市場前 ${liq.percentileStr}% (${fmtUsd(liq.quoteVol)} USDT)`,
+          `24H 成交額前 ${liq.percentileStr}% (${fmtUsd(liq.quoteVol)} USDT)`,
           `1H 放量比率: ${moneyFlow.volRatio1h}x`,
           ...setup.reasons
         ];
@@ -944,10 +874,10 @@ async function runScanQueueLoop() {
           triggerType: trigger.type,
           reasons,
           change24h: num(ticker.change24h),
-          quoteVol: liq.quoteVol
+          quoteVol: liq.quoteVol,
+          liqPercentile: liq.percentileStr
         });
 
-        // 若該幣突然出現資金異動，將其插隊到佇列頂部
         if (moneyFlow.isSurge && !state.scanQueue.slice(state.scanIndex, state.scanIndex + 5).includes(symbol)) {
           state.scanQueue.splice(state.scanIndex, 0, symbol);
         }
@@ -962,18 +892,14 @@ async function runScanQueueLoop() {
   }
 }
 
-// 重建各榜單 (絕不硬湊滿 10 顆)
 function rebuildTierLists() {
   const allAnalyzed = Array.from(state.analyzedCache.values());
 
   const t1 = allAnalyzed.filter(c => c.tier === "t1").sort((a, b) => b.oxScore - a.oxScore).slice(0, 10);
   const t2 = allAnalyzed.filter(c => c.tier === "t2").sort((a, b) => b.oxScore - a.oxScore).slice(0, 10);
   const t3 = allAnalyzed.filter(c => c.tier === "t3").sort((a, b) => b.oxScore - a.oxScore).slice(0, 10);
-  
-  // 異動榜：獨立呈現全市場放量異動
   const surge = allAnalyzed.filter(c => c.isSurge).sort((a, b) => b.flowScore - a.flowScore).slice(0, 15);
 
-  // 傳統漲跌幅 (保留明確正負百分比)
   const gainers = state.tickers.filter(t => num(t.change24h) > 0)
     .sort((a, b) => num(b.change24h) - num(a.change24h)).slice(0, 15);
   const losers = state.tickers.filter(t => num(t.change24h) < 0)
@@ -987,11 +913,6 @@ function rebuildTierLists() {
   document.getElementById("badge-surge").textContent = surge.length;
 }
 
-/**
- * ============================================================================
- * SCREENER UI RENDERING
- * ============================================================================
- */
 function renderCurrentTab() {
   const container = document.getElementById("screener-list");
   const tab = state.currentTab;
@@ -1054,8 +975,8 @@ function renderCurrentTab() {
         </span>
       </div>
       <div class="coin-reason">
-        <b>${c.setupName}</b><br>
-        ${c.reasons.join(" · ")}
+        <div class="setup-head">${c.setupName}</div>
+        <div>• ${c.reasons.join('</div><div>• ')}</div>
       </div>
       <div class="score-pills">
         <span class="score-pill">流動 ${c.liqScore}</span>
@@ -1068,11 +989,6 @@ function renderCurrentTab() {
   `).join('');
 }
 
-/**
- * ============================================================================
- * CHART ENGINE (Lightweight Charts + Lazy Loading)
- * ============================================================================
- */
 function initChart() {
   const container = document.getElementById("chart");
   state.chart = LightweightCharts.createChart(container, {
@@ -1088,7 +1004,8 @@ function initChart() {
     },
     rightPriceScale: {
       borderColor: "#223147",
-      scaleMargins: { top: 0.1, bottom: 0.22 }
+      autoScale: true,
+      scaleMargins: { top: 0.08, bottom: 0.25 } // 為底部成交量預留空間，保持主K線獨立自適應
     },
     timeScale: {
       borderColor: "#223147",
@@ -1098,6 +1015,7 @@ function initChart() {
     crosshair: { mode: LightweightCharts.CrosshairMode.Normal }
   });
 
+  // 主圖：標準 K 線系列
   state.candleSeries = state.chart.addCandlestickSeries({
     upColor: "#38c99b",
     downColor: "#ee617c",
@@ -1106,12 +1024,16 @@ function initChart() {
     wickDownColor: "#ee617c"
   });
 
+  // 成交量柱體：使用獨立分軸 vol，避免干擾價格坐標
   state.volumeSeries = state.chart.addHistogramSeries({
     priceFormat: { type: "volume" },
-    priceScaleId: "",
+    priceScaleId: "vol"
+  });
+  state.chart.priceScale("vol").applyOptions({
     scaleMargins: { top: 0.8, bottom: 0 }
   });
 
+  // 均線系統
   state.maSeries = {
     5: state.chart.addLineSeries({ color: "#f7bd52", lineWidth: 1.5, lastValueVisible: false }),
     10: state.chart.addLineSeries({ color: "#5ca5ff", lineWidth: 1.5, lastValueVisible: false }),
@@ -1242,11 +1164,13 @@ function updatePriceTimer() {
   const step = periods[state.period] || 60;
   const now = Math.floor(Date.now() / 1000);
   const left = step - (now % step);
-  const m = Math.floor(left / 60);
+  const h = Math.floor(left / 3600);
+  const m = Math.floor((left % 3600) / 60);
   const s = left % 60;
+  const timeStr = `${h > 0 ? `${h}h ` : ''}${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
   
   const y = state.candleSeries.priceToCoordinate(last.close);
-  timerEl.innerHTML = `${fmtPrice(last.close)}<small>倒數 ${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}</small>`;
+  timerEl.innerHTML = `${fmtPrice(last.close)}<small>倒數 ${timeStr}</small>`;
   if (Number.isFinite(y)) {
     timerEl.style.top = `${Math.max(16, Math.min(document.getElementById("chart").clientHeight - 24, y))}px`;
   }
@@ -1273,11 +1197,13 @@ function updateHeaderHUD() {
     document.getElementById("ox-tier-label").textContent = `${scored.statusText} · 結構:${scored.structScore}`;
     document.getElementById("ox-setup").textContent = scored.setupName;
     document.getElementById("ox-rs-desc").textContent = `RS: ${scored.rsScore} (${scored.side})`;
+    document.getElementById("quote-rank").textContent = `全市場前 ${scored.liqPercentile}%`;
   } else {
     document.getElementById("ox-score").textContent = "—";
     document.getElementById("ox-tier-label").textContent = "全市場輪巡佇列中";
     document.getElementById("ox-setup").textContent = "等待分析";
     document.getElementById("ox-rs-desc").textContent = "—";
+    document.getElementById("quote-rank").textContent = "評估中…";
   }
 
   if (state.btcTicker) {
