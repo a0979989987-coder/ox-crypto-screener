@@ -33,8 +33,1047 @@
       margin: 0;
       background: radial-gradient(1200px 500px at 15% -10%, #1c2b4535, transparent), var(--bg);
       color: var(--ink);
-      font: 14.5px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
     }
+    button, input, select { font: inherit; }
+    button { cursor: pointer; }
+    button:focus-visible, a:focus-visible, input:focus-visible {
+      outline: 2px solid var(--gold);
+      outline-offset: 2px;
+    }
+    a { color: inherit; }
+    .wrap { max-width: 1460px; margin: auto; padding: 0 24px; }
+    header { border-bottom: 1px solid var(--line); background: #0a101b; position: sticky; top: 0; z-index: 10; }
+    .nav { height: 68px; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+    .brand { display: flex; align-items: center; gap: 11px; text-decoration: none; font-weight: 750; font-size: 19px; }
+    .brand-logo { width: 38px; height: 38px; object-fit: contain; filter: invert(1); mix-blend-mode: screen; }
+    .nav-stats { display: flex; gap: 18px; align-items: center; font-size: 13px; color: var(--muted); }
+    .live { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--gold); display: inline-block; }
+    
+    .top-summary {
+      display: grid;
+      grid-template-columns: 1.4fr repeat(4, 1fr);
+      gap: 12px;
+      margin: 18px 0 20px;
+    }
+    .metric-card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 14px 18px;
+    }
+    .metric-card label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+    .metric-card strong { font-size: 24px; font-variant-numeric: tabular-nums; display: block; }
+    .metric-card small { display: block; font-size: 11px; color: var(--muted); margin-top: 3px; }
+    .positive { color: var(--green) !important; }
+    .negative { color: var(--red) !important; }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 390px;
+      gap: 20px;
+      align-items: start;
+    }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      overflow: hidden;
+    }
+    .panel-head {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      background: #0d1522;
+    }
+    .panel-title { font-size: 16px; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 8px; }
+    .pill {
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 6px;
+      border: 1px solid var(--line);
+      background: #111a28;
+      color: var(--muted);
+    }
+
+    .chart-box { position: relative; }
+    .chart-controls {
+      padding: 8px 18px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+      background: #0d1420;
+    }
+    .ctrl-group { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+    .btn-tf, .btn-act {
+      background: #111a28;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      border-radius: 6px;
+      padding: 5px 9px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .btn-tf:hover, .btn-act:hover { color: var(--ink); border-color: #3b506e; }
+    .btn-tf.active { background: var(--gold-dim); border-color: var(--gold); color: var(--gold); }
+    .toggle-lbl {
+      font-size: 11px;
+      color: var(--muted);
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .toggle-lbl input { accent-color: var(--gold); margin: 0; }
+
+    .chart-container {
+      height: 600px;
+      background: #090e17;
+      position: relative;
+    }
+    .chart-loading-overlay {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 5;
+      background: #0d1522dd;
+      border: 1px solid var(--line);
+      padding: 5px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      display: none;
+      align-items: center;
+      gap: 6px;
+    }
+    .chart-loading-overlay.show { display: flex; }
+    .price-timer {
+      position: absolute;
+      right: 3px;
+      z-index: 4;
+      transform: translateY(-50%);
+      pointer-events: none;
+      min-width: 84px;
+      padding: 3px 6px;
+      border-radius: 3px;
+      background: #06090e;
+      color: #fff;
+      font: 700 11px/1.2 ui-monospace, monospace;
+      text-align: center;
+      box-shadow: 0 1px 3px #000a;
+      border: 1px solid #23344d;
+    }
+    .price-timer small { display: block; color: var(--gold); font-size: 10px; margin-top: 1px; }
+
+    .scanner-tabs {
+      display: flex;
+      gap: 4px;
+      padding: 10px 14px 6px;
+      border-bottom: 1px solid var(--line);
+      background: #0b111c;
+      overflow-x: auto;
+    }
+    .tab-btn {
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--muted);
+      padding: 6px 11px;
+      border-radius: 7px;
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .tab-btn:hover { color: var(--ink); }
+    .tab-btn.active { background: var(--panel-alt); color: var(--gold); border-color: #3b4e69; }
+    .tab-badge { font-size: 10px; padding: 1px 5px; border-radius: 10px; background: #23354d; color: #fff; margin-left: 4px; }
+
+    .scanner-body {
+      max-height: 680px;
+      overflow-y: auto;
+      padding: 6px 0;
+    }
+    .coin-card {
+      width: 100%;
+      border: 0;
+      background: transparent;
+      text-align: left;
+      color: var(--ink);
+      padding: 10px 14px;
+      border-bottom: 1px solid #1a2638;
+      transition: background .15s;
+    }
+    .coin-card:hover { background: #152235; }
+    .coin-card.selected { background: #f7bd520d; box-shadow: inset 3px 0 0 var(--gold); }
+    .coin-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+    .coin-title { display: flex; align-items: center; gap: 7px; font-weight: 750; font-size: 14px; }
+    .coin-ox { font-size: 12px; font-weight: 700; color: var(--gold); }
+    .coin-mid { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px; }
+    .coin-reason {
+      font-size: 11px;
+      color: var(--muted);
+      background: #0a1019;
+      border-radius: 4px;
+      padding: 5px 8px;
+      line-height: 1.4;
+      border-left: 2px solid #2e435f;
+    }
+    .score-pills { display: flex; gap: 4px; margin-top: 5px; flex-wrap: wrap; }
+    .score-pill { font-size: 10px; padding: 1px 5px; border-radius: 4px; background: #182436; color: #a5b7ce; }
+
+    .trad-row {
+      display: grid;
+      grid-template-columns: 28px 1.4fr 1fr 1fr;
+      align-items: center;
+      padding: 9px 14px;
+      font-size: 12px;
+      border-bottom: 1px solid #1a2638;
+      cursor: pointer;
+    }
+    .trad-row:hover, .trad-row.selected { background: #152235; }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 7px;
+      border-radius: 5px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .badge-t1 { background: #f7bd5226; color: var(--gold); border: 1px solid #f7bd5255; }
+    .badge-t2 { background: #5ca5ff26; color: var(--blue); border: 1px solid #5ca5ff55; }
+    .badge-t3 { background: #ad7cff26; color: var(--purple); border: 1px solid #ad7cff55; }
+    .badge-surge { background: #ff708826; color: var(--red); border: 1px solid #ff708855; }
+
+    .extra-section { margin-top: 24px; }
+    .toast {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      max-width: 360px;
+      background: #142032;
+      border: 1px solid #364e6f;
+      border-left: 4px solid var(--gold);
+      padding: 12px 16px;
+      border-radius: 8px;
+      box-shadow: 0 10px 30px #000a;
+      transform: translateY(120%);
+      transition: transform .25s;
+      z-index: 100;
+      font-size: 13px;
+    }
+    .toast.show { transform: translateY(0); }
+
+    @media (max-width: 1100px) {
+      .workspace { grid-template-columns: 1fr; }
+      .chart-container { height: 480px; }
+      .scanner-body { max-height: 450px; }
+    }
+    @media (max-width: 720px) {
+      .top-summary { grid-template-columns: 1fr 1fr; }
+      .chart-controls { flex-direction: column; align-items: flex-start; }
+      .chart-container { height: 400px; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="wrap nav">
+    <a class="brand" href="#">
+      <img class="brand-logo" src="ox-logo.png" alt="OX Logo" onerror="this.style.display='none'">
+      <span>OX 幣種篩選器 <small style="font-size:12px;color:var(--gold);font-weight:600">v2.0</small></span>
+    </a>
+    <div class="nav-stats">
+      <div class="live"><i class="dot" id="dot"></i><span id="scan-status">全市場掃描準備中…</span></div>
+      <button class="btn-act" id="btn-force-rescan" title="重新掃描">重新掃描</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap" style="padding-top:16px;padding-bottom:40px">
+  <section class="top-summary">
+    <div class="metric-card">
+      <label id="ticker-pair">BTCUSDT · Bitget 永續</label>
+      <strong id="price">—</strong>
+      <small id="ticker-meta">等待行情資料中…</small>
+    </div>
+    <div class="metric-card">
+      <label>24H 漲跌幅</label>
+      <strong id="change">—</strong>
+      <small id="btc-rel">相對 BTC：—</small>
+    </div>
+    <div class="metric-card">
+      <label>24H 成交額</label>
+      <strong id="quote">—</strong>
+      <small id="quote-rank">全市場百分位：—</small>
+    </div>
+    <div class="metric-card">
+      <label>OX 綜合評分</label>
+      <strong id="ox-score" style="color:var(--gold)">—</strong>
+      <small id="ox-tier-label">分級：待評定</small>
+    </div>
+    <div class="metric-card">
+      <label>主導 Setup 型態</label>
+      <strong id="ox-setup" style="font-size:17px;padding-top:4px">—</strong>
+      <small id="ox-rs-desc">RS 狀態：—</small>
+    </div>
+  </section>
+
+  <div class="workspace">
+    <article class="panel chart-box">
+      <div class="panel-head">
+        <h2 class="panel-title" id="chart-head-title">
+          <span>BTCUSDT 永續合約</span>
+          <span class="pill" id="tf-pill">1D 日線</span>
+        </h2>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button class="btn-act" id="btn-chart-fullscreen">全螢幕</button>
+          <a class="btn-act" id="tv-ext-link" href="https://www.tradingview.com/" target="_blank" rel="noopener">TradingView ↗</a>
+        </div>
+      </div>
+
+      <div class="chart-controls">
+        <div class="ctrl-group">
+          <button class="btn-tf" data-tf="1m">1m</button>
+          <button class="btn-tf" data-tf="5m">5m</button>
+          <button class="btn-tf" data-tf="15m">15m</button>
+          <button class="btn-tf" data-tf="1H">1H</button>
+          <button class="btn-tf" data-tf="4H">4H</button>
+          <button class="btn-tf active" data-tf="1D">1D</button>
+          <button class="btn-tf" data-tf="1W">1W</button>
+        </div>
+        <div class="ctrl-group">
+          <label class="toggle-lbl"><input type="checkbox" id="chk-vol" checked>成交量</label>
+          <label class="toggle-lbl"><input type="checkbox" id="chk-ma5" checked>MA5</label>
+          <label class="toggle-lbl"><input type="checkbox" id="chk-ma10" checked>MA10</label>
+          <label class="toggle-lbl"><input type="checkbox" id="chk-ma20" checked>MA20</label>
+          <label class="toggle-lbl"><input type="checkbox" id="chk-ox-markers" checked>OX 訊號標記</label>
+        </div>
+      </div>
+
+      <div id="chart" class="chart-container">
+        <div id="chart-loading" class="chart-loading-overlay">載入歷史 K 線中…</div>
+        <div id="price-timer" class="price-timer">—</div>
+      </div>
+    </article>
+
+    <aside class="panel">
+      <div class="panel-head">
+        <h3 class="panel-title">OX 決策篩選池</h3>
+        <span class="pill" id="pool-count">掃描中…</span>
+      </div>
+
+      <div class="scanner-tabs" role="tablist">
+        <button class="tab-btn active" data-tab="t1">T1 首選 <span class="tab-badge" id="badge-t1">0</span></button>
+        <button class="tab-btn" data-tab="t2">T2 觀察 <span class="tab-badge" id="badge-t2">0</span></button>
+        <button class="tab-btn" data-tab="t3">T3 儲備 <span class="tab-badge" id="badge-t3">0</span></button>
+        <button class="tab-btn" data-tab="surge">🔥 異動資金</button>
+        <button class="tab-btn" data-tab="gainers">漲幅榜</button>
+        <button class="tab-btn" data-tab="losers">跌幅榜</button>
+      </div>
+
+      <div id="screener-list" class="scanner-body">
+        <div style="padding:24px;text-align:center;color:var(--muted)">正在初始化 Bitget 全市場資料…</div>
+      </div>
+    </aside>
+  </div>
+
+  <section class="extra-section">
+    <div class="panel" style="padding:20px 24px;background:#0d1522">
+      <h3 style="margin:0 0 8px;font-size:16px;color:var(--gold)">OX 交易心法：找看得懂的強勢幣，不找亂拉暴漲幣</h3>
+      <p style="margin:0;font-size:13px;color:var(--muted);line-height:1.6">
+        大資金進場必然會在量能、成交額、波動壓縮與價格結構中留下痕跡。系統嚴格執行流動性硬門檻與低流動性暴漲懲罰，排除假突破與無承接亂拉；T1 / T2 / T3 堅持寧缺勿濫原則，未達標決不硬湊。
+      </p>
+    </div>
+  </section>
+</main>
+
+<div id="toast" class="toast" role="status"></div>
+
+<script>
+"use strict";
+
+const CONFIG = {
+  apiBase: "https://api.bitget.com/api/v2/mix/market",
+  productType: "USDT-FUTURES",
+  liquidity: {
+    minUsdtVolume24h: 3_000_000,
+    t1MinUsdtVolume: 15_000_000,
+    topPercentileCutoff: 0.65,
+    lowLiqPenaltyRatio: 0.35,
+  },
+  weights: {
+    liquidity: 0.30,
+    moneyFlow: 0.20,
+    structure: 0.20,
+    setupMatch: 0.15,
+    relativeStrength: 0.10,
+    momentum: 0.05
+  },
+  tiers: {
+    t1MinScore: 78,
+    t1MinSetupScore: 70,
+    t2MinScore: 64,
+    t3MinScore: 52,
+    maxPerTier: 10
+  },
+  intervals: {
+    tickerPollMs: 15000
+  }
+};
+
+const state = {
+  symbol: "BTCUSDT",
+  period: "1D",
+  currentTab: "t1",
+  tickers: [],
+  contracts: new Map(),
+  allScoredCoins: [],
+  tierMap: { t1: [], t2: [], t3: [], surge: [], gainers: [], losers: [] },
+  btcTicker: null,
+  ethTicker: null,
+  chart: null,
+  candleSeries: null,
+  volumeSeries: null,
+  maSeries: {},
+  candleData: [],
+  isLoadingOlder: false,
+  hasMoreHistory: true,
+  oldestCandleTime: 0,
+  abortCtrl: null,
+  tickerTimer: null,
+  isScanning: false,
+};
+
+const periods = {
+  "1m": 60, "5m": 300, "15m": 900, "1H": 3600, "4H": 14400, "1D": 86400, "1W": 604800
+};
+
+const num = v => Number(v) || 0;
+const fmtUsd = v => new Intl.NumberFormat("en-US", { notation: "compact", maximumFractionDigits: 2 }).format(num(v));
+const fmtPrice = v => {
+  const x = num(v);
+  if (!Number.isFinite(x) || x === 0) return "—";
+  const d = x >= 1000 ? 2 : x >= 1 ? 4 : x >= 0.01 ? 6 : 8;
+  return new Intl.NumberFormat("en-US", { maximumFractionDigits: d }).format(x);
+};
+const fmtPct = v => `${num(v) >= 0 ? "+" : ""}${(num(v) * 100).toFixed(2)}%`;
+
+const BitgetAPI = {
+  async fetchTickers() {
+    const res = await fetch(`${CONFIG.apiBase}/tickers?productType=${CONFIG.productType}`, { cache: "no-store" });
+    const json = await res.json();
+    if (json.code !== "00000" || !Array.isArray(json.data)) throw new Error("Ticker 資料格式錯誤");
+    return json.data;
+  },
+  async fetchContracts() {
+    const res = await fetch(`${CONFIG.apiBase}/contracts?productType=${CONFIG.productType}`, { cache: "no-store" });
+    const json = await res.json();
+    if (json.code !== "00000" || !Array.isArray(json.data)) return [];
+    return json.data.filter(x => x.symbolStatus === "normal" && x.symbolType === "perpetual" && x.quoteCoin === "USDT");
+  },
+  async fetchCandles(symbol, granularity, limit = 100, endTime = null) {
+    let url = `${CONFIG.apiBase}/candles?symbol=${symbol}&productType=${CONFIG.productType}&granularity=${granularity}&limit=${limit}`;
+    if (endTime) url += `&endTime=${endTime}`;
+    const res = await fetch(url, { cache: "no-store" });
+    const json = await res.json();
+    if (json.code !== "00000" || !Array.isArray(json.data)) return [];
+    return json.data.map(d => ({
+      time: Math.floor(num(d[0]) / 1000),
+      open: num(d),
+      high: num(d[2]),
+      low: num(d[3]),
+      close: num(d[4]),
+      volume: num(d[5]),
+      quoteVolume: num(d[6])
+    })).sort((a, b) => a.time - b.time);
+  }
+};
+
+const OXEngine = {
+  computeLiquidity(ticker, allTickers) {
+    const quoteVol = num(ticker.usdtVolume);
+    const sorted = allTickers.map(t => num(t.usdtVolume)).sort((a, b) => b - a);
+    const rank = sorted.indexOf(quoteVol);
+    const percentile = 1 - (rank / sorted.length);
+
+    let liqScore = percentile * 80;
+    if (quoteVol >= CONFIG.liquidity.t1MinUsdtVolume) liqScore += 20;
+    else if (quoteVol >= CONFIG.liquidity.minUsdtVolume24h) liqScore += 10;
+    
+    const change = num(ticker.change24h);
+    let penaltyApplied = false;
+    if (change > 0.12 && percentile < 0.40) {
+      liqScore *= CONFIG.liquidity.lowLiqPenaltyRatio;
+      penaltyApplied = true;
+    }
+
+    return {
+      score: Math.min(100, Math.max(0, Math.round(liqScore))),
+      percentile: (percentile * 100).toFixed(1),
+      quoteVol,
+      penaltyApplied
+    };
+  },
+
+  computeRelativeStrength(ticker, btcTicker, ethTicker) {
+    const chg = num(ticker.change24h);
+    const btcChg = btcTicker ? num(btcTicker.change24h) : 0;
+    const diffBtc = chg - btcChg;
+    let rsScore = 50 + (diffBtc * 200);
+    rsScore = Math.min(100, Math.max(0, Math.round(rsScore)));
+    return {
+      score: rsScore,
+      diffBtcPct: (diffBtc * 100).toFixed(2),
+      isOutperforming: diffBtc > 0.02
+    };
+  },
+
+  computeMoneyFlow(ticker) {
+    const high = num(ticker.high24h);
+    const low = num(ticker.low24h);
+    const last = num(ticker.lastPr);
+    const posInRange = (high - low) > 0 ? (last - low) / (high - low) : 0.5;
+    let flowScore = 50 + (posInRange * 30) + (num(ticker.change24h) > 0 ? 10 : -10);
+    return Math.min(100, Math.max(10, Math.round(flowScore)));
+  },
+
+  evaluateSetups(ticker, candles) {
+    if (!candles || candles.length < 25) {
+      return {
+        bestSetup: "觀察蓄勢中",
+        setupScore: 50,
+        reasons: ["流動性符合基本篩選，等待結構確認"]
+      };
+    }
+
+    const n = candles.length;
+    const last = candles[n - 1];
+    const prev = candles[n - 2];
+    const highs = candles.map(c => c.high);
+    const lows = candles.map(c => c.low);
+    const closes = candles.map(c => c.close);
+    const vols = candles.map(c => c.volume);
+
+    const ma20 = closes.slice(-20).reduce((a, b) => a + b, 0) / 20;
+    const avgVol20 = vols.slice(-20).reduce((a, b) => a + b, 0) / 20;
+    const swingHigh20 = Math.max(...highs.slice(-21, -1));
+    const swingLow20 = Math.min(...lows.slice(-21, -1));
+
+    const matchedSetups = [];
+    const reasons = [];
+
+    const isHigherHigh = last.high >= prev.high && prev.high >= candles[n - 3].high;
+    const isHigherLow = last.low >= prev.low && prev.low >= candles[n - 3].low;
+    if (last.close > ma20 && isHigherHigh && isHigherLow) {
+      matchedSetups.push({ name: "Setup A: 強勢趨勢延續", score: 88 });
+      reasons.push("連續 K 線高低點抬高，均線多頭順排");
+    }
+
+    const distToHigh = (swingHigh20 - last.close) / swingHigh20;
+    if (last.close >= swingHigh20 && last.volume > avgVol20 * 1.3) {
+      matchedSetups.push({ name: "Setup B: 前高放量突破", score: 92 });
+      reasons.push(`突破關鍵高點 (${fmtPrice(swingHigh20)})，放量 1.3x+`);
+    } else if (distToHigh > 0 && distToHigh < 0.02) {
+      matchedSetups.push({ name: "Setup B: 逼近前高蓄勢", score: 75 });
+      reasons.push(`距關鍵前高僅 ${(distToHigh * 100).toFixed(1)}%，伺機突破`);
+    }
+
+    const recentRange = (Math.max(...highs.slice(-5)) - Math.min(...lows.slice(-5))) / last.close;
+    const priorRange = (Math.max(...highs.slice(-20, -5)) - Math.min(...lows.slice(-20, -5))) / last.close;
+    if (recentRange < priorRange * 0.55 && vols.slice(-3).every(v => v < avgVol20)) {
+      matchedSetups.push({ name: "Setup C: 壓縮收斂待突破", score: 82 });
+      reasons.push("波動率顯著壓縮收緊，量縮至均量之下");
+    }
+
+    if (last.close > last.open && (last.close - last.open) / last.open > 0.04 && last.volume > avgVol20 * 2.0) {
+      matchedSetups.push({ name: "Setup E: 底部放量啟動", score: 86 });
+      reasons.push("低位長實體紅 K 起跑，成交量暴增 2.0x+");
+    }
+
+    if (last.low < swingLow20 && last.close > swingLow20) {
+      matchedSetups.push({ name: "Setup F: 流動性獵取收回", score: 80 });
+      reasons.push("跌破前低關鍵支撐後迅速強勢收回");
+    }
+
+    if (!matchedSetups.length) {
+      matchedSetups.push({ name: "結構震盪中", score: 60 });
+      reasons.push("目前處於區間內常態震盪");
+    }
+
+    matchedSetups.sort((a, b) => b.score - a.score);
+    return {
+      bestSetup: matchedSetups[0].name,
+      setupScore: matchedSetups[0].score,
+      reasons: reasons.slice(0, 3)
+    };
+  }
+};
+
+async function runMarketScan() {
+  if (state.isScanning) return;
+  state.isScanning = true;
+  document.getElementById("scan-status").textContent = "掃描全市場永續合約…";
+  document.getElementById("dot").style.background = "#f7bd52";
+
+  try {
+    const rawTickers = await BitgetAPI.fetchTickers();
+    if (!state.contracts.size) {
+      const contractList = await BitgetAPI.fetchContracts();
+      contractList.forEach(c => state.contracts.set(c.symbol, c));
+    }
+
+    state.tickers = rawTickers.filter(t => 
+      state.contracts.has(t.symbol) && 
+      [t.lastPr, t.change24h, t.usdtVolume].every(v => Number.isFinite(num(v)))
+    );
+
+    state.btcTicker = state.tickers.find(t => t.symbol === "BTCUSDT") || null;
+    state.ethTicker = state.tickers.find(t => t.symbol === "ETHUSDT") || null;
+
+    const candidates = [];
+    for (const t of state.tickers) {
+      const liq = OXEngine.computeLiquidity(t, state.tickers);
+      const rs = OXEngine.computeRelativeStrength(t, state.btcTicker, state.ethTicker);
+      const flow = OXEngine.computeMoneyFlow(t);
+
+      if (liq.quoteVol < CONFIG.liquidity.minUsdtVolume24h && num(t.change24h) < 0.1) {
+        continue;
+      }
+
+      candidates.push({ symbol: t.symbol, ticker: t, liq, rs, flow });
+    }
+
+    candidates.sort((a, b) => (b.liq.score * 0.6 + b.flow * 0.4) - (a.liq.score * 0.6 + a.flow * 0.4));
+    const deepBatch = candidates.slice(0, 24);
+
+    const scoredCoins = [];
+    for (const item of deepBatch) {
+      let candles = [];
+      try {
+        candles = await BitgetAPI.fetchCandles(item.symbol, "1H", 35);
+      } catch (e) {}
+
+      const setupRes = OXEngine.evaluateSetups(item.ticker, candles);
+      const oxScore = Math.round(
+        item.liq.score * CONFIG.weights.liquidity +
+        item.flow * CONFIG.weights.moneyFlow +
+        setupRes.setupScore * CONFIG.weights.structure +
+        setupRes.setupScore * CONFIG.weights.setupMatch +
+        item.rs.score * CONFIG.weights.relativeStrength +
+        (num(item.ticker.change24h) > 0 ? 5 : 0)
+      );
+
+      const reasons = [];
+      reasons.push(`24H 成交額前 ${100 - item.liq.percentile}% (${fmtUsd(item.liq.quoteVol)} USDT)`);
+      if (item.rs.isOutperforming) reasons.push(`強於 BTC +${item.rs.diffBtcPct}%`);
+      reasons.push(...setupRes.reasons);
+      if (item.liq.penaltyApplied) reasons.push("⚠️ 成交量偏小，暴漲已實施降權防禦");
+
+      scoredCoins.push({
+        symbol: item.symbol,
+        ticker: item.ticker,
+        oxScore,
+        liqScore: item.liq.score,
+        flowScore: item.flow,
+        rsScore: item.rs.score,
+        setupScore: setupRes.setupScore,
+        setupName: setupRes.bestSetup,
+        reasons,
+        change24h: num(item.ticker.change24h),
+        quoteVol: item.liq.quoteVol
+      });
+    }
+
+    state.allScoredCoins = scoredCoins;
+    classifyTiers(scoredCoins, state.tickers);
+    renderCurrentTab();
+    updateHeaderHUD();
+    document.getElementById("scan-status").textContent = `全市場掃描就緒 · ${state.tickers.length} 檔合約`;
+    document.getElementById("dot").style.background = "#38c99b";
+  } catch (err) {
+    document.getElementById("scan-status").textContent = `更新失敗：${err.message}`;
+    document.getElementById("dot").style.background = "#ee617c";
+  } finally {
+    state.isScanning = false;
+    clearTimeout(state.tickerTimer);
+    state.tickerTimer = setTimeout(runMarketScan, 15000);
+  }
+}
+
+function classifyTiers(scored, allTickers) {
+  const t1 = [];
+  const t2 = [];
+  const t3 = [];
+  const surge = [];
+
+  for (const c of scored) {
+    if (c.oxScore >= CONFIG.tiers.t1MinScore && c.liqScore >= 70 && c.setupScore >= CONFIG.tiers.t1MinSetupScore) {
+      if (t1.length < CONFIG.tiers.maxPerTier) t1.push(c);
+    } else if (c.oxScore >= CONFIG.tiers.t2MinScore && c.liqScore >= 55) {
+      if (t2.length < CONFIG.tiers.maxPerTier) t2.push(c);
+    } else if (c.oxScore >= CONFIG.tiers.t3MinScore) {
+      if (t3.length < CONFIG.tiers.maxPerTier) t3.push(c);
+    }
+    if (c.change24h > 0.05 && c.flowScore > 75) surge.push(c);
+  }
+
+  const gainers = allTickers.filter(t => num(t.change24h) > 0)
+    .sort((a, b) => num(b.change24h) - num(a.change24h)).slice(0, 15);
+  const losers = allTickers.filter(t => num(t.change24h) < 0)
+    .sort((a, b) => num(a.change24h) - num(b.change24h)).slice(0, 15);
+
+  state.tierMap = { t1, t2, t3, surge, gainers, losers };
+  document.getElementById("badge-t1").textContent = t1.length;
+  document.getElementById("badge-t2").textContent = t2.length;
+  document.getElementById("badge-t3").textContent = t3.length;
+}
+
+function renderCurrentTab() {
+  const container = document.getElementById("screener-list");
+  const tab = state.currentTab;
+
+  if (tab === "gainers" || tab === "losers") {
+    const list = state.tierMap[tab] || [];
+    if (!list.length) {
+      container.innerHTML = `<div style="padding:24px;text-align:center;color:var(--muted)">暫無資料</div>`;
+      return;
+    }
+    container.innerHTML = list.map((t, idx) => `
+      <div class="trad-row ${t.symbol === state.symbol ? 'selected' : ''}" data-symbol="${t.symbol}">
+        <span style="color:var(--muted)">${idx + 1}</span>
+        <div>
+          <b style="font-size:13px">${t.symbol}</b>
+          <small style="display:block;color:var(--muted)">${fmtUsd(t.usdtVolume)} USDT</small>
+        </div>
+        <div style="text-align:right">${fmtPrice(t.lastPr)}</div>
+        <div style="text-align:right;font-weight:700" class="${num(t.change24h) >= 0 ? 'positive' : 'negative'}">
+          ${fmtPct(t.change24h)}
+        </div>
+      </div>
+    `).join('');
+    return;
+  }
+
+  const list = state.tierMap[tab] || [];
+  document.getElementById("pool-count").textContent = `${list.length} 檔標的`;
+
+  if (!list.length) {
+    container.innerHTML = `
+      <div style="padding:32px 20px;text-align:center;color:var(--muted)">
+        <div style="font-size:24px;margin-bottom:8px">⚖️</div>
+        <b>符合條件的標的為 0</b>
+        <p style="font-size:12px;margin:6px 0 0">嚴格落實寧缺勿濫，目前市場暫無完美符合該等級之結構幣種。</p>
+      </div>`;
+    return;
+  }
+
+  container.innerHTML = list.map((c, idx) => `
+    <button class="coin-card ${c.symbol === state.symbol ? 'selected' : ''}" data-symbol="${c.symbol}" type="button">
+      <div class="coin-top">
+        <span class="coin-title">
+          <span style="color:var(--muted);font-size:12px">#${idx + 1}</span>
+          <span>${c.symbol}</span>
+          <span class="badge badge-${tab === 'surge' ? 'surge' : tab}">
+            ${tab.toUpperCase()}
+          </span>
+        </span>
+        <span class="coin-ox">OX ${c.oxScore}</span>
+      </div>
+      <div class="coin-mid">
+        <span class="meta">${fmtPrice(c.ticker.lastPr)}</span>
+        <span class="${c.change24h >= 0 ? 'positive' : 'negative'}" style="font-weight:700">
+          ${fmtPct(c.change24h)}
+        </span>
+      </div>
+      <div class="coin-reason">
+        <b>${c.setupName}</b><br>
+        ${c.reasons.join(" · ")}
+      </div>
+      <div class="score-pills">
+        <span class="score-pill">流動性 ${c.liqScore}</span>
+        <span class="score-pill">資金活躍 ${c.flowScore}</span>
+        <span class="score-pill">型態 ${c.setupScore}</span>
+        <span class="score-pill">RS ${c.rsScore}</span>
+      </div>
+    </button>
+  `).join('');
+}
+
+function initChart() {
+  const container = document.getElementById("chart");
+  state.chart = LightweightCharts.createChart(container, {
+    width: container.clientWidth,
+    height: container.clientHeight,
+    layout: {
+      background: { type: "solid", color: "#090e17" },
+      textColor: "#8b9db7"
+    },
+    grid: {
+      vertLines: { color: "#162335" },
+      horzLines: { color: "#162335" }
+    },
+    rightPriceScale: {
+      borderColor: "#223147",
+      scaleMargins: { top: 0.1, bottom: 0.22 }
+    },
+    timeScale: {
+      borderColor: "#223147",
+      timeVisible: true,
+      secondsVisible: false
+    },
+    crosshair: { mode: LightweightCharts.CrosshairMode.Normal }
+  });
+
+  state.candleSeries = state.chart.addCandlestickSeries({
+    upColor: "#38c99b",
+    downColor: "#ee617c",
+    borderVisible: false,
+    wickUpColor: "#38c99b",
+    wickDownColor: "#ee617c"
+  });
+
+  state.volumeSeries = state.chart.addHistogramSeries({
+    priceFormat: { type: "volume" },
+    priceScaleId: "",
+    scaleMargins: { top: 0.8, bottom: 0 }
+  });
+
+  state.maSeries = {
+    5: state.chart.addLineSeries({ color: "#f7bd52", lineWidth: 1.5, lastValueVisible: false }),
+    10: state.chart.addLineSeries({ color: "#5ca5ff", lineWidth: 1.5, lastValueVisible: false }),
+    20: state.chart.addLineSeries({ color: "#ad7cff", lineWidth: 1.5, lastValueVisible: false })
+  };
+
+  state.chart.timeScale().subscribeVisibleLogicalRangeChange(range => {
+    if (!range || state.isLoadingOlder || !state.hasMoreHistory) return;
+    if (range.from <= 2) loadMoreHistoricalCandles();
+  });
+
+  new ResizeObserver(entries => {
+    for (const entry of entries) {
+      state.chart.applyOptions({
+        width: entry.contentRect.width,
+        height: entry.contentRect.height
+      });
+      updatePriceTimer();
+    }
+  }).observe(container);
+}
+
+async function loadSymbolCandles(isInitial = true) {
+  state.abortCtrl?.abort();
+  state.abortCtrl = new AbortController();
+  const overlay = document.getElementById("chart-loading");
+  if (isInitial) overlay.classList.add("show");
+
+  try {
+    const raw = await BitgetAPI.fetchCandles(state.symbol, state.period, 100);
+    if (!raw.length) throw new Error("無可用 K 線");
+
+    state.candleData = raw;
+    state.oldestCandleTime = raw[0].time;
+    state.hasMoreHistory = true;
+    renderChartData(raw, isInitial);
+  } catch (err) {
+    if (err.name === "AbortError") return;
+  } finally {
+    overlay.classList.remove("show");
+  }
+}
+
+async function loadMoreHistoricalCandles() {
+  if (state.isLoadingOlder || !state.hasMoreHistory) return;
+  state.isLoadingOlder = true;
+  const overlay = document.getElementById("chart-loading");
+  overlay.classList.add("show");
+
+  try {
+    const older = await BitgetAPI.fetchCandles(state.symbol, state.period, 100, (state.oldestCandleTime - 1) * 1000);
+    if (!older.length) {
+      state.hasMoreHistory = false;
+      return;
+    }
+
+    state.oldestCandleTime = older[0].time;
+    const combined = [...older, ...state.candleData].filter((c, i, a) => !i || c.time !== a[i - 1].time);
+    state.candleData = combined;
+    renderChartData(combined, false);
+  } catch (e) {
+  } finally {
+    state.isLoadingOlder = false;
+    overlay.classList.remove("show");
+  }
+}
+
+function renderChartData(candles, fitContent = false) {
+  state.candleSeries.setData(candles);
+
+  const volData = candles.map(c => ({
+    time: c.time,
+    value: c.volume,
+    color: c.close >= c.open ? "#38c99b40" : "#ee617c40"
+  }));
+  state.volumeSeries.setData(volData);
+
+  const calcMa = (len) => {
+    let sum = 0;
+    return candles.map((c, idx) => {
+      sum += c.close;
+      if (idx >= len) sum -= candles[idx - len].close;
+      return idx >= len - 1 ? { time: c.time, value: sum / len } : null;
+    }).filter(Boolean);
+  };
+
+  [5, 10, 20].forEach(len => {
+    state.maSeries[len].setData(calcMa(len));
+  });
+
+  if (document.getElementById("chk-ox-markers").checked) {
+    const markers = [];
+    for (let i = 10; i < candles.length - 1; i++) {
+      const c = candles[i];
+      if (c.close > candles[i - 1].high && c.volume > candles[i - 1].volume * 1.8) {
+        markers.push({
+          time: c.time,
+          position: "belowBar",
+          color: "#38c99b",
+          shape: "arrowUp",
+          text: "OX 放量突破"
+        });
+      }
+    }
+    state.candleSeries.setMarkers(markers.slice(-6));
+  } else {
+    state.candleSeries.setMarkers([]);
+  }
+
+  if (fitContent) {
+    state.chart.timeScale().fitContent();
+  }
+  updatePriceTimer();
+}
+
+function updatePriceTimer() {
+  const timerEl = document.getElementById("price-timer");
+  if (!state.candleData.length || !timerEl) return;
+  const last = state.candleData[state.candleData.length - 1];
+  const step = periods[state.period] || 60;
+  const now = Math.floor(Date.now() / 1000);
+  const left = step - (now % step);
+  const m = Math.floor(left / 60);
+  const s = left % 60;
+  
+  const y = state.candleSeries.priceToCoordinate(last.close);
+  timerEl.innerHTML = `${fmtPrice(last.close)}<small>倒數 ${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}</small>`;
+  if (Number.isFinite(y)) {
+    timerEl.style.top = `${Math.max(16, Math.min(document.getElementById("chart").clientHeight - 24, y))}px`;
+  }
+}
+
+function updateHeaderHUD() {
+  const ticker = state.tickers.find(t => t.symbol === state.symbol);
+  if (!ticker) return;
+
+  document.getElementById("ticker-pair").textContent = `${ticker.symbol} · Bitget 永續`;
+  document.getElementById("price").textContent = fmtPrice(ticker.lastPr);
+  
+  const chgEl = document.getElementById("change");
+  chgEl.textContent = fmtPct(ticker.change24h);
+  chgEl.className = num(ticker.change24h) >= 0 ? "positive" : "negative";
+
+  document.getElementById("quote").textContent = `${fmtUsd(ticker.usdtVolume)} USDT`;
+  document.getElementById("chart-head-title").children[0].textContent = `${ticker.symbol} 永續合約`;
+  document.getElementById("tv-ext-link").href = `https://www.tradingview.com/symbols/${ticker.symbol}.P/?exchange=BITGET`;
+
+  const scored = state.allScoredCoins.find(c => c.symbol === state.symbol);
+  if (scored) {
+    document.getElementById("ox-score").textContent = scored.oxScore;
+    document.getElementById("ox-tier-label").textContent = `流動分: ${scored.liqScore} · 結構: ${scored.setupScore}`;
+    document.getElementById("ox-setup").textContent = scored.setupName;
+    document.getElementById("ox-rs-desc").textContent = `RS: ${scored.rsScore}`;
+  } else {
+    document.getElementById("ox-score").textContent = "—";
+    document.getElementById("ox-tier-label").textContent = "常規觀察池";
+    document.getElementById("ox-setup").textContent = "基本走勢";
+    document.getElementById("ox-rs-desc").textContent = "—";
+  }
+
+  if (state.btcTicker) {
+    const diff = num(ticker.change24h) - num(state.btcTicker.change24h);
+    document.getElementById("btc-rel").textContent = `相對 BTC: ${diff >= 0 ? '+' : ''}${(diff * 100).toFixed(2)}%`;
+  }
+}
+
+function switchSymbol(symbol) {
+  if (symbol === state.symbol) return;
+  state.symbol = symbol;
+  updateHeaderHUD();
+  renderCurrentTab();
+  loadSymbolCandles(true);
+}
+
+document.addEventListener("click", e => {
+  const card = e.target.closest(".coin-card") || e.target.closest(".trad-row");
+  if (card && card.dataset.symbol) {
+    switchSymbol(card.dataset.symbol);
+    return;
+  }
+
+  const tabBtn = e.target.closest(".tab-btn");
+  if (tabBtn && tabBtn.dataset.tab) {
+    state.currentTab = tabBtn.dataset.tab;
+    document.querySelectorAll(".tab-btn").forEach(b => b.classList.toggle("active", b === tabBtn));
+    renderCurrentTab();
+    return;
+  }
+
+  const tfBtn = e.target.closest(".btn-tf");
+  if (tfBtn && tfBtn.dataset.tf) {
+    state.period = tfBtn.dataset.tf;
+    document.querySelectorAll(".btn-tf").forEach(b => b.classList.toggle("active", b === tfBtn));
+    document.getElementById("tf-pill").textContent = `${tfBtn.textContent} ${tfBtn.dataset.tf.includes('D') ? '日線' : tfBtn.dataset.tf.includes('W') ? '週線' : ''}`;
+    loadSymbolCandles(true);
+    return;
+  }
+
+  if (e.target.id === "btn-chart-fullscreen") {
+    const box = document.querySelector(".chart-box");
+    if (!document.fullscreenElement) {
+      box.requestFullscreen?.();
+    } else {
+      document.exitFullscreen?.();
+    }
+    return;
+  }
+
+  if (e.target.id === "btn-force-rescan") {
+    runMarketScan();
+    return;
+  }
+});
+
+document.getElementById("chk-vol").addEventListener("change", e => state.volumeSeries.applyOptions({ visible: e.target.checked }));
+document.getElementById("chk-ma5").addEventListener("change", e => state.maSeries[5].applyOptions({ visible: e.target.checked }));
+document.getElementById("chk-ma10").addEventListener("change", e => state.maSeries[10].applyOptions({ visible: e.target.checked }));
+document.getElementById("chk-ma20").addEventListener("change", e => state.maSeries[20].applyOptions({ visible: e.target.checked }));
+document.getElementById("chk-ox-markers").addEventListener("change", () => renderChartData(state.candleData, false));
+
+window.addEventListener("DOMContentLoaded", () => {
+  initChart();
+  runMarketScan().then(() => loadSymbolCandles(true));
+  setInterval(updatePriceTimer, 1000);
+});
+</script>
+</body>
+</html>    }
     button, input, select { font: inherit; }
     button { cursor: pointer; }
     button:focus-visible, a:focus-visible, input:focus-visible {
