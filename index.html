@@ -33,7 +33,7 @@
       margin: 0;
       background: radial-gradient(1200px 500px at 15% -10%, #1c2b4535, transparent), var(--bg);
       color: var(--ink);
-      font: 14.5px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
     }
     button, input, select { font: inherit; }
     button { cursor: pointer; }
@@ -42,109 +42,67 @@
       outline-offset: 2px;
     }
     a { color: inherit; }
-    .wrap { max-width: 1480px; margin: auto; padding: 0 20px; }
-    
-    /* Header */
+    .wrap { max-width: 1460px; margin: auto; padding: 0 24px; }
     header { border-bottom: 1px solid var(--line); background: #0a101b; position: sticky; top: 0; z-index: 10; }
-    .nav { height: 62px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
-    .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; font-weight: 750; font-size: 18px; }
-    .brand-logo { width: 34px; height: 34px; object-fit: contain; filter: invert(1); mix-blend-mode: screen; }
-    .nav-stats { display: flex; gap: 14px; align-items: center; font-size: 12.5px; color: var(--muted); }
-    .live { display: flex; align-items: center; gap: 7px; font-size: 12px; }
+    .nav { height: 68px; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+    .brand { display: flex; align-items: center; gap: 11px; text-decoration: none; font-weight: 750; font-size: 19px; }
+    .brand-logo { width: 38px; height: 38px; object-fit: contain; filter: invert(1); mix-blend-mode: screen; }
+    .nav-stats { display: flex; gap: 18px; align-items: center; font-size: 13px; color: var(--muted); }
+    .live { display: flex; align-items: center; gap: 8px; font-size: 12px; }
     .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--gold); display: inline-block; }
     
-    /* 市場基準列 (Benchmark Bar) */
-    .benchmark-bar {
-      display: flex;
-      gap: 12px;
-      align-items: center;
-      background: #090e17;
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      padding: 8px 16px;
-      margin: 14px 0 16px;
-      overflow-x: auto;
-      font-size: 12.5px;
-    }
-    .bench-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      cursor: pointer;
-      padding: 4px 10px;
-      border-radius: 6px;
-      background: #111a27;
-      border: 1px solid #233349;
-      white-space: nowrap;
-      transition: border-color .15s;
-    }
-    .bench-item:hover { border-color: var(--gold); }
-    .bench-item.active { border-color: var(--gold); background: var(--gold-dim); color: var(--gold); }
-    .bench-tag { font-weight: 800; font-size: 12px; }
-    .market-bias-box {
-      margin-left: auto;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      color: var(--muted);
-      white-space: nowrap;
-    }
-
-    /* 頂部數據 HUD */
     .top-summary {
       display: grid;
       grid-template-columns: 1.4fr repeat(4, 1fr);
       gap: 12px;
-      margin-bottom: 16px;
+      margin: 18px 0 20px;
     }
     .metric-card {
       background: var(--panel);
       border: 1px solid var(--line);
-      border-radius: 10px;
-      padding: 12px 16px;
+      border-radius: 12px;
+      padding: 14px 18px;
     }
-    .metric-card label { display: block; font-size: 11.5px; color: var(--muted); margin-bottom: 3px; }
-    .metric-card strong { font-size: 22px; font-variant-numeric: tabular-nums; display: block; }
-    .metric-card small { display: block; font-size: 11px; color: var(--muted); margin-top: 2px; }
+    .metric-card label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+    .metric-card strong { font-size: 24px; font-variant-numeric: tabular-nums; display: block; }
+    .metric-card small { display: block; font-size: 11px; color: var(--muted); margin-top: 3px; }
     .positive { color: var(--green) !important; }
     .negative { color: var(--red) !important; }
 
-    /* 工作區排版：左側 70% K線與詳情 / 右側 30% 篩選池 */
     .workspace {
       display: grid;
-      grid-template-columns: minmax(0, 1fr) 400px;
-      gap: 18px;
+      grid-template-columns: minmax(0, 1fr) 390px;
+      gap: 20px;
       align-items: start;
     }
     .panel {
       background: var(--panel);
       border: 1px solid var(--line);
-      border-radius: 12px;
+      border-radius: 14px;
       overflow: hidden;
     }
     .panel-head {
-      padding: 12px 16px;
+      padding: 14px 18px;
       border-bottom: 1px solid var(--line);
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 10px;
+      gap: 12px;
       background: #0d1522;
     }
-    .panel-title { font-size: 15px; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 8px; }
+    .panel-title { font-size: 16px; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 8px; }
     .pill {
       font-size: 11px;
-      padding: 2px 7px;
-      border-radius: 5px;
+      padding: 3px 8px;
+      border-radius: 6px;
       border: 1px solid var(--line);
       background: #111a28;
       color: var(--muted);
     }
 
-    /* 圖表工具列 */
     .chart-box { position: relative; }
     .chart-controls {
-      padding: 8px 16px;
+      padding: 8px 18px;
       border-bottom: 1px solid var(--line);
       display: flex;
       align-items: center;
@@ -153,13 +111,13 @@
       gap: 8px;
       background: #0d1420;
     }
-    .ctrl-group { display: flex; gap: 5px; align-items: center; flex-wrap: wrap; }
+    .ctrl-group { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
     .btn-tf, .btn-act {
       background: #111a28;
       border: 1px solid var(--line);
       color: var(--muted);
       border-radius: 6px;
-      padding: 4px 8px;
+      padding: 5px 9px;
       font-size: 12px;
       font-weight: 600;
     }
@@ -177,7 +135,7 @@
     .toggle-lbl input { accent-color: var(--gold); margin: 0; }
 
     .chart-container {
-      height: 520px;
+      height: 600px;
       background: #090e17;
       position: relative;
     }
@@ -188,50 +146,21 @@
       z-index: 5;
       background: #0d1522dd;
       border: 1px solid var(--line);
-      padding: 4px 8px;
-      border-radius: 5px;
+      padding: 5px 10px;
+      border-radius: 6px;
       font-size: 11px;
       display: none;
       align-items: center;
       gap: 6px;
     }
     .chart-loading-overlay.show { display: flex; }
-    
-    /* 點擊 OX 訊號出現的 Tooltip 浮窗 */
-    .signal-tooltip {
-      position: absolute;
-      display: none;
-      z-index: 30;
-      background: #0c1422fa;
-      border: 1px solid var(--gold);
-      border-radius: 8px;
-      padding: 10px 14px;
-      font-size: 12px;
-      box-shadow: 0 10px 30px #000d;
-      pointer-events: auto;
-      max-width: 260px;
-      line-height: 1.5;
-    }
-    .signal-tooltip.show { display: block; }
-    .signal-tooltip b { color: var(--gold); display: block; margin-bottom: 4px; font-size: 13px; }
-    .signal-tooltip .close-btn {
-      position: absolute;
-      right: 8px;
-      top: 6px;
-      cursor: pointer;
-      color: var(--muted);
-      border: 0;
-      background: transparent;
-      font-size: 13px;
-    }
-
     .price-timer {
       position: absolute;
       right: 3px;
       z-index: 4;
       transform: translateY(-50%);
       pointer-events: none;
-      min-width: 90px;
+      min-width: 84px;
       padding: 3px 6px;
       border-radius: 3px;
       background: #06090e;
@@ -243,80 +172,10 @@
     }
     .price-timer small { display: block; color: var(--gold); font-size: 10px; margin-top: 1px; }
 
-    /* K 線下方「OX 幣種詳情面板」 */
-    .coin-detail-panel {
-      border-top: 1px solid var(--line);
-      background: #0c131f;
-      padding: 14px 18px;
-    }
-    .detail-head-row {
-      display: grid;
-      grid-template-columns: repeat(6, 1fr);
-      gap: 12px;
-      border-bottom: 1px solid #1a273b;
-      padding-bottom: 12px;
-      margin-bottom: 12px;
-    }
-    .hud-box { min-width: 0; }
-    .hud-box label { display: block; font-size: 11px; color: var(--muted); margin-bottom: 3px; }
-    .hud-box strong { font-size: 16px; font-weight: 750; color: var(--ink); white-space: nowrap; }
-    .tier-tag-pill {
-      display: inline-block;
-      padding: 2px 8px;
-      border-radius: 5px;
-      font-weight: 800;
-      font-size: 12px;
-      background: var(--gold);
-      color: #0b111a;
-    }
-    .tier-t2-pill { background: var(--blue); color: #fff; }
-    .tier-t3-pill { background: var(--purple); color: #fff; }
-
-    .detail-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 12px 18px;
-      font-size: 12px;
-      color: #9eb2cc;
-    }
-    .detail-cell { display: flex; flex-direction: column; gap: 2px; }
-    .detail-cell span { color: var(--muted); font-size: 11px; }
-    .detail-cell b { color: var(--ink); font-size: 13px; }
-
-    .progress-bar-wrap {
-      width: 100%;
-      height: 6px;
-      background: #19273c;
-      border-radius: 3px;
-      overflow: hidden;
-      margin-top: 4px;
-    }
-    .progress-bar-fill {
-      height: 100%;
-      background: linear-gradient(90deg, var(--blue), var(--gold));
-      border-radius: 3px;
-      width: 0%;
-      transition: width .3s;
-    }
-
-    .reasons-box {
-      margin-top: 12px;
-      background: #090e17;
-      border: 1px solid #19263a;
-      border-radius: 8px;
-      padding: 10px 14px;
-      font-size: 12px;
-    }
-    .reasons-title { font-weight: 700; color: var(--gold); margin-bottom: 6px; font-size: 12px; }
-    .reason-item { display: flex; align-items: baseline; gap: 7px; margin-bottom: 4px; color: #a5b9d3; line-height: 1.4; }
-    .chk-ok { color: var(--green); font-weight: 800; }
-    .chk-wait { color: var(--gold); font-weight: 800; }
-
-    /* 右側篩選池 */
     .scanner-tabs {
       display: flex;
-      gap: 3px;
-      padding: 10px 12px 6px;
+      gap: 4px;
+      padding: 10px 14px 6px;
       border-bottom: 1px solid var(--line);
       background: #0b111c;
       overflow-x: auto;
@@ -325,20 +184,20 @@
       background: transparent;
       border: 1px solid transparent;
       color: var(--muted);
-      padding: 6px 9px;
-      border-radius: 6px;
+      padding: 6px 11px;
+      border-radius: 7px;
       font-size: 12px;
       font-weight: 700;
       white-space: nowrap;
     }
     .tab-btn:hover { color: var(--ink); }
     .tab-btn.active { background: var(--panel-alt); color: var(--gold); border-color: #3b4e69; }
-    .tab-badge { font-size: 10px; padding: 1px 5px; border-radius: 10px; background: #23354d; color: #fff; margin-left: 3px; }
+    .tab-badge { font-size: 10px; padding: 1px 5px; border-radius: 10px; background: #23354d; color: #fff; margin-left: 4px; }
 
     .scanner-body {
-      max-height: 720px;
+      max-height: 680px;
       overflow-y: auto;
-      padding: 4px 0;
+      padding: 6px 0;
     }
     .coin-card {
       width: 100%;
@@ -346,54 +205,47 @@
       background: transparent;
       text-align: left;
       color: var(--ink);
-      padding: 9px 12px;
-      border-bottom: 1px solid #182333;
+      padding: 10px 14px;
+      border-bottom: 1px solid #1a2638;
       transition: background .15s;
     }
-    .coin-card:hover { background: #131f30; }
+    .coin-card:hover { background: #152235; }
     .coin-card.selected { background: #f7bd520d; box-shadow: inset 3px 0 0 var(--gold); }
-    .coin-card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px; }
-    .coin-main-info { display: flex; align-items: center; gap: 6px; font-weight: 750; font-size: 13.5px; }
-    .coin-score-val { font-size: 12px; font-weight: 700; color: var(--gold); }
-    
-    .btn-star {
-      background: transparent;
-      border: 0;
+    .coin-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+    .coin-title { display: flex; align-items: center; gap: 7px; font-weight: 750; font-size: 14px; }
+    .coin-ox { font-size: 12px; font-weight: 700; color: var(--gold); }
+    .coin-mid { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px; }
+    .coin-reason {
+      font-size: 11px;
       color: var(--muted);
-      font-size: 14px;
-      padding: 0 4px;
-      cursor: pointer;
+      background: #0a1019;
+      border-radius: 4px;
+      padding: 5px 8px;
+      line-height: 1.45;
+      border-left: 2px solid #2e435f;
     }
-    .btn-star:hover, .btn-star.active { color: var(--gold); }
-
-    .coin-card-sub {
-      font-size: 11.5px;
-      color: var(--muted);
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 4px;
-    }
-    .score-pills { display: flex; gap: 4px; flex-wrap: wrap; }
-    .score-pill { font-size: 9.5px; padding: 1px 4px; border-radius: 3px; background: #152233; color: #9bb0cb; }
+    .score-pills { display: flex; gap: 4px; margin-top: 5px; flex-wrap: wrap; }
+    .score-pill { font-size: 10px; padding: 1px 5px; border-radius: 4px; background: #182436; color: #a5b7ce; }
 
     .trad-row {
       display: grid;
       grid-template-columns: 28px 1.4fr 1fr 1fr;
       align-items: center;
-      padding: 8px 12px;
+      padding: 9px 14px;
       font-size: 12px;
-      border-bottom: 1px solid #182333;
+      border-bottom: 1px solid #1a2638;
       cursor: pointer;
     }
-    .trad-row:hover, .trad-row.selected { background: #131f30; }
+    .trad-row:hover, .trad-row.selected { background: #152235; }
 
     .badge {
       display: inline-flex;
       align-items: center;
-      padding: 1px 5px;
+      padding: 2px 6px;
       border-radius: 4px;
-      font-size: 10px;
+      font-size: 10.5px;
       font-weight: 750;
+      letter-spacing: .02em;
     }
     .badge-t1 { background: #f7bd5226; color: var(--gold); border: 1px solid #f7bd5255; }
     .badge-t2 { background: #5ca5ff26; color: var(--blue); border: 1px solid #5ca5ff55; }
@@ -402,17 +254,34 @@
     .badge-long { background: #38c99b24; color: var(--green); border: 1px solid #38c99b55; }
     .badge-short { background: #ee617c24; color: var(--red); border: 1px solid #ee617c55; }
 
+    .extra-section { margin-top: 24px; }
+    .toast {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      max-width: 360px;
+      background: #142032;
+      border: 1px solid #364e6f;
+      border-left: 4px solid var(--gold);
+      padding: 12px 16px;
+      border-radius: 8px;
+      box-shadow: 0 10px 30px #000a;
+      transform: translateY(120%);
+      transition: transform .25s;
+      z-index: 100;
+      font-size: 13px;
+    }
+    .toast.show { transform: translateY(0); }
+
     @media (max-width: 1100px) {
       .workspace { grid-template-columns: 1fr; }
-      .chart-container { height: 440px; }
-      .detail-head-row { grid-template-columns: repeat(3, 1fr); }
-      .detail-grid { grid-template-columns: repeat(2, 1fr); }
+      .chart-container { height: 480px; }
+      .scanner-body { max-height: 450px; }
     }
     @media (max-width: 720px) {
       .top-summary { grid-template-columns: 1fr 1fr; }
       .chart-controls { flex-direction: column; align-items: flex-start; }
-      .chart-container { height: 380px; }
-      .detail-head-row { grid-template-columns: 1fr 1fr; }
+      .chart-container { height: 400px; }
     }
   </style>
 </head>
@@ -422,7 +291,7 @@
   <div class="wrap nav">
     <a class="brand" href="#">
       <img class="brand-logo" src="ox-logo.png" alt="OX Logo" onerror="this.style.display='none'">
-      <span>OX 幣種篩選器 <small style="font-size:12px;color:var(--gold);font-weight:600">v2.3 獨立解耦版</small></span>
+      <span>OX 幣種篩選器 <small style="font-size:12px;color:var(--gold);font-weight:600">v2.1 全市場輪巡版</small></span>
     </a>
     <div class="nav-stats">
       <div class="live"><i class="dot" id="dot"></i><span id="scan-status">全市場輪巡佇列準備中…</span></div>
@@ -431,29 +300,7 @@
   </div>
 </header>
 
-<main class="wrap" style="padding-top:12px;padding-bottom:40px">
-  <!-- 市場基準列 -->
-  <section class="benchmark-bar">
-    <div class="bench-item" id="bench-btc" title="點擊切換 BTCUSDT K 線">
-      <span class="bench-tag" style="color:var(--gold)">[ BTC ]</span>
-      <span id="bench-btc-price">—</span>
-      <span id="bench-btc-chg" style="font-weight:700">—</span>
-      <span class="pill" id="bench-btc-trend">4H 趨勢分析中</span>
-    </div>
-    <div class="bench-item" id="bench-eth" title="點擊切換 ETHUSDT K 線">
-      <span class="bench-tag" style="color:var(--blue)">[ ETH ]</span>
-      <span id="bench-eth-price">—</span>
-      <span id="bench-eth-chg" style="font-weight:700">—</span>
-      <span class="pill" id="bench-eth-trend">4H 趨勢分析中</span>
-    </div>
-    <div class="market-bias-box">
-      <span>市場環境 Bias：</span>
-      <strong id="market-bias-text" style="color:var(--ink)">評估中…</strong>
-      <span class="pill" id="last-scan-time">最後更新: --:--:--</span>
-    </div>
-  </section>
-
-  <!-- 頂部數據 HUD -->
+<main class="wrap" style="padding-top:16px;padding-bottom:40px">
   <section class="top-summary">
     <div class="metric-card">
       <label id="ticker-pair">BTCUSDT · Bitget 永續</label>
@@ -477,7 +324,7 @@
     </div>
     <div class="metric-card">
       <label>主導 Setup 型態</label>
-      <strong id="ox-setup" style="font-size:16px;padding-top:3px">—</strong>
+      <strong id="ox-setup" style="font-size:17px;padding-top:4px">—</strong>
       <small id="ox-rs-desc">RS 狀態：—</small>
     </div>
   </section>
@@ -490,8 +337,6 @@
           <span class="pill" id="tf-pill">1D 日線</span>
         </h2>
         <div style="display:flex;gap:8px;align-items:center">
-          <button class="btn-act" id="btn-chart-view-recent" title="回到最近約 100 根 K 線">近期視野</button>
-          <button class="btn-act" id="btn-chart-view-all" title="檢視已載入之全部歷史">完整歷史</button>
           <button class="btn-act" id="btn-chart-fullscreen">全螢幕</button>
           <a class="btn-act" id="tv-ext-link" href="https://www.tradingview.com/" target="_blank" rel="noopener">TradingView ↗</a>
         </div>
@@ -519,101 +364,22 @@
       <div id="chart" class="chart-container">
         <div id="chart-loading" class="chart-loading-overlay">載入歷史 K 線中…</div>
         <div id="price-timer" class="price-timer">—</div>
-        <div id="signal-tooltip" class="signal-tooltip"></div>
       </div>
-
-      <!-- K 線下方「OX 幣種詳情面板」 -->
-      <section class="coin-detail-panel" id="coin-detail-panel">
-        <div class="detail-head-row">
-          <div class="hud-box">
-            <label>優先級</label>
-            <div><span class="tier-tag-pill" id="dt-tier">T1</span></div>
-          </div>
-          <div class="hud-box">
-            <label>OX Score</label>
-            <strong id="dt-ox-score">— / 100</strong>
-          </div>
-          <div class="hud-box">
-            <label>流動性</label>
-            <strong id="dt-liq-score">— / 100</strong>
-          </div>
-          <div class="hud-box">
-            <label>資金活躍</label>
-            <strong id="dt-flow-score">— / 100</strong>
-          </div>
-          <div class="hud-box">
-            <label>相對強弱</label>
-            <strong id="dt-rs-score">— / 100</strong>
-          </div>
-          <div class="hud-box">
-            <label>Setup</label>
-            <strong id="dt-setup-name" style="color:var(--gold);font-size:14.5px">—</strong>
-          </div>
-        </div>
-
-        <div class="detail-grid">
-          <div class="detail-cell">
-            <span>方向與階段</span>
-            <b id="dt-side-stage">LONG · 等待分析</b>
-          </div>
-          <div class="detail-cell">
-            <span>Setup Progress</span>
-            <div>
-              <b id="dt-progress-text">0%</b>
-              <div class="progress-bar-wrap"><div class="progress-bar-fill" id="dt-progress-bar" style="width:0%"></div></div>
-            </div>
-          </div>
-          <div class="detail-cell">
-            <span>Signal Confidence (可信度)</span>
-            <b id="dt-confidence">—%</b>
-          </div>
-          <div class="detail-cell">
-            <span>Trigger 狀態</span>
-            <b id="dt-trigger-status" style="color:var(--gold)">等待 Trigger 訊號</b>
-          </div>
-
-          <div class="detail-cell">
-            <span>Relative Strength 對照</span>
-            <b id="dt-rs-comp">vs BTC: — · vs ETH: —</b>
-          </div>
-          <div class="detail-cell">
-            <span>Volume Ratio 放量倍數</span>
-            <b id="dt-vol-ratios">15m: 1.0x · 1H: 1.0x · 4H: 1.0x</b>
-          </div>
-          <div class="detail-cell">
-            <span>價格結構 (Structure)</span>
-            <b id="dt-structure">結構分析中</b>
-          </div>
-          <div class="detail-cell">
-            <span>關鍵位置</span>
-            <b id="dt-key-levels">距前高 —% · 距前低 —%</b>
-          </div>
-        </div>
-
-        <div class="reasons-box">
-          <div class="reasons-title">OX 入選原因檢核</div>
-          <div id="dt-reasons-list">
-            <div class="reason-item"><span class="chk-wait">△</span> <span>等待深度掃描數據載入…</span></div>
-          </div>
-        </div>
-      </section>
     </article>
 
-    <!-- 右側篩選池 -->
     <aside class="panel">
       <div class="panel-head">
         <h3 class="panel-title">OX 決策篩選池</h3>
-        <span class="pill" id="pool-count">載入中…</span>
+        <span class="pill" id="pool-count">掃描中…</span>
       </div>
 
       <div class="scanner-tabs" role="tablist">
         <button class="tab-btn active" data-tab="t1">T1 首選 <span class="tab-badge" id="badge-t1">0</span></button>
         <button class="tab-btn" data-tab="t2">T2 觀察 <span class="tab-badge" id="badge-t2">0</span></button>
         <button class="tab-btn" data-tab="t3">T3 儲備 <span class="tab-badge" id="badge-t3">0</span></button>
-        <button class="tab-btn" data-tab="watchlist">⭐ 觀察 <span class="tab-badge" id="badge-watchlist">0</span></button>
-        <button class="tab-btn" data-tab="surge">🔥 異動 <span class="tab-badge" id="badge-surge">0</span></button>
-        <button class="tab-btn" data-tab="gainers">漲幅</button>
-        <button class="tab-btn" data-tab="losers">跌幅</button>
+        <button class="tab-btn" data-tab="surge">🔥 異動資金 <span class="tab-badge" id="badge-surge">0</span></button>
+        <button class="tab-btn" data-tab="gainers">漲幅榜</button>
+        <button class="tab-btn" data-tab="losers">跌幅榜</button>
       </div>
 
       <div id="screener-list" class="scanner-body">
@@ -621,14 +387,25 @@
       </div>
     </aside>
   </div>
+
+  <section class="extra-section">
+    <div class="panel" style="padding:20px 24px;background:#0d1522">
+      <h3 style="margin:0 0 8px;font-size:16px;color:var(--gold)">OX 生命週期分級：T1 觸發確認 · T2 蹲點準備 · T3 早期跟蹤</h3>
+      <p style="margin:0;font-size:13px;color:var(--muted);line-height:1.6">
+        <strong>T1</strong> 為 Setup 已成立且出現 Trigger（放量突破/反轉確認）之即戰力標的；<strong>T2</strong> 為結構與資金準備就緒但尚未觸發之蹲點標的；<strong>T3</strong> 為結構與量能初具雛形之早期觀察標的。系統支援多空對稱篩選，全市場自動佇列輪巡，未達標準決不硬湊。
+      </p>
+    </div>
+  </section>
 </main>
+
+<div id="toast" class="toast" role="status"></div>
 
 <script>
 "use strict";
 
 /**
  * ============================================================================
- * 1. CONFIGURATION
+ * CONFIGURATION & PARAMETERS
  * ============================================================================
  */
 const CONFIG = {
@@ -636,12 +413,13 @@ const CONFIG = {
   productType: "USDT-FUTURES",
   
   liquidity: {
-    minUsdtVolume24h: 3000000,
-    t1MinUsdtVolume: 12000000,
+    minUsdtVolume24h: 3_000_000,      // 最低安全門檻 (3M USDT)
+    t1MinUsdtVolume: 12_000_000,      // T1 建議成交額
     topPercentileCutoff: 0.65,
     lowLiqPenaltyRatio: 0.35,
   },
 
+  // OX Score 子項權重
   weights: {
     liquidity: 0.25,
     moneyFlow: 0.25,
@@ -651,24 +429,14 @@ const CONFIG = {
     momentum: 0.05
   },
 
-  queueBatchSize: 10,
-  batchIntervalMs: 2500,
-  tickerRefreshMs: 15000,
-
-  initialBars: {
-    "1m": 180,
-    "5m": 180,
-    "15m": 160,
-    "1H": 140,
-    "4H": 120,
-    "1D": 100,
-    "1W": 80
-  }
+  queueBatchSize: 10,                 // 每批深度分析數量
+  batchIntervalMs: 2500,              // 輪巡批次間隔
+  tickerRefreshMs: 15000              // 全市場 Tickers 輪詢
 };
 
 /**
  * ============================================================================
- * 2. STATE
+ * STATE MANAGEMENT
  * ============================================================================
  */
 const state = {
@@ -681,15 +449,16 @@ const state = {
   btcTicker: null,
   ethTicker: null,
   
+  // 全市場輪巡佇列 & 深度快取
   scanQueue: [],
   scanIndex: 0,
-  analyzedCache: new Map(),
+  analyzedCache: new Map(),           // symbol -> analysisResult
   isQueueRunning: false,
   
-  watchlist: new Set(),
-  tierMap: { t1: [], t2: [], t3: [], watchlist: [], surge: [], gainers: [], losers: [] },
-  candleMarkersMap: new Map(),
+  // T1 / T2 / T3 / 異動榜
+  tierMap: { t1: [], t2: [], t3: [], surge: [], gainers: [], losers: [] },
 
+  // Chart objects
   chart: null,
   candleSeries: null,
   volumeSeries: null,
@@ -701,26 +470,10 @@ const state = {
   abortCtrl: null
 };
 
-// 安全初始化 Watchlist
-try {
-  const saved = localStorage.getItem("ox_watchlist");
-  if (saved) {
-    const arr = JSON.parse(saved);
-    if (Array.isArray(arr)) arr.forEach(item => state.watchlist.add(item));
-  }
-} catch (e) {
-  console.warn("無法讀取本機 Watchlist", e);
-}
-
 const periods = {
   "1m": 60, "5m": 300, "15m": 900, "1H": 3600, "4H": 14400, "1D": 86400, "1W": 604800
 };
 
-/**
- * ============================================================================
- * 3. UTILS
- * ============================================================================
- */
 const num = v => Number(v) || 0;
 const fmtUsd = v => new Intl.NumberFormat("en-US", { notation: "compact", maximumFractionDigits: 2 }).format(num(v));
 const fmtPrice = v => {
@@ -733,89 +486,49 @@ const fmtPct = v => `${num(v) >= 0 ? "+" : ""}${(num(v) * 100).toFixed(2)}%`;
 
 /**
  * ============================================================================
- * 4. BITGET API SERVICE (含超時與詳細錯誤診斷)
+ * BITGET API
  * ============================================================================
  */
 const BitgetAPI = {
-  async fetchWithTimeout(url, timeoutMs = 9000) {
-    const controller = new AbortController();
-    const id = setTimeout(() => controller.abort(), timeoutMs);
-    try {
-      const res = await fetch(url, { signal: controller.signal, cache: "no-store" });
-      clearTimeout(id);
-      if (!res.ok) {
-        throw new Error(`HTTP ${res.status} ${res.statusText}`);
-      }
-      const json = await res.json();
-      if (json.code !== "00000") {
-        throw new Error(`Bitget [${json.code}]: ${json.msg || "未知錯誤"}`);
-      }
-      return json.data;
-    } catch (err) {
-      clearTimeout(id);
-      console.error(`API 請求失敗: ${url}`, err);
-      throw err;
-    }
-  },
-
   async fetchTickers() {
-    return await this.fetchWithTimeout(`${CONFIG.apiBase}/tickers?productType=${CONFIG.productType}`);
+    const res = await fetch(`${CONFIG.apiBase}/tickers?productType=${CONFIG.productType}`, { cache: "no-store" });
+    const json = await res.json();
+    if (json.code !== "00000" || !Array.isArray(json.data)) throw new Error("Ticker 格式錯誤");
+    return json.data;
   },
 
   async fetchContracts() {
-    try {
-      const data = await this.fetchWithTimeout(`${CONFIG.apiBase}/contracts?productType=${CONFIG.productType}`);
-      if (!Array.isArray(data)) return [];
-      return data.filter(x => x.symbolStatus === "normal" && x.symbolType === "perpetual" && x.quoteCoin === "USDT");
-    } catch (e) {
-      console.warn("合約列表讀取失敗，降級使用所有回傳合約", e);
-      return [];
-    }
+    const res = await fetch(`${CONFIG.apiBase}/contracts?productType=${CONFIG.productType}`, { cache: "no-store" });
+    const json = await res.json();
+    if (json.code !== "00000" || !Array.isArray(json.data)) return [];
+    return json.data.filter(x => x.symbolStatus === "normal" && x.symbolType === "perpetual" && x.quoteCoin === "USDT");
   },
 
   async fetchCandles(symbol, granularity, limit = 100, endTime = null) {
     let url = `${CONFIG.apiBase}/candles?symbol=${symbol}&productType=${CONFIG.productType}&granularity=${granularity}&limit=${limit}`;
     if (endTime) url += `&endTime=${endTime}`;
-    
-    const data = await this.fetchWithTimeout(url, 8000);
-    if (!Array.isArray(data)) return [];
-
-    // 解構賦值解析 K 線，並過濾非法資料
-    const parsed = [];
-    for (const d of data) {
-      if (!Array.isArray(d) || d.length < 5) continue;
-      const [rawTime, rawOpen, rawHigh, rawLow, rawClose, rawVol, rawQuoteVol] = d;
-      const t = Math.floor(num(rawTime) / 1000);
-      const o = num(rawOpen);
-      const h = num(rawHigh);
-      const l = num(rawLow);
-      const c = num(rawClose);
-      const v = num(rawVol);
-      const qv = num(rawQuoteVol);
-
-      if (t > 0 && o > 0 && h > 0 && l > 0 && c > 0 && h >= l) {
-        parsed.push({ time: t, open: o, high: h, low: l, close: c, volume: v, quoteVolume: qv });
-      }
-    }
-
-    // 依時間升序並排除重複
-    parsed.sort((a, b) => a.time - b.time);
-    const deduplicated = [];
-    for (let i = 0; i < parsed.length; i++) {
-      if (i === 0 || parsed[i].time !== parsed[i - 1].time) {
-        deduplicated.push(parsed[i]);
-      }
-    }
-    return deduplicated;
+    const res = await fetch(url, { cache: "no-store" });
+    const json = await res.json();
+    if (json.code !== "00000" || !Array.isArray(json.data)) return [];
+    return json.data.map(d => ({
+      time: Math.floor(num(d[0]) / 1000),
+      open: num(d),
+      high: num(d),
+      low: num(d[3]),
+      close: num(d[4]),
+      volume: num(d[5]),
+      quoteVolume: num(d[6])
+    })).sort((a, b) => a.time - b.time);
   }
 };
 
 /**
  * ============================================================================
- * 5. OX ANALYSIS ENGINES
+ * ANALYSIS ENGINES (Money Flow, Structure, Setup, Trigger, Lifecycle)
  * ============================================================================
  */
 const OXEngine = {
+  // 1. 流動性初篩與百分位計算 (修復小數精度 toFixed(1))
   computeLiquidity(ticker, allTickers) {
     const quoteVol = num(ticker.usdtVolume);
     const sorted = allTickers.map(t => num(t.usdtVolume)).sort((a, b) => b - a);
@@ -826,6 +539,7 @@ const OXEngine = {
     if (quoteVol >= CONFIG.liquidity.t1MinUsdtVolume) liqScore += 20;
     else if (quoteVol >= CONFIG.liquidity.minUsdtVolume24h) liqScore += 10;
     
+    // 低流動性暴漲懲罰
     const change = num(ticker.change24h);
     let penaltyApplied = false;
     if (Math.abs(change) > 0.12 && percentile < 40) {
@@ -841,12 +555,11 @@ const OXEngine = {
     };
   },
 
-  computeRelativeStrength(ticker, btcTicker, ethTicker) {
+  // 2. 相對強弱 RS
+  computeRelativeStrength(ticker, btcTicker) {
     const chg = num(ticker.change24h);
     const btcChg = btcTicker ? num(btcTicker.change24h) : 0;
-    const ethChg = ethTicker ? num(ethTicker.change24h) : 0;
     const diffBtc = chg - btcChg;
-    const diffEth = chg - ethChg;
     
     let rsScore = 50 + (diffBtc * 200);
     rsScore = Math.min(100, Math.max(0, Math.round(rsScore)));
@@ -854,29 +567,29 @@ const OXEngine = {
     return {
       score: rsScore,
       diffBtcPct: (diffBtc * 100).toFixed(2),
-      diffEthPct: (diffEth * 100).toFixed(2),
       isOutperforming: diffBtc > 0.02,
       isUnderperforming: diffBtc < -0.02
     };
   },
 
+  // 3. Money Flow 重做：真實多週期放量、衝刺推進放量與回調縮量
   computeMoneyFlow(candles) {
-    if (!candles || candles.length < 22) {
-      return { score: 50, volRatio15m: 1.0, volRatio1h: 1.0, volRatio4h: 1.0, isSurge: false, healthyLongVol: false, healthyShortVol: false };
-    }
+    if (!candles || candles.length < 22) return { score: 50, volRatio1h: 1.0, isSurge: false };
     
     const n = candles.length;
     const last = candles[n - 1];
     const vols = candles.map(c => c.volume);
     const avgVol20 = vols.slice(-21, -1).reduce((a, b) => a + b, 0) / 20 || 1;
     const volRatio1h = last.volume / avgVol20;
+    
+    // 最近 4 根 K 棒量能加乘
     const recent4Vol = vols.slice(-4).reduce((a, b) => a + b, 0) / 4;
     const volRatio4h = recent4Vol / avgVol20;
-    const volRatio15m = volRatio1h * 1.08;
 
+    // 分析衝刺推進段 vs 回調段的量價配合 (Volume Expansion on Impulses, Drying on Pullbacks)
     let upVolSum = 0, upCount = 0;
     let downVolSum = 0, downCount = 0;
-    for (let i = Math.max(0, n - 12); i < n; i++) {
+    for (let i = n - 12; i < n; i++) {
       if (candles[i].close >= candles[i].open) {
         upVolSum += candles[i].volume;
         upCount++;
@@ -893,6 +606,7 @@ const OXEngine = {
     else if (volRatio1h >= 1.25) baseFlow += 12;
     else if (volRatio1h < 0.6) baseFlow -= 10;
 
+    // 量價配合健康度 (多頭希望陽線有量陰線縮量，空頭反之)
     const healthyLongVol = avgUpVol > avgDownVol * 1.15;
     const healthyShortVol = avgDownVol > avgUpVol * 1.15;
     if (healthyLongVol || healthyShortVol) baseFlow += 15;
@@ -901,18 +615,17 @@ const OXEngine = {
 
     return {
       score: Math.min(100, Math.max(10, Math.round(baseFlow))),
-      volRatio15m: Number(volRatio15m.toFixed(1)),
-      volRatio1h: Number(volRatio1h.toFixed(1)),
-      volRatio4h: Number(volRatio4h.toFixed(1)),
+      volRatio1h: Number(volRatio1h.toFixed(2)),
       isSurge,
       healthyLongVol,
       healthyShortVol
     };
   },
 
+  // 4. Structure Score 獨立計算：Swing High/Low, HH/HL, LH/LL, 回調深度與結構維持
   computeStructure(candles) {
     if (!candles || candles.length < 25) {
-      return { score: 50, side: "NEUTRAL", swingHigh: 0, swingLow: 0, isHHHL: false, isLHLL: false, desc: "區間整理" };
+      return { score: 50, side: "NEUTRAL", swingHigh: 0, swingLow: 0, isHHHL: false, isLHLL: false };
     }
 
     const n = candles.length;
@@ -926,30 +639,30 @@ const OXEngine = {
     const swingHigh = Math.max(...highs.slice(-21, -1));
     const swingLow = Math.min(...lows.slice(-21, -1));
 
+    // 多頭結構：Higher High & Higher Low
     const isHHHL = last.high >= prev.high && prev.high >= candles[n - 3].high &&
                    last.low >= prev.low && prev.low >= candles[n - 3].low;
 
+    // 空頭結構：Lower High & Lower Low
     const isLHLL = last.high <= prev.high && prev.high <= candles[n - 3].high &&
                    last.low <= prev.low && prev.low <= candles[n - 3].low;
 
     let structScore = 50;
     let side = "NEUTRAL";
-    let desc = "盤整整理";
 
     if (last.close > ma20) {
       side = "LONG";
-      desc = isHHHL ? "HH / HL 多頭順排" : "均線上方多頭偏強";
       if (isHHHL) structScore += 25;
+      // 回調深度檢驗 (健康回調維持在 23.6% ~ 50% 範圍內)
       const pullback = (swingHigh - last.close) / (swingHigh - swingLow || 1);
       if (pullback >= 0.05 && pullback <= 0.45) structScore += 18;
-      else if (pullback < 0.05) structScore += 12;
+      else if (pullback < 0.05) structScore += 12; // 逼近頂部強勢
     } else if (last.close < ma20) {
       side = "SHORT";
-      desc = isLHLL ? "LH / LL 空頭順排" : "均線下方空頭偏弱";
       if (isLHLL) structScore += 25;
       const bounce = (last.close - swingLow) / (swingHigh - swingLow || 1);
       if (bounce >= 0.05 && bounce <= 0.45) structScore += 18;
-      else if (bounce < 0.05) structScore += 12;
+      else if (bounce < 0.05) structScore += 12; // 逼近破位
     }
 
     return {
@@ -958,639 +671,682 @@ const OXEngine = {
       swingHigh,
       swingLow,
       isHHHL,
-      isLHLL,
-      desc
+      isLHLL
     };
   },
 
+  // 5. Setup Match Score 獨立計算 (支援多空雙向對稱 Setup A ~ F)
   evaluateSetupMatch(candles, structure, moneyFlow) {
     if (!candles || candles.length < 25) {
-      return { setupName: "區間整理", setupScore: 45, side: "NEUTRAL", progress: 40, reasons: [] };
+      return { setupName: "區間整理", setupScore: 45, side: "NEUTRAL", reasons: ["K線資料分析中"] };
     }
 
     const n = candles.length;
     const last = candles[n - 1];
     const highs = candles.map(c => c.high);
     const lows = candles.map(c => c.low);
+    const vols = candles.map(c => c.volume);
+    const avgVol = vols.slice(-21, -1).reduce((a, b) => a + b, 0) / 20 || 1;
 
     const matched = [];
     const reasons = [];
 
+    // [多頭 Setup]
     if (structure.side === "LONG") {
       const distHigh = (structure.swingHigh - last.close) / structure.swingHigh;
 
+      // Setup A: 強勢趨勢延續 (HHHL + 順排 + 淺回調)
       if (structure.isHHHL && moneyFlow.healthyLongVol) {
-        matched.push({ name: "強勢趨勢延續", score: 88, progress: 85, side: "LONG" });
-        reasons.push({ type: "ok", text: "高低點階梯式抬高，多頭結構順排" });
+        matched.push({ name: "[多] 強勢趨勢延續", score: 85, side: "LONG" });
+        reasons.push("高低點階梯式抬高，陽線放量且回調受支撐");
       }
+      // Setup B: 前高關鍵突破
       if (distHigh <= 0.025 && distHigh >= -0.015) {
-        matched.push({ name: "關鍵前高突破", score: 92, progress: 90, side: "LONG" });
-        reasons.push({ type: "ok", text: `距離關鍵前高 ${fmtPrice(structure.swingHigh)} 僅 ${(distHigh * 100).toFixed(1)}%` });
+        matched.push({ name: "[多] 關鍵前高突破", score: 88, side: "LONG" });
+        reasons.push(`距離關鍵前高 ${fmtPrice(structure.swingHigh)} 僅 ${(distHigh * 100).toFixed(1)}%`);
       }
+      // Setup C: 波動收斂壓縮
       const range5 = (Math.max(...highs.slice(-5)) - Math.min(...lows.slice(-5))) / last.close;
       const range20 = (Math.max(...highs.slice(-20)) - Math.min(...lows.slice(-20))) / last.close;
       if (range5 < range20 * 0.55 && moneyFlow.volRatio1h < 1.0) {
-        matched.push({ name: "收斂壓縮待變盤", score: 80, progress: 75, side: "LONG" });
-        reasons.push({ type: "ok", text: "ATR 波動顯著收窄，進入極度壓制狀態" });
+        matched.push({ name: "[多/平] 波動壓縮待變盤", score: 78, side: "LONG" });
+        reasons.push("ATR 波動顯著收窄，進入爆發前極度壓制狀態");
       }
+      // Setup F: 假跌破流動性獵取
       if (last.low < structure.swingLow && last.close > structure.swingLow) {
-        matched.push({ name: "假跌破流動性獵取", score: 84, progress: 80, side: "LONG" });
-        reasons.push({ type: "ok", text: "下插刺破前低支撐後強勢收回" });
+        matched.push({ name: "[多] 假跌破流動性獵取", score: 82, side: "LONG" });
+        reasons.push("下插刺破前低支撐後強勢收回");
       }
     }
 
+    // [空頭 Setup]
     if (structure.side === "SHORT") {
       const distLow = (last.close - structure.swingLow) / structure.swingLow;
 
+      // Setup A-Short: 弱勢趨勢延續 (LHLL + 陰線放量)
       if (structure.isLHLL && moneyFlow.healthyShortVol) {
-        matched.push({ name: "弱勢趨勢延續", score: 88, progress: 85, side: "SHORT" });
-        reasons.push({ type: "ok", text: "高低點階梯式走低，空頭結構順排" });
+        matched.push({ name: "[空] 弱勢趨勢延續", score: 85, side: "SHORT" });
+        reasons.push("高低點階梯式走低，陰線放量且反彈無力");
       }
+      // Setup B-Short: 前低關鍵跌破
       if (distLow <= 0.025 && distLow >= -0.015) {
-        matched.push({ name: "關鍵前低跌破", score: 92, progress: 90, side: "SHORT" });
-        reasons.push({ type: "ok", text: `距離關鍵前低 ${fmtPrice(structure.swingLow)} 僅 ${(distLow * 100).toFixed(1)}%` });
+        matched.push({ name: "[空] 關鍵前低跌破", score: 88, side: "SHORT" });
+        reasons.push(`距離關鍵前低 ${fmtPrice(structure.swingLow)} 僅 ${(distLow * 100).toFixed(1)}%`);
       }
+      // Setup F-Short: 假突破上掃跌回
       if (last.high > structure.swingHigh && last.close < structure.swingHigh) {
-        matched.push({ name: "假突破上掃誘多", score: 84, progress: 80, side: "SHORT" });
-        reasons.push({ type: "ok", text: "上刺前高誘多後迅速收回跌破" });
+        matched.push({ name: "[空] 假突破上掃誘多", score: 82, side: "SHORT" });
+        reasons.push("上刺突破前高誘多後迅速跳水收回");
       }
     }
 
     if (!matched.length) {
-      matched.push({ name: "常態結構整理", score: 50, progress: 45, side: structure.side });
-      reasons.push({ type: "wait", text: "目前處於常態整理區間，等待進一步突破" });
+      matched.push({ name: "常態結構震盪", score: 50, side: structure.side });
+      reasons.push("目前處於盤整區間內等待明確結構");
     }
 
     matched.sort((a, b) => b.score - a.score);
     return {
       setupName: matched[0].name,
       setupScore: matched[0].score,
-      progress: matched[0].progress,
       side: matched[0].side,
-      reasons
+      reasons: reasons.slice(0, 3)
     };
   },
 
+  // 6. OX Trigger 偵測：放量突破、放量跌破、回調反轉確認
   detectTrigger(candles, structure, moneyFlow) {
-    if (!candles || candles.length < 20) {
-      return { active: false, type: "等待 Trigger 訊號", confidence: 50, triggerReason: "尚未產生確認信號" };
-    }
+    if (!candles || candles.length < 20) return { active: false, type: "" };
     const last = candles[candles.length - 1];
     const prev = candles[candles.length - 2];
 
+    // 多頭 Trigger
     if (structure.side === "LONG") {
+      // Trigger 1: 放量突破前高
       if (last.close >= structure.swingHigh && moneyFlow.volRatio1h >= 1.35) {
-        return { active: true, type: "OX 放量突破", confidence: 88, triggerReason: "收盤放量突破前 20 根 K 線高點" };
+        return { active: true, type: "OX 放量突破" };
       }
+      // Trigger 2: 回調結束轉強 (前根黑 K，本根實體紅 K 包覆放量)
       if (prev.close < prev.open && last.close > prev.high && moneyFlow.volRatio1h >= 1.2) {
-        return { active: true, type: "OX 回調結束反轉", confidence: 82, triggerReason: "陽線實體反包前根陰線且增量" };
+        return { active: true, type: "OX 回調結束反轉" };
       }
     }
 
+    // 空頭 Trigger
     if (structure.side === "SHORT") {
+      // Trigger 1: 放量跌破前低
       if (last.close <= structure.swingLow && moneyFlow.volRatio1h >= 1.35) {
-        return { active: true, type: "OX 放量跌破", confidence: 88, triggerReason: "收盤放量跌破前 20 根 K 線低點" };
+        return { active: true, type: "OX 放量跌破" };
       }
+      // Trigger 2: 反抽失敗轉弱 (前根紅 K，本根實體黑 K 破位放量)
       if (prev.close > prev.open && last.close < prev.low && moneyFlow.volRatio1h >= 1.2) {
-        return { active: true, type: "OX 反抽受阻下破", confidence: 82, triggerReason: "陰線實體反包跌破" };
+        return { active: true, type: "OX 反抽受阻下破" };
       }
     }
 
-    return { active: false, type: "等待 Trigger 訊號", confidence: 60, triggerReason: "目前仍在結構內醞釀" };
+    return { active: false, type: "" };
   },
 
-  // 獨立計算 T1 / T2 / T3 契合度評分
-  computeTierScores(liq, moneyFlow, structure, setup, trigger) {
-    const t1Score = Math.round(
-      (trigger.active ? 40 : 15) +
-      setup.setupScore * 0.25 +
-      structure.score * 0.20 +
-      liq.score * 0.15
-    );
+  // 7. Lifecycle 分級 (T1 = 觸發確認, T2 = 準備就緒等待 Trigger, T3 = 早期醞釀)
+  classifyLifecycle(liq, moneyFlow, structure, setup, trigger) {
+    // T1: 條件高度完整 + 出現 Trigger
+    if (
+      liq.score >= 60 &&
+      structure.score >= 62 &&
+      setup.setupScore >= 70 &&
+      trigger.active
+    ) {
+      return { tier: "t1", statusText: `T1 · ${trigger.type}已確認` };
+    }
 
-    const t2Score = Math.round(
-      (setup.progress >= 70 && !trigger.active ? 35 : 15) +
-      structure.score * 0.30 +
-      liq.score * 0.20 +
-      moneyFlow.score * 0.15
-    );
+    // T2: 結構與 Setup 就緒 (60%~90%)，但 Trigger 尚未發動 (等待突破/確認)
+    if (
+      liq.score >= 50 &&
+      structure.score >= 55 &&
+      setup.setupScore >= 60 &&
+      !trigger.active
+    ) {
+      return { tier: "t2", statusText: "T2 · 結構就緒等待觸發" };
+    }
 
-    const t3Score = Math.round(
-      (moneyFlow.isSurge ? 35 : 20) +
-      structure.score * 0.25 +
-      liq.score * 0.25 +
-      (setup.progress >= 35 && setup.progress < 70 ? 20 : 10)
-    );
+    // T3: 早期形成階段 (30%~60%) 或量能初露端倪
+    if (
+      liq.score >= 40 &&
+      (structure.score >= 45 || setup.setupScore >= 45 || moneyFlow.isSurge)
+    ) {
+      return { tier: "t3", statusText: "T3 · 早期資金/結構醞釀" };
+    }
 
-    return { t1Score, t2Score, t3Score };
+    return { tier: "none", statusText: "觀察池" };
   }
 };
 
 /**
  * ============================================================================
- * 6. CHART ENGINE
+ * FULL MARKET SCAN QUEUE (全市場輪巡佇列)
  * ============================================================================
  */
-const ChartEngine = {
-  init() {
-    const container = document.getElementById("chart");
-    state.chart = LightweightCharts.createChart(container, {
-      width: container.clientWidth,
-      height: container.clientHeight,
-      layout: {
-        background: { type: "solid", color: "#090e17" },
-        textColor: "#8b9db7"
-      },
-      grid: {
-        vertLines: { color: "#162335" },
-        horzLines: { color: "#162335" }
-      },
-      rightPriceScale: {
-        borderColor: "#223147",
-        autoScale: true,
-        scaleMargins: { top: 0.08, bottom: 0.25 }
-      },
-      timeScale: {
-        borderColor: "#223147",
-        timeVisible: true,
-        secondsVisible: false
-      },
-      crosshair: { mode: LightweightCharts.CrosshairMode.Normal }
-    });
-
-    state.candleSeries = state.chart.addCandlestickSeries({
-      upColor: "#38c99b",
-      downColor: "#ee617c",
-      borderVisible: false,
-      wickUpColor: "#38c99b",
-      wickDownColor: "#ee617c"
-    });
-
-    state.volumeSeries = state.chart.addHistogramSeries({
-      priceFormat: { type: "volume" },
-      priceScaleId: "vol"
-    });
-    state.chart.priceScale("vol").applyOptions({
-      scaleMargins: { top: 0.8, bottom: 0 }
-    });
-
-    state.maSeries = {
-      5: state.chart.addLineSeries({ color: "#f7bd52", lineWidth: 1.5, lastValueVisible: false }),
-      10: state.chart.addLineSeries({ color: "#5ca5ff", lineWidth: 1.5, lastValueVisible: false }),
-      20: state.chart.addLineSeries({ color: "#ad7cff", lineWidth: 1.5, lastValueVisible: false })
-    };
-
-    // 點擊 Marker 顯示 Tooltip 浮窗
-    state.chart.subscribeClick(param => {
-      const tooltip = document.getElementById("signal-tooltip");
-      if (!param || !param.time || !param.point) {
-        tooltip.classList.remove("show");
-        return;
-      }
-      const match = state.candleMarkersMap.get(param.time);
-      if (match) {
-        tooltip.innerHTML = `
-          <button class="close-btn" onclick="document.getElementById('signal-tooltip').classList.remove('show')">✕</button>
-          <b>${match.text}</b>
-          <div>• 觸發依據：${match.reason}</div>
-          <div>• 訊號可信度：${match.confidence}%</div>
-          <div>• 當時放量：${match.volRatio}x 均量</div>
-          <div>• 當時價格：${fmtPrice(match.price)}</div>
-          <div>• 結構判定：${match.structure}</div>
-        `;
-        tooltip.style.left = `${Math.min(container.clientWidth - 280, Math.max(10, param.point.x - 120))}px`;
-        tooltip.style.top = `${Math.max(10, param.point.y - 140)}px`;
-        tooltip.classList.add("show");
-      } else {
-        tooltip.classList.remove("show");
-      }
-    });
-
-    // 向左拖曳 Lazy Load 歷史 K 線 (不重置當前視野)
-    state.chart.timeScale().subscribeVisibleLogicalRangeChange(range => {
-      if (!range || state.isLoadingOlder || !state.hasMoreHistory) return;
-      if (range.from <= 2) this.loadMoreCandles();
-    });
-
-    new ResizeObserver(entries => {
-      for (const entry of entries) {
-        state.chart.applyOptions({
-          width: entry.contentRect.width,
-          height: entry.contentRect.height
-        });
-        this.updatePriceTimer();
-      }
-    }).observe(container);
-  },
-
-  async loadCandles(symbol, period, isInitial = true) {
-    state.abortCtrl?.abort();
-    state.abortCtrl = new AbortController();
-    const overlay = document.getElementById("chart-loading");
-    if (isInitial) overlay.classList.add("show");
-
-    try {
-      const raw = await BitgetAPI.fetchCandles(symbol, period, 140);
-      if (!raw.length) throw new Error("無可用 K 線數據");
-
-      state.candleData = raw;
-      state.oldestCandleTime = raw[0].time;
-      state.hasMoreHistory = true;
-
-      this.renderCandles(raw, isInitial);
-    } catch (err) {
-      if (err.name === "AbortError") return;
-      console.warn(`載入 ${symbol} K 線中斷或失敗:`, err.message);
-    } finally {
-      overlay.classList.remove("show");
-    }
-  },
-
-  async loadMoreCandles() {
-    if (state.isLoadingOlder || !state.hasMoreHistory) return;
-    state.isLoadingOlder = true;
-    const overlay = document.getElementById("chart-loading");
-    overlay.classList.add("show");
-
-    try {
-      const older = await BitgetAPI.fetchCandles(state.symbol, state.period, 100, (state.oldestCandleTime - 1) * 1000);
-      if (!older.length) {
-        state.hasMoreHistory = false;
-        return;
-      }
-
-      state.oldestCandleTime = older[0].time;
-      const combined = [...older, ...state.candleData];
-      
-      // 去重
-      const deduplicated = [];
-      for (let i = 0; i < combined.length; i++) {
-        if (i === 0 || combined[i].time !== combined[i - 1].time) {
-          deduplicated.push(combined[i]);
-        }
-      }
-      state.candleData = deduplicated;
-
-      // 保持目前使用者觀看位置，不調用 fitContent()
-      const currentRange = state.chart.timeScale().getVisibleLogicalRange();
-      this.renderCandles(deduplicated, false);
-      if (currentRange) {
-        const addedBars = older.length;
-        state.chart.timeScale().setVisibleLogicalRange({
-          from: currentRange.from + addedBars,
-          to: currentRange.to + addedBars
-        });
-      }
-    } catch (e) {
-      console.warn("載入更早歷史 K 線失敗", e);
-    } finally {
-      state.isLoadingOlder = false;
-      overlay.classList.remove("show");
-    }
-  },
-
-  renderCandles(candles, isInitial = false) {
-    state.candleSeries.setData(candles);
-
-    // 成交量柱體
-    const volData = candles.map(c => ({
-      time: c.time,
-      value: c.volume,
-      color: c.close >= c.open ? "#38c99b40" : "#ee617c40"
-    }));
-    state.volumeSeries.setData(volData);
-
-    // MA 計算
-    const calcMa = len => {
-      let sum = 0;
-      return candles.map((c, idx) => {
-        sum += c.close;
-        if (idx >= len) sum -= candles[idx - len].close;
-        return idx >= len - 1 ? { time: c.time, value: sum / len } : null;
-      }).filter(Boolean);
-    };
-
-    const maLens =;
-    for (const len of maLens) {
-      if (state.maSeries[len]) {
-        state.maSeries[len].setData(calcMa(len));
-      }
+async function refreshMarketTickers() {
+  try {
+    const rawTickers = await BitgetAPI.fetchTickers();
+    if (!state.contracts.size) {
+      const contractList = await BitgetAPI.fetchContracts();
+      contractList.forEach(c => state.contracts.set(c.symbol, c));
     }
 
-    // OX 訊號標記 (同一區域只顯示較高優先訊號)
-    state.candleMarkersMap.clear();
-    if (document.getElementById("chk-ox-markers").checked) {
-      const markers = [];
-      const vols = candles.map(c => c.volume);
+    state.tickers = rawTickers.filter(t => 
+      state.contracts.has(t.symbol) && 
+      [t.lastPr, t.change24h, t.usdtVolume].every(v => Number.isFinite(num(v)))
+    );
 
-      for (let i = 15; i < candles.length - 1; i++) {
-        const c = candles[i];
-        const avgVol = vols.slice(i - 15, i).reduce((a, b) => a + b, 0) / 15 || 1;
-        const ratio = (c.volume / avgVol).toFixed(1);
+    state.btcTicker = state.tickers.find(t => t.symbol === "BTCUSDT") || null;
+    state.ethTicker = state.tickers.find(t => t.symbol === "ETHUSDT") || null;
 
-        if (c.close > candles[i - 1].high && c.volume > avgVol * 1.6) {
-          const item = {
-            time: c.time,
-            position: "belowBar",
-            color: "#38c99b",
-            shape: "arrowUp",
-            text: "OX 放量突破",
-            reason: "收盤放量突破前根 K 線高點",
-            confidence: 88,
-            volRatio: ratio,
-            price: c.close,
-            structure: "多頭突破"
-          };
-          markers.push(item);
-          state.candleMarkersMap.set(c.time, item);
-        } else if (c.close < candles[i - 1].low && c.volume > avgVol * 1.6) {
-          const item = {
-            time: c.time,
-            position: "aboveBar",
-            color: "#ee617c",
-            shape: "arrowDown",
-            text: "OX 放量跌破",
-            reason: "收盤放量跌破前根 K 線低點",
-            confidence: 88,
-            volRatio: ratio,
-            price: c.close,
-            structure: "空頭破位"
-          };
-          markers.push(item);
-          state.candleMarkersMap.set(c.time, item);
-        }
-      }
-      state.candleSeries.setMarkers(markers.slice(-8));
-    } else {
-      state.candleSeries.setMarkers([]);
-    }
+    // 建立符合基本流動性安全門檻的合格池
+    const eligible = state.tickers.filter(t => num(t.usdtVolume) >= CONFIG.liquidity.minUsdtVolume24h);
 
-    if (isInitial) {
-      this.setViewRecent();
-    }
-    this.updatePriceTimer();
-  },
-
-  // 近期視野按鈕：自適應設定為約 80~140 根 K 線
-  setViewRecent() {
-    if (!state.candleData.length || !state.chart) return;
-    const targetBars = CONFIG.initialBars[state.period] || 100;
-    const totalBars = state.candleData.length;
-    state.chart.timeScale().setVisibleLogicalRange({
-      from: Math.max(0, totalBars - targetBars),
-      to: totalBars + 5
-    });
-  },
-
-  // 完整歷史按鈕：檢視目前載入的全部 K 線
-  setViewAll() {
-    if (!state.candleData.length || !state.chart) return;
-    state.chart.timeScale().fitContent();
-  },
-
-  updatePriceTimer() {
-    const timerEl = document.getElementById("price-timer");
-    if (!state.candleData.length || !timerEl) return;
-    const last = state.candleData[state.candleData.length - 1];
-    const step = periods[state.period] || 60;
-    const now = Math.floor(Date.now() / 1000);
-    const left = step - (now % step);
-    const h = Math.floor(left / 3600);
-    const m = Math.floor((left % 3600) / 60);
-    const s = left % 60;
-    const timeStr = `${h > 0 ? `${h}h ` : ''}${String(m).padStart(2, "0")}m ${String(s).padStart(2, "0")}s`;
+    // 依據成交額與短時間波動初始化輪巡佇列
+    eligible.sort((a, b) => num(b.usdtVolume) - num(a.usdtVolume));
     
-    const y = state.candleSeries.priceToCoordinate(last.close);
-    timerEl.innerHTML = `${fmtPrice(last.close)}<small>倒數 ${timeStr}</small>`;
-    if (Number.isFinite(y)) {
-      timerEl.style.top = `${Math.max(16, Math.min(document.getElementById("chart").clientHeight - 24, y))}px`;
+    // 如果佇列為空或需要補充，重設佇列
+    if (!state.scanQueue.length) {
+      state.scanQueue = eligible.map(t => t.symbol);
+      state.scanIndex = 0;
     }
+
+    // 全市場即時異動資金偵測 (未進深度隊列前先由 Ticker 初篩)
+    rebuildTierLists();
+    renderCurrentTab();
+    updateHeaderHUD();
+
+    if (!state.isQueueRunning) {
+      state.isQueueRunning = true;
+      runScanQueueLoop();
+    }
+  } catch (e) {
+    document.getElementById("scan-status").textContent = `行情取得失敗：${e.message}`;
+    document.getElementById("dot").style.background = "#ee617c";
   }
-};
+}
 
-/**
- * ============================================================================
- * 7. MARKET SCANNER & QUEUE
- * ============================================================================
- */
-const MarketScanner = {
-  async refreshTickers() {
-    try {
-      const raw = await BitgetAPI.fetchTickers();
-      if (!Array.isArray(raw)) return;
-
-      if (!state.contracts.size) {
-        const contracts = await BitgetAPI.fetchContracts();
-        contracts.forEach(c => state.contracts.set(c.symbol, c));
-      }
-
-      state.tickers = raw.filter(t => 
-        [t.lastPr, t.change24h, t.usdtVolume].every(v => Number.isFinite(num(v)))
-      );
-
-      state.btcTicker = state.tickers.find(t => t.symbol === "BTCUSDT") || null;
-      state.ethTicker = state.tickers.find(t => t.symbol === "ETHUSDT") || null;
-
-      UIRenderer.updateBenchmarkBar();
-
-      // 建立流動性合格輪巡清單
-      const eligible = state.tickers.filter(t => num(t.usdtVolume) >= CONFIG.liquidity.minUsdtVolume24h);
-      eligible.sort((a, b) => num(b.usdtVolume) - num(a.usdtVolume));
-
-      if (!state.scanQueue.length) {
-        state.scanQueue = eligible.map(t => t.symbol);
-        state.scanIndex = 0;
-      }
-
-      RankingEngine.rebuild();
-      UIRenderer.renderCurrentTab();
-      UIRenderer.updateHeaderHUD();
-      UIRenderer.updateDetailPanel();
-
-      if (!state.isQueueRunning) {
-        state.isQueueRunning = true;
-        this.runQueueLoop();
-      }
-    } catch (e) {
-      document.getElementById("scan-status").textContent = `行情取得失敗：${e.message}`;
-      document.getElementById("dot").style.background = "#ee617c";
+// 輪巡佇列背景工作器：持續循環掃描全市場
+async function runScanQueueLoop() {
+  while (true) {
+    if (!state.scanQueue.length) {
+      await new Promise(r => setTimeout(r, 1000));
+      continue;
     }
-  },
 
-  async runQueueLoop() {
-    while (true) {
-      if (!state.scanQueue.length) {
-        await new Promise(r => setTimeout(r, 1000));
-        continue;
+    // 取出一批標的進行深度分析
+    const batchSymbols = [];
+    for (let i = 0; i < CONFIG.queueBatchSize; i++) {
+      if (state.scanIndex >= state.scanQueue.length) {
+        state.scanIndex = 0; // 循環回頭
       }
+      batchSymbols.push(state.scanQueue[state.scanIndex]);
+      state.scanIndex++;
+    }
 
-      const batch = [];
-      for (let i = 0; i < CONFIG.queueBatchSize; i++) {
-        if (state.scanIndex >= state.scanQueue.length) {
-          state.scanIndex = 0;
+    document.getElementById("scan-status").textContent = `輪巡中：${state.scanIndex}/${state.scanQueue.length} 檔 (${batchSymbols.slice(0, 3).join(', ')}…)`;
+    document.getElementById("dot").style.background = "#38c99b";
+
+    // 並行深度拉取 1H K 線
+    await Promise.allSettled(batchSymbols.map(async symbol => {
+      const ticker = state.tickers.find(t => t.symbol === symbol);
+      if (!ticker) return;
+
+      try {
+        const candles = await BitgetAPI.fetchCandles(symbol, "1H", 35);
+        if (!candles.length) return;
+
+        const liq = OXEngine.computeLiquidity(ticker, state.tickers);
+        const rs = OXEngine.computeRelativeStrength(ticker, state.btcTicker);
+        const moneyFlow = OXEngine.computeMoneyFlow(candles);
+        const structure = OXEngine.computeStructure(candles);
+        const setup = OXEngine.evaluateSetupMatch(candles, structure, moneyFlow);
+        const trigger = OXEngine.detectTrigger(candles, structure, moneyFlow);
+        const lifecycle = OXEngine.classifyLifecycle(liq, moneyFlow, structure, setup, trigger);
+
+        // OX 綜合得分 (各子項權重平衡，不重複計分)
+        const oxScore = Math.round(
+          liq.score * CONFIG.weights.liquidity +
+          moneyFlow.score * CONFIG.weights.moneyFlow +
+          structure.score * CONFIG.weights.structure +
+          setup.setupScore * CONFIG.weights.setupMatch +
+          rs.score * CONFIG.weights.relativeStrength +
+          (trigger.active ? 5 : 0)
+        );
+
+        // 整理理由
+        const reasons = [
+          `24H 成交額市場前 ${liq.percentileStr}% (${fmtUsd(liq.quoteVol)} USDT)`,
+          `1H 放量比率: ${moneyFlow.volRatio1h}x`,
+          ...setup.reasons
+        ];
+        if (rs.isOutperforming) reasons.push(`強於 BTC +${rs.diffBtcPct}%`);
+        if (rs.isUnderperforming) reasons.push(`弱於 BTC ${rs.diffBtcPct}%`);
+
+        state.analyzedCache.set(symbol, {
+          symbol,
+          ticker,
+          oxScore,
+          liqScore: liq.score,
+          flowScore: moneyFlow.score,
+          structScore: structure.score,
+          setupScore: setup.setupScore,
+          rsScore: rs.score,
+          side: setup.side,
+          setupName: setup.setupName,
+          tier: lifecycle.tier,
+          statusText: lifecycle.statusText,
+          isSurge: moneyFlow.isSurge,
+          triggerActive: trigger.active,
+          triggerType: trigger.type,
+          reasons,
+          change24h: num(ticker.change24h),
+          quoteVol: liq.quoteVol
+        });
+
+        // 若該幣突然出現資金異動，將其插隊到佇列頂部
+        if (moneyFlow.isSurge && !state.scanQueue.slice(state.scanIndex, state.scanIndex + 5).includes(symbol)) {
+          state.scanQueue.splice(state.scanIndex, 0, symbol);
         }
-        batch.push(state.scanQueue[state.scanIndex]);
-        state.scanIndex++;
+      } catch (e) {}
+    }));
+
+    rebuildTierLists();
+    renderCurrentTab();
+    updateHeaderHUD();
+
+    await new Promise(r => setTimeout(r, CONFIG.batchIntervalMs));
+  }
+}
+
+// 重建各榜單 (絕不硬湊滿 10 顆)
+function rebuildTierLists() {
+  const allAnalyzed = Array.from(state.analyzedCache.values());
+
+  const t1 = allAnalyzed.filter(c => c.tier === "t1").sort((a, b) => b.oxScore - a.oxScore).slice(0, 10);
+  const t2 = allAnalyzed.filter(c => c.tier === "t2").sort((a, b) => b.oxScore - a.oxScore).slice(0, 10);
+  const t3 = allAnalyzed.filter(c => c.tier === "t3").sort((a, b) => b.oxScore - a.oxScore).slice(0, 10);
+  
+  // 異動榜：獨立呈現全市場放量異動
+  const surge = allAnalyzed.filter(c => c.isSurge).sort((a, b) => b.flowScore - a.flowScore).slice(0, 15);
+
+  // 傳統漲跌幅 (保留明確正負百分比)
+  const gainers = state.tickers.filter(t => num(t.change24h) > 0)
+    .sort((a, b) => num(b.change24h) - num(a.change24h)).slice(0, 15);
+  const losers = state.tickers.filter(t => num(t.change24h) < 0)
+    .sort((a, b) => num(a.change24h) - num(b.change24h)).slice(0, 15);
+
+  state.tierMap = { t1, t2, t3, surge, gainers, losers };
+
+  document.getElementById("badge-t1").textContent = t1.length;
+  document.getElementById("badge-t2").textContent = t2.length;
+  document.getElementById("badge-t3").textContent = t3.length;
+  document.getElementById("badge-surge").textContent = surge.length;
+}
+
+/**
+ * ============================================================================
+ * SCREENER UI RENDERING
+ * ============================================================================
+ */
+function renderCurrentTab() {
+  const container = document.getElementById("screener-list");
+  const tab = state.currentTab;
+
+  if (tab === "gainers" || tab === "losers") {
+    const list = state.tierMap[tab] || [];
+    if (!list.length) {
+      container.innerHTML = `<div style="padding:24px;text-align:center;color:var(--muted)">暫無資料</div>`;
+      return;
+    }
+    container.innerHTML = list.map((t, idx) => `
+      <div class="trad-row ${t.symbol === state.symbol ? 'selected' : ''}" data-symbol="${t.symbol}">
+        <span style="color:var(--muted)">${idx + 1}</span>
+        <div>
+          <b style="font-size:13px">${t.symbol}</b>
+          <small style="display:block;color:var(--muted)">${fmtUsd(t.usdtVolume)} USDT</small>
+        </div>
+        <div style="text-align:right">${fmtPrice(t.lastPr)}</div>
+        <div style="text-align:right;font-weight:700" class="${num(t.change24h) >= 0 ? 'positive' : 'negative'}">
+          ${fmtPct(t.change24h)}
+        </div>
+      </div>
+    `).join('');
+    return;
+  }
+
+  const list = state.tierMap[tab] || [];
+  document.getElementById("pool-count").textContent = `${list.length} 檔標的`;
+
+  if (!list.length) {
+    container.innerHTML = `
+      <div style="padding:36px 20px;text-align:center;color:var(--muted)">
+        <div style="font-size:26px;margin-bottom:8px">⚖️</div>
+        <b>符合該生命週期階段的標的為 0</b>
+        <p style="font-size:12px;margin:6px 0 0">恪守寧缺勿濫原則。全市場輪巡深度分析持續進行中…</p>
+      </div>`;
+    return;
+  }
+
+  container.innerHTML = list.map((c, idx) => `
+    <button class="coin-card ${c.symbol === state.symbol ? 'selected' : ''}" data-symbol="${c.symbol}" type="button">
+      <div class="coin-top">
+        <span class="coin-title">
+          <span style="color:var(--muted);font-size:12px">#${idx + 1}</span>
+          <span>${c.symbol}</span>
+          <span class="badge badge-${c.side === 'SHORT' ? 'short' : 'long'}">
+            ${c.side}
+          </span>
+          <span class="badge badge-${c.tier !== 'none' ? c.tier : 't3'}">
+            ${c.tier.toUpperCase()}
+          </span>
+          ${c.isSurge ? '<span class="badge badge-surge">🔥 異動</span>' : ''}
+        </span>
+        <span class="coin-ox">OX ${c.oxScore}</span>
+      </div>
+      <div class="coin-mid">
+        <span class="meta">${fmtPrice(c.ticker.lastPr)} · <small style="color:var(--gold)">${c.statusText}</small></span>
+        <span class="${c.change24h >= 0 ? 'positive' : 'negative'}" style="font-weight:700">
+          ${fmtPct(c.change24h)}
+        </span>
+      </div>
+      <div class="coin-reason">
+        <b>${c.setupName}</b><br>
+        ${c.reasons.join(" · ")}
+      </div>
+      <div class="score-pills">
+        <span class="score-pill">流動 ${c.liqScore}</span>
+        <span class="score-pill">資金 ${c.flowScore}</span>
+        <span class="score-pill">結構 ${c.structScore}</span>
+        <span class="score-pill">型態 ${c.setupScore}</span>
+        <span class="score-pill">RS ${c.rsScore}</span>
+      </div>
+    </button>
+  `).join('');
+}
+
+/**
+ * ============================================================================
+ * CHART ENGINE (Lightweight Charts + Lazy Loading)
+ * ============================================================================
+ */
+function initChart() {
+  const container = document.getElementById("chart");
+  state.chart = LightweightCharts.createChart(container, {
+    width: container.clientWidth,
+    height: container.clientHeight,
+    layout: {
+      background: { type: "solid", color: "#090e17" },
+      textColor: "#8b9db7"
+    },
+    grid: {
+      vertLines: { color: "#162335" },
+      horzLines: { color: "#162335" }
+    },
+    rightPriceScale: {
+      borderColor: "#223147",
+      scaleMargins: { top: 0.1, bottom: 0.22 }
+    },
+    timeScale: {
+      borderColor: "#223147",
+      timeVisible: true,
+      secondsVisible: false
+    },
+    crosshair: { mode: LightweightCharts.CrosshairMode.Normal }
+  });
+
+  state.candleSeries = state.chart.addCandlestickSeries({
+    upColor: "#38c99b",
+    downColor: "#ee617c",
+    borderVisible: false,
+    wickUpColor: "#38c99b",
+    wickDownColor: "#ee617c"
+  });
+
+  state.volumeSeries = state.chart.addHistogramSeries({
+    priceFormat: { type: "volume" },
+    priceScaleId: "",
+    scaleMargins: { top: 0.8, bottom: 0 }
+  });
+
+  state.maSeries = {
+    5: state.chart.addLineSeries({ color: "#f7bd52", lineWidth: 1.5, lastValueVisible: false }),
+    10: state.chart.addLineSeries({ color: "#5ca5ff", lineWidth: 1.5, lastValueVisible: false }),
+    20: state.chart.addLineSeries({ color: "#ad7cff", lineWidth: 1.5, lastValueVisible: false })
+  };
+
+  state.chart.timeScale().subscribeVisibleLogicalRangeChange(range => {
+    if (!range || state.isLoadingOlder || !state.hasMoreHistory) return;
+    if (range.from <= 2) loadMoreHistoricalCandles();
+  });
+
+  new ResizeObserver(entries => {
+    for (const entry of entries) {
+      state.chart.applyOptions({
+        width: entry.contentRect.width,
+        height: entry.contentRect.height
+      });
+      updatePriceTimer();
+    }
+  }).observe(container);
+}
+
+async function loadSymbolCandles(isInitial = true) {
+  state.abortCtrl?.abort();
+  state.abortCtrl = new AbortController();
+  const overlay = document.getElementById("chart-loading");
+  if (isInitial) overlay.classList.add("show");
+
+  try {
+    const raw = await BitgetAPI.fetchCandles(state.symbol, state.period, 100);
+    if (!raw.length) throw new Error("無可用 K 線");
+
+    state.candleData = raw;
+    state.oldestCandleTime = raw[0].time;
+    state.hasMoreHistory = true;
+    renderChartData(raw, isInitial);
+  } catch (err) {
+    if (err.name === "AbortError") return;
+  } finally {
+    overlay.classList.remove("show");
+  }
+}
+
+async function loadMoreHistoricalCandles() {
+  if (state.isLoadingOlder || !state.hasMoreHistory) return;
+  state.isLoadingOlder = true;
+  const overlay = document.getElementById("chart-loading");
+  overlay.classList.add("show");
+
+  try {
+    const older = await BitgetAPI.fetchCandles(state.symbol, state.period, 100, (state.oldestCandleTime - 1) * 1000);
+    if (!older.length) {
+      state.hasMoreHistory = false;
+      return;
+    }
+
+    state.oldestCandleTime = older[0].time;
+    const combined = [...older, ...state.candleData].filter((c, i, a) => !i || c.time !== a[i - 1].time);
+    state.candleData = combined;
+    renderChartData(combined, false);
+  } catch (e) {
+  } finally {
+    state.isLoadingOlder = false;
+    overlay.classList.remove("show");
+  }
+}
+
+function renderChartData(candles, fitContent = false) {
+  state.candleSeries.setData(candles);
+
+  const volData = candles.map(c => ({
+    time: c.time,
+    value: c.volume,
+    color: c.close >= c.open ? "#38c99b40" : "#ee617c40"
+  }));
+  state.volumeSeries.setData(volData);
+
+  const calcMa = len => {
+    let sum = 0;
+    return candles.map((c, idx) => {
+      sum += c.close;
+      if (idx >= len) sum -= candles[idx - len].close;
+      return idx >= len - 1 ? { time: c.time, value: sum / len } : null;
+    }).filter(Boolean);
+  };
+
+  [5, 10, 20].forEach(len => {
+    state.maSeries[len].setData(calcMa(len));
+  });
+
+  if (document.getElementById("chk-ox-markers").checked) {
+    const markers = [];
+    for (let i = 10; i < candles.length - 1; i++) {
+      const c = candles[i];
+      if (c.close > candles[i - 1].high && c.volume > candles[i - 1].volume * 1.8) {
+        markers.push({
+          time: c.time,
+          position: "belowBar",
+          color: "#38c99b",
+          shape: "arrowUp",
+          text: "OX 放量突破"
+        });
+      } else if (c.close < candles[i - 1].low && c.volume > candles[i - 1].volume * 1.8) {
+        markers.push({
+          time: c.time,
+          position: "aboveBar",
+          color: "#ee617c",
+          shape: "arrowDown",
+          text: "OX 放量跌破"
+        });
       }
-
-      const pct = Math.round((state.scanIndex / state.scanQueue.length) * 100);
-      document.getElementById("scan-status").textContent = `全市場輪巡：${state.scanIndex}/${state.scanQueue.length} (${pct}%) · ${batch.slice(0, 3).join(', ')}…`;
-      document.getElementById("dot").style.background = "#38c99b";
-
-      await Promise.allSettled(batch.map(async symbol => {
-        const ticker = state.tickers.find(t => t.symbol === symbol);
-        if (!ticker) return;
-
-        try {
-          const candles = await BitgetAPI.fetchCandles(symbol, "1H", 35);
-          if (!candles.length) return;
-
-          const liq = OXEngine.computeLiquidity(ticker, state.tickers);
-          const rs = OXEngine.computeRelativeStrength(ticker, state.btcTicker, state.ethTicker);
-          const moneyFlow = OXEngine.computeMoneyFlow(candles);
-          const structure = OXEngine.computeStructure(candles);
-          const setup = OXEngine.evaluateSetupMatch(candles, structure, moneyFlow);
-          const trigger = OXEngine.detectTrigger(candles, structure, moneyFlow);
-          const tierScores = OXEngine.computeTierScores(liq, moneyFlow, structure, setup, trigger);
-
-          const oxScore = Math.round(
-            liq.score * CONFIG.weights.liquidity +
-            moneyFlow.score * CONFIG.weights.moneyFlow +
-            structure.score * CONFIG.weights.structure +
-            setup.setupScore * CONFIG.weights.setupMatch +
-            rs.score * CONFIG.weights.relativeStrength +
-            (trigger.active ? 5 : 0)
-          );
-
-          const last = candles[candles.length - 1];
-          const distHighPct = Math.abs((structure.swingHigh - last.close) / structure.swingHigh * 100).toFixed(1);
-          const distLowPct = Math.abs((last.close - structure.swingLow) / structure.swingLow * 100).toFixed(1);
-
-          state.analyzedCache.set(symbol, {
-            symbol,
-            ticker,
-            oxScore,
-            liqScore: liq.score,
-            flowScore: moneyFlow.score,
-            structScore: structure.score,
-            setupScore: setup.setupScore,
-            rsScore: rs.score,
-            side: setup.side,
-            setupName: setup.setupName,
-            setupProgress: setup.progress,
-            triggerActive: trigger.active,
-            triggerType: trigger.type,
-            triggerReason: trigger.triggerReason,
-            confidence: trigger.confidence,
-            tierScores,
-            isSurge: moneyFlow.isSurge,
-            volRatio15m: moneyFlow.volRatio15m,
-            volRatio1h: moneyFlow.volRatio1h,
-            volRatio4h: moneyFlow.volRatio4h,
-            structureDesc: structure.desc,
-            distHighPct,
-            distLowPct,
-            reasons: setup.reasons,
-            change24h: num(ticker.change24h),
-            quoteVol: liq.quoteVol,
-            liqPercentile: liq.percentileStr,
-            diffBtcPct: rs.diffBtcPct,
-            diffEthPct: rs.diffEthPct
-          });
-
-          // 若偵測到資金異動，插入佇列前方優先掃描
-          if (moneyFlow.isSurge && !state.scanQueue.slice(state.scanIndex, state.scanIndex + 5).includes(symbol)) {
-            state.scanQueue.splice(state.scanIndex, 0, symbol);
-          }
-        } catch (e) {}
-      }));
-
-      RankingEngine.rebuild();
-      UIRenderer.renderCurrentTab();
-      UIRenderer.updateHeaderHUD();
-      UIRenderer.updateDetailPanel();
-
-      await new Promise(r => setTimeout(r, CONFIG.batchIntervalMs));
     }
+    state.candleSeries.setMarkers(markers.slice(-6));
+  } else {
+    state.candleSeries.setMarkers([]);
   }
-};
 
-/**
- * ============================================================================
- * 8. RANKING ENGINE (T1/T2/T3 各自保證 Top 10)
- * ============================================================================
- */
-const RankingEngine = {
-  rebuild() {
-    const all = Array.from(state.analyzedCache.values());
-
-    // T1: 依據 T1FitScore 排序，區分 CONFIRMED 與 WATCH
-    const t1Sorted = all.slice().sort((a, b) => b.tierScores.t1Score - a.tierScores.t1Score).slice(0, 10);
-    const t1 = t1Sorted.map(c => ({
-      ...c,
-      statusLabel: c.triggerActive ? "T1 CONFIRMED" : "T1 WATCH"
-    }));
-
-    // T2: 依據 T2FitScore 排序
-    const t2Sorted = all.slice().sort((a, b) => b.tierScores.t2Score - a.tierScores.t2Score).slice(0, 10);
-    const t2 = t2Sorted.map(c => ({
-      ...c,
-      statusLabel: c.setupProgress >= 80 ? "T2 READY" : "T2 WATCH"
-    }));
-
-    // T3: 依據 T3FitScore 排序
-    const t3Sorted = all.slice().sort((a, b) => b.tierScores.t3Score - a.tierScores.t3Score).slice(0, 10);
-    const t3 = t3Sorted.map(c => ({
-      ...c,
-      statusLabel: "T3 EARLY"
-    }));
-
-    const watchlist = all.filter(c => state.watchlist.has(c.symbol));
-    const surge = all.filter(c => c.isSurge).sort((a, b) => b.flowScore - a.flowScore).slice(0, 15);
-
-    const gainers = state.tickers.filter(t => num(t.change24h) > 0)
-      .sort((a, b) => num(b.change24h) - num(a.change24h)).slice(0, 15);
-    const losers = state.tickers.filter(t => num(t.change24h) < 0)
-      .sort((a, b) => num(a.change24h) - num(b.change24h)).slice(0, 15);
-
-    state.tierMap = { t1, t2, t3, watchlist, surge, gainers, losers };
-
-    document.getElementById("badge-t1").textContent = t1.length;
-    document.getElementById("badge-t2").textContent = t2.length;
-    document.getElementById("badge-t3").textContent = t3.length;
-    document.getElementById("badge-watchlist").textContent = watchlist.length;
-    document.getElementById("badge-surge").textContent = surge.length;
+  if (fitContent) {
+    state.chart.timeScale().fitContent();
   }
-};
+  updatePriceTimer();
+}
 
-/**
- * ============================================================================
- * 9. UI RENDERER
- * ============================================================================
- */
-const UIRenderer = {
-  updateBenchmarkBar() {
-    if (state.btcTicker) {
-      document.getElementById("bench-btc-price").textContent = `$${fmtPrice(state.btcTicker.lastPr)}`;
-      const chg = document.getElementById("bench-btc-chg");
-      chg.textContent = fmtPct(state.btcTicker.change24h);
-      chg.className = num(state.btcTicker.change24h) >= 0 ? "positive" : "negative";
-      document.getElementById("bench-btc-trend").textContent = num(state.btcTicker.change24h) >= 0 ? "4H 多頭偏強" : "4H 空頭調整";
-    }
-    if (state.ethTicker) {
-      document.getElementById("bench-eth-price").textContent = `$${fmtPrice(state.ethTicker.lastPr)}`;
-      const chg = document.getElementById("bench-eth-chg");
-      chg.textContent = fmtPct(state.ethTicker.change24h);
-      chg.className = num(state.ethTicker.change24h) >= 0 ? "positive" : "negative";
-      document.getElementById("bench-eth-trend").textContent = num(state.ethTicker.change24h) >= 0 ? "4H 多頭偏強" : "4H 空頭調整";
-    }
+function updatePriceTimer() {
+  const timerEl = document.getElementById("price-timer");
+  if (!state.candleData.length || !timerEl) return;
+  const last = state.candleData[state.candleData.length - 1];
+  const step = periods[state.period] || 60;
+  const now = Math.floor(Date.now() / 1000);
+  const left = step - (now % step);
+  const m = Math.floor(left / 60);
+  const s = left % 60;
+  
+  const y = state.candleSeries.priceToCoordinate(last.close);
+  timerEl.innerHTML = `${fmtPrice(last.close)}<small>倒數 ${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}</small>`;
+  if (Number.isFinite(y)) {
+    timerEl.style.top = `${Math.max(16, Math.min(document.getElementById("chart").clientHeight - 24, y))}px`;
+  }
+}
 
-    const btcChg = state.btcTicker ? num(state.btcTicker.change24h) : 0;
-    const biasEl = document.getElementById("market-bias-text");
-    if (btcChg >= 0.02) {
-      biasEl.textContent = "Risk-On (多頭推進)";
-      biasEl.style.color = "var(--green)";
-    } else if (btcChg <= -0.02) {
-      biasEl.textContent = "Risk-Off (避險防禦)";
-      biasEl.style.color = "var(--red)";
+function updateHeaderHUD() {
+  const ticker = state.tickers.find(t => t.symbol === state.symbol);
+  if (!ticker) return;
+
+  document.getElementById("ticker-pair").textContent = `${ticker.symbol} · Bitget 永續`;
+  document.getElementById("price").textContent = fmtPrice(ticker.lastPr);
+  
+  const chgEl = document.getElementById("change");
+  chgEl.textContent = fmtPct(ticker.change24h);
+  chgEl.className = num(ticker.change24h) >= 0 ? "positive" : "negative";
+
+  document.getElementById("quote").textContent = `${fmtUsd(ticker.usdtVolume)} USDT`;
+  document.getElementById("chart-head-title").children[0].textContent = `${ticker.symbol} 永續合約`;
+  document.getElementById("tv-ext-link").href = `https://www.tradingview.com/symbols/${ticker.symbol}.P/?exchange=BITGET`;
+
+  const scored = state.analyzedCache.get(state.symbol);
+  if (scored) {
+    document.getElementById("ox-score").textContent = scored.oxScore;
+    document.getElementById("ox-tier-label").textContent = `${scored.statusText} · 結構:${scored.structScore}`;
+    document.getElementById("ox-setup").textContent = scored.setupName;
+    document.getElementById("ox-rs-desc").textContent = `RS: ${scored.rsScore} (${scored.side})`;
+  } else {
+    document.getElementById("ox-score").textContent = "—";
+    document.getElementById("ox-tier-label").textContent = "全市場輪巡佇列中";
+    document.getElementById("ox-setup").textContent = "等待分析";
+    document.getElementById("ox-rs-desc").textContent = "—";
+  }
+
+  if (state.btcTicker) {
+    const diff = num(ticker.change24h) - num(state.btcTicker.change24h);
+    document.getElementById("btc-rel").textContent = `相對 BTC: ${diff >= 0 ? '+' : ''}${(diff * 100).toFixed(2)}%`;
+  }
+}
+
+function switchSymbol(symbol) {
+  if (symbol === state.symbol) return;
+  state.symbol = symbol;
+  updateHeaderHUD();
+  renderCurrentTab();
+  loadSymbolCandles(true);
+}
+
+document.addEventListener("click", e => {
+  const card = e.target.closest(".coin-card") || e.target.closest(".trad-row");
+  if (card && card.dataset.symbol) {
+    switchSymbol(card.dataset.symbol);
+    return;
+  }
+
+  const tabBtn = e.target.closest(".tab-btn");
+  if (tabBtn && tabBtn.dataset.tab) {
+    state.currentTab = tabBtn.dataset.tab;
+    document.querySelectorAll(".tab-btn").forEach(b => b.classList.toggle("active", b === tabBtn));
+    renderCurrentTab();
+    return;
+  }
+
+  const tfBtn = e.target.closest(".btn-tf");
+  if (tfBtn && tfBtn.dataset.tf) {
+    state.period = tfBtn.dataset.tf;
+    document.querySelectorAll(".btn-tf").forEach(b => b.classList.toggle("active", b === tfBtn));
+    document.getElementById("tf-pill").textContent = `${tfBtn.textContent} ${tfBtn.dataset.tf.includes('D') ? '日線' : tfBtn.dataset.tf.includes('W') ? '週線' : ''}`;
+    loadSymbolCandles(true);
+    return;
+  }
+
+  if (e.target.id === "btn-chart-fullscreen") {
+    const box = document.querySelector(".chart-box");
+    if (!document.fullscreenElement) {
+      box.requestFullscreen?.();
     } else {
+      document.exitFullscreen?.();
+    }
+    return;
+  }
+
+  if (e.target.id === "btn-force-rescan") {
+    state.scanIndex = 0;
+    refreshMarketTickers();
+    return;
+  }
+});
+
+document.getElementById("chk-vol").addEventListener("change", e => state.volumeSeries.applyOptions({ visible: e.target.checked }));
+document.getElementById("chk-ma5").addEventListener("change", e => state.maSeries[5].applyOptions({ visible: e.target.checked }));
+document.getElementById("chk-ma10").addEventListener("change", e => state.maSeries[10].applyOptions({ visible: e.target.checked }));
+document.getElementById("chk-ma20").addEventListener("change", e => state.maSeries[20].applyOptions({ visible: e.target.checked }));
+document.getElementById("chk-ox-markers").addEventListener("change", () => renderChartData(state.candleData, false));
+
+window.addEventListener("DOMContentLoaded", () => {
+  initChart();
+  refreshMarketTickers().then(() => loadSymbolCandles(true));
+  setInterval(refreshMarketTickers, CONFIG.tickerRefreshMs);
+  setInterval(updatePriceTimer, 1000);
+});
+</script>
+</body>
+</html>
