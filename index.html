@@ -1,601 +1,39 @@
-<!-- OX v2.2 K-Line / Tier Count Patch
-貼法：
-1) 先把 index.html 第一個 </html> 後面的所有重複舊程式刪掉。
-2) 把本段完整貼在「第一個 </body>」之前。
-3) Commit changes。
--->
-<script id="ox-v22-patch">
-(() => {
-  "use strict";
-
-  const OX_V22 = {
-    initialLimit: 200,
-    historyBatch: 200,
-    recentBars: {
-      "1m": 180,
-      "5m": 180,
-      "15m": 160,
-      "1H": 140,
-      "4H": 130,
-      "1D": 100,
-      "1W": 80
-    },
-    rightOffset: 6,
-    markerLimit: 8
-  };
-
-  /* =========================================================
-     1. 修正 Bitget K 線 OHLC mapping
-     現在 v2.1 有 open:num(d), high:num(d) 的錯誤。
-     ========================================================= */
-  BitgetAPI.fetchCandles = async function(symbol, granularity, limit = 100, endTime = null) {
-    let url = `${CONFIG.apiBase}/candles?symbol=${symbol}&productType=${CONFIG.productType}&granularity=${granularity}&limit=${limit}`;
-    if (endTime) url += `&endTime=${endTime}`;
-
-    const res = await fetch(url, { cache: "no-store" });
-    if (!res.ok) throw new Error(`K 線 API ${res.status}`);
-
-    const json = await res.json();
-    if (json.code !== "00000" || !Array.isArray(json.data)) return [];
-
-    const step = periods[granularity] || 60;
-    const nowSec = Date.now() / 1000;
-
-    return json.data
-      .map(d => ({
-        time: Math.floor(num(d[0]) / 1000),
-        open: num(d[1]),
-        high: num(d[2]),
-        low: num(d[3]),
-        close: num(d[4]),
-        volume: num(d[5]),
-        quoteVolume: num(d[6])
-      }))
-      .filter(c =>
-        Number.isFinite(c.time) &&
-        Number.isFinite(c.open) &&
-        Number.isFinite(c.high) &&
-        Number.isFinite(c.low) &&
-        Number.isFinite(c.close) &&
-        c.open > 0 &&
-        c.high > 0 &&
-        c.low > 0 &&
-        c.close > 0 &&
-        c.time + step <= nowSec
-      )
-      .sort((a, b) => a.time - b.time)
-      .filter((c, i, a) => i === 0 || c.time !== a[i - 1].time);
-  };
-
-  /* =========================================================
-     2. 預設視野：只看最近一段，不自動塞滿完整歷史
-     ========================================================= */
-  function recentBarCount() {
-    return OX_V22.recentBars[state.period] || 120;
-  }
-
-  function setRecentView() {
-    if (!state.chart || !state.candleData?.length) return;
-
-    const len = state.candleData.length;
-    const bars = Math.min(recentBarCount(), len);
-
-    state.chart.timeScale().setVisibleLogicalRange({
-      from: Math.max(0, len - bars),
-      to: len + OX_V22.rightOffset
-    });
-  }
-
-  function setFullHistoryView() {
-    if (!state.chart || !state.candleData?.length) return;
-    state.chart.timeScale().fitContent();
-  }
-
-  /* =========================================================
-     3. 重建圖表：
-        - 主價格軸不被成交量污染
-        - 成交量固定在底部約 20%
-        - 手機 / 滑鼠縮放拖曳保留
-     ========================================================= */
-  initChart = function() {
-    const container = document.getElementById("chart");
-    if (!container) return;
-
-    // 避免重複建立 Canvas
-    container.querySelectorAll("table").forEach(el => el.remove());
-
-    state.chart = LightweightCharts.createChart(container, {
-      width: container.clientWidth,
-      height: container.clientHeight,
-      layout: {
-        background: { type: "solid", color: "#090e17" },
-        textColor: "#8b9db7"
-      },
-      grid: {
-        vertLines: { color: "#162335" },
-        horzLines: { color: "#162335" }
-      },
-      rightPriceScale: {
-        borderColor: "#223147",
-        autoScale: true,
-        scaleMargins: {
-          top: 0.06,
-          bottom: 0.24
-        }
-      },
-      timeScale: {
-        borderColor: "#223147",
-        timeVisible: true,
-        secondsVisible: false,
-        rightOffset: OX_V22.rightOffset,
-        barSpacing: 7,
-        minBarSpacing: 2,
-        fixLeftEdge: false,
-        lockVisibleTimeRangeOnResize: true,
-        rightBarStaysOnScroll: true
-      },
-      handleScroll: {
-        mouseWheel: true,
-        pressedMouseMove: true,
-        horzTouchDrag: true,
-        vertTouchDrag: true
-      },
-      handleScale: {
-        axisPressedMouseMove: true,
-        mouseWheel: true,
-        pinch: true
-      },
-      crosshair: {
-        mode: LightweightCharts.CrosshairMode.Normal
-      }
-    });
-
-    state.candleSeries = state.chart.addCandlestickSeries({
-      upColor: "#38c99b",
-      downColor: "#ee617c",
-      borderVisible: false,
-      wickUpColor: "#38c99b",
-      wickDownColor: "#ee617c",
-      lastValueVisible: true,
-      priceLineVisible: true
-    });
-
-    // 使用真正獨立的 overlay scale。
-    state.volumeSeries = state.chart.addHistogramSeries({
-      priceFormat: { type: "volume" },
-      priceScaleId: "volume",
-      lastValueVisible: false,
-      priceLineVisible: false
-    });
-
-    state.chart.priceScale("volume").applyOptions({
-      visible: false,
-      borderVisible: false,
-      scaleMargins: {
-        top: 0.80,
-        bottom: 0
-      }
-    });
-
-    state.maSeries = {
-      5: state.chart.addLineSeries({
-        color: "#f7bd52",
-        lineWidth: 1.5,
-        lastValueVisible: false,
-        priceLineVisible: false
-      }),
-      10: state.chart.addLineSeries({
-        color: "#5ca5ff",
-        lineWidth: 1.5,
-        lastValueVisible: false,
-        priceLineVisible: false
-      }),
-      20: state.chart.addLineSeries({
-        color: "#ad7cff",
-        lineWidth: 1.5,
-        lastValueVisible: false,
-        priceLineVisible: false
-      })
-    };
-
-    // 接近最左邊才抓更早歷史。
-    state.chart.timeScale().subscribeVisibleLogicalRangeChange(range => {
-      if (!range || state.isLoadingOlder || !state.hasMoreHistory) return;
-      if (range.from <= 5) loadMoreHistoricalCandles();
-    });
-
-    new ResizeObserver(entries => {
-      for (const entry of entries) {
-        state.chart.applyOptions({
-          width: entry.contentRect.width,
-          height: entry.contentRect.height
-        });
-        updatePriceTimer();
-      }
-    }).observe(container);
-  };
-
-  /* =========================================================
-     4. 載入 Symbol：
-        - 首次抓 200 根
-        - 預設看最近 N 根
-        - 完整歷史仍靠 Lazy Load 一直往左抓
-     ========================================================= */
-  loadSymbolCandles = async function(isInitial = true) {
-    state.abortCtrl?.abort();
-    state.abortCtrl = new AbortController();
-
-    const overlay = document.getElementById("chart-loading");
-    if (isInitial) overlay?.classList.add("show");
-
-    try {
-      const raw = await BitgetAPI.fetchCandles(
-        state.symbol,
-        state.period,
-        OX_V22.initialLimit
-      );
-
-      if (!raw.length) throw new Error("無可用 K 線");
-
-      state.candleData = raw;
-      state.oldestCandleTime = raw[0].time;
-      state.hasMoreHistory = true;
-
-      renderChartData(raw);
-
-      // 等 Lightweight Charts 完成 setData 再設定預設可視範圍。
-      requestAnimationFrame(() => {
-        requestAnimationFrame(setRecentView);
-      });
-    } catch (err) {
-      if (err?.name === "AbortError") return;
-      console.warn("K 線載入失敗:", err);
-    } finally {
-      overlay?.classList.remove("show");
+<!doctype html>
+<html lang="zh-TW">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <meta name="description" content="OX Crypto Screener - Bitget USDT 永續合約全市場強弱掃描、流動性評估、多型態辨識與專業 K 線工作區。">
+  <title>OX 幣種篩選器｜Bitget 全市場資金結構儀表板</title>
+  <script src="https://unpkg.com/lightweight-charts@4.2.3/dist/lightweight-charts.standalone.production.js"></script>
+  <style>
+    :root {
+      --bg: #080c14;
+      --panel: #0f1724;
+      --panel-alt: #141e2e;
+      --ink: #eef4fc;
+      --line: #223147;
+      --muted: #8b9db7;
+      --gold: #f7bd52;
+      --gold-dim: #f7bd521f;
+      --blue: #5ca5ff;
+      --purple: #ad7cff;
+      --green: #38c99b;
+      --green-dim: #38c99b1a;
+      --red: #ee617c;
+      --red-dim: #ee617c1a;
+      --tier-t1: #f7bd52;
+      --tier-t2: #5ca5ff;
+      --tier-t3: #ad7cff;
     }
-  };
-
-  /* =========================================================
-     5. Lazy Load：
-        新增舊 K 線後維持「原本正在看的位置」，
-        不准突然跳回最新 / 不准 fitContent。
-     ========================================================= */
-  loadMoreHistoricalCandles = async function() {
-    if (state.isLoadingOlder || !state.hasMoreHistory || !state.candleData.length) return;
-
-    state.isLoadingOlder = true;
-    const overlay = document.getElementById("chart-loading");
-    overlay?.classList.add("show");
-
-    const oldRange = state.chart?.timeScale().getVisibleLogicalRange();
-    const oldLength = state.candleData.length;
-
-    try {
-      const older = await BitgetAPI.fetchCandles(
-        state.symbol,
-        state.period,
-        OX_V22.historyBatch,
-        (state.oldestCandleTime - 1) * 1000
-      );
-
-      if (!older.length) {
-        state.hasMoreHistory = false;
-        return;
-      }
-
-      const map = new Map();
-
-      for (const c of older) map.set(c.time, c);
-      for (const c of state.candleData) map.set(c.time, c);
-
-      const combined = [...map.values()].sort((a, b) => a.time - b.time);
-      const added = Math.max(0, combined.length - oldLength);
-
-      // 如果 API 回傳完全相同的批次，視為沒有更多。
-      if (added === 0) {
-        state.hasMoreHistory = false;
-        return;
-      }
-
-      state.oldestCandleTime = combined[0].time;
-      state.candleData = combined;
-
-      renderChartData(combined);
-
-      // 前面新增了 added 根，所以 Logical index 同步右移 added，
-      // 使用者畫面會留在原本那一段。
-      if (oldRange && state.chart) {
-        requestAnimationFrame(() => {
-          state.chart.timeScale().setVisibleLogicalRange({
-            from: oldRange.from + added,
-            to: oldRange.to + added
-          });
-        });
-      }
-    } catch (err) {
-      console.warn("Lazy Load 歷史 K 線失敗:", err);
-    } finally {
-      state.isLoadingOlder = false;
-      overlay?.classList.remove("show");
-    }
-  };
-
-  /* =========================================================
-     6. OX Marker：
-        保留你喜歡的「OX 放量突破 / 跌破」，
-        但改成真正突破過去 20 根區間 + Volume Ratio，
-        避免滿圖箭頭。
-     ========================================================= */
-  function buildOxMarkers(candles) {
-    if (!candles || candles.length < 25) return [];
-
-    const markers = [];
-
-    for (let i = 20; i < candles.length; i++) {
-      const c = candles[i];
-      const prev20 = candles.slice(i - 20, i);
-
-      const prevHigh = Math.max(...prev20.map(x => x.high));
-      const prevLow = Math.min(...prev20.map(x => x.low));
-      const avgVol = prev20.reduce((s, x) => s + x.volume, 0) / prev20.length || 1;
-      const volRatio = c.volume / avgVol;
-
-      // Priority 3：真正的 20K 放量突破 / 跌破
-      if (c.close > prevHigh && volRatio >= 1.45) {
-        markers.push({
-          time: c.time,
-          position: "belowBar",
-          color: "#38c99b",
-          shape: "arrowUp",
-          text: `OX 放量突破 ${volRatio.toFixed(1)}x`,
-          priority: 3
-        });
-        continue;
-      }
-
-      if (c.close < prevLow && volRatio >= 1.45) {
-        markers.push({
-          time: c.time,
-          position: "aboveBar",
-          color: "#ee617c",
-          shape: "arrowDown",
-          text: `OX 放量跌破 ${volRatio.toFixed(1)}x`,
-          priority: 3
-        });
-        continue;
-      }
-
-      // Priority 2：極端資金異動，不寫長文字，避免蓋住裸 K。
-      if (volRatio >= 2.5) {
-        markers.push({
-          time: c.time,
-          position: c.close >= c.open ? "belowBar" : "aboveBar",
-          color: "#ff9d5c",
-          shape: "circle",
-          text: "量異動",
-          priority: 2
-        });
-      }
-    }
-
-    // 同一時間只留最高優先權。
-    const bestByTime = new Map();
-    for (const m of markers) {
-      const old = bestByTime.get(m.time);
-      if (!old || m.priority > old.priority) bestByTime.set(m.time, m);
-    }
-
-    return [...bestByTime.values()]
-      .sort((a, b) => a.time - b.time)
-      .slice(-OX_V22.markerLimit)
-      .map(({ priority, ...m }) => m);
-  }
-
-  renderChartData = function(candles) {
-    if (!candles?.length || !state.candleSeries) return;
-
-    state.candleSeries.setData(
-      candles.map(c => ({
-        time: c.time,
-        open: c.open,
-        high: c.high,
-        low: c.low,
-        close: c.close
-      }))
-    );
-
-    state.volumeSeries.setData(
-      candles.map(c => ({
-        time: c.time,
-        value: c.quoteVolume || c.volume,
-        color: c.close >= c.open ? "#38c99b42" : "#ee617c42"
-      }))
-    );
-
-    const calcMa = len => {
-      let sum = 0;
-      const out = [];
-
-      for (let i = 0; i < candles.length; i++) {
-        sum += candles[i].close;
-        if (i >= len) sum -= candles[i - len].close;
-
-        if (i >= len - 1) {
-          out.push({
-            time: candles[i].time,
-            value: sum / len
-          });
-        }
-      }
-      return out;
-    };
-
-    [5, 10, 20].forEach(len => {
-      state.maSeries[len].setData(calcMa(len));
-    });
-
-    const markerToggle = document.getElementById("chk-ox-markers");
-    state.candleSeries.setMarkers(
-      markerToggle?.checked ? buildOxMarkers(candles) : []
-    );
-
-    updatePriceTimer();
-  };
-
-  /* =========================================================
-     7. 真實 Tier Count：
-        Badge 顯示「真正符合的總數」，
-        右側仍只顯示 Top 10。
-     ========================================================= */
-  rebuildTierLists = function() {
-    const allAnalyzed = Array.from(state.analyzedCache.values());
-
-    const allT1 = allAnalyzed
-      .filter(c => c.tier === "t1")
-      .sort((a, b) => b.oxScore - a.oxScore);
-
-    const allT2 = allAnalyzed
-      .filter(c => c.tier === "t2")
-      .sort((a, b) => b.oxScore - a.oxScore);
-
-    const allT3 = allAnalyzed
-      .filter(c => c.tier === "t3")
-      .sort((a, b) => b.oxScore - a.oxScore);
-
-    const allSurge = allAnalyzed
-      .filter(c => c.isSurge)
-      .sort((a, b) => b.flowScore - a.flowScore);
-
-    state.tierTotals = {
-      t1: allT1.length,
-      t2: allT2.length,
-      t3: allT3.length,
-      surge: allSurge.length
-    };
-
-    const gainers = state.tickers
-      .filter(t => num(t.change24h) > 0)
-      .sort((a, b) => num(b.change24h) - num(a.change24h))
-      .slice(0, 15);
-
-    const losers = state.tickers
-      .filter(t => num(t.change24h) < 0)
-      .sort((a, b) => num(a.change24h) - num(b.change24h))
-      .slice(0, 15);
-
-    state.tierMap = {
-      t1: allT1.slice(0, 10),
-      t2: allT2.slice(0, 10),
-      t3: allT3.slice(0, 10),
-      surge: allSurge.slice(0, 15),
-      gainers,
-      losers
-    };
-
-    const badgeT1 = document.getElementById("badge-t1");
-    const badgeT2 = document.getElementById("badge-t2");
-    const badgeT3 = document.getElementById("badge-t3");
-    const badgeSurge = document.getElementById("badge-surge");
-
-    if (badgeT1) badgeT1.textContent = allT1.length;
-    if (badgeT2) badgeT2.textContent = allT2.length;
-    if (badgeT3) badgeT3.textContent = allT3.length;
-    if (badgeSurge) badgeSurge.textContent = allSurge.length;
-  };
-
-  // 包住原本 renderCurrentTab，額外補「共 X 檔、顯示 Top N」。
-  const renderCurrentTabV21 = renderCurrentTab;
-
-  renderCurrentTab = function() {
-    renderCurrentTabV21();
-
-    const tab = state.currentTab;
-    if (!["t1", "t2", "t3", "surge"].includes(tab)) return;
-
-    const total = state.tierTotals?.[tab] ?? (state.tierMap[tab]?.length || 0);
-    const shown = state.tierMap[tab]?.length || 0;
-
-    const pool = document.getElementById("pool-count");
-    if (pool) {
-      pool.textContent = total > shown
-        ? `${shown} / ${total} 檔`
-        : `${total} 檔標的`;
-    }
-
-    const list = document.getElementById("screener-list");
-    if (!list || total <= shown || shown === 0) return;
-
-    const foot = document.createElement("div");
-    foot.style.cssText =
-      "padding:9px 14px;text-align:center;color:var(--muted);font-size:11px;border-top:1px solid #1a2638;background:#0b111c;";
-    foot.textContent = `共 ${total} 檔符合，目前顯示評分最高 ${shown} 檔`;
-    list.appendChild(foot);
-  };
-
-  /* =========================================================
-     8. UI：自動加入「近期視野 / 完整歷史」
-     不需要你另外修改 HTML。
-     ========================================================= */
-  function installViewButtons() {
-    if (document.getElementById("btn-view-recent")) return;
-
-    const fullscreenBtn = document.getElementById("btn-chart-fullscreen");
-    const controls = fullscreenBtn?.parentElement;
-    if (!controls) return;
-
-    const recentBtn = document.createElement("button");
-    recentBtn.className = "btn-act";
-    recentBtn.id = "btn-view-recent";
-    recentBtn.type = "button";
-    recentBtn.textContent = "近期視野";
-    recentBtn.title = "回到最近一段適合交易判斷的 K 線視野";
-
-    const fullBtn = document.createElement("button");
-    fullBtn.className = "btn-act";
-    fullBtn.id = "btn-view-full";
-    fullBtn.type = "button";
-    fullBtn.textContent = "完整歷史";
-    fullBtn.title = "將目前已載入的全部歷史 K 線縮放到同一畫面";
-
-    controls.insertBefore(recentBtn, fullscreenBtn);
-    controls.insertBefore(fullBtn, fullscreenBtn);
-
-    recentBtn.addEventListener("click", setRecentView);
-    fullBtn.addEventListener("click", setFullHistoryView);
-  }
-
-  /* =========================================================
-     9. Toggle 保持一致
-     ========================================================= */
-  const markerToggle = document.getElementById("chk-ox-markers");
-  if (markerToggle) {
-    markerToggle.addEventListener("change", () => {
-      if (state.candleData?.length) renderChartData(state.candleData);
-    });
-  }
-
-  /* =========================================================
-     10. 在原頁面的 DOMContentLoaded 前完成 patch。
-     由原本 v2.1 的啟動函式呼叫「已覆寫後」的函式。
-     ========================================================= */
-  installViewButtons();
-
-  // 手機 / 全螢幕後尺寸變更時維持正常比例。
-  document.addEventListener("fullscreenchange", () => {
-    setTimeout(() => {
-      const container = document.getElementById("chart");
-      if (!state.chart || !container) return;
-      state.chart.applyOptions({
-        width: container.clientWidth,
-        height: container.clientHeight
-      });
-      updatePriceTimer();
-    }, 80);
-  });
-
-  console.info("OX v2.2 patch loaded: K-line view / lazy load / volume scale / tier counts fixed.");
-})();
-</script>
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: radial-gradient(1200px 500px at 15% -10%, #1c2b4535, transparent), var(--bg);
+      color: var(--ink);
+      font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
     }
     button, input, select { font: inherit; }
     button { cursor: pointer; }
@@ -971,8 +409,8 @@ const CONFIG = {
   productType: "USDT-FUTURES",
   
   liquidity: {
-    minUsdtVolume24h: 3_000_000,
-    t1MinUsdtVolume: 12_000_000,
+    minUsdtVolume24h: 3000000,
+    t1MinUsdtVolume: 12000000,
     topPercentileCutoff: 0.65,
     lowLiqPenaltyRatio: 0.35,
   },
@@ -1055,16 +493,19 @@ const BitgetAPI = {
     const json = await res.json();
     if (json.code !== "00000" || !Array.isArray(json.data)) return [];
     
-    // 關鍵修復：正確讀取 d=open, d=high, d=low, d=close
-    return json.data.map(d => ({
-      time: Math.floor(num(d[0]) / 1000),
-      open: num(d),
-      high: num(d),
-      low: num(d),
-      close: num(d),
-      volume: num(d[5]),
-      quoteVolume: num(d[6])
-    })).filter(c => [c.open, c.high, c.low, c.close].every(v => Number.isFinite(v) && v > 0))
+    // 使用 ES6 陣列解構，百分之百避免任何下標被誤刪
+    return json.data.map(d => {
+      const [rawTime, rawOpen, rawHigh, rawLow, rawClose, rawVol, rawQuoteVol] = d;
+      return {
+        time: Math.floor(num(rawTime) / 1000),
+        open: num(rawOpen),
+        high: num(rawHigh),
+        low: num(rawLow),
+        close: num(rawClose),
+        volume: num(rawVol),
+        quoteVolume: num(rawQuoteVol)
+      };
+    }).filter(c => Number.isFinite(c.open) && Number.isFinite(c.close) && c.open > 0 && c.close > 0)
       .sort((a, b) => a.time - b.time);
   }
 };
@@ -1411,7 +852,7 @@ async function runScanQueueLoop() {
         );
 
         const reasons = [
-          `24H 成交額前 ${liq.percentileStr}% (${fmtUsd(liq.quoteVol)} USDT)`,
+          `24H 成交額市場前 ${liq.percentileStr}% (${fmtUsd(liq.quoteVol)} USDT)`,
           `1H 放量比率: ${moneyFlow.volRatio1h}x`,
           ...setup.reasons
         ];
@@ -1567,7 +1008,7 @@ function initChart() {
     rightPriceScale: {
       borderColor: "#223147",
       autoScale: true,
-      scaleMargins: { top: 0.08, bottom: 0.25 } // 為底部成交量預留空間，保持主K線獨立自適應
+      scaleMargins: { top: 0.08, bottom: 0.25 }
     },
     timeScale: {
       borderColor: "#223147",
@@ -1577,7 +1018,6 @@ function initChart() {
     crosshair: { mode: LightweightCharts.CrosshairMode.Normal }
   });
 
-  // 主圖：標準 K 線系列
   state.candleSeries = state.chart.addCandlestickSeries({
     upColor: "#38c99b",
     downColor: "#ee617c",
@@ -1586,7 +1026,6 @@ function initChart() {
     wickDownColor: "#ee617c"
   });
 
-  // 成交量柱體：使用獨立分軸 vol，避免干擾價格坐標
   state.volumeSeries = state.chart.addHistogramSeries({
     priceFormat: { type: "volume" },
     priceScaleId: "vol"
@@ -1595,7 +1034,6 @@ function initChart() {
     scaleMargins: { top: 0.8, bottom: 0 }
   });
 
-  // 均線系統
   state.maSeries = {
     5: state.chart.addLineSeries({ color: "#f7bd52", lineWidth: 1.5, lastValueVisible: false }),
     10: state.chart.addLineSeries({ color: "#5ca5ff", lineWidth: 1.5, lastValueVisible: false }),
@@ -1729,7 +1167,7 @@ function updatePriceTimer() {
   const h = Math.floor(left / 3600);
   const m = Math.floor((left % 3600) / 60);
   const s = left % 60;
-  const timeStr = `${h > 0 ? `${h}h ` : ''}${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+  const timeStr = `${h > 0 ? `${h}h ` : ''}${String(m).padStart(2, "0")}m ${String(s).padStart(2, "0")}s`;
   
   const y = state.candleSeries.priceToCoordinate(last.close);
   timerEl.innerHTML = `${fmtPrice(last.close)}<small>倒數 ${timeStr}</small>`;
@@ -1837,60 +1275,4 @@ window.addEventListener("DOMContentLoaded", () => {
 });
 </script>
 </body>
-</html>    }
-    button, input, select { font: inherit; }
-    button { cursor: pointer; }
-    button:focus-visible, a:focus-visible, input:focus-visible {
-      outline: 2px solid var(--gold);
-      outline-offset: 2px;
-    }
-    a { color: inherit; }
-    .wrap { max-width: 1460px; margin: auto; padding: 0 24px; }
-    header { border-bottom: 1px solid var(--line); background: #0a101b; position: sticky; top: 0; z-index: 10; }
-    .nav { height: 68px; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
-    .brand { display: flex; align-items: center; gap: 11px; text-decoration: none; font-weight: 750; font-size: 19px; }
-    .brand-logo { width: 38px; height: 38px; object-fit: contain; filter: invert(1); mix-blend-mode: screen; }
-    .nav-stats { display: flex; gap: 18px; align-items: center; font-size: 13px; color: var(--muted); }
-    .live { display: flex; align-items: center; gap: 8px; font-size: 12px; }
-    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--gold); display: inline-block; }
-    
-    .top-summary {
-      display: grid;
-      grid-template-columns: 1.4fr repeat(4, 1fr);
-      gap: 12px;
-      margin: 18px 0 20px;
-    }
-    .metric-card {
-      background: var(--panel);
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      padding: 14px 18px;
-    }
-    .metric-card label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 4px; }
-    .metric-card strong { font-size: 24px; font-variant-numeric: tabular-nums; display: block; }
-    .metric-card small { display: block; font-size: 11px; color: var(--muted); margin-top: 3px; }
-    .positive { color: var(--green) !important; }
-    .negative { color: var(--red) !important; }
-
-    .workspace {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) 390px;
-      gap: 20px;
-      align-items: start;
-    }
-    .panel {
-      background: var(--panel);
-      border: 1px solid var(--line);
-      border-radius: 14px;
-      overflow: hidden;
-    }
-    .panel-head {
-      padding: 14px 18px;
-      border-bottom: 1px solid var(--line);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      background: #0d1522;
-    }
-    .panel-title { font-size: 16px; font-weight: 700; margin: 0; display: flex
+</html>
