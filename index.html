@@ -1,2620 +1,373 @@
 <!doctype html>
-<html lang="zh-TW">
+<html lang="zh-Hant">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="color-scheme" content="dark">
-  <meta name="description" content="OX Crypto Screener - Bitget USDT 永續合約全市場強弱掃描、流動性評估、多型態辨識與專業 K 線工作區。">
-  <title>OX 幣種篩選器｜Bitget 全市場資金結構儀表板</title>
-  <script src="https://unpkg.com/lightweight-charts@4.2.3/dist/lightweight-charts.standalone.production.js"></script>
-  <style>
-    :root {
-      --bg: #080c14;
-      --panel: #0f1724;
-      --panel-alt: #141e2e;
-      --ink: #eef4fc;
-      --line: #223147;
-      --muted: #8b9db7;
-      --gold: #f7bd52;
-      --gold-dim: #f7bd521f;
-      --blue: #5ca5ff;
-      --purple: #ad7cff;
-      --green: #38c99b;
-      --green-dim: #38c99b1a;
-      --red: #ee617c;
-      --red-dim: #ee617c1a;
-      --tier-t1: #f7bd52;
-      --tier-t2: #5ca5ff;
-      --tier-t3: #ad7cff;
-    }
-    * { box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
-    body {
-      margin: 0;
-      background: radial-gradient(1200px 500px at 15% -10%, #1c2b4535, transparent), var(--bg);
-      color: var(--ink);
-      font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-    }
-    button, input, select { font: inherit; }
-    button { cursor: pointer; }
-    button:focus-visible, a:focus-visible, input:focus-visible {
-      outline: 2px solid var(--gold);
-      outline-offset: 2px;
-    }
-    a { color: inherit; }
-    .wrap { max-width: 1460px; margin: auto; padding: 0 24px; }
-    header { border-bottom: 1px solid var(--line); background: #0a101b; position: sticky; top: 0; z-index: 10; }
-    .nav { height: 68px; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
-    .brand { display: flex; align-items: center; gap: 11px; text-decoration: none; font-weight: 750; font-size: 19px; }
-    .brand-logo { width: 38px; height: 38px; object-fit: contain; filter: invert(1); mix-blend-mode: screen; }
-    .nav-stats { display: flex; gap: 18px; align-items: center; font-size: 13px; color: var(--muted); }
-    .live { display: flex; align-items: center; gap: 8px; font-size: 12px; }
-    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--gold); display: inline-block; }
-    
-    .top-summary {
-      display: grid;
-      grid-template-columns: 1.4fr repeat(4, 1fr);
-      gap: 12px;
-      margin: 18px 0 20px;
-    }
-    .metric-card {
-      background: var(--panel);
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      padding: 14px 18px;
-    }
-    .metric-card label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 4px; }
-    .metric-card strong { font-size: 24px; font-variant-numeric: tabular-nums; display: block; }
-    .metric-card small { display: block; font-size: 11px; color: var(--muted); margin-top: 3px; }
-    .positive { color: var(--green) !important; }
-    .negative { color: var(--red) !important; }
-
-    .workspace {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) 390px;
-      gap: 20px;
-      align-items: start;
-    }
-    .panel {
-      background: var(--panel);
-      border: 1px solid var(--line);
-      border-radius: 14px;
-      overflow: hidden;
-    }
-    .panel-head {
-      padding: 14px 18px;
-      border-bottom: 1px solid var(--line);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      background: #0d1522;
-    }
-    .panel-title { font-size: 16px; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 8px; }
-    .pill {
-      font-size: 11px;
-      padding: 3px 8px;
-      border-radius: 6px;
-      border: 1px solid var(--line);
-      background: #111a28;
-      color: var(--muted);
-    }
-
-    .chart-box { position: relative; }
-    .chart-controls {
-      padding: 8px 18px;
-      border-bottom: 1px solid var(--line);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 8px;
-      background: #0d1420;
-    }
-    .ctrl-group { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
-    .btn-tf, .btn-act {
-      background: #111a28;
-      border: 1px solid var(--line);
-      color: var(--muted);
-      border-radius: 6px;
-      padding: 5px 9px;
-      font-size: 12px;
-      font-weight: 600;
-    }
-    .btn-tf:hover, .btn-act:hover { color: var(--ink); border-color: #3b506e; }
-    .btn-tf.active { background: var(--gold-dim); border-color: var(--gold); color: var(--gold); }
-    .toggle-lbl {
-      font-size: 11px;
-      color: var(--muted);
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      cursor: pointer;
-      user-select: none;
-    }
-    .toggle-lbl input { accent-color: var(--gold); margin: 0; }
-
-    .chart-container {
-      height: 600px;
-      background: #090e17;
-      position: relative;
-    }
-    .chart-loading-overlay {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      z-index: 5;
-      background: #0d1522dd;
-      border: 1px solid var(--line);
-      padding: 5px 10px;
-      border-radius: 6px;
-      font-size: 11px;
-      display: none;
-      align-items: center;
-      gap: 6px;
-    }
-    .chart-loading-overlay.show { display: flex; }
-    .price-timer {
-      position: absolute;
-      right: 3px;
-      z-index: 4;
-      transform: translateY(-50%);
-      pointer-events: none;
-      min-width: 90px;
-      padding: 3px 6px;
-      border-radius: 3px;
-      background: #06090e;
-      color: #fff;
-      font: 700 11px/1.2 ui-monospace, monospace;
-      text-align: center;
-      box-shadow: 0 1px 3px #000a;
-      border: 1px solid #23344d;
-    }
-    .price-timer small { display: block; color: var(--gold); font-size: 10px; margin-top: 1px; }
-
-    .scanner-tabs {
-      display: flex;
-      gap: 4px;
-      padding: 10px 14px 6px;
-      border-bottom: 1px solid var(--line);
-      background: #0b111c;
-      overflow-x: auto;
-    }
-    .tab-btn {
-      background: transparent;
-      border: 1px solid transparent;
-      color: var(--muted);
-      padding: 6px 11px;
-      border-radius: 7px;
-      font-size: 12px;
-      font-weight: 700;
-      white-space: nowrap;
-    }
-    .tab-btn:hover { color: var(--ink); }
-    .tab-btn.active { background: var(--panel-alt); color: var(--gold); border-color: #3b4e69; }
-    .tab-badge { font-size: 10px; padding: 1px 5px; border-radius: 10px; background: #23354d; color: #fff; margin-left: 4px; }
-
-    .scanner-body {
-      max-height: 680px;
-      overflow-y: auto;
-      padding: 6px 0;
-    }
-    .coin-card {
-      width: 100%;
-      border: 0;
-      background: transparent;
-      text-align: left;
-      color: var(--ink);
-      padding: 10px 14px;
-      border-bottom: 1px solid #1a2638;
-      transition: background .15s;
-    }
-    .coin-card:hover { background: #152235; }
-    .coin-card.selected { background: #f7bd520d; box-shadow: inset 3px 0 0 var(--gold); }
-    .coin-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
-    .coin-title { display: flex; align-items: center; gap: 7px; font-weight: 750; font-size: 14px; }
-    .coin-ox { font-size: 12px; font-weight: 700; color: var(--gold); }
-    .coin-mid { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px; }
-    .coin-reason {
-      font-size: 11px;
-      color: #9cb1cc;
-      background: #0a1019;
-      border-radius: 5px;
-      padding: 6px 9px;
-      line-height: 1.45;
-      border-left: 2px solid #2e435f;
-    }
-    .coin-reason .setup-head { font-weight: 700; color: var(--ink); margin-bottom: 3px; }
-    .score-pills { display: flex; gap: 4px; margin-top: 6px; flex-wrap: wrap; }
-    .score-pill { font-size: 10px; padding: 1px 5px; border-radius: 4px; background: #182436; color: #a5b7ce; }
-
-    .trad-row {
-      display: grid;
-      grid-template-columns: 28px 1.4fr 1fr 1fr;
-      align-items: center;
-      padding: 9px 14px;
-      font-size: 12px;
-      border-bottom: 1px solid #1a2638;
-      cursor: pointer;
-    }
-    .trad-row:hover, .trad-row.selected { background: #152235; }
-
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-size: 10.5px;
-      font-weight: 750;
-      letter-spacing: .02em;
-    }
-    .badge-t1 { background: #f7bd5226; color: var(--gold); border: 1px solid #f7bd5255; }
-    .badge-t2 { background: #5ca5ff26; color: var(--blue); border: 1px solid #5ca5ff55; }
-    .badge-t3 { background: #ad7cff26; color: var(--purple); border: 1px solid #ad7cff55; }
-    .badge-surge { background: #ff708826; color: var(--red); border: 1px solid #ff708855; }
-    .badge-long { background: #38c99b24; color: var(--green); border: 1px solid #38c99b55; }
-    .badge-short { background: #ee617c24; color: var(--red); border: 1px solid #ee617c55; }
-
-    .extra-section { margin-top: 24px; }
-    .toast {
-      position: fixed;
-      right: 20px;
-      bottom: 20px;
-      max-width: 360px;
-      background: #142032;
-      border: 1px solid #364e6f;
-      border-left: 4px solid var(--gold);
-      padding: 12px 16px;
-      border-radius: 8px;
-      box-shadow: 0 10px 30px #000a;
-      transform: translateY(120%);
-      transition: transform .25s;
-      z-index: 100;
-      font-size: 13px;
-    }
-    .toast.show { transform: translateY(0); }
-
-
-    /* ===== OX v2.3 additions: benchmark / key-level alerts / detail / mobile split ===== */
-    .benchmark-bar {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 10px;
-      margin-bottom: 12px;
-    }
-    .benchmark-card {
-      width: 100%;
-      background: #0d1522;
-      border: 1px solid var(--line);
-      border-radius: 11px;
-      padding: 10px 12px;
-      color: var(--ink);
-      text-align: left;
-    }
-    button.benchmark-card:hover { border-color: #3d5574; background: #111d2d; }
-    .benchmark-card label { display:block; color:var(--muted); font-size:10px; margin-bottom:2px; }
-    .benchmark-card strong { display:block; font-size:16px; font-variant-numeric:tabular-nums; }
-    .benchmark-sub { display:flex; gap:7px; align-items:center; margin-top:2px; color:var(--muted); font-size:10px; }
-    .benchmark-bias strong { color: var(--gold); }
-
-    .alert-controls { display:flex; gap:6px; align-items:center; flex-wrap:wrap; }
-    .alert-btn {
-      background:#111a28;
-      border:1px solid var(--line);
-      color:var(--muted);
-      border-radius:6px;
-      padding:5px 8px;
-      font-size:11px;
-      font-weight:650;
-    }
-    .alert-btn.enabled-high { color:var(--gold); border-color:#8d6b2d; background:#f7bd5212; }
-    .alert-btn.enabled-low { color:#8fc0ff; border-color:#426a9d; background:#5ca5ff12; }
-    .alert-btn.triggered { color:var(--green); border-color:#2e8167; background:#38c99b12; }
-    .alert-btn:disabled { opacity:.45; cursor:not-allowed; }
-
-    .chart-quickbar {
-      display:grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap:1px;
-      background:var(--line);
-      border-top:1px solid var(--line);
-    }
-    .chart-quickitem { background:#0b1420; padding:8px 10px; min-width:0; }
-    .chart-quickitem label { display:block; color:var(--muted); font-size:9px; margin-bottom:2px; }
-    .chart-quickitem strong { display:block; font-size:11px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-    .mobile-coin-volume { display:none; }
-
-    .detail-panel { margin-top:12px; }
-    .detail-grid {
-      display:grid;
-      grid-template-columns: repeat(6, minmax(0,1fr));
-      gap:1px;
-      background:var(--line);
-    }
-    .detail-cell { background:#0c1622; padding:10px 12px; min-width:0; }
-    .detail-cell label { display:block; color:var(--muted); font-size:9px; margin-bottom:3px; }
-    .detail-cell strong { display:block; font-size:12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-    .detail-progress { height:5px; background:#1a293b; border-radius:999px; overflow:hidden; margin-top:5px; }
-    .detail-progress i { display:block; height:100%; width:0; background:linear-gradient(90deg,var(--blue),var(--gold)); border-radius:999px; }
-    .detail-reasons { padding:11px 14px; border-top:1px solid var(--line); }
-    .detail-reasons h4 { margin:0 0 7px; font-size:12px; color:var(--ink); }
-    .detail-reason { font-size:10px; line-height:1.55; margin:3px 0; color:#b8c7d9; }
-    .detail-reason.ok { color:#8fe4c3; }
-    .detail-reason.wait { color:#e4c978; }
-    .alert-state-row { display:flex; gap:6px; flex-wrap:wrap; padding:9px 14px; border-top:1px solid var(--line); }
-    .alert-chip { font-size:9px; color:#bdd0e4; background:#132132; border:1px solid #304764; border-radius:999px; padding:3px 7px; }
-
-    .mobile-only { display:none; }
-
-    @media (max-width: 1100px) {
-      .workspace { grid-template-columns: 1fr; }
-      .chart-container { height: 480px; }
-      .scanner-body { max-height: 450px; }
-    }
-    @media (max-width: 720px) {
-      .top-summary { grid-template-columns: 1fr 1fr; }
-      .chart-controls { flex-direction: column; align-items: flex-start; }
-      .chart-container { height: 400px; }
-    }
-
-
-    .mobile-bench-label, .coin-symbol-mobile { display:none; }
-
-    /* Mobile-first split workstation: chart left / screener right */
-    @media (max-width: 720px) {
-      .wrap { max-width:none; padding:0 7px; }
-      header { position:sticky; }
-      .nav { height:52px; gap:7px; }
-      .brand { font-size:13px; gap:6px; line-height:1.15; }
-      .brand small { font-size:9px !important; }
-      .brand-logo { width:28px; height:28px; }
-      .nav-stats { gap:4px; font-size:8px; min-width:0; }
-      #btn-force-rescan { padding:4px 6px; font-size:8px; min-height:30px; }
-      .live { font-size:8px; max-width:74px; min-width:0; }
-      #scan-status { display:block; max-width:66px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-
-      main.wrap { padding-top:6px !important; }
-
-      /* Compact BTC / ETH benchmark buttons */
-      .benchmark-bar {
-        grid-template-columns:auto auto minmax(0,1fr);
-        gap:4px;
-        margin-bottom:6px;
-        align-items:stretch;
-      }
-      .benchmark-card {
-        border-radius:8px;
-        min-height:34px;
-        padding:5px 7px;
-      }
-      button.benchmark-card {
-        display:flex;
-        align-items:center;
-        justify-content:center;
-        gap:5px;
-        min-width:76px;
-      }
-      .desktop-bench-label { display:none; }
-      .mobile-bench-label { display:inline; }
-      .benchmark-card label {
-        font-size:8px;
-        line-height:1;
-        margin:0;
-        white-space:nowrap;
-      }
-      .benchmark-card strong {
-        font-size:10px;
-        line-height:1.05;
-        margin:0;
-        white-space:nowrap;
-      }
-      button.benchmark-card .benchmark-sub { display:none; }
-      .benchmark-bias {
-        display:flex;
-        align-items:center;
-        justify-content:center;
-        gap:5px;
-        padding:5px 6px;
-        min-width:0;
-      }
-      .benchmark-bias label { font-size:7px; }
-      .benchmark-bias strong { font-size:10px; }
-      .benchmark-bias .benchmark-sub { display:none; }
-
-      /* Current pair: make price the hero; remove secondary copy on mobile */
-      .top-summary {
-        grid-template-columns:1fr 1fr;
-        gap:5px;
-        margin:0 0 7px;
-      }
-      .top-summary .metric-card {
-        padding:7px 9px;
-        border-radius:9px;
-        min-width:0;
-      }
-      .top-summary .metric-card:first-child {
-        grid-column:1 / -1;
-        min-height:72px;
-        display:flex;
-        flex-direction:column;
-        justify-content:center;
-      }
-      .top-summary .metric-card:nth-child(4),
-      .top-summary .metric-card:nth-child(5) { display:none; }
-      .metric-card label {
-        font-size:8px;
-        line-height:1.2;
-        margin-bottom:4px;
-      }
-      .metric-card strong {
-        font-size:18px;
-        line-height:1.08;
-        letter-spacing:.01em;
-      }
-      .metric-card:first-child strong {
-        font-size:29px;
-        line-height:1.05;
-      }
-      .top-summary .metric-card small { display:none; }
-
-      /* Give chart more room; screener becomes a compact rail */
-      .workspace {
-        grid-template-columns:minmax(0,70%) minmax(0,30%);
-        gap:5px;
-        align-items:stretch;
-      }
-      .panel { border-radius:9px; }
-      .panel-head { padding:7px 7px; gap:4px; }
-      .panel-title { font-size:10px; gap:3px; line-height:1.2; }
-      .pill { font-size:7px; padding:2px 4px; }
-      .chart-box { min-width:0; }
-      .chart-box .panel-head a#tv-ext-link { display:none; }
-      #btn-chart-fullscreen { padding:4px 5px; font-size:7px; }
-
-      .chart-controls { padding:5px 5px; display:block; }
-      .chart-controls .ctrl-group {
-        gap:3px;
-        flex-wrap:nowrap;
-        overflow-x:auto;
-        scrollbar-width:none;
-      }
-      .chart-controls .ctrl-group::-webkit-scrollbar { display:none; }
-      .btn-tf, .btn-act {
-        padding:5px 6px;
-        font-size:8px;
-        border-radius:6px;
-        min-height:28px;
-        touch-action:manipulation;
-      }
-      .toggle-lbl {
-        font-size:8px;
-        white-space:nowrap;
-        line-height:1.25;
-      }
-      .alert-controls {
-        margin-top:4px;
-        display:grid;
-        grid-template-columns:1fr 1fr;
-        gap:4px;
-      }
-      .alert-btn {
-        padding:7px 4px;
-        font-size:8px;
-        min-height:33px;
-        white-space:nowrap;
-        overflow:hidden;
-        text-overflow:ellipsis;
-        touch-action:manipulation;
-      }
-
-      .chart-container { height:370px; }
-      .price-timer { min-width:54px; font-size:8px; padding:2px 3px; }
-      .price-timer small { font-size:7px; }
-      .chart-quickbar { grid-template-columns:repeat(3,1fr); }
-      .chart-quickitem.quick-volume-item { display:none; }
-      .chart-quickitem { padding:6px 6px; }
-      .chart-quickitem label { font-size:7px; line-height:1.2; }
-      .chart-quickitem strong { font-size:9px; line-height:1.2; }
-
-      /* Screener rail */
-      .workspace > aside {
-        min-width:0;
-        display:flex;
-        flex-direction:column;
-      }
-      .workspace > aside .panel-head {
-        min-height:38px;
-        padding:7px 6px;
-      }
-      .workspace > aside .panel-title { font-size:9.5px; }
-      #pool-count { display:none; }
-
-      .scanner-tabs {
-        padding:4px 3px;
-        gap:1px;
-        display:grid;
-        grid-template-columns:repeat(4,1fr);
-        overflow:visible;
-      }
-      .tab-btn {
-        padding:6px 0;
-        font-size:7.5px;
-        border-radius:5px;
-        min-height:29px;
-        touch-action:manipulation;
-      }
-      .tab-btn[data-tab="gainers"],
-      .tab-btn[data-tab="losers"] { display:none; }
-      .tab-badge { display:none; }
-
-      .scanner-body {
-        max-height:470px;
-        flex:1;
-        overflow-y:auto;
-      }
-      .coin-card {
-        padding:9px 6px;
-        min-height:72px;
-      }
-      .coin-top {
-        margin-bottom:3px;
-        align-items:flex-start;
-        gap:3px;
-      }
-      .coin-title {
-        gap:3px;
-        font-size:10px;
-        min-width:0;
-        line-height:1.25;
-        flex:1;
-      }
-      .coin-title > span:first-child {
-        font-size:8px !important;
-        flex:0 0 auto;
-      }
-      .coin-symbol-full { display:none; }
-      .coin-symbol-mobile {
-        display:inline;
-        font-size:11px;
-        font-weight:850;
-        color:var(--ink);
-        max-width:none;
-        overflow:visible;
-        text-overflow:clip;
-        white-space:nowrap;
-      }
-
-      /* On mobile prioritise coin name + OX; badges caused the name to disappear */
-      .coin-title > .badge { display:none; }
-      .coin-ox {
-        font-size:8px;
-        line-height:1.2;
-        white-space:nowrap;
-        flex:0 0 auto;
-      }
-      .coin-mid {
-        font-size:8px;
-        margin:5px 0 0;
-        display:block;
-        line-height:1.3;
-      }
-      .coin-mid .desktop-coin-meta { display:none; }
-      .mobile-coin-volume {
-        display:block;
-        color:#d6e2f1;
-        font-size:7.5px;
-        line-height:1.3;
-        white-space:nowrap;
-        overflow:hidden;
-        text-overflow:ellipsis;
-      }
-      .coin-mid > .coin-change {
-        display:block;
-        margin-top:4px;
-        font-size:9px;
-        line-height:1.2;
-      }
-      .coin-reason,
-      .score-pills { display:none; }
-
-      .trad-row {
-        grid-template-columns:16px 1fr;
-        padding:7px 5px;
-        font-size:7px;
-      }
-      .trad-row > div:nth-last-child(-n+2) { display:none; }
-
-      .detail-panel { margin-top:7px; }
-      .detail-panel .panel-head { padding:7px 8px; }
-      .detail-grid { grid-template-columns:repeat(4,1fr); }
-      .detail-volume-cell { display:none; }
-      .detail-cell { padding:6px 6px; }
-      .detail-cell label { font-size:6px; }
-      .detail-cell strong { font-size:8px; }
-      .detail-reasons { padding:7px 8px; }
-      .detail-reasons h4 { font-size:9px; margin-bottom:4px; }
-      .detail-reason { font-size:7px; margin:2px 0; }
-      .alert-state-row { padding:6px 8px; gap:4px; }
-      .alert-chip { font-size:6px; padding:2px 5px; }
-      .extra-section { margin-top:8px; }
-      .extra-section .panel { padding:10px 12px !important; }
-      .extra-section h3 { font-size:10px !important; }
-      .extra-section p { font-size:8px !important; }
-      .mobile-only { display:block; }
-    }
-
-    @media (max-width: 390px) {
-      .workspace { grid-template-columns:minmax(0,69%) minmax(0,31%); }
-      .coin-symbol-mobile { font-size:10px; }
-      .coin-card { padding-left:5px; padding-right:5px; }
-      button.benchmark-card { min-width:70px; padding-left:5px; padding-right:5px; }
-      .metric-card:first-child strong { font-size:27px; }
-    }
-
-
-    /* ===== v3.0 three-view shell ===== */
-    body { padding-bottom: 84px; }
-    .app-view { display:none; }
-    .app-view.active { display:block; }
-
-    .app-dock {
-      position:fixed;
-      left:50%;
-      bottom:14px;
-      transform:translateX(-50%);
-      z-index:90;
-      display:grid;
-      grid-template-columns:repeat(3,1fr);
-      gap:5px;
-      width:min(430px, calc(100vw - 28px));
-      padding:6px;
-      border:1px solid #30415a;
-      border-radius:16px;
-      background:#0a111dec;
-      box-shadow:0 14px 38px #000a;
-      backdrop-filter:blur(16px);
-    }
-    .dock-btn {
-      border:0;
-      border-radius:11px;
-      background:transparent;
-      color:var(--muted);
-      min-height:44px;
-      font-weight:800;
-      font-size:13px;
-      letter-spacing:.02em;
-      touch-action:manipulation;
-    }
-    .dock-btn.active {
-      color:var(--gold);
-      background:#f7bd5214;
-      box-shadow:inset 0 0 0 1px #f7bd523d;
-    }
-    .dock-btn small { display:block; font-size:9px; font-weight:650; margin-top:1px; opacity:.75; }
-
-    /* Market strength page */
-    .strength-page, .media-page { max-width:1050px; margin:0 auto; padding:10px 0 40px; }
-    .page-hero {
-      padding:24px 4px 18px;
-      border-bottom:1px solid var(--line);
-      margin-bottom:18px;
-    }
-    .page-kicker { color:var(--gold); font-size:11px; font-weight:800; letter-spacing:.14em; text-transform:uppercase; }
-    .page-hero h1 { margin:5px 0 6px; font-size:28px; line-height:1.1; }
-    .page-hero p { margin:0; color:var(--muted); max-width:700px; font-size:13px; }
-    .strength-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
-    .strength-card {
-      background:linear-gradient(180deg,#101a29,#0b121d);
-      border:1px solid var(--line);
-      border-radius:18px;
-      padding:22px;
-      min-height:280px;
-    }
-    .strength-head { display:flex; align-items:flex-start; justify-content:space-between; gap:14px; }
-    .strength-head h2 { margin:0; font-size:18px; }
-    .strength-head p { margin:4px 0 0; color:var(--muted); font-size:11px; }
-    .strength-state {
-      border:1px solid #344b69;
-      background:#111d2c;
-      border-radius:999px;
-      padding:5px 9px;
-      font-size:10px;
-      font-weight:800;
-      white-space:nowrap;
-    }
-    .strength-value { font-size:58px; font-weight:850; line-height:1; margin:24px 0 18px; font-variant-numeric:tabular-nums; }
-    .strength-meter { position:relative; margin-top:2px; }
-    .strength-track {
-      height:12px;
-      border-radius:999px;
-      background:linear-gradient(90deg,#ee617c 0%,#d7a84e 50%,#38c99b 100%);
-      box-shadow:inset 0 0 0 1px #ffffff10;
-      position:relative;
-    }
-    .strength-needle {
-      position:absolute;
-      top:-6px;
-      width:3px;
-      height:24px;
-      border-radius:3px;
-      background:#fff;
-      box-shadow:0 0 0 2px #07101a, 0 0 10px #fff6;
-      transform:translateX(-50%);
-      transition:left .35s ease;
-    }
-    .strength-scale { display:grid; grid-template-columns:1fr 1fr 1fr; margin-top:9px; color:var(--muted); font-size:10px; }
-    .strength-scale span:nth-child(2) { text-align:center; }
-    .strength-scale span:last-child { text-align:right; }
-    .strength-scale b { color:var(--ink); font-weight:800; }
-    .strength-note {
-      margin-top:18px;
-      padding-top:14px;
-      border-top:1px solid #1c2a3d;
-      color:#b7c7da;
-      font-size:11px;
-      line-height:1.65;
-    }
-    .strength-note strong { color:var(--ink); }
-    .strength-explain {
-      margin-top:16px;
-      background:#0d1522;
-      border:1px solid var(--line);
-      border-radius:14px;
-      padding:16px 18px;
-      color:var(--muted);
-      font-size:12px;
-      line-height:1.7;
-    }
-
-    /* Media / brand page */
-    .media-card {
-      background:linear-gradient(145deg,#101a29,#0b121d 58%,#111827);
-      border:1px solid var(--line);
-      border-radius:22px;
-      overflow:hidden;
-    }
-    .media-intro {
-      padding:34px 32px 28px;
-      display:grid;
-      grid-template-columns:auto 1fr;
-      gap:22px;
-      align-items:center;
-      border-bottom:1px solid var(--line);
-    }
-    .media-logo {
-      width:86px;
-      height:86px;
-      border-radius:22px;
-      border:1px solid #3c4e66;
-      background:#09111c;
-      display:grid;
-      place-items:center;
-      overflow:hidden;
-    }
-    .media-logo img { width:70px; height:70px; object-fit:contain; filter:invert(1); mix-blend-mode:screen; }
-    .media-logo-fallback { font-size:28px; font-weight:900; color:var(--gold); }
-    .media-intro h1 { margin:0 0 7px; font-size:29px; }
-    .media-intro p { margin:0; color:var(--muted); font-size:13px; line-height:1.7; }
-    .media-sections { display:grid; grid-template-columns:1fr 1fr; }
-    .media-section { padding:26px 28px; border-bottom:1px solid var(--line); }
-    .media-section:nth-child(odd) { border-right:1px solid var(--line); }
-    .media-section.full { grid-column:1/-1; border-right:0; }
-    .media-section h2 { margin:0 0 10px; font-size:16px; color:var(--gold); }
-    .media-section p { margin:0; color:#bcc9d9; font-size:13px; line-height:1.85; }
-    .media-function-list { display:grid; gap:9px; margin-top:4px; }
-    .media-function-item { padding:10px 12px; border-radius:9px; background:#0a121d; border:1px solid #1e2c40; }
-    .media-function-item b { display:block; font-size:12px; margin-bottom:2px; }
-    .media-function-item span { color:var(--muted); font-size:11px; }
-    .story-quote {
-      font-size:18px !important;
-      color:#e8f0fb !important;
-      font-family:Georgia,"Times New Roman",serif;
-      line-height:1.75 !important;
-    }
-    .media-links-placeholder {
-      margin-top:16px;
-      display:inline-flex;
-      align-items:center;
-      gap:7px;
-      color:var(--muted);
-      font-size:11px;
-      border:1px dashed #354861;
-      border-radius:9px;
-      padding:9px 11px;
-    }
-
-    .chart-focus-price { color:var(--gold); font-size:12px; font-weight:800; margin-left:auto; }
-
-    /* Fake landscape full-chart mode for phones */
-    body.chart-focus { overflow:hidden; }
-    body.chart-focus header,
-    body.chart-focus .app-dock,
-    body.chart-focus #view-strength,
-    body.chart-focus #view-media,
-    body.chart-focus #view-home > .benchmark-bar,
-    body.chart-focus #view-home > .top-summary,
-    body.chart-focus #view-home > .detail-panel,
-    body.chart-focus #view-home > .extra-section,
-    body.chart-focus #view-home > .workspace > aside { display:none !important; }
-    body.chart-focus #view-home { display:block !important; }
-    body.chart-focus #view-home > .workspace { display:block !important; padding:0 !important; }
-    body.chart-focus .chart-box {
-      position:fixed;
-      z-index:9999;
-      left:50%;
-      top:50%;
-      margin:0;
-      border-radius:0;
-      display:flex;
-      flex-direction:column;
-      background:#07101a;
-    }
-    body.chart-focus .chart-box .panel-head { flex:0 0 auto; }
-    body.chart-focus .chart-box .chart-controls { flex:0 0 auto; }
-    body.chart-focus .chart-box .chart-container { flex:1 1 auto; height:auto !important; min-height:0; }
-    body.chart-focus .chart-box .chart-quickbar { display:none !important; }
-    body.chart-focus .chart-controls .ctrl-group:nth-child(2) { display:none !important; }
-    body.chart-focus .chart-controls { display:grid; grid-template-columns:1fr auto; gap:8px; align-items:center; }
-    body.chart-focus .alert-controls { margin:0; display:flex; gap:5px; }
-
-    @media (max-width: 900px) and (orientation: portrait) {
-      body.chart-focus .chart-box {
-        width:100vh;
-        width:100dvh;
-        height:100vw;
-        height:100dvw;
-        transform:translate(-50%,-50%) rotate(90deg);
-      }
-    }
-    @media (max-width: 900px) and (orientation: landscape) {
-      body.chart-focus .chart-box {
-        width:100vw;
-        width:100dvw;
-        height:100vh;
-        height:100dvh;
-        transform:translate(-50%,-50%);
-      }
-    }
-
-    @media (max-width: 720px) {
-      body { padding-bottom:72px; }
-      .app-dock {
-        bottom:0;
-        width:100%;
-        max-width:none;
-        border-left:0;
-        border-right:0;
-        border-bottom:0;
-        border-radius:14px 14px 0 0;
-        padding:5px 8px calc(5px + env(safe-area-inset-bottom));
-      }
-      .dock-btn { min-height:41px; font-size:11px; }
-      .dock-btn small { font-size:7px; }
-
-      /* Main view: BTC / ETH are tiny jump buttons, not cards */
-      #view-home > .benchmark-bar {
-        grid-template-columns:auto auto;
-        justify-content:start;
-        gap:4px;
-        margin:0 0 4px;
-      }
-      #view-home > .benchmark-bar button.benchmark-card {
-        min-width:48px;
-        min-height:28px;
-        padding:4px 8px;
-        border-radius:999px;
-      }
-      #view-home > .benchmark-bar button.benchmark-card strong,
-      #view-home > .benchmark-bar button.benchmark-card .benchmark-sub { display:none !important; }
-      #view-home > .benchmark-bar .benchmark-bias { display:none !important; }
-      #view-home > .benchmark-bar .benchmark-card label { font-size:9px; }
-
-      .strength-page, .media-page { padding:3px 0 28px; }
-      .page-hero { padding:14px 2px 12px; margin-bottom:10px; }
-      .page-hero h1 { font-size:21px; }
-      .page-hero p { font-size:10px; line-height:1.55; }
-      .strength-grid { grid-template-columns:1fr; gap:9px; }
-      .strength-card { padding:15px 14px; min-height:220px; border-radius:13px; }
-      .strength-head h2 { font-size:14px; }
-      .strength-head p { font-size:9px; }
-      .strength-state { font-size:8px; padding:4px 7px; }
-      .strength-value { font-size:43px; margin:17px 0 14px; }
-      .strength-track { height:10px; }
-      .strength-needle { height:20px; top:-5px; }
-      .strength-scale { font-size:8px; margin-top:7px; }
-      .strength-note { font-size:9px; margin-top:13px; padding-top:10px; }
-      .strength-explain { margin-top:9px; padding:11px 12px; font-size:9px; }
-
-      .media-intro { grid-template-columns:54px 1fr; gap:12px; padding:18px 15px; }
-      .media-logo { width:54px; height:54px; border-radius:14px; }
-      .media-logo img { width:44px; height:44px; }
-      .media-logo-fallback { font-size:20px; }
-      .media-intro h1 { font-size:20px; margin-bottom:4px; }
-      .media-intro p { font-size:10px; line-height:1.55; }
-      .media-sections { grid-template-columns:1fr; }
-      .media-section, .media-section:nth-child(odd) { padding:16px 15px; border-right:0; }
-      .media-section h2 { font-size:13px; }
-      .media-section p { font-size:10px; line-height:1.75; }
-      .media-function-item { padding:8px 9px; }
-      .media-function-item b { font-size:10px; }
-      .media-function-item span { font-size:9px; }
-      .story-quote { font-size:14px !important; }
-      .chart-focus-price { font-size:9px; }
-      #btn-chart-fullscreen::after { content:""; }
-    }
-
-  </style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#070d17" />
+  <title>OX 幣種篩選器 v3.1</title>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+  <div class="app">
+    <header class="topbar">
+      <div class="logo">OX 幣種篩選器 <small>v3.1</small></div>
+      <div class="crumb">首頁 / 強弱 / 媒體 / 設定</div>
 
-<header>
-  <div class="wrap nav">
-    <a class="brand" href="#">
-      <img class="brand-logo" src="ox-logo.png" alt="OX Logo" onerror="this.style.display='none'">
-      <span>OX 幣種篩選器 <small style="font-size:12px;color:var(--gold);font-weight:600">v3.0 · 主頁 / 強弱 / 媒體</small></span>
-    </a>
-    <div class="nav-stats">
-      <div class="live"><i class="dot" id="dot"></i><span id="scan-status">全市場輪巡佇列準備中…</span></div>
-      <button class="btn-act" id="btn-force-rescan" title="重新掃描">重啟輪巡</button>
-    </div>
-  </div>
-</header>
+      <div class="live">
+        <span class="dot"></span>
+        <span id="scanStatus">輪巡 192/600</span>
+      </div>
 
-<main class="wrap" style="padding-top:16px;padding-bottom:40px">
+      <button class="icon-btn" id="restartScanBtn">重啟輪巡</button>
+    </header>
 
-  <section class="app-view active" id="view-home" data-app-view="home">
-
-  <section class="benchmark-bar" aria-label="市場基準">
-    <button class="benchmark-card" type="button" data-benchmark-symbol="BTCUSDT">
-      <label><span class="desktop-bench-label">BTC 市場基準</span><span class="mobile-bench-label">BTC</span></label>
-      <strong id="bench-btc-price">—</strong>
-      <div class="benchmark-sub"><span id="bench-btc-change">—</span><span id="bench-btc-trend">等待分析</span></div>
-    </button>
-    <button class="benchmark-card" type="button" data-benchmark-symbol="ETHUSDT">
-      <label><span class="desktop-bench-label">ETH 市場基準</span><span class="mobile-bench-label">ETH</span></label>
-      <strong id="bench-eth-price">—</strong>
-      <div class="benchmark-sub"><span id="bench-eth-change">—</span><span id="bench-eth-trend">等待分析</span></div>
-    </button>
-    <div class="benchmark-card benchmark-bias">
-      <label>Market Bias</label>
-      <strong id="market-bias">Neutral</strong>
-      <div class="benchmark-sub"><span>BTC / ETH 結構背景</span></div>
-    </div>
-  </section>
-
-  <section class="top-summary">
-    <div class="metric-card">
-      <label id="ticker-pair">BTCUSDT · Bitget 永續</label>
-      <strong id="price">—</strong>
-      <small id="ticker-meta">等待行情資料中…</small>
-    </div>
-    <div class="metric-card">
-      <label>24H 漲跌幅</label>
-      <strong id="change">—</strong>
-      <small id="btc-rel">相對 BTC：—</small>
-    </div>
-    <div class="metric-card">
-      <label>24H 成交額</label>
-      <strong id="quote">—</strong>
-      <small id="quote-rank">全市場百分位：—</small>
-    </div>
-    <div class="metric-card">
-      <label>OX 綜合評分</label>
-      <strong id="ox-score" style="color:var(--gold)">—</strong>
-      <small id="ox-tier-label">分級：待評定</small>
-    </div>
-    <div class="metric-card">
-      <label>主導 Setup 型態</label>
-      <strong id="ox-setup" style="font-size:17px;padding-top:4px">—</strong>
-      <small id="ox-rs-desc">RS 狀態：—</small>
-    </div>
-  </section>
-
-  <div class="workspace">
-    <article class="panel chart-box">
-      <div class="panel-head">
-        <h2 class="panel-title" id="chart-head-title">
-          <span>BTCUSDT 永續合約</span>
-          <span class="pill" id="tf-pill">1D 日線</span>
-        </h2>
-        <div style="display:flex;gap:8px;align-items:center">
-          <span class="chart-focus-price" id="chart-focus-price">—</span>
-          <button class="btn-act" id="btn-chart-fullscreen">全螢幕</button>
-          <a class="btn-act" id="tv-ext-link" href="https://www.tradingview.com/" target="_blank" rel="noopener">TradingView ↗</a>
+    <section class="alert-strip">
+      <div class="alert-label">OX LIVE</div>
+      <div class="marquee">
+        <div class="marquee-track" id="marqueeTrack">
+          🔥 AKE 15m +18.7% · OX 82　｜　
+          🔔 SOL 突破 4H 前高 215.6　｜　
+          BTC 116,420 +1.82% · 強度 68　｜　
+          小幣整體強度 74　｜　
+          新聞功能預留
         </div>
       </div>
+    </section>
 
-      <div class="chart-controls">
-        <div class="ctrl-group">
-          <button class="btn-tf" data-tf="1m">1m</button>
-          <button class="btn-tf" data-tf="5m">5m</button>
-          <button class="btn-tf" data-tf="15m">15m</button>
-          <button class="btn-tf" data-tf="1H">1H</button>
-          <button class="btn-tf" data-tf="4H">4H</button>
-          <button class="btn-tf active" data-tf="1D">1D</button>
-          <button class="btn-tf" data-tf="1W">1W</button>
-        </div>
-        <div class="ctrl-group">
-          <label class="toggle-lbl"><input type="checkbox" id="chk-vol" checked>成交量</label>
-          <label class="toggle-lbl"><input type="checkbox" id="chk-ox-markers" checked>OX 訊號標記</label>
-        </div>
-        <div class="alert-controls">
-          <button class="alert-btn" id="btn-alert-high" type="button">🔔 前高提醒</button>
-          <button class="alert-btn" id="btn-alert-low" type="button">🔔 前低提醒</button>
-        </div>
-      </div>
-
-      <div id="chart" class="chart-container">
-        <div id="chart-loading" class="chart-loading-overlay">載入歷史 K 線中…</div>
-        <div id="price-timer" class="price-timer">—</div>
-      </div>
-      <div class="chart-quickbar">
-        <div class="chart-quickitem"><label>24H 漲跌</label><strong id="quick-change">—</strong></div>
-        <div class="chart-quickitem quick-volume-item"><label>24H USDT 成交量</label><strong id="quick-volume">—</strong></div>
-        <div class="chart-quickitem"><label>前高</label><strong id="quick-high">—</strong></div>
-        <div class="chart-quickitem"><label>前低</label><strong id="quick-low">—</strong></div>
-      </div>
-    </article>
-
-    <aside class="panel">
-      <div class="panel-head">
-        <h3 class="panel-title">OX 篩選</h3>
-        <span class="pill" id="pool-count">掃描中…</span>
-      </div>
-
-      <div class="scanner-tabs" role="tablist">
-        <button class="tab-btn active" data-tab="t1">T1 <span class="tab-badge" id="badge-t1">0</span></button>
-        <button class="tab-btn" data-tab="t2">T2 <span class="tab-badge" id="badge-t2">0</span></button>
-        <button class="tab-btn" data-tab="t3">T3 <span class="tab-badge" id="badge-t3">0</span></button>
-        <button class="tab-btn" data-tab="surge">🔥 <span class="tab-badge" id="badge-surge">0</span></button>
-        <button class="tab-btn" data-tab="gainers">漲幅榜</button>
-        <button class="tab-btn" data-tab="losers">跌幅榜</button>
-      </div>
-
-      <div id="screener-list" class="scanner-body">
-        <div style="padding:24px;text-align:center;color:var(--muted)">正在初始化 Bitget 全市場資料…</div>
-      </div>
-    </aside>
-  </div>
-
-  <section class="panel detail-panel" id="ox-detail-panel">
-    <div class="panel-head">
-      <h3 class="panel-title">OX 幣種詳情 · <span id="detail-symbol">BTCUSDT</span></h3>
-      <span class="pill" id="detail-tier">Benchmark</span>
-    </div>
-    <div class="detail-grid">
-      <div class="detail-cell"><label>OX Score</label><strong id="detail-ox">—</strong></div>
-      <div class="detail-cell"><label>流動性</label><strong id="detail-liq">—</strong></div>
-      <div class="detail-cell"><label>資金活躍</label><strong id="detail-flow">—</strong></div>
-      <div class="detail-cell"><label>結構</label><strong id="detail-structure">—</strong></div>
-      <div class="detail-cell"><label>Relative Strength</label><strong id="detail-rs">—</strong></div>
-      <div class="detail-cell"><label>Setup</label><strong id="detail-setup">—</strong></div>
-      <div class="detail-cell"><label>方向</label><strong id="detail-side">—</strong></div>
-      <div class="detail-cell"><label>Setup Progress</label><strong id="detail-progress-text">—</strong><div class="detail-progress"><i id="detail-progress-bar"></i></div></div>
-      <div class="detail-cell"><label>Signal Confidence</label><strong id="detail-confidence">—</strong></div>
-      <div class="detail-cell"><label>Trigger</label><strong id="detail-trigger">—</strong></div>
-      <div class="detail-cell detail-volume-cell"><label>24H USDT 成交量</label><strong id="detail-volume">—</strong></div>
-      <div class="detail-cell"><label>前高 / 前低</label><strong id="detail-levels">—</strong></div>
-    </div>
-    <div class="detail-reasons">
-      <h4>為什麼 OX 選到這顆？</h4>
-      <div id="detail-reasons-list"><div class="detail-reason wait">等待分析資料…</div></div>
-    </div>
-    <div class="alert-state-row">
-      <span class="alert-chip" id="detail-high-alert">🔕 前高提醒：未設定</span>
-      <span class="alert-chip" id="detail-low-alert">🔕 前低提醒：未設定</span>
-      <span class="alert-chip">小級別看圖時，提醒自動使用 4H 結構關鍵位</span>
-    </div>
-  </section>
-
-  <section class="extra-section">
-    <div class="panel" style="padding:20px 24px;background:#0d1522">
-      <h3 style="margin:0 0 8px;font-size:16px;color:var(--gold)">OX 生命週期分級：T1 觸發確認 · T2 蹲點準備 · T3 早期跟蹤</h3>
-      <p style="margin:0;font-size:13px;color:var(--muted);line-height:1.6">
-        <strong>T1</strong> 為 Setup 已成立且出現 Trigger（放量突破/反轉確認）之即戰力標的；<strong>T2</strong> 為結構與資金準備就緒但尚未觸發之蹲點標的；<strong>T3</strong> 為結構與量能初具雛形之早期觀察標的。系統支援多空對稱篩選，全市場自動佇列輪巡，未達標準決不硬湊。
-      </p>
-    </div>
-  </section>
-
-  </section><!-- /view-home -->
-
-  <section class="app-view" id="view-strength" data-app-view="strength">
-    <div class="strength-page">
-      <div class="page-hero">
-        <div class="page-kicker">OX Market Pulse</div>
-        <h1>市場強弱</h1>
-        <p>只看兩件事：BTC 現在強不強，以及小幣現在好不好做。內部會持續計算，但畫面只保留 0、50、100 三段。</p>
-      </div>
-
-      <div class="strength-grid">
-        <article class="strength-card">
-          <div class="strength-head">
-            <div><h2>BTC 強弱</h2><p>結構 · 資金 · 動能 · Trigger</p></div>
-            <span class="strength-state" id="btc-strength-state">中</span>
+    <main class="main">
+      <!-- 首頁 -->
+      <section id="page-home" class="page">
+        <section class="compact-market">
+          <div class="metric">
+            <span id="marketSymbol">ETHUSDT · Bitget 永續</span>
+            <strong id="marketPrice">2,628.08</strong>
           </div>
-          <div class="strength-value" id="btc-strength-value">50</div>
-          <div class="strength-meter">
-            <div class="strength-track"><i class="strength-needle" id="btc-strength-needle" style="left:50%"></i></div>
-            <div class="strength-scale"><span><b>0</b> 弱</span><span><b>50</b> 中</span><span><b>100</b> 強</span></div>
+
+          <div class="metric">
+            <span>24H 漲跌</span>
+            <strong class="up" id="marketChange">+5.60%</strong>
           </div>
-          <div class="strength-note" id="btc-strength-note">等待 BTC 分析資料。</div>
-        </article>
 
-        <article class="strength-card">
-          <div class="strength-head">
-            <div><h2>小幣強弱</h2><p>流動性 · 型態廣度 · 結構 · 資金活躍</p></div>
-            <span class="strength-state" id="alt-strength-state">中</span>
+          <div class="metric">
+            <span>24H 成交額</span>
+            <strong id="marketVolume">2.5B</strong>
           </div>
-          <div class="strength-value" id="alt-strength-value">50</div>
-          <div class="strength-meter">
-            <div class="strength-track"><i class="strength-needle" id="alt-strength-needle" style="left:50%"></i></div>
-            <div class="strength-scale"><span><b>0</b> 弱</span><span><b>50</b> 中</span><span><b>100</b> 強</span></div>
-          </div>
-          <div class="strength-note" id="alt-strength-note">等待全市場輪巡累積足夠樣本。</div>
-        </article>
-      </div>
+        </section>
 
-      <div class="strength-explain">
-        <strong style="color:var(--ink)">怎麼看：</strong>
-        0 代表現在條件偏弱、好型態與有效流動性較少；50 代表市場混合、需要挑幣；100 代表資金、結構與型態廣度同步轉強。這是「市場環境」而不是買賣訊號。
-      </div>
-    </div>
-  </section>
+        <div class="dashboard-grid">
+          <article class="card chart-card" id="chartCard">
+            <div class="chart-head">
+              <div class="chart-title" id="chartTitle">ETHUSDT 永續合約</div>
+              <span class="tag" id="currentTimeframe">15m</span>
+              <div class="price-now" id="chartPrice">2,628.08</div>
 
-  <section class="app-view" id="view-media" data-app-view="media">
-    <div class="media-page">
-      <div class="media-card">
-        <div class="media-intro">
-          <div class="media-logo">
-            <img src="ox-logo.png" alt="OX Logo" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
-            <span class="media-logo-fallback" style="display:none">OX</span>
-          </div>
-          <div>
-            <div class="page-kicker">OX Media</div>
-            <h1>OX</h1>
-            <p>把大量市場雜訊整理成真正值得花時間看的行情。這裡先作為 OX 的品牌與理念頁，之後再加入 YouTube、社群與其他媒體入口。</p>
-          </div>
-        </div>
-
-        <div class="media-sections">
-          <section class="media-section">
-            <h2>我是誰</h2>
-            <p>我是 OX 的創作者，也是一個長期把時間花在價格行為、趨勢、結構與資金流動上的交易者。OX 不是從「我想做一個網站」開始，而是從我每天都遇到的一個問題開始：市場裡有太多幣，但真正值得看的其實很少。</p>
-          </section>
-
-          <section class="media-section">
-            <h2>OX 是做什麼的</h2>
-            <p>OX 是一個市場篩選與看盤工具。它先從 Bitget 全市場裡找出有流動性、有資金活動、有結構、有相對強弱與 Setup 的標的，再用 T1、T2、T3 幫我縮小觀察範圍。最後的交易決策仍然交給人。</p>
-          </section>
-
-          <section class="media-section full">
-            <h2>核心功能</h2>
-            <div class="media-function-list">
-              <div class="media-function-item"><b>全市場輪巡</b><span>不是只看漲幅榜，而是持續掃描通過流動性門檻的 USDT 永續合約。</span></div>
-              <div class="media-function-item"><b>資金與結構篩選</b><span>成交額、放量、相對強弱、價格結構與 Setup 一起看，而不是只靠單一指標。</span></div>
-              <div class="media-function-item"><b>T1 / T2 / T3</b><span>把「已成熟」、「接近觸發」、「早期形成」分開，讓看盤有先後順序。</span></div>
-              <div class="media-function-item"><b>前高前低提醒</b><span>把真正重要的大級別結構位置變成可監控的提醒，而不是一直盯著螢幕。</span></div>
+              <button class="icon-btn" id="fullscreenBtn">全圖</button>
             </div>
-          </section>
 
-          <section class="media-section full">
-            <h2>我的想法</h2>
-            <p class="story-quote">「市場最底層的東西不是指標，而是錢。錢進入市場，留下成交量、波動與價格行為；價格行為形成 K 線，K 線累積成結構，結構最後變成我們看到的趨勢。」</p>
-            <p style="margin-top:16px">我做 OX，不是希望它替人預測下一根 K 線，也不是要它告訴所有人現在該買什麼。我更想做的是把不值得看的行情先排除掉。因為交易裡，選擇不做什麼，常常跟選擇做什麼一樣重要。</p>
-            <p style="margin-top:12px">我真正想留下的只有四件事：<strong style="color:var(--ink)">有錢、有流動性、有結構，而且是我看得懂的行情。</strong> OX 的角色，就是把幾百個標的縮成少數值得我親自打開 K 線確認的候選。</p>
-            <div class="media-links-placeholder">媒體 / 社群連結將在下一階段加入</div>
-          </section>
+            <div class="tf-row" id="timeframeRow">
+              <button class="tf" data-tf="1m">1m</button>
+              <button class="tf" data-tf="5m">5m</button>
+              <button class="tf active" data-tf="15m">15m</button>
+              <button class="tf" data-tf="1H">1H</button>
+              <button class="tf" data-tf="4H">4H</button>
+              <button class="tf" data-tf="1D">1D</button>
+              <button class="tf" data-tf="1W">1W</button>
+            </div>
+
+            <div class="chart-wrap" id="chartWrap">
+              <div class="gridlines"></div>
+
+              <div class="level high" id="highLevel">
+                <span class="label" id="highLabel">4H 前高 2,667.24　🔔</span>
+              </div>
+
+              <div class="level low" id="lowLevel">
+                <span class="label" id="lowLabel">1D 前低 2,512.60　🔔</span>
+              </div>
+
+              <div class="live-line">
+                <span class="live-price" id="liveChartPrice">2,623.92</span>
+              </div>
+
+              <div class="candles" id="candles"></div>
+            </div>
+
+            <div class="symbol-row">
+              <div class="symbol-pills" id="symbolPills">
+                <button class="symbol-pill" data-symbol="BTCUSDT">BTC</button>
+                <button class="symbol-pill active" data-symbol="ETHUSDT">ETH</button>
+              </div>
+
+              <div class="chart-options">
+                <label><input type="checkbox" checked /> 成交量</label>
+                <label><input type="checkbox" /> OX 訊號</label>
+              </div>
+            </div>
+
+            <div class="bell-row">
+              <button class="bell" id="highAlertBtn">🔔 4H 前高</button>
+              <button class="bell" id="lowAlertBtn">🔔 1D 前低</button>
+            </div>
+          </article>
+
+          <aside class="card rank-card">
+            <div class="rank-head">
+              <strong>OX 篩選</strong>
+              <span class="tag">即時</span>
+            </div>
+
+            <div class="rank-tabs" id="rankTabs">
+              <button data-tier="T1">T1</button>
+              <button data-tier="T2">T2</button>
+              <button class="active" data-tier="T3">T3 🔥</button>
+            </div>
+
+            <div id="rankingList"></div>
+          </aside>
         </div>
-      </div>
-    </div>
-  </section>
-
-</main>
-
-
-<nav class="app-dock" aria-label="主要功能">
-  <button class="dock-btn active" type="button" data-view-target="home">主頁<small>篩選 / 圖表</small></button>
-  <button class="dock-btn" type="button" data-view-target="strength">強弱<small>市場環境</small></button>
-  <button class="dock-btn" type="button" data-view-target="media">媒體<small>OX / 理念</small></button>
-</nav>
-
-<div id="toast" class="toast" role="status"></div>
-
-<script>
-"use strict";
-
-const CONFIG = {
-  apiBase: "https://api.bitget.com/api/v2/mix/market",
-  productType: "USDT-FUTURES",
-  
-  liquidity: {
-    minUsdtVolume24h: 3000000,
-    t1MinUsdtVolume: 12000000,
-    topPercentileCutoff: 0.65,
-    lowLiqPenaltyRatio: 0.35,
-  },
-
-  weights: {
-    liquidity: 0.25,
-    moneyFlow: 0.25,
-    structure: 0.20,
-    setupMatch: 0.15,
-    relativeStrength: 0.10,
-    momentum: 0.05
-  },
-
-  queueBatchSize: 10,
-  batchIntervalMs: 2500,
-  tickerRefreshMs: 15000
-};
-
-const state = {
-  symbol: "BTCUSDT",
-  period: "1D",
-  currentTab: "t1",
-  activeView: "home",
-  
-  tickers: [],
-  contracts: new Map(),
-  btcTicker: null,
-  ethTicker: null,
-  
-  scanQueue: [],
-  scanIndex: 0,
-  analyzedCache: new Map(),
-  isQueueRunning: false,
-  
-  tierMap: { t1: [], t2: [], t3: [], surge: [], gainers: [], losers: [] },
-
-  chart: null,
-  candleSeries: null,
-  volumeSeries: null,
-  candleData: [],
-  isLoadingOlder: false,
-  hasMoreHistory: true,
-  oldestCandleTime: 0,
-  abortCtrl: null,
-  keyHighLine: null,
-  keyLowLine: null,
-  currentLevels: { high: 0, low: 0, sourcePeriod: "4H", highTime: 0, lowTime: 0 },
-  audioCtx: null
-};
-
-const periods = {
-  "1m": 60, "5m": 300, "15m": 900, "1H": 3600, "4H": 14400, "1D": 86400, "1W": 604800
-};
-
-const num = v => Number(v) || 0;
-const fmtUsd = v => new Intl.NumberFormat("en-US", { notation: "compact", maximumFractionDigits: 2 }).format(num(v));
-const fmtPrice = v => {
-  const x = num(v);
-  if (!Number.isFinite(x) || x === 0) return "—";
-  const d = x >= 1000 ? 2 : x >= 1 ? 4 : x >= 0.01 ? 6 : 8;
-  return new Intl.NumberFormat("en-US", { maximumFractionDigits: d }).format(x);
-};
-const fmtPct = v => `${num(v) >= 0 ? "+" : ""}${(num(v) * 100).toFixed(2)}%`;
-
-
-const clamp = (v, min = 0, max = 100) => Math.max(min, Math.min(max, v));
-const benchmarkSymbols = new Set(["BTCUSDT", "ETHUSDT"]);
-// 關鍵位以大級別為主：正在看 4H/1D/1W 就沿用該級別；看更小級別時自動參考 4H。
-const getKeyLevelPeriod = () => ["4H", "1D", "1W"].includes(state.period) ? state.period : "4H";
-const alertStorageKey = (kind, symbol = state.symbol, period = getKeyLevelPeriod()) => `ox-level-alert:${symbol}:${period}:${kind}`;
-
-function getStoredAlert(kind, symbol = state.symbol, period = state.period) {
-  try { return JSON.parse(localStorage.getItem(alertStorageKey(kind, symbol, period)) || "null"); }
-  catch { return null; }
-}
-
-function setStoredAlert(kind, value, symbol = state.symbol, period = state.period) {
-  localStorage.setItem(alertStorageKey(kind, symbol, period), JSON.stringify(value));
-}
-
-function removeStoredAlert(kind, symbol = state.symbol, period = state.period) {
-  localStorage.removeItem(alertStorageKey(kind, symbol, period));
-}
-
-function showToast(message) {
-  const el = document.getElementById("toast");
-  if (!el) return;
-  el.textContent = message;
-  el.classList.add("show");
-  clearTimeout(showToast._t);
-  showToast._t = setTimeout(() => el.classList.remove("show"), 3200);
-}
-
-function primeAlertAudio() {
-  try {
-    const Ctx = window.AudioContext || window.webkitAudioContext;
-    if (!Ctx) return;
-    if (!state.audioCtx) state.audioCtx = new Ctx();
-    if (state.audioCtx.state === "suspended") state.audioCtx.resume();
-  } catch (e) {}
-}
-
-function playAlertTone(kind = "high") {
-  try {
-    primeAlertAudio();
-    if (!state.audioCtx) return;
-    const osc = state.audioCtx.createOscillator();
-    const gain = state.audioCtx.createGain();
-    osc.type = "sine";
-    osc.frequency.value = kind === "high" ? 880 : 520;
-    gain.gain.setValueAtTime(0.0001, state.audioCtx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.18, state.audioCtx.currentTime + 0.02);
-    gain.gain.exponentialRampToValueAtTime(0.0001, state.audioCtx.currentTime + 0.55);
-    osc.connect(gain); gain.connect(state.audioCtx.destination);
-    osc.start(); osc.stop(state.audioCtx.currentTime + 0.58);
-  } catch (e) {}
-}
-
-async function maybeRequestNotificationPermission() {
-  try {
-    if (!("Notification" in window)) return;
-    if (Notification.permission === "default") await Notification.requestPermission();
-  } catch (e) {}
-}
-
-function fireLevelAlert(kind, alert, price, symbol = state.symbol, period = state.period) {
-  const isHigh = kind === "high";
-  const title = `${symbol} ${isHigh ? "突破前高" : "跌破前低"}`;
-  const body = `${period}｜目標 ${fmtPrice(alert.target)}｜目前 ${fmtPrice(price)}`;
-  playAlertTone(kind);
-  if (navigator.vibrate) navigator.vibrate([180, 80, 180]);
-  try {
-    if ("Notification" in window && Notification.permission === "granted") new Notification(title, { body });
-  } catch (e) {}
-  showToast(`🔔 ${title}：${fmtPrice(price)}`);
-}
-
-function updateAlertButtons() {
-  const highBtn = document.getElementById("btn-alert-high");
-  const lowBtn = document.getElementById("btn-alert-low");
-  if (!highBtn || !lowBtn) return;
-
-  const sourcePeriod = state.currentLevels.sourcePeriod || getKeyLevelPeriod();
-  const high = getStoredAlert("high", state.symbol, sourcePeriod);
-  const low = getStoredAlert("low", state.symbol, sourcePeriod);
-
-  // 手機上不再因目前查看 1H/15m 而禁用；小級別畫面仍使用 4H 結構前高/前低。
-  highBtn.disabled = !state.currentLevels.high;
-  lowBtn.disabled = !state.currentLevels.low;
-  highBtn.className = "alert-btn" + (high?.triggered ? " triggered" : high?.enabled ? " enabled-high" : "");
-  lowBtn.className = "alert-btn" + (low?.triggered ? " triggered" : low?.enabled ? " enabled-low" : "");
-  highBtn.textContent = high?.triggered ? `✅ ${sourcePeriod}前高已觸發` : high?.enabled ? `🔔 ${sourcePeriod}前高 ${fmtPrice(high.target)}` : `🔔 ${sourcePeriod}前高`;
-  lowBtn.textContent = low?.triggered ? `✅ ${sourcePeriod}前低已觸發` : low?.enabled ? `🔔 ${sourcePeriod}前低 ${fmtPrice(low.target)}` : `🔔 ${sourcePeriod}前低`;
-
-  const highChip = document.getElementById("detail-high-alert");
-  const lowChip = document.getElementById("detail-low-alert");
-  if (highChip) highChip.textContent = high?.triggered ? `✅ ${sourcePeriod}前高已觸發 ${fmtPrice(high.target)}` : high?.enabled ? `🔔 ${sourcePeriod}前高提醒 ${fmtPrice(high.target)}` : `🔕 ${sourcePeriod}前高提醒：未設定`;
-  if (lowChip) lowChip.textContent = low?.triggered ? `✅ ${sourcePeriod}前低已觸發 ${fmtPrice(low.target)}` : low?.enabled ? `🔔 ${sourcePeriod}前低提醒 ${fmtPrice(low.target)}` : `🔕 ${sourcePeriod}前低提醒：未設定`;
-}
-
-async function toggleLevelAlert(kind) {
-  const sourcePeriod = state.currentLevels.sourcePeriod || getKeyLevelPeriod();
-  const target = kind === "high" ? state.currentLevels.high : state.currentLevels.low;
-  if (!target) return showToast(`正在取得 ${sourcePeriod} ${kind === "high" ? "前高" : "前低"}，請稍候再點一次`);
-
-  const existing = getStoredAlert(kind, state.symbol, sourcePeriod);
-  if (existing?.enabled && !existing?.triggered) {
-    removeStoredAlert(kind, state.symbol, sourcePeriod);
-    showToast(`已關閉 ${state.symbol} ${sourcePeriod} ${kind === "high" ? "前高" : "前低"}提醒`);
-  } else {
-    primeAlertAudio();
-    await maybeRequestNotificationPermission();
-    setStoredAlert(kind, {
-      enabled: true,
-      triggered: false,
-      target,
-      sourcePeriod,
-      createdAt: Date.now()
-    }, state.symbol, sourcePeriod);
-    showToast(`已設定 ${state.symbol} ${sourcePeriod} ${kind === "high" ? "前高突破" : "前低跌破"}提醒 ${fmtPrice(target)}`);
-  }
-  updateAlertButtons();
-}
-
-function checkLevelAlerts() {
-  if (!state.tickers.length) return;
-  for (let i = 0; i < localStorage.length; i++) {
-    const key = localStorage.key(i);
-    if (!key || !key.startsWith("ox-level-alert:")) continue;
-    const parts = key.split(":");
-    if (parts.length !== 4) continue;
-    const [, symbol, period, kind] = parts;
-    let alert = null;
-    try { alert = JSON.parse(localStorage.getItem(key) || "null"); } catch (e) {}
-    if (!alert?.enabled || alert.triggered || !alert.target) continue;
-    const ticker = state.tickers.find(t => t.symbol === symbol);
-    if (!ticker) continue;
-    const price = num(ticker.lastPr);
-    const hit = kind === "high" ? price >= alert.target : price <= alert.target;
-    if (!hit) continue;
-    alert.triggered = true;
-    alert.triggeredAt = Date.now();
-    localStorage.setItem(key, JSON.stringify(alert));
-    fireLevelAlert(kind, alert, price, symbol, period);
-    if (symbol === state.symbol && period === state.period) updateAlertButtons();
-  }
-}
-
-
-
-function classifyStrength(raw) {
-  const v = clamp(Math.round(raw));
-  if (v < 40) return { display: 0, label: "弱", pos: 0 };
-  if (v < 65) return { display: 50, label: "中", pos: 50 };
-  return { display: 100, label: "強", pos: 100 };
-}
-
-function qualitative(v, low = 45, high = 65) {
-  if (!Number.isFinite(v)) return "等待";
-  if (v < low) return "偏弱";
-  if (v >= high) return "強";
-  return "普通";
-}
-
-function computeMarketStrength() {
-  const btc = state.btcTicker;
-  const btcA = state.analyzedCache.get("BTCUSDT");
-  let btcRaw = 50;
-  if (btcA) {
-    const momentum = clamp(50 + num(btc?.change24h) * 350);
-    btcRaw = clamp(
-      btcA.structScore * 0.35 +
-      btcA.flowScore * 0.30 +
-      btcA.setupScore * 0.15 +
-      momentum * 0.15 +
-      (btcA.triggerActive ? 100 : 50) * 0.05
-    );
-  } else if (btc) {
-    btcRaw = clamp(50 + num(btc.change24h) * 350);
-  }
-
-  const alts = Array.from(state.analyzedCache.values()).filter(c => !benchmarkSymbols.has(c.symbol));
-  let altRaw = 50;
-  let altParts = null;
-  if (alts.length >= 5) {
-    const avgLiq = alts.reduce((a,c)=>a+num(c.liqScore),0) / alts.length;
-    const setupBreadth = alts.filter(c => num(c.setupScore) >= 65).length / alts.length * 100;
-    const structureBreadth = alts.filter(c => num(c.structScore) >= 60).length / alts.length * 100;
-    const moneyBreadth = alts.filter(c => num(c.flowScore) >= 60 || c.isSurge).length / alts.length * 100;
-    const positiveBreadth = alts.filter(c => num(c.change24h) > 0).length / alts.length * 100;
-    altRaw = clamp(
-      avgLiq * 0.30 +
-      setupBreadth * 0.25 +
-      structureBreadth * 0.20 +
-      moneyBreadth * 0.15 +
-      positiveBreadth * 0.10
-    );
-    altParts = { avgLiq, setupBreadth, structureBreadth, moneyBreadth };
-  }
-
-  return { btcRaw, altRaw, btcA, altParts, sampleSize: alts.length };
-}
-
-function renderMarketStrength() {
-  const data = computeMarketStrength();
-  const btcS = classifyStrength(data.btcRaw);
-  const altS = classifyStrength(data.altRaw);
-
-  const setGauge = (prefix, s) => {
-    const value = document.getElementById(`${prefix}-strength-value`);
-    const stateEl = document.getElementById(`${prefix}-strength-state`);
-    const needle = document.getElementById(`${prefix}-strength-needle`);
-    if (value) value.textContent = s.display;
-    if (stateEl) stateEl.textContent = s.label;
-    if (needle) needle.style.left = `${s.pos}%`;
-  };
-  setGauge("btc", btcS);
-  setGauge("alt", altS);
-
-  const btcNote = document.getElementById("btc-strength-note");
-  if (btcNote) {
-    if (data.btcA) {
-      btcNote.innerHTML = `<strong>目前判讀：</strong>結構 ${qualitative(data.btcA.structScore)} · 資金 ${qualitative(data.btcA.flowScore)} · Setup ${qualitative(data.btcA.setupScore)}。`;
-    } else {
-      btcNote.textContent = "正在累積 BTC 結構與資金資料。";
-    }
-  }
-
-  const altNote = document.getElementById("alt-strength-note");
-  if (altNote) {
-    if (data.altParts) {
-      altNote.innerHTML = `<strong>目前判讀：</strong>流動性 ${qualitative(data.altParts.avgLiq)} · 型態廣度 ${qualitative(data.altParts.setupBreadth,35,60)} · 結構廣度 ${qualitative(data.altParts.structureBreadth,35,60)} · 資金活躍 ${qualitative(data.altParts.moneyBreadth,30,55)}。`;
-    } else {
-      altNote.textContent = `目前已分析 ${data.sampleSize} 檔，樣本還不夠，等待全市場輪巡。`;
-    }
-  }
-}
-
-function resizeChartToContainer() {
-  const container = document.getElementById("chart");
-  if (!state.chart || !container) return;
-  const rect = container.getBoundingClientRect();
-  if (rect.width > 0 && rect.height > 0) {
-    state.chart.applyOptions({ width: Math.round(rect.width), height: Math.round(rect.height) });
-  }
-}
-
-function setChartFocus(enabled) {
-  document.body.classList.toggle("chart-focus", enabled);
-  const btn = document.getElementById("btn-chart-fullscreen");
-  if (btn) btn.textContent = enabled ? "✕ 返回" : (window.matchMedia("(max-width: 900px)").matches ? "展開圖表" : "全螢幕");
-  setTimeout(() => { resizeChartToContainer(); updatePriceTimer(); }, 120);
-}
-
-function switchAppView(view) {
-  if (!['home','strength','media'].includes(view)) return;
-  if (document.body.classList.contains('chart-focus')) setChartFocus(false);
-  state.activeView = view;
-  document.querySelectorAll('[data-app-view]').forEach(el => el.classList.toggle('active', el.dataset.appView === view));
-  document.querySelectorAll('[data-view-target]').forEach(btn => btn.classList.toggle('active', btn.dataset.viewTarget === view));
-  if (view === 'strength') renderMarketStrength();
-  if (view === 'home') setTimeout(resizeChartToContainer, 80);
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-const BitgetAPI = {
-  async fetchTickers() {
-    const res = await fetch(`${CONFIG.apiBase}/tickers?productType=${CONFIG.productType}`, { cache: "no-store" });
-    const json = await res.json();
-    if (json.code !== "00000" || !Array.isArray(json.data)) throw new Error("Ticker 格式錯誤");
-    return json.data;
-  },
-
-  async fetchContracts() {
-    const res = await fetch(`${CONFIG.apiBase}/contracts?productType=${CONFIG.productType}`, { cache: "no-store" });
-    const json = await res.json();
-    if (json.code !== "00000" || !Array.isArray(json.data)) return [];
-    return json.data.filter(x => x.symbolStatus === "normal" && x.symbolType === "perpetual" && x.quoteCoin === "USDT");
-  },
-
-  async fetchCandles(symbol, granularity, limit = 100, endTime = null) {
-    let url = `${CONFIG.apiBase}/candles?symbol=${symbol}&productType=${CONFIG.productType}&granularity=${granularity}&limit=${limit}`;
-    if (endTime) url += `&endTime=${endTime}`;
-    const res = await fetch(url, { cache: "no-store" });
-    const json = await res.json();
-    if (json.code !== "00000" || !Array.isArray(json.data)) return [];
-    
-    // 使用 ES6 陣列解構，百分之百避免任何下標被誤刪
-    return json.data.map(d => {
-      const [rawTime, rawOpen, rawHigh, rawLow, rawClose, rawVol, rawQuoteVol] = d;
-      return {
-        time: Math.floor(num(rawTime) / 1000),
-        open: num(rawOpen),
-        high: num(rawHigh),
-        low: num(rawLow),
-        close: num(rawClose),
-        volume: num(rawVol),
-        quoteVolume: num(rawQuoteVol)
-      };
-    }).filter(c => Number.isFinite(c.open) && Number.isFinite(c.close) && c.open > 0 && c.close > 0)
-      .sort((a, b) => a.time - b.time);
-  }
-};
-
-const OXEngine = {
-  computeLiquidity(ticker, allTickers) {
-    const quoteVol = num(ticker.usdtVolume);
-    const sorted = allTickers.map(t => num(t.usdtVolume)).sort((a, b) => b - a);
-    const rank = sorted.indexOf(quoteVol);
-    const percentile = Math.max(0, Math.min(100, (1 - (rank / sorted.length)) * 100));
-
-    let liqScore = (percentile / 100) * 80;
-    if (quoteVol >= CONFIG.liquidity.t1MinUsdtVolume) liqScore += 20;
-    else if (quoteVol >= CONFIG.liquidity.minUsdtVolume24h) liqScore += 10;
-    
-    const change = num(ticker.change24h);
-    let penaltyApplied = false;
-    if (Math.abs(change) > 0.12 && percentile < 40) {
-      liqScore *= CONFIG.liquidity.lowLiqPenaltyRatio;
-      penaltyApplied = true;
-    }
-
-    return {
-      score: Math.min(100, Math.max(0, Math.round(liqScore))),
-      percentileStr: (100 - percentile).toFixed(1),
-      quoteVol,
-      penaltyApplied
-    };
-  },
-
-  computeRelativeStrength(ticker, btcTicker) {
-    const chg = num(ticker.change24h);
-    const btcChg = btcTicker ? num(btcTicker.change24h) : 0;
-    const diffBtc = chg - btcChg;
-    
-    let rsScore = 50 + (diffBtc * 200);
-    rsScore = Math.min(100, Math.max(0, Math.round(rsScore)));
-    
-    return {
-      score: rsScore,
-      diffBtcPct: (diffBtc * 100).toFixed(2),
-      isOutperforming: diffBtc > 0.02,
-      isUnderperforming: diffBtc < -0.02
-    };
-  },
-
-  computeMoneyFlow(candles) {
-    if (!candles || candles.length < 22) return { score: 50, volRatio1h: 1.0, isSurge: false };
-    
-    const n = candles.length;
-    const last = candles[n - 1];
-    const vols = candles.map(c => c.volume);
-    const avgVol20 = vols.slice(-21, -1).reduce((a, b) => a + b, 0) / 20 || 1;
-    const volRatio1h = last.volume / avgVol20;
-    const recent4Vol = vols.slice(-4).reduce((a, b) => a + b, 0) / 4;
-    const volRatio4h = recent4Vol / avgVol20;
-
-    let upVolSum = 0, upCount = 0;
-    let downVolSum = 0, downCount = 0;
-    for (let i = Math.max(0, n - 12); i < n; i++) {
-      if (candles[i].close >= candles[i].open) {
-        upVolSum += candles[i].volume;
-        upCount++;
-      } else {
-        downVolSum += candles[i].volume;
-        downCount++;
-      }
-    }
-    const avgUpVol = upCount ? upVolSum / upCount : avgVol20;
-    const avgDownVol = downCount ? downVolSum / downCount : avgVol20;
-
-    let baseFlow = 50;
-    if (volRatio1h >= 1.8) baseFlow += 25;
-    else if (volRatio1h >= 1.25) baseFlow += 12;
-    else if (volRatio1h < 0.6) baseFlow -= 10;
-
-    const healthyLongVol = avgUpVol > avgDownVol * 1.15;
-    const healthyShortVol = avgDownVol > avgUpVol * 1.15;
-    if (healthyLongVol || healthyShortVol) baseFlow += 15;
-
-    const isSurge = volRatio1h >= 1.8 || (volRatio4h >= 1.5 && volRatio1h >= 1.4);
-
-    return {
-      score: Math.min(100, Math.max(10, Math.round(baseFlow))),
-      volRatio1h: Number(volRatio1h.toFixed(2)),
-      volRatio4h: Number(volRatio4h.toFixed(2)),
-      isSurge,
-      healthyLongVol,
-      healthyShortVol
-    };
-  },
-
-  computeStructure(candles) {
-    if (!candles || candles.length < 25) {
-      return { score: 50, side: "NEUTRAL", swingHigh: 0, swingLow: 0, isHHHL: false, isLHLL: false };
-    }
-
-    const n = candles.length;
-    const last = candles[n - 1];
-    const prev = candles[n - 2];
-    const highs = candles.map(c => c.high);
-    const lows = candles.map(c => c.low);
-    const closes = candles.map(c => c.close);
-
-    const ma20 = closes.slice(-20).reduce((a, b) => a + b, 0) / 20;
-    const swingHigh = Math.max(...highs.slice(-21, -1));
-    const swingLow = Math.min(...lows.slice(-21, -1));
-
-    const isHHHL = last.high >= prev.high && prev.high >= candles[n - 3].high &&
-                   last.low >= prev.low && prev.low >= candles[n - 3].low;
-
-    const isLHLL = last.high <= prev.high && prev.high <= candles[n - 3].high &&
-                   last.low <= prev.low && prev.low <= candles[n - 3].low;
-
-    let structScore = 50;
-    let side = "NEUTRAL";
-
-    if (last.close > ma20) {
-      side = "LONG";
-      if (isHHHL) structScore += 25;
-      const pullback = (swingHigh - last.close) / (swingHigh - swingLow || 1);
-      if (pullback >= 0.05 && pullback <= 0.45) structScore += 18;
-      else if (pullback < 0.05) structScore += 12;
-    } else if (last.close < ma20) {
-      side = "SHORT";
-      if (isLHLL) structScore += 25;
-      const bounce = (last.close - swingLow) / (swingHigh - swingLow || 1);
-      if (bounce >= 0.05 && bounce <= 0.45) structScore += 18;
-      else if (bounce < 0.05) structScore += 12;
-    }
-
-    return {
-      score: Math.min(100, Math.max(10, Math.round(structScore))),
-      side,
-      swingHigh,
-      swingLow,
-      isHHHL,
-      isLHLL
-    };
-  },
-
-  evaluateSetupMatch(candles, structure, moneyFlow) {
-    if (!candles || candles.length < 25) {
-      return { setupName: "區間整理", setupScore: 45, side: "NEUTRAL", reasons: ["K線資料分析中"] };
-    }
-
-    const n = candles.length;
-    const last = candles[n - 1];
-    const highs = candles.map(c => c.high);
-    const lows = candles.map(c => c.low);
-
-    const matched = [];
-    const reasons = [];
-
-    if (structure.side === "LONG") {
-      const distHigh = (structure.swingHigh - last.close) / structure.swingHigh;
-
-      if (structure.isHHHL && moneyFlow.healthyLongVol) {
-        matched.push({ name: "[多] 強勢趨勢延續", score: 85, side: "LONG" });
-        reasons.push("高低點階梯式抬高，多頭結構順排");
-      }
-      if (distHigh <= 0.025 && distHigh >= -0.015) {
-        matched.push({ name: "[多] 關鍵前高突破", score: 88, side: "LONG" });
-        reasons.push(`距離關鍵前高 ${fmtPrice(structure.swingHigh)} 僅 ${(distHigh * 100).toFixed(1)}%`);
-      }
-      const range5 = (Math.max(...highs.slice(-5)) - Math.min(...lows.slice(-5))) / last.close;
-      const range20 = (Math.max(...highs.slice(-20)) - Math.min(...lows.slice(-20))) / last.close;
-      if (range5 < range20 * 0.55 && moneyFlow.volRatio1h < 1.0) {
-        matched.push({ name: "[多/平] 波動壓縮待變盤", score: 78, side: "LONG" });
-        reasons.push("ATR 波動顯著收窄，進入極度壓制狀態");
-      }
-      if (last.low < structure.swingLow && last.close > structure.swingLow) {
-        matched.push({ name: "[多] 假跌破流動性獵取", score: 82, side: "LONG" });
-        reasons.push("下插刺破前低支撐後強勢收回");
-      }
-    }
-
-    if (structure.side === "SHORT") {
-      const distLow = (last.close - structure.swingLow) / structure.swingLow;
-
-      if (structure.isLHLL && moneyFlow.healthyShortVol) {
-        matched.push({ name: "[空] 弱勢趨勢延續", score: 85, side: "SHORT" });
-        reasons.push("高低點階梯式走低，空頭結構順排");
-      }
-      if (distLow <= 0.025 && distLow >= -0.015) {
-        matched.push({ name: "[空] 關鍵前低跌破", score: 88, side: "SHORT" });
-        reasons.push(`距離關鍵前低 ${fmtPrice(structure.swingLow)} 僅 ${(distLow * 100).toFixed(1)}%`);
-      }
-      if (last.high > structure.swingHigh && last.close < structure.swingHigh) {
-        matched.push({ name: "[空] 假突破上掃誘多", score: 82, side: "SHORT" });
-        reasons.push("上刺突破前高誘多後迅速收回跌破");
-      }
-    }
-
-    if (!matched.length) {
-      matched.push({ name: "常態結構震盪", score: 50, side: structure.side });
-      reasons.push("目前處於盤整區間內等待明確結構");
-    }
-
-    matched.sort((a, b) => b.score - a.score);
-    return {
-      setupName: matched[0].name,
-      setupScore: matched[0].score,
-      side: matched[0].side,
-      reasons: reasons.slice(0, 3)
-    };
-  },
-
-  detectTrigger(candles, structure, moneyFlow) {
-    if (!candles || candles.length < 20) return { active: false, type: "" };
-    const last = candles[candles.length - 1];
-    const prev = candles[candles.length - 2];
-
-    if (structure.side === "LONG") {
-      if (last.close >= structure.swingHigh && moneyFlow.volRatio1h >= 1.35) {
-        return { active: true, type: "OX 放量突破" };
-      }
-      if (prev.close < prev.open && last.close > prev.high && moneyFlow.volRatio1h >= 1.2) {
-        return { active: true, type: "OX 回調結束反轉" };
-      }
-    }
-
-    if (structure.side === "SHORT") {
-      if (last.close <= structure.swingLow && moneyFlow.volRatio1h >= 1.35) {
-        return { active: true, type: "OX 放量跌破" };
-      }
-      if (prev.close > prev.open && last.close < prev.low && moneyFlow.volRatio1h >= 1.2) {
-        return { active: true, type: "OX 反抽受阻下破" };
-      }
-    }
-
-    return { active: false, type: "" };
-  },
-
-
-  computeTierFits(liq, moneyFlow, structure, setup, trigger, rs) {
-    const triggerScore = trigger.active ? 100 : 35;
-    const t1Fit = clamp(Math.round(
-      liq.score * 0.18 + moneyFlow.score * 0.18 + structure.score * 0.20 +
-      setup.setupScore * 0.18 + rs.score * 0.12 + triggerScore * 0.14
-    ));
-    const t2Fit = clamp(Math.round(
-      liq.score * 0.14 + moneyFlow.score * 0.18 + structure.score * 0.25 +
-      setup.setupScore * 0.25 + rs.score * 0.12 + (trigger.active ? 35 : 82) * 0.06
-    ));
-    const t3Fit = clamp(Math.round(
-      liq.score * 0.20 + moneyFlow.score * 0.30 + structure.score * 0.18 +
-      setup.setupScore * 0.10 + rs.score * 0.12 + (moneyFlow.isSurge ? 100 : 50) * 0.10
-    ));
-    const setupProgress = clamp(Math.round(
-      liq.score * 0.12 + moneyFlow.score * 0.18 + structure.score * 0.24 +
-      setup.setupScore * 0.24 + rs.score * 0.12 + (trigger.active ? 100 : 40) * 0.10
-    ));
-    const checks = [
-      liq.score >= 55,
-      moneyFlow.score >= 60,
-      structure.score >= 60,
-      setup.setupScore >= 65,
-      rs.score >= 55,
-      moneyFlow.volRatio1h >= 1.25,
-      trigger.active
-    ];
-    const signalConfidence = Math.round((checks.filter(Boolean).length / checks.length) * 100);
-    return { t1Fit, t2Fit, t3Fit, setupProgress, signalConfidence };
-  },
-
-  classifyLifecycle(liq, moneyFlow, structure, setup, trigger) {
-    if (
-      liq.score >= 60 &&
-      structure.score >= 62 &&
-      setup.setupScore >= 70 &&
-      trigger.active
-    ) {
-      return { tier: "t1", statusText: `T1 · ${trigger.type}已確認` };
-    }
-
-    if (
-      liq.score >= 50 &&
-      structure.score >= 55 &&
-      setup.setupScore >= 60 &&
-      !trigger.active
-    ) {
-      return { tier: "t2", statusText: "T2 · 結構就緒等待觸發" };
-    }
-
-    if (
-      liq.score >= 40 &&
-      (structure.score >= 45 || setup.setupScore >= 45 || moneyFlow.isSurge)
-    ) {
-      return { tier: "t3", statusText: "T3 · 早期資金/結構醞釀" };
-    }
-
-    return { tier: "none", statusText: "常規觀察" };
-  }
-};
-
-async function refreshMarketTickers() {
-  try {
-    const rawTickers = await BitgetAPI.fetchTickers();
-    if (!state.contracts.size) {
-      const contractList = await BitgetAPI.fetchContracts();
-      contractList.forEach(c => state.contracts.set(c.symbol, c));
-    }
-
-    state.tickers = rawTickers.filter(t => 
-      state.contracts.has(t.symbol) && 
-      [t.lastPr, t.change24h, t.usdtVolume].every(v => Number.isFinite(num(v)))
-    );
-
-    state.btcTicker = state.tickers.find(t => t.symbol === "BTCUSDT") || null;
-    state.ethTicker = state.tickers.find(t => t.symbol === "ETHUSDT") || null;
-
-    const eligible = state.tickers.filter(t => num(t.usdtVolume) >= CONFIG.liquidity.minUsdtVolume24h);
-    eligible.sort((a, b) => num(b.usdtVolume) - num(a.usdtVolume));
-    
-    if (!state.scanQueue.length) {
-      state.scanQueue = eligible.map(t => t.symbol);
-      state.scanIndex = 0;
-    }
-
-    rebuildTierLists();
-    renderCurrentTab();
-    updateHeaderHUD();
-    renderBenchmarkBar();
-    checkLevelAlerts();
-
-    if (!state.isQueueRunning) {
-      state.isQueueRunning = true;
-      runScanQueueLoop();
-    }
-  } catch (e) {
-    document.getElementById("scan-status").textContent = `行情取得失敗：${e.message}`;
-    document.getElementById("dot").style.background = "#ee617c";
-  }
-}
-
-async function runScanQueueLoop() {
-  while (true) {
-    if (!state.scanQueue.length) {
-      await new Promise(r => setTimeout(r, 1000));
-      continue;
-    }
-
-    const batchSymbols = [];
-    for (let i = 0; i < CONFIG.queueBatchSize; i++) {
-      if (state.scanIndex >= state.scanQueue.length) {
-        state.scanIndex = 0;
-      }
-      batchSymbols.push(state.scanQueue[state.scanIndex]);
-      state.scanIndex++;
-    }
-
-    document.getElementById("scan-status").textContent = `輪巡 ${state.scanIndex}/${state.scanQueue.length}`;
-    document.getElementById("dot").style.background = "#38c99b";
-
-    await Promise.allSettled(batchSymbols.map(async symbol => {
-      const ticker = state.tickers.find(t => t.symbol === symbol);
-      if (!ticker) return;
-
-      try {
-        const candles = await BitgetAPI.fetchCandles(symbol, "1H", 35);
-        if (!candles.length) return;
-
-        const liq = OXEngine.computeLiquidity(ticker, state.tickers);
-        const rs = OXEngine.computeRelativeStrength(ticker, state.btcTicker);
-        const moneyFlow = OXEngine.computeMoneyFlow(candles);
-        const structure = OXEngine.computeStructure(candles);
-        const setup = OXEngine.evaluateSetupMatch(candles, structure, moneyFlow);
-        const trigger = OXEngine.detectTrigger(candles, structure, moneyFlow);
-        const lifecycle = OXEngine.classifyLifecycle(liq, moneyFlow, structure, setup, trigger);
-        const fits = OXEngine.computeTierFits(liq, moneyFlow, structure, setup, trigger, rs);
-
-        const oxScore = Math.round(
-          liq.score * CONFIG.weights.liquidity +
-          moneyFlow.score * CONFIG.weights.moneyFlow +
-          structure.score * CONFIG.weights.structure +
-          setup.setupScore * CONFIG.weights.setupMatch +
-          rs.score * CONFIG.weights.relativeStrength +
-          (trigger.active ? 5 : 0)
-        );
-
-        const reasons = [
-          `24H 成交額市場前 ${liq.percentileStr}% (${fmtUsd(liq.quoteVol)} USDT)`,
-          `1H 放量比率: ${moneyFlow.volRatio1h}x`,
-          ...setup.reasons
-        ];
-        if (rs.isOutperforming) reasons.push(`強於 BTC +${rs.diffBtcPct}%`);
-        if (rs.isUnderperforming) reasons.push(`弱於 BTC ${rs.diffBtcPct}%`);
-
-        state.analyzedCache.set(symbol, {
-          symbol,
-          ticker,
-          oxScore,
-          liqScore: liq.score,
-          flowScore: moneyFlow.score,
-          structScore: structure.score,
-          setupScore: setup.setupScore,
-          rsScore: rs.score,
-          side: setup.side,
-          setupName: setup.setupName,
-          tier: lifecycle.tier,
-          statusText: lifecycle.statusText,
-          isSurge: moneyFlow.isSurge,
-          triggerActive: trigger.active,
-          triggerType: trigger.type,
-          reasons,
-          change24h: num(ticker.change24h),
-          quoteVol: liq.quoteVol,
-          liqPercentile: liq.percentileStr,
-          volRatio1h: moneyFlow.volRatio1h,
-          volRatio4h: moneyFlow.volRatio4h,
-          swingHigh: structure.swingHigh,
-          swingLow: structure.swingLow,
-          structureLabel: structure.isHHHL ? "HH / HL" : structure.isLHLL ? "LH / LL" : structure.side,
-          t1Fit: fits.t1Fit,
-          t2Fit: fits.t2Fit,
-          t3Fit: fits.t3Fit,
-          setupProgress: fits.setupProgress,
-          signalConfidence: fits.signalConfidence
-        });
-
-        if (moneyFlow.isSurge && !state.scanQueue.slice(state.scanIndex, state.scanIndex + 5).includes(symbol)) {
-          state.scanQueue.splice(state.scanIndex, 0, symbol);
-        }
-      } catch (e) {}
-    }));
-
-    rebuildTierLists();
-    renderCurrentTab();
-    updateHeaderHUD();
-    renderBenchmarkBar();
-
-    await new Promise(r => setTimeout(r, CONFIG.batchIntervalMs));
-  }
-}
-
-function rebuildTierLists() {
-  const allAnalyzed = Array.from(state.analyzedCache.values())
-    .filter(c => !benchmarkSymbols.has(c.symbol));
-
-  const pickRanked = (fitKey, formalTier, taken = new Set()) => {
-    const formal = allAnalyzed
-      .filter(c => c.tier === formalTier)
-      .sort((a, b) => (b[fitKey] || 0) - (a[fitKey] || 0));
-    const result = [];
-    for (const c of formal) {
-      if (result.length >= 10) break;
-      result.push({ ...c, displayTier: formalTier, rankStatus: formalTier === "t1" ? "CONFIRMED" : formalTier === "t2" ? "READY" : "EARLY" });
-    }
-    const used = new Set(result.map(x => x.symbol));
-    const fallback = allAnalyzed
-      .filter(c => !used.has(c.symbol))
-      .map(c => ({ c, adjusted: (c[fitKey] || 0) - (taken.has(c.symbol) ? 12 : 0) }))
-      .sort((a, b) => b.adjusted - a.adjusted);
-    for (const row of fallback) {
-      if (result.length >= 10) break;
-      result.push({ ...row.c, displayTier: formalTier, rankStatus: "WATCH" });
-    }
-    return result.slice(0, 10);
-  };
-
-  const t1 = pickRanked("t1Fit", "t1");
-  const t1Symbols = new Set(t1.map(c => c.symbol));
-  const t2 = pickRanked("t2Fit", "t2", t1Symbols);
-  const t12Symbols = new Set([...t1Symbols, ...t2.map(c => c.symbol)]);
-  const t3 = pickRanked("t3Fit", "t3", t12Symbols);
-
-  const surge = allAnalyzed.filter(c => c.isSurge).sort((a, b) => b.flowScore - a.flowScore).slice(0, 15);
-  const gainers = state.tickers.filter(t => num(t.change24h) > 0 && !benchmarkSymbols.has(t.symbol))
-    .sort((a, b) => num(b.change24h) - num(a.change24h)).slice(0, 15);
-  const losers = state.tickers.filter(t => num(t.change24h) < 0 && !benchmarkSymbols.has(t.symbol))
-    .sort((a, b) => num(a.change24h) - num(b.change24h)).slice(0, 15);
-
-  state.tierMap = { t1, t2, t3, surge, gainers, losers };
-  document.getElementById("badge-t1").textContent = t1.length;
-  document.getElementById("badge-t2").textContent = t2.length;
-  document.getElementById("badge-t3").textContent = t3.length;
-  document.getElementById("badge-surge").textContent = surge.length;
-  renderMarketStrength();
-}
-
-function renderCurrentTab() {
-  const container = document.getElementById("screener-list");
-  const tab = state.currentTab;
-
-  if (tab === "gainers" || tab === "losers") {
-    const list = state.tierMap[tab] || [];
-    if (!list.length) {
-      container.innerHTML = `<div style="padding:24px;text-align:center;color:var(--muted)">暫無資料</div>`;
-      return;
-    }
-    container.innerHTML = list.map((t, idx) => `
-      <div class="trad-row ${t.symbol === state.symbol ? 'selected' : ''}" data-symbol="${t.symbol}">
-        <span style="color:var(--muted)">${idx + 1}</span>
-        <div><b style="font-size:13px">${t.symbol}</b><small style="display:block;color:var(--muted)">${fmtUsd(t.usdtVolume)} USDT</small></div>
-        <div style="text-align:right">${fmtPrice(t.lastPr)}</div>
-        <div style="text-align:right;font-weight:700" class="${num(t.change24h) >= 0 ? 'positive' : 'negative'}">${fmtPct(t.change24h)}</div>
-      </div>`).join('');
-    return;
-  }
-
-  const list = state.tierMap[tab] || [];
-  document.getElementById("pool-count").textContent = `${list.length} 檔標的`;
-  if (!list.length) {
-    container.innerHTML = `<div style="padding:30px 16px;text-align:center;color:var(--muted)"><b>目前仍在輪巡分析</b><p style="font-size:11px">結果會逐步出現。</p></div>`;
-    return;
-  }
-
-  container.innerHTML = list.map((c, idx) => {
-    const displayTier = tab === "surge" ? (c.tier !== "none" ? c.tier : "t3") : (c.displayTier || c.tier || "t3");
-    const status = tab === "surge" ? "SURGE" : (c.rankStatus || c.statusText || "WATCH");
-    const fit = displayTier === "t1" ? c.t1Fit : displayTier === "t2" ? c.t2Fit : c.t3Fit;
-    return `
-    <button class="coin-card ${c.symbol === state.symbol ? 'selected' : ''}" data-symbol="${c.symbol}" type="button">
-      <div class="coin-top">
-        <span class="coin-title">
-          <span style="color:var(--muted);font-size:12px">#${idx + 1}</span>
-          <span class="coin-symbol-full">${c.symbol}</span><span class="coin-symbol-mobile">${c.symbol.replace(/USDT$/, "")}</span>
-          <span class="badge badge-${c.side === 'SHORT' ? 'short' : 'long'}">${c.side}</span>
-          <span class="badge badge-${displayTier}">${displayTier.toUpperCase()}</span>
-          ${c.isSurge ? '<span class="badge badge-surge">🔥</span>' : ''}
-        </span>
-        <span class="coin-ox">OX ${c.oxScore}</span>
-      </div>
-      <div class="coin-mid">
-        <span class="meta desktop-coin-meta">${status} · Fit ${fit ?? '—'} · 24H Vol ${fmtUsd(c.quoteVol)} USDT</span>
-        <span class="mobile-coin-volume">24H 成交量 ${fmtUsd(c.quoteVol)} USDT</span>
-        <span class="coin-change ${c.change24h >= 0 ? 'positive' : 'negative'}" style="font-weight:700">${fmtPct(c.change24h)}</span>
-      </div>
-      <div class="coin-reason"><div class="setup-head">${c.setupName}</div><div>• ${c.reasons.join('</div><div>• ')}</div></div>
-      <div class="score-pills">
-        <span class="score-pill">流動 ${c.liqScore}</span><span class="score-pill">資金 ${c.flowScore}</span>
-        <span class="score-pill">結構 ${c.structScore}</span><span class="score-pill">RS ${c.rsScore}</span>
-        <span class="score-pill">Progress ${c.setupProgress ?? '—'}%</span>
-      </div>
-    </button>`;
-  }).join('');
-}
-function initChart() {
-  const container = document.getElementById("chart");
-  state.chart = LightweightCharts.createChart(container, {
-    width: container.clientWidth,
-    height: container.clientHeight,
-    layout: {
-      background: { type: "solid", color: "#090e17" },
-      textColor: "#8b9db7"
-    },
-    grid: {
-      vertLines: { color: "#162335" },
-      horzLines: { color: "#162335" }
-    },
-    rightPriceScale: {
-      borderColor: "#223147",
-      autoScale: true,
-      scaleMargins: { top: 0.08, bottom: 0.25 }
-    },
-    timeScale: {
-      borderColor: "#223147",
-      timeVisible: true,
-      secondsVisible: false
-    },
-    crosshair: { mode: LightweightCharts.CrosshairMode.Normal }
-  });
-
-  // Mobile only: keep price-axis text compact so the chart has more usable candle space.
-  if (window.matchMedia("(max-width: 720px)").matches) {
-    state.chart.applyOptions({
-      layout: { fontSize: 9 },
-      rightPriceScale: { borderColor: "#223147", autoScale: true, scaleMargins: { top: 0.08, bottom: 0.25 } }
-    });
-  }
-
-  state.candleSeries = state.chart.addCandlestickSeries({
-    upColor: "#38c99b",
-    downColor: "#ee617c",
-    borderVisible: false,
-    wickUpColor: "#38c99b",
-    wickDownColor: "#ee617c"
-  });
-
-  state.volumeSeries = state.chart.addHistogramSeries({
-    priceFormat: { type: "volume" },
-    priceScaleId: "vol"
-  });
-  state.chart.priceScale("vol").applyOptions({
-    scaleMargins: { top: 0.8, bottom: 0 }
-  });
-
-
-  state.chart.timeScale().subscribeVisibleLogicalRangeChange(range => {
-    if (!range || state.isLoadingOlder || !state.hasMoreHistory) return;
-    if (range.from <= 2) loadMoreHistoricalCandles();
-  });
-
-  new ResizeObserver(entries => {
-    for (const entry of entries) {
-      state.chart.applyOptions({
-        width: entry.contentRect.width,
-        height: entry.contentRect.height
-      });
-      updatePriceTimer();
-    }
-  }).observe(container);
-}
-
-async function loadSymbolCandles(isInitial = true) {
-  state.abortCtrl?.abort();
-  state.abortCtrl = new AbortController();
-  const overlay = document.getElementById("chart-loading");
-  if (isInitial) overlay.classList.add("show");
-
-  try {
-    const raw = await BitgetAPI.fetchCandles(state.symbol, state.period, 100);
-    if (!raw.length) throw new Error("無可用 K 線");
-
-    state.candleData = raw;
-    state.oldestCandleTime = raw[0].time;
-    state.hasMoreHistory = true;
-    renderChartData(raw, isInitial);
-  } catch (err) {
-    if (err.name === "AbortError") return;
-  } finally {
-    overlay.classList.remove("show");
-  }
-}
-
-async function loadMoreHistoricalCandles() {
-  if (state.isLoadingOlder || !state.hasMoreHistory) return;
-  state.isLoadingOlder = true;
-  const overlay = document.getElementById("chart-loading");
-  overlay.classList.add("show");
-
-  try {
-    const older = await BitgetAPI.fetchCandles(state.symbol, state.period, 100, (state.oldestCandleTime - 1) * 1000);
-    if (!older.length) {
-      state.hasMoreHistory = false;
-      return;
-    }
-
-    state.oldestCandleTime = older[0].time;
-    const combined = [...older, ...state.candleData].filter((c, i, a) => !i || c.time !== a[i - 1].time);
-    state.candleData = combined;
-    renderChartData(combined, false);
-  } catch (e) {
-  } finally {
-    state.isLoadingOlder = false;
-    overlay.classList.remove("show");
-  }
-}
-
-function renderChartData(candles, fitContent = false) {
-  state.candleSeries.setData(candles);
-
-  const volData = candles.map(c => ({
-    time: c.time,
-    value: c.quoteVolume || c.volume,
-    color: c.close >= c.open ? "#38c99b40" : "#ee617c40"
-  }));
-  state.volumeSeries.setData(volData);
-
-  void refreshKeyLevels(candles);
-
-  if (document.getElementById("chk-ox-markers").checked) {
-    const markers = [];
-    for (let i = 20; i < candles.length - 1; i++) {
-      const c = candles[i];
-      const prev20 = candles.slice(i - 20, i);
-      const prevHigh = Math.max(...prev20.map(x => x.high));
-      const prevLow = Math.min(...prev20.map(x => x.low));
-      const avgVol = prev20.reduce((s, x) => s + x.volume, 0) / prev20.length || 1;
-      const ratio = c.volume / avgVol;
-      if (c.close > prevHigh && ratio >= 1.45) {
-        markers.push({ time:c.time, position:"belowBar", color:"#38c99b", shape:"arrowUp", text: window.matchMedia("(max-width:720px)").matches ? "OX" : "OX 放量突破" });
-      } else if (c.close < prevLow && ratio >= 1.45) {
-        markers.push({ time:c.time, position:"aboveBar", color:"#ee617c", shape:"arrowDown", text: window.matchMedia("(max-width:720px)").matches ? "OX" : "OX 放量跌破" });
-      }
-    }
-    state.candleSeries.setMarkers(markers.slice(-6));
-  } else {
-    state.candleSeries.setMarkers([]);
-  }
-
-  if (fitContent) state.chart.timeScale().fitContent();
-  updatePriceTimer();
-  updateQuickStats();
-  renderOxDetail();
-}
-
-function averageTrueRange(candles, period = 14) {
-  if (!candles || candles.length < 3) return 0;
-  const trs = [];
-  for (let i = 1; i < candles.length; i++) {
-    const c = candles[i], p = candles[i - 1];
-    trs.push(Math.max(c.high - c.low, Math.abs(c.high - p.close), Math.abs(c.low - p.close)));
-  }
-  const slice = trs.slice(-period);
-  return slice.length ? slice.reduce((a,b) => a + b, 0) / slice.length : 0;
-}
-
-function findStructuralPivotLevels(candles, sourcePeriod) {
-  if (!candles || candles.length < 12) return { high:0, low:0, highTime:0, lowTime:0 };
-
-  // 不使用「最近 N 根的最高/最低」；改用已確認的局部 Swing High / Swing Low。
-  // 這樣週線不會直接抓到很久以前的絕對高點，而是抓近期結構真正要突破的前高。
-  const completed = candles.slice(0, -1); // 排除尚未收盤的當前 K
-  const span = sourcePeriod === "1W" ? 2 : sourcePeriod === "1D" ? 2 : 3;
-  const atr = averageTrueRange(completed, 14) || 0;
-  const highs = [];
-  const lows = [];
-
-  for (let i = span; i < completed.length - span; i++) {
-    const c = completed[i];
-    const left = completed.slice(i - span, i);
-    const right = completed.slice(i + 1, i + span + 1);
-
-    const isHigh = left.every(x => c.high > x.high) && right.every(x => c.high >= x.high);
-    const isLow = left.every(x => c.low < x.low) && right.every(x => c.low <= x.low);
-
-    if (isHigh) {
-      const wingLow = Math.max(Math.min(...left.map(x => x.low)), Math.min(...right.map(x => x.low)));
-      const prominence = c.high - wingLow;
-      if (!atr || prominence >= atr * 0.55) highs.push({ price:c.high, time:c.time, index:i });
-    }
-    if (isLow) {
-      const wingHigh = Math.min(Math.max(...left.map(x => x.high)), Math.max(...right.map(x => x.high)));
-      const prominence = wingHigh - c.low;
-      if (!atr || prominence >= atr * 0.55) lows.push({ price:c.low, time:c.time, index:i });
-    }
-  }
-
-  const current = candles[candles.length - 1].close;
-  // 前高：優先找「目前價格上方、最近形成」的已確認 pivot high；若沒有，再用最近一個已確認前高。
-  const overheadHighs = highs.filter(p => p.price > current * 1.0005);
-  const highPick = (overheadHighs.length ? overheadHighs : highs).at(-1) || null;
-  // 前低：優先找目前價格下方、最近形成的已確認 pivot low。
-  const supportLows = lows.filter(p => p.price < current * 0.9995);
-  const lowPick = (supportLows.length ? supportLows : lows).at(-1) || null;
-
-  return {
-    high: highPick?.price || 0,
-    low: lowPick?.price || 0,
-    highTime: highPick?.time || 0,
-    lowTime: lowPick?.time || 0
-  };
-}
-
-async function refreshKeyLevels(chartCandles) {
-  if (!state.candleSeries) return;
-  const symbolAtRequest = state.symbol;
-  const sourcePeriod = getKeyLevelPeriod();
-
-  if (state.keyHighLine) { try { state.candleSeries.removePriceLine(state.keyHighLine); } catch (e) {} }
-  if (state.keyLowLine) { try { state.candleSeries.removePriceLine(state.keyLowLine); } catch (e) {} }
-  state.keyHighLine = null;
-  state.keyLowLine = null;
-  state.currentLevels = { high:0, low:0, sourcePeriod, highTime:0, lowTime:0 };
-  updateAlertButtons();
-  updateQuickStats();
-
-  try {
-    const sourceCandles = state.period === sourcePeriod
-      ? chartCandles
-      : await BitgetAPI.fetchCandles(symbolAtRequest, sourcePeriod, 100);
-
-    if (state.symbol !== symbolAtRequest || getKeyLevelPeriod() !== sourcePeriod) return;
-    const levels = findStructuralPivotLevels(sourceCandles, sourcePeriod);
-    state.currentLevels = { ...levels, sourcePeriod };
-
-    if (levels.high) {
-      state.keyHighLine = state.candleSeries.createPriceLine({
-        price: levels.high,
-        color: "#f7bd52",
-        lineWidth: 1,
-        lineStyle: LightweightCharts.LineStyle.Dashed,
-        axisLabelVisible: true,
-        title: `前高 ${sourcePeriod}`
-      });
-    }
-    if (levels.low) {
-      state.keyLowLine = state.candleSeries.createPriceLine({
-        price: levels.low,
-        color: "#5ca5ff",
-        lineWidth: 1,
-        lineStyle: LightweightCharts.LineStyle.Dashed,
-        axisLabelVisible: true,
-        title: `前低 ${sourcePeriod}`
-      });
-    }
-    updateAlertButtons();
-    updateQuickStats();
-    renderOxDetail();
-  } catch (e) {
-    console.warn("關鍵前高/前低取得失敗", symbolAtRequest, sourcePeriod, e);
-  }
-}
-
-function updatePriceTimer() {
-  const timerEl = document.getElementById("price-timer");
-  if (!state.candleData.length || !timerEl) return;
-  const last = state.candleData[state.candleData.length - 1];
-  const step = periods[state.period] || 60;
-  const now = Math.floor(Date.now() / 1000);
-  const left = step - (now % step);
-  const h = Math.floor(left / 3600);
-  const m = Math.floor((left % 3600) / 60);
-  const s = left % 60;
-  const timeStr = `${h > 0 ? `${h}h ` : ''}${String(m).padStart(2, "0")}m ${String(s).padStart(2, "0")}s`;
-  
-  const y = state.candleSeries.priceToCoordinate(last.close);
-  timerEl.innerHTML = `${fmtPrice(last.close)}<small>倒數 ${timeStr}</small>`;
-  if (Number.isFinite(y)) {
-    timerEl.style.top = `${Math.max(16, Math.min(document.getElementById("chart").clientHeight - 24, y))}px`;
-  }
-}
-
-
-function renderBenchmarkBar() {
-  const btc = state.btcTicker;
-  const eth = state.ethTicker;
-  if (btc) {
-    document.getElementById("bench-btc-price").textContent = fmtPrice(btc.lastPr);
-    const e = document.getElementById("bench-btc-change"); e.textContent = fmtPct(btc.change24h); e.className = num(btc.change24h) >= 0 ? "positive" : "negative";
-  }
-  if (eth) {
-    document.getElementById("bench-eth-price").textContent = fmtPrice(eth.lastPr);
-    const e = document.getElementById("bench-eth-change"); e.textContent = fmtPct(eth.change24h); e.className = num(eth.change24h) >= 0 ? "positive" : "negative";
-  }
-  const btcA = state.analyzedCache.get("BTCUSDT");
-  const ethA = state.analyzedCache.get("ETHUSDT");
-  const trendText = x => !x ? "等待分析" : x.side === "LONG" ? "結構偏多" : x.side === "SHORT" ? "結構偏空" : "中性";
-  document.getElementById("bench-btc-trend").textContent = trendText(btcA);
-  document.getElementById("bench-eth-trend").textContent = trendText(ethA);
-  const bias = document.getElementById("market-bias");
-  if (btcA?.side === "LONG" && ethA?.side === "LONG") { bias.textContent = "Risk On"; bias.className = "positive"; }
-  else if (btcA?.side === "SHORT" && ethA?.side === "SHORT") { bias.textContent = "Risk Off"; bias.className = "negative"; }
-  else { bias.textContent = "Neutral"; bias.className = ""; }
-}
-
-function updateQuickStats() {
-  const ticker = state.tickers.find(t => t.symbol === state.symbol);
-  if (!ticker) return;
-  const chg = document.getElementById("quick-change");
-  chg.textContent = fmtPct(ticker.change24h); chg.className = num(ticker.change24h) >= 0 ? "positive" : "negative";
-  document.getElementById("quick-volume").textContent = `${fmtUsd(ticker.usdtVolume)} USDT`;
-  document.getElementById("quick-high").textContent = state.currentLevels.high ? `${fmtPrice(state.currentLevels.high)} · ${state.currentLevels.sourcePeriod || getKeyLevelPeriod()}` : "—";
-  document.getElementById("quick-low").textContent = state.currentLevels.low ? `${fmtPrice(state.currentLevels.low)} · ${state.currentLevels.sourcePeriod || getKeyLevelPeriod()}` : "—";
-}
-
-function renderOxDetail() {
-  const symbol = state.symbol;
-  const ticker = state.tickers.find(t => t.symbol === symbol);
-  const scored = state.analyzedCache.get(symbol);
-  const isBenchmark = benchmarkSymbols.has(symbol);
-  document.getElementById("detail-symbol").textContent = symbol;
-  document.getElementById("detail-volume").textContent = ticker ? `${fmtUsd(ticker.usdtVolume)} USDT` : "—";
-  document.getElementById("detail-levels").textContent = `${state.currentLevels.sourcePeriod || getKeyLevelPeriod()}｜${state.currentLevels.high ? fmtPrice(state.currentLevels.high) : '—'} / ${state.currentLevels.low ? fmtPrice(state.currentLevels.low) : '—'}`;
-
-  if (!scored) {
-    document.getElementById("detail-tier").textContent = isBenchmark ? "Benchmark" : "等待分析";
-    for (const id of ["detail-ox","detail-liq","detail-flow","detail-structure","detail-rs","detail-setup","detail-side","detail-progress-text","detail-confidence","detail-trigger"]) {
-      document.getElementById(id).textContent = isBenchmark && id === "detail-side" ? "Benchmark" : "—";
-    }
-    document.getElementById("detail-progress-bar").style.width = "0%";
-    document.getElementById("detail-reasons-list").innerHTML = `<div class="detail-reason wait">${isBenchmark ? 'BTC / ETH 作為市場基準，不參與 T1 / T2 / T3 排名。' : '等待全市場輪巡完成這顆幣的分析。'}</div>`;
-    updateAlertButtons();
-    return;
-  }
-
-  const ranked = [...(state.tierMap.t1||[]), ...(state.tierMap.t2||[]), ...(state.tierMap.t3||[])].find(x => x.symbol === symbol);
-  const shownTier = ranked?.displayTier || scored.tier;
-  const status = ranked?.rankStatus || (scored.tier === "t1" ? "CONFIRMED" : scored.tier === "t2" ? "READY" : scored.tier === "t3" ? "EARLY" : "WATCH");
-  document.getElementById("detail-tier").textContent = isBenchmark ? "Benchmark" : `${shownTier.toUpperCase()} ${status}`;
-  document.getElementById("detail-ox").textContent = scored.oxScore;
-  document.getElementById("detail-liq").textContent = `${scored.liqScore} / 100`;
-  document.getElementById("detail-flow").textContent = `${scored.flowScore} / 100`;
-  document.getElementById("detail-structure").textContent = scored.structureLabel || scored.side;
-  document.getElementById("detail-rs").textContent = `${scored.rsScore} / 100`;
-  document.getElementById("detail-setup").textContent = scored.setupName;
-  document.getElementById("detail-side").textContent = scored.side;
-  document.getElementById("detail-progress-text").textContent = `${scored.setupProgress ?? 0}%`;
-  document.getElementById("detail-progress-bar").style.width = `${scored.setupProgress ?? 0}%`;
-  document.getElementById("detail-confidence").textContent = `${scored.signalConfidence ?? 0}%`;
-  document.getElementById("detail-trigger").textContent = scored.triggerActive ? scored.triggerType : "等待確認";
-
-  const reasons = [
-    { ok: scored.liqScore >= 55, text: `24H USDT 成交量 ${fmtUsd(scored.quoteVol)}，市場前 ${scored.liqPercentile}%` },
-    { ok: scored.volRatio1h >= 1.25, text: `1H Volume Ratio ${scored.volRatio1h ?? '—'}x` },
-    { ok: scored.structScore >= 60, text: `結構 ${scored.structureLabel || scored.side}` },
-    { ok: scored.rsScore >= 55, text: `Relative Strength ${scored.rsScore}` },
-    { ok: scored.triggerActive, text: scored.triggerActive ? `Trigger：${scored.triggerType}` : "Trigger 尚待確認" }
-  ];
-  document.getElementById("detail-reasons-list").innerHTML = reasons.map(r => `<div class="detail-reason ${r.ok ? 'ok' : 'wait'}">${r.ok ? '✓' : '△'} ${r.text}</div>`).join('');
-  updateAlertButtons();
-}
-
-function updateHeaderHUD() {
-  const ticker = state.tickers.find(t => t.symbol === state.symbol);
-  if (!ticker) return;
-
-  document.getElementById("ticker-pair").textContent = `${ticker.symbol} · Bitget 永續`;
-  document.getElementById("price").textContent = fmtPrice(ticker.lastPr);
-  const focusPrice = document.getElementById("chart-focus-price");
-  if (focusPrice) focusPrice.textContent = fmtPrice(ticker.lastPr);
-  
-  const chgEl = document.getElementById("change");
-  chgEl.textContent = fmtPct(ticker.change24h);
-  chgEl.className = num(ticker.change24h) >= 0 ? "positive" : "negative";
-
-  document.getElementById("quote").textContent = `${fmtUsd(ticker.usdtVolume)} USDT`;
-  document.getElementById("chart-head-title").children[0].textContent = `${ticker.symbol} 永續合約`;
-  document.getElementById("tv-ext-link").href = `https://www.tradingview.com/symbols/${ticker.symbol}.P/?exchange=BITGET`;
-
-  const scored = state.analyzedCache.get(state.symbol);
-  if (scored) {
-    document.getElementById("ox-score").textContent = scored.oxScore;
-    document.getElementById("ox-tier-label").textContent = `${scored.statusText} · 結構:${scored.structScore}`;
-    document.getElementById("ox-setup").textContent = scored.setupName;
-    document.getElementById("ox-rs-desc").textContent = `RS: ${scored.rsScore} (${scored.side})`;
-    document.getElementById("quote-rank").textContent = `全市場前 ${scored.liqPercentile}%`;
-  } else {
-    document.getElementById("ox-score").textContent = "—";
-    document.getElementById("ox-tier-label").textContent = "全市場輪巡佇列中";
-    document.getElementById("ox-setup").textContent = "等待分析";
-    document.getElementById("ox-rs-desc").textContent = "—";
-    document.getElementById("quote-rank").textContent = "評估中…";
-  }
-
-  if (state.btcTicker) {
-    const diff = num(ticker.change24h) - num(state.btcTicker.change24h);
-    document.getElementById("btc-rel").textContent = `相對 BTC: ${diff >= 0 ? '+' : ''}${(diff * 100).toFixed(2)}%`;
-  }
-  updateQuickStats();
-  renderOxDetail();
-  renderBenchmarkBar();
-}
-
-function switchSymbol(symbol) {
-  if (symbol === state.symbol) { updateHeaderHUD(); return; }
-  state.symbol = symbol;
-  state.currentLevels = { high: 0, low: 0, sourcePeriod: getKeyLevelPeriod(), highTime: 0, lowTime: 0 };
-  updateHeaderHUD();
-  renderCurrentTab();
-  updateAlertButtons();
-  loadSymbolCandles(true);
-}
-
-document.addEventListener("click", e => {
-  const viewBtn = e.target.closest("[data-view-target]");
-  if (viewBtn) { switchAppView(viewBtn.dataset.viewTarget); return; }
-
-  const bench = e.target.closest("[data-benchmark-symbol]");
-  if (bench) { switchSymbol(bench.dataset.benchmarkSymbol); return; }
-  if (e.target.id === "btn-alert-high") { toggleLevelAlert("high"); return; }
-  if (e.target.id === "btn-alert-low") { toggleLevelAlert("low"); return; }
-
-  const card = e.target.closest(".coin-card") || e.target.closest(".trad-row");
-  if (card && card.dataset.symbol) {
-    switchSymbol(card.dataset.symbol);
-    return;
-  }
-
-  const tabBtn = e.target.closest(".tab-btn");
-  if (tabBtn && tabBtn.dataset.tab) {
-    state.currentTab = tabBtn.dataset.tab;
-    document.querySelectorAll(".tab-btn").forEach(b => b.classList.toggle("active", b === tabBtn));
-    renderCurrentTab();
-    return;
-  }
-
-  const tfBtn = e.target.closest(".btn-tf");
-  if (tfBtn && tfBtn.dataset.tf) {
-    state.period = tfBtn.dataset.tf;
-    document.querySelectorAll(".btn-tf").forEach(b => b.classList.toggle("active", b === tfBtn));
-    document.getElementById("tf-pill").textContent = `${tfBtn.textContent} ${tfBtn.dataset.tf.includes('D') ? '日線' : tfBtn.dataset.tf.includes('W') ? '週線' : ''}`;
-    state.currentLevels = { high: 0, low: 0, sourcePeriod: getKeyLevelPeriod(), highTime: 0, lowTime: 0 };
-    updateAlertButtons();
-    loadSymbolCandles(true);
-    return;
-  }
-
-  if (e.target.id === "btn-chart-fullscreen") {
-    if (window.matchMedia("(max-width: 900px)").matches) {
-      setChartFocus(!document.body.classList.contains("chart-focus"));
-    } else {
-      const box = document.querySelector(".chart-box");
-      if (!document.fullscreenElement) box.requestFullscreen?.();
-      else document.exitFullscreen?.();
-    }
-    return;
-  }
-
-  if (e.target.id === "btn-force-rescan") {
-    state.scanIndex = 0;
-    refreshMarketTickers();
-    return;
-  }
-});
-
-document.getElementById("chk-vol").addEventListener("change", e => state.volumeSeries.applyOptions({ visible: e.target.checked }));
-document.getElementById("chk-ox-markers").addEventListener("change", () => renderChartData(state.candleData, false));
-
-window.addEventListener("DOMContentLoaded", () => {
-  const fullscreenBtn = document.getElementById("btn-chart-fullscreen");
-  if (fullscreenBtn && window.matchMedia("(max-width: 900px)").matches) fullscreenBtn.textContent = "展開圖表";
-  initChart();
-  loadSymbolCandles(true);
-  refreshMarketTickers();
-  renderBenchmarkBar();
-  renderMarketStrength();
-  updateAlertButtons();
-  setInterval(refreshMarketTickers, CONFIG.tickerRefreshMs);
-  setInterval(updatePriceTimer, 1000);
-  setInterval(checkLevelAlerts, 5000);
-});
-
-window.addEventListener("resize", () => {
-  if (state.activeView === "home" || document.body.classList.contains("chart-focus")) {
-    setTimeout(resizeChartToContainer, 60);
-  }
-});
-
-document.addEventListener("keydown", e => {
-  if (e.key === "Escape" && document.body.classList.contains("chart-focus")) setChartFocus(false);
-});
-
-</script>
+      </section>
+
+      <!-- 強弱 -->
+      <section id="page-strength" class="page hidden">
+        <div class="section-title">
+          <div>
+            <p class="section-kicker">OX MARKET PULSE</p>
+            <h2>市場強弱</h2>
+            <p>分數代表「環境強度＋可交易程度」，不是上漲機率。</p>
+          </div>
+        </div>
+
+        <div class="gauge-grid">
+          <article class="card gauge-card">
+            <div class="gauge-top">
+              <div>
+                <h3>BTC 強弱</h3>
+                <p class="note">結構 · 資金 · 動能 · Trigger</p>
+              </div>
+              <span class="state-pill" id="btcStrengthText">中強</span>
+            </div>
+
+            <div class="gauge">
+              <div class="arc"></div>
+              <div class="needle" id="btcNeedle"></div>
+              <div class="gauge-num" id="btcScore">67</div>
+            </div>
+
+            <div class="gauge-labels">
+              <span>0 弱</span>
+              <span>50 中</span>
+              <span>100 強</span>
+            </div>
+
+            <div class="judgement" id="btcJudgement">
+              <strong>目前判讀：</strong>結構偏強 · 資金普通 · Setup 偏強。
+            </div>
+          </article>
+
+          <article class="card gauge-card">
+            <div class="gauge-top">
+              <div>
+                <h3>小幣強弱</h3>
+                <p class="note">流動性 · 型態廣度 · 結構 · 資金活躍</p>
+              </div>
+              <span class="state-pill" id="altStrengthText">強</span>
+            </div>
+
+            <div class="gauge">
+              <div class="arc"></div>
+              <div class="needle" id="altNeedle"></div>
+              <div class="gauge-num" id="altScore">82</div>
+            </div>
+
+            <div class="gauge-labels">
+              <span>0 弱</span>
+              <span>50 中</span>
+              <span>100 強</span>
+            </div>
+
+            <div class="judgement" id="altJudgement">
+              <strong>目前判讀：</strong>流動性強 · 廣度強 · 結構偏強 · 資金活躍。
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <!-- 媒體 -->
+      <section id="page-media" class="page hidden">
+        <div class="section-title">
+          <div>
+            <h2>媒體</h2>
+            <p>OX 內容、教學與社群入口。</p>
+          </div>
+        </div>
+
+        <article class="card media-card">
+          <div class="media-buttons">
+            <a
+              class="media-btn"
+              href="https://youtube.com/@snsheng?si=Dgl_f_Xv5SfPXvX-"
+              target="_blank"
+              rel="noopener"
+            >
+              ▶ YouTube @snsheng
+            </a>
+
+            <a
+              class="media-btn"
+              href="https://line.me/ti/g2/FXj0yahd04U4JecSoC4uPInXiqhLulqdCl54Ag?utm_source=invitation&utm_medium=link_copy&utm_campaign=default"
+              target="_blank"
+              rel="noopener"
+            >
+              LINE 社群
+            </a>
+          </div>
+
+          <p class="note">
+            之後可增加：交易觀點、教學文章、網站更新、重大行情回顧。
+          </p>
+        </article>
+      </section>
+
+      <!-- 設定 -->
+      <section id="page-settings" class="page hidden">
+        <div class="section-title">
+          <div>
+            <h2>設定</h2>
+            <p>通知、推算頻率、背景主題與接收方式。</p>
+          </div>
+        </div>
+
+        <div class="settings-grid">
+          <article class="card settings-card">
+            <h3>通知方式</h3>
+
+            <div class="option">
+              <div>
+                <strong>Gmail</strong>
+                <small>每日 / 每週分析與重要提醒</small>
+              </div>
+              <button class="switch on" data-setting="gmail"></button>
+            </div>
+
+            <div class="option">
+              <div>
+                <strong>手機 Push</strong>
+                <small>即時突破與強度門檻提醒</small>
+              </div>
+              <button class="switch on" data-setting="push"></button>
+            </div>
+
+            <div class="option">
+              <div>
+                <strong>電話簡訊</strong>
+                <small>之後再接，通常會有簡訊成本</small>
+              </div>
+              <button class="switch" data-setting="sms"></button>
+            </div>
+
+            <div class="option">
+              <div>
+                <strong>推算頻率</strong>
+                <small>多久彙整一次</small>
+              </div>
+
+              <select class="select" id="analysisFrequency">
+                <option value="1h">每小時</option>
+                <option value="4h">每 4 小時</option>
+                <option value="1d">每天</option>
+                <option value="1w">每週</option>
+              </select>
+            </div>
+          </article>
+
+          <article class="card settings-card">
+            <h3>我要收到什麼</h3>
+
+            <div class="option">
+              <div>
+                <strong>前高 / 前低突破</strong>
+                <small>圖表鈴鐺設定</small>
+              </div>
+              <button class="switch on" data-setting="breakout"></button>
+            </div>
+
+            <div class="option">
+              <div>
+                <strong>每小時 T1 / T2 / T3</strong>
+                <small>強勢幣清單</small>
+              </div>
+              <button class="switch on" data-setting="tierPush"></button>
+            </div>
+
+            <div class="option">
+              <div>
+                <strong>小幣 OX ≥ 50 / 75</strong>
+                <small>跨越門檻才提醒</small>
+              </div>
+              <button class="switch on" data-setting="altStrength"></button>
+            </div>
+
+            <div class="option">
+              <div>
+                <strong>BTC OX ≥ 50 / 75</strong>
+                <small>市場環境提醒</small>
+              </div>
+              <button class="switch on" data-setting="btcStrength"></button>
+            </div>
+
+            <div class="option">
+              <div>
+                <strong>BTC 技術分析</strong>
+                <small>每日 / 每 4 小時摘要</small>
+              </div>
+              <button class="switch on" data-setting="btcAnalysis"></button>
+            </div>
+
+            <div class="option">
+              <div>
+                <strong>重要新聞</strong>
+                <small>功能預留，後面接新聞源</small>
+              </div>
+              <button class="switch" data-setting="news"></button>
+            </div>
+          </article>
+
+          <article class="card settings-card settings-wide">
+            <h3>背景主題</h3>
+
+            <div class="theme-row">
+              <button class="active" id="darkThemeBtn">深色</button>
+              <button id="lightThemeBtn">淺色</button>
+              <button id="systemThemeBtn">跟隨系統</button>
+            </div>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <nav class="bottom-nav">
+      <button class="nav-btn active" data-page="home">
+        首頁
+        <small>篩選 / 圖表</small>
+      </button>
+
+      <button class="nav-btn" data-page="strength">
+        強弱
+        <small>市場環境</small>
+      </button>
+
+      <button class="nav-btn" data-page="media">
+        媒體
+        <small>OX / 社群</small>
+      </button>
+
+      <button class="nav-btn" data-page="settings">
+        設定
+        <small>通知 / 主題</small>
+      </button>
+    </nav>
+  </div>
+
+  <script src="app.js"></script>
 </body>
 </html>
