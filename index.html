@@ -267,12 +267,15 @@
       padding: 12px 16px;
       border-radius: 8px;
       box-shadow: 0 10px 30px #000a;
-      transform: translateY(120%);
-      transition: transform .25s;
+      transform: translateY(18px);
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: transform .25s, opacity .2s;
       z-index: 100;
       font-size: 13px;
     }
-    .toast.show { transform: translateY(0); }
+    .toast.show { transform: translateY(0); opacity: 1; visibility: visible; }
 
 
     /* ===== OX v2.3 additions: benchmark / key-level alerts / detail / mobile split ===== */
@@ -823,7 +826,6 @@
       padding:9px 11px;
     }
 
-    .chart-focus-price { color:var(--gold); font-size:12px; font-weight:800; margin-left:auto; }
 
     /* Fake landscape full-chart mode for phones */
     body.chart-focus { overflow:hidden; }
@@ -940,7 +942,6 @@
       .media-function-item b { font-size:10px; }
       .media-function-item span { font-size:9px; }
       .story-quote { font-size:14px !important; }
-      .chart-focus-price { font-size:9px; }
       #btn-chart-fullscreen::after { content:""; }
     }
 
@@ -1002,6 +1003,10 @@
     .chart-benchmark-bar .benchmark-card strong { display: inline; font-size: 9px; }
     .chart-benchmark-bar .benchmark-sub { display: none; }
     .chart-benchmark-bar .benchmark-bias { margin-left: auto; min-width: 120px; }
+    .chart-benchmark-bar { display:flex; align-items:center; gap:6px; }
+    .chart-benchmark-bar .benchmark-bar { flex:1 1 auto; min-width:0; }
+    .chart-benchmark-bar .benchmark-alert-controls { flex:0 0 auto; display:flex; gap:5px; margin:0; }
+    .chart-benchmark-bar .benchmark-alert-controls .alert-btn { min-height:30px; padding:5px 8px; white-space:nowrap; }
 
     .strength-dial { position: relative; width: min(330px,92%); aspect-ratio: 2 / 1; margin: 20px auto 0; overflow: hidden; }
     .strength-arc {
@@ -1111,6 +1116,22 @@
       .chart-benchmark-bar .benchmark-card strong,
       .chart-benchmark-bar .benchmark-sub,
       .chart-benchmark-bar .benchmark-bias { display:none !important; }
+      .chart-benchmark-bar { display:flex; align-items:center; gap:4px; padding:4px 5px; }
+      .chart-benchmark-bar .benchmark-bar { flex:1 1 auto; min-width:0; }
+      .chart-benchmark-bar .benchmark-alert-controls {
+        display:flex !important;
+        grid-template-columns:none !important;
+        flex:0 0 auto;
+        gap:3px;
+        margin:0 !important;
+      }
+      .chart-benchmark-bar .benchmark-alert-controls .alert-btn {
+        min-height:26px;
+        padding:4px 6px;
+        font-size:7px;
+        border-radius:999px;
+        max-width:none;
+      }
 
       .strength-dial { width: min(270px,95%); margin-top: 12px; }
       .strength-dial .strength-value { font-size: 34px; }
@@ -1234,7 +1255,6 @@
           <span class="pill" id="tf-pill">1D 日線</span>
         </h2>
         <div style="display:flex;gap:8px;align-items:center">
-          <span class="chart-focus-price" id="chart-focus-price">—</span>
           <button class="btn-act" id="btn-chart-fullscreen">全螢幕</button>
           <a class="btn-act" id="tv-ext-link" href="https://www.tradingview.com/" target="_blank" rel="noopener">TradingView ↗</a>
         </div>
@@ -1253,10 +1273,6 @@
         <div class="ctrl-group">
           <label class="toggle-lbl"><input type="checkbox" id="chk-vol" checked>成交量</label>
           <label class="toggle-lbl"><input type="checkbox" id="chk-ox-markers" checked>OX 訊號標記</label>
-        </div>
-        <div class="alert-controls">
-          <button class="alert-btn" id="btn-alert-high" type="button">🔔 前高提醒</button>
-          <button class="alert-btn" id="btn-alert-low" type="button">🔔 前低提醒</button>
         </div>
       </div>
 
@@ -1288,6 +1304,10 @@
       <div class="benchmark-sub"><span>BTC / ETH 結構背景</span></div>
       </div>
       </section>
+        <div class="alert-controls benchmark-alert-controls" aria-label="前高前低快訊">
+          <button class="alert-btn" id="btn-alert-high" type="button">🔔 前高</button>
+          <button class="alert-btn" id="btn-alert-low" type="button">🔔 前低</button>
+        </div>
       </div>
     </article>
 
@@ -1674,8 +1694,8 @@ function updateAlertButtons() {
   lowBtn.disabled = !state.currentLevels.low;
   highBtn.className = "alert-btn" + (high?.triggered ? " triggered" : high?.enabled ? " enabled-high" : "");
   lowBtn.className = "alert-btn" + (low?.triggered ? " triggered" : low?.enabled ? " enabled-low" : "");
-  highBtn.textContent = high?.triggered ? `✅ ${sourcePeriod}前高已觸發` : high?.enabled ? `🔔 ${sourcePeriod}前高 ${fmtPrice(high.target)}` : `🔔 ${sourcePeriod}前高`;
-  lowBtn.textContent = low?.triggered ? `✅ ${sourcePeriod}前低已觸發` : low?.enabled ? `🔔 ${sourcePeriod}前低 ${fmtPrice(low.target)}` : `🔔 ${sourcePeriod}前低`;
+  highBtn.textContent = high?.triggered ? `✅ 前高` : high?.enabled ? `🔔 前高` : `🔔 前高`;
+  lowBtn.textContent = low?.triggered ? `✅ 前低` : low?.enabled ? `🔔 前低` : `🔔 前低`;
 
   const highChip = document.getElementById("detail-high-alert");
   const lowChip = document.getElementById("detail-low-alert");
