@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="color-scheme" content="dark">
-  <meta name="description" content="OX Crypto Screener - Bitget USDT 永續合約全市場強弱掃描、流動性評估、多型態辨識與專業 K 線工作區。">
-  <title>OX 幣種篩選器 v3.3｜雷達・強弱・媒體・設定</title>
+  <meta name="description" content="OX Market Command Center - 市場總覽、強弱、雷達篩選、K 線與提醒工作區。">
+  <title>OX 幣種篩選器 v3.3｜Market Command Center</title>
   <script src="https://unpkg.com/lightweight-charts@4.2.3/dist/lightweight-charts.standalone.production.js"></script>
   <style>
     :root {
@@ -1190,48 +1190,235 @@
 
   
 
-    /* ===== OX v3.3 final UI: v3.1 visual order + v3.2 radar entry ===== */
-    .qian-symbol{display:flex;flex-direction:column;justify-content:center;gap:2px;color:var(--gold);flex:0 0 auto}
-    .qian-line{display:flex;width:100%;height:3px;gap:13%;margin:0;padding:0}
-    .qian-line b{display:block;height:100%;background:currentColor;border-radius:.4px;box-shadow:none}
-    .qian-line.yin b{width:43.5%}.qian-line.yang b{width:100%}
-    .qian-symbol-header{width:34px;height:30px;gap:2px}.qian-symbol-header .qian-line{height:3px}
-    .brand .brand-logo{display:none!important}
+    /* ===== OX v3.3 Market Command Center + refined 5-tab dock ===== */
+    .brand .brand-logo{
+      display:block!important;width:34px;height:34px;object-fit:contain;flex:0 0 auto;
+      filter:invert(1);mix-blend-mode:screen;opacity:.94;
+    }
 
-    .v33-home-page{max-width:1050px;margin:0 auto;padding:16px 0 42px}
-    .v33-home-hero{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;padding:24px;border:1px solid var(--line);border-radius:18px;background:linear-gradient(145deg,#101a29,#0b121d);margin-bottom:12px}
-    .v33-home-hero h1{margin:4px 0 5px;font-size:28px}.v33-home-hero p{margin:0;color:var(--muted);font-size:12px;max-width:650px}
-    .v33-open-radar{color:var(--gold);border-color:#6f5524;white-space:nowrap}
-    .v33-home-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
-    .v33-home-card{border:1px solid var(--line);background:var(--panel);border-radius:13px;padding:14px}
-    .v33-home-card label{display:block;color:var(--muted);font-size:9px}.v33-home-card strong{display:block;font-size:24px;margin:4px 0}.v33-home-card small{color:var(--muted);font-size:8px}
-    .v33-home-note{display:flex;gap:10px;align-items:center;margin-top:10px;padding:13px 14px;border:1px solid var(--line);border-radius:12px;background:#0c1420;font-size:10px;color:var(--muted)}
-    .v33-home-note b{color:var(--gold);white-space:nowrap}
+    /* 首頁：只整理現有 state / OX Engine 結果，不建立第二套掃描器 */
+    .v33-home-page{max-width:1120px;margin:0 auto;padding:10px 0 42px}
+    .v33-home-hero{
+      border:1px solid var(--line);border-radius:18px;padding:22px;
+      background:radial-gradient(700px 260px at 8% 0%,#29466b22,transparent 68%),linear-gradient(145deg,#101a29,#0b121d);
+      box-shadow:0 14px 45px #0003;overflow:hidden;
+    }
+    .v33-home-hero-top{display:flex;align-items:flex-start;justify-content:space-between;gap:18px}
+    .v33-home-hero h1{margin:4px 0 5px;font-size:28px;line-height:1.12}
+    .v33-home-hero p{margin:0;color:var(--muted);font-size:12px;max-width:720px}
+    .v33-market-state{flex:0 0 auto;border:1px solid #6b5429;background:#f7bd520c;color:var(--gold);border-radius:999px;padding:6px 10px;font-size:10px;font-weight:850;white-space:nowrap}
+    .v33-hero-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin-top:16px}
+    .v33-hero-stat{border:1px solid #203149;background:#0a121d;border-radius:11px;padding:11px 12px;min-width:0}
+    .v33-hero-stat label{display:block;color:var(--muted);font-size:8px;margin-bottom:3px}
+    .v33-hero-stat strong{display:block;font-size:22px;line-height:1.08;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .v33-hero-stat small{display:block;color:#71849f;font-size:7px;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
-    .app-dock{grid-template-columns:repeat(5,1fr)!important;width:min(620px,calc(100vw - 28px))!important;min-height:70px;padding:6px 7px;align-items:end;overflow:visible}
-    .dock-btn{border:0;border-radius:11px;background:transparent;color:#a9bad0;min-height:52px;font-weight:800;font-size:11px;letter-spacing:.02em;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;position:relative;overflow:visible}
-    .dock-btn.active:not(.dock-radar){color:var(--ink);background:#111a28;box-shadow:inset 0 0 0 1px #263850}
-    .dock-btn small{display:block;font-size:7px;font-weight:650;opacity:.72}
-    .dock-icon,.dock-icon svg{width:20px;height:20px}.dock-icon svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-    .dock-radar{color:var(--gold)!important;background:transparent!important;box-shadow:none!important;min-height:58px}
-    .dock-radar-orb{position:absolute;left:50%;bottom:26px;transform:translateX(-50%);width:68px;height:68px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle at 50% 35%,#1b2738 0%,#111927 44%,#090f17 100%);border:1px solid #8d6b2c;box-shadow:0 0 0 5px #080c14,0 0 0 6px #443619,0 0 25px #f7bd5242,inset 0 1px 10px #ffffff0c,inset 0 -9px 18px #0007}
-    .dock-radar-orb:before,.dock-radar-orb:after{content:"";position:absolute;border-radius:50%;pointer-events:none}
-    .dock-radar-orb:before{inset:8px;border:1px solid #f7bd524d}
-    .dock-radar-orb:after{inset:17px;border:1px solid #f7bd522e}
-    .dock-radar.active .dock-radar-orb{box-shadow:0 0 0 5px #080c14,0 0 0 6px #a37a2a,0 0 34px #f7bd5265,inset 0 1px 12px #ffffff12,inset 0 -9px 18px #0007}
-    .qian-symbol-radar{position:relative;z-index:2;width:34px;height:31px;gap:2.2px}.qian-symbol-radar .qian-line{height:3.4px}
-    .dock-radar-label{margin-top:27px;color:var(--gold);font-size:10px;font-weight:900}
+    .v33-section{margin-top:12px}
+    .v33-section-head{display:flex;align-items:end;justify-content:space-between;gap:12px;margin:0 2px 6px}
+    .v33-section-head h2{margin:0;font-size:14px}.v33-section-head p{margin:2px 0 0;color:var(--muted);font-size:8px}
+    .v33-section-tag{font-size:7px;color:var(--gold);border:1px solid #5e4925;background:#f7bd5209;border-radius:999px;padding:3px 7px;font-weight:800}
+    .v33-card{border:1px solid var(--line);background:linear-gradient(180deg,#0f1826,#0b131f);border-radius:14px;overflow:hidden;box-shadow:0 9px 26px #0002}
 
-    /* 雷達是網站預設工作區；維持 v3.1 左圖右篩選的視覺骨架 */
+    .v33-market-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
+    .v33-market-card{padding:12px;min-width:0}
+    .v33-market-card-top{display:flex;align-items:center;justify-content:space-between;gap:7px;margin-bottom:7px}
+    .v33-market-name{font-size:10px;font-weight:850}.v33-market-badge{font-size:7px;color:var(--muted);border:1px solid #2b3d56;border-radius:999px;padding:2px 5px;white-space:nowrap}
+    .v33-market-value{display:flex;align-items:baseline;justify-content:space-between;gap:8px;min-width:0}
+    .v33-market-value strong{font-size:19px;line-height:1.05;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .v33-market-value span{font-size:9px;font-weight:800;white-space:nowrap}
+    .v33-market-note{color:#9fb0c7;font-size:8px;line-height:1.35;margin-top:6px;min-height:22px}
+    .v33-meter{height:5px;border-radius:999px;background:#19283a;overflow:hidden;margin-top:8px}
+    .v33-meter i{display:block;height:100%;width:0;border-radius:inherit;background:linear-gradient(90deg,#ee617c,#d7a84e 50%,#38c99b);transition:width .3s ease}
+
+    .v33-two-col{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+    .v33-list-head{display:flex;align-items:center;justify-content:space-between;padding:10px 11px;border-bottom:1px solid var(--line)}
+    .v33-list-head b{font-size:10px}.v33-list-head span{color:var(--muted);font-size:7px}
+    .v33-list-empty{padding:16px 11px;color:var(--muted);font-size:8px;text-align:center}
+    .v33-event-row,.v33-watch-row,.v33-rank-row{width:100%;border:0;border-bottom:1px solid #19273a;background:transparent;color:var(--ink);text-align:left}
+    .v33-event-row:last-child,.v33-watch-row:last-child,.v33-rank-row:last-child{border-bottom:0}
+    .v33-event-row{display:grid;grid-template-columns:27px minmax(0,1fr) auto;gap:8px;align-items:center;padding:9px 10px}
+    .v33-event-icon{width:27px;height:27px;border:1px solid #43536a;border-radius:8px;display:grid;place-items:center;background:#0a121c;font-size:11px;color:var(--gold)}
+    .v33-row-main{min-width:0}.v33-row-main b{display:block;font-size:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.v33-row-main small{display:block;color:var(--muted);font-size:7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
+    .v33-row-pill{font-size:7px;border:1px solid #465b76;border-radius:999px;padding:3px 6px;color:#bcd0e7;white-space:nowrap}
+    .v33-watch-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;padding:10px 11px;align-items:center}
+    .v33-watch-score{color:var(--gold);font-size:10px;font-weight:850;white-space:nowrap}
+    .v33-watch-stage{font-size:7px;color:#91a4bc;margin-top:3px}
+
+    .v33-rank-panels{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+    .v33-rank-row{display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:6px;align-items:center;padding:8px 10px}
+    .v33-rank-no{font-size:7px;color:var(--muted)}.v33-rank-symbol{font-size:9px;font-weight:850;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.v33-rank-change{font-size:8px;font-weight:850;white-space:nowrap}
+
+    .v33-radar-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:13px;overflow:hidden}
+    .v33-radar-cell{background:#0c1521;padding:11px 10px;min-width:0}.v33-radar-cell label{display:block;color:var(--muted);font-size:7px;margin-bottom:3px}.v33-radar-cell strong{display:block;font-size:18px;color:var(--ink)}.v33-radar-cell small{display:block;color:#7790ab;font-size:6px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+    .v33-actions{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
+    .v33-action{border:1px solid #283b55;border-radius:12px;background:#0a121d;color:var(--ink);text-align:left;padding:10px;min-height:72px}
+    .v33-action:hover{border-color:#715827;background:#101a28}.v33-action-icon{width:26px;height:26px;display:grid;place-items:center;border:1px solid #5a4523;border-radius:8px;color:var(--gold);background:#f7bd520a;margin-bottom:7px;font-size:11px}
+    .v33-action b{display:block;font-size:9px}.v33-action small{display:block;color:var(--muted);font-size:7px;margin-top:2px;line-height:1.3}
+
+    /* 生成圖所對應的底部五欄：玻璃底座 + 中央雷達主按鈕 */
+    .app-dock{
+      grid-template-columns:repeat(5,1fr)!important;width:min(620px,calc(100vw - 28px))!important;min-height:72px;
+      padding:7px 9px;align-items:center;overflow:visible;border:1px solid #3b4d66;border-radius:20px;
+      background:linear-gradient(180deg,#101a28f2,#09111cf2)!important;box-shadow:0 18px 45px #000a,inset 0 1px 0 #ffffff09;backdrop-filter:blur(18px)
+    }
+    .dock-btn{border:0;border-radius:11px;background:transparent!important;color:#aebdd1;min-height:54px;font-weight:800;font-size:10px;letter-spacing:.02em;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;position:relative;overflow:visible;box-shadow:none!important}
+    .dock-btn.active:not(.dock-radar){color:#d7e0ec;background:transparent!important;box-shadow:none!important}
+    .dock-btn small{display:none}
+    .dock-icon,.dock-icon svg{width:22px;height:22px}.dock-icon svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+    .dock-radar{color:var(--gold)!important;min-height:58px!important}
+    .dock-radar-orb{position:absolute;left:50%;bottom:23px;transform:translateX(-50%);width:62px;height:62px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle at 50% 38%,#182538 0%,#0d1622 58%,#070d14 100%);border:1px solid #b48835;box-shadow:0 0 0 5px #09111c,0 0 0 6px #5d461f,0 0 24px #f7bd5242,inset 0 1px 10px #ffffff0b}
+    .dock-radar-orb:before{content:"";position:absolute;inset:7px;border:1px solid #f7bd5258;border-radius:50%;pointer-events:none}
+    .dock-radar-orb:after{content:"";position:absolute;inset:15px;border:1px solid #f7bd5228;border-radius:50%;pointer-events:none}
+    .dock-radar-orb img{position:relative;z-index:2;width:30px;height:30px;object-fit:contain;filter:brightness(0) saturate(100%) invert(80%) sepia(58%) saturate(840%) hue-rotate(348deg) brightness(102%) contrast(95%)}
+    .dock-radar.active .dock-radar-orb{box-shadow:0 0 0 5px #09111c,0 0 0 6px #a77c2a,0 0 28px #f7bd5260,inset 0 1px 10px #ffffff10}
+    .dock-radar-label{margin-top:25px;color:var(--gold);font-size:10px;font-weight:900}
+
     #view-radar>.compact-summary{margin-top:4px}
 
     @media(max-width:720px){
-      .qian-symbol-header{width:29px;height:25px;gap:1.7px}.qian-symbol-header .qian-line{height:2.6px}
-      .v33-home-page{padding:6px 0 28px}.v33-home-hero{padding:14px 12px;border-radius:13px;align-items:center}.v33-home-hero h1{font-size:20px}.v33-home-hero p{font-size:9px;line-height:1.45}.v33-open-radar{font-size:8px;padding:6px 8px}
-      .v33-home-grid{grid-template-columns:repeat(2,1fr);gap:5px}.v33-home-card{padding:9px;border-radius:9px}.v33-home-card strong{font-size:16px}.v33-home-note{font-size:8px;padding:9px}
-      .app-dock{bottom:0!important;width:100%!important;max-width:none;border-left:0;border-right:0;border-bottom:0;border-radius:14px 14px 0 0;padding:5px 3px calc(5px + env(safe-area-inset-bottom));min-height:76px}
-      .dock-btn{min-height:52px;font-size:9px;gap:2px}.dock-btn small{display:none}.dock-icon,.dock-icon svg{width:18px;height:18px}
-      .dock-radar-orb{width:64px;height:64px;bottom:26px}.qian-symbol-radar{width:31px;height:28px;gap:2px}.qian-symbol-radar .qian-line{height:3px}.dock-radar-label{margin-top:27px;font-size:9px}
+      .brand .brand-logo{width:27px;height:27px}.brand{gap:7px!important}
+      .v33-home-page{padding:4px 0 24px}.v33-home-hero{padding:13px 11px;border-radius:13px}.v33-home-hero-top{gap:8px}.v33-home-hero h1{font-size:20px}.v33-home-hero p{font-size:8px;line-height:1.45}.v33-market-state{font-size:7px;padding:4px 6px}
+      .v33-hero-stats{grid-template-columns:repeat(2,1fr);gap:5px;margin-top:10px}.v33-hero-stat{padding:8px 9px;border-radius:9px}.v33-hero-stat label{font-size:6px}.v33-hero-stat strong{font-size:15px}.v33-hero-stat small{font-size:6px}
+      .v33-section{margin-top:8px}.v33-section-head{margin-bottom:4px}.v33-section-head h2{font-size:11px}.v33-section-head p{font-size:6px}.v33-section-tag{font-size:6px;padding:2px 5px}
+      .v33-market-grid{grid-template-columns:repeat(2,1fr);gap:5px}.v33-market-card{padding:8px;border-radius:10px}.v33-market-card-top{margin-bottom:5px}.v33-market-name{font-size:8px}.v33-market-badge{font-size:6px}.v33-market-value strong{font-size:14px}.v33-market-value span{font-size:7px}.v33-market-note{font-size:6.5px;min-height:18px;margin-top:4px}.v33-meter{height:4px;margin-top:5px}
+      .v33-two-col{grid-template-columns:1fr;gap:5px}.v33-list-head{padding:8px 9px}.v33-list-head b{font-size:9px}.v33-list-head span{font-size:6px}.v33-event-row{padding:7px 8px;grid-template-columns:24px minmax(0,1fr) auto;gap:6px}.v33-event-icon{width:24px;height:24px;font-size:9px}.v33-row-main b{font-size:8px}.v33-row-main small,.v33-row-pill{font-size:6px}.v33-watch-row{padding:8px 9px}.v33-watch-score{font-size:8px}.v33-watch-stage{font-size:6px}
+      .v33-rank-panels{gap:5px}.v33-rank-row{padding:7px 7px;grid-template-columns:16px minmax(0,1fr) auto;gap:4px}.v33-rank-no{font-size:6px}.v33-rank-symbol{font-size:7px}.v33-rank-change{font-size:7px}
+      .v33-radar-cell{padding:8px 5px}.v33-radar-cell label{font-size:6px}.v33-radar-cell strong{font-size:14px}.v33-radar-cell small{font-size:5.5px}
+      .v33-actions{gap:5px}.v33-action{padding:8px 7px;min-height:61px;border-radius:9px}.v33-action-icon{width:22px;height:22px;font-size:9px;margin-bottom:5px}.v33-action b{font-size:7px}.v33-action small{font-size:6px}
+      .app-dock{bottom:0!important;width:100%!important;max-width:none;border-left:0;border-right:0;border-bottom:0;border-radius:18px 18px 0 0;padding:6px 4px calc(6px + env(safe-area-inset-bottom));min-height:76px}
+      .dock-btn{min-height:54px;font-size:9px;gap:3px}.dock-icon,.dock-icon svg{width:21px;height:21px}
+      .dock-radar-orb{width:58px;height:58px;bottom:23px}.dock-radar-orb img{width:27px;height:27px}.dock-radar-label{margin-top:25px;font-size:9px}
+    }
+
+  
+    /* ===== v3.3 compact floating bottom dock — match approved reference ===== */
+    .app-dock {
+      grid-template-columns: repeat(5, minmax(0,1fr)) !important;
+      width: min(620px, calc(100vw - 20px)) !important;
+      min-height: 70px !important;
+      bottom: 10px !important;
+      padding: 5px 8px 6px !important;
+      gap: 0 !important;
+      border: 1px solid #3a506b !important;
+      border-radius: 23px !important;
+      overflow: visible !important;
+      background: linear-gradient(180deg, rgba(15,25,39,.97), rgba(8,16,27,.97)) !important;
+      box-shadow: 0 14px 36px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.035) !important;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+    }
+    .dock-btn {
+      min-height: 56px !important;
+      padding: 4px 2px !important;
+      gap: 4px !important;
+      border-radius: 12px !important;
+      color: #c4d0df !important;
+      background: transparent !important;
+      box-shadow: none !important;
+      font-size: 10px !important;
+      line-height: 1 !important;
+    }
+    .dock-btn.active:not(.dock-radar) {
+      color: #e4ebf4 !important;
+      background: transparent !important;
+      box-shadow: none !important;
+    }
+    .dock-icon, .dock-icon svg {
+      width: 22px !important;
+      height: 22px !important;
+    }
+    .dock-icon svg {
+      stroke-width: 1.8 !important;
+    }
+    .dock-radar {
+      min-height: 56px !important;
+      color: var(--gold) !important;
+      overflow: visible !important;
+    }
+    .dock-radar-orb {
+      width: 54px !important;
+      height: 54px !important;
+      left: 50% !important;
+      top: -17px !important;
+      bottom: auto !important;
+      transform: translateX(-50%) !important;
+      border: 1px solid #d8a536 !important;
+      background: radial-gradient(circle at 50% 40%, #172337 0%, #0d1725 60%, #080f19 100%) !important;
+      box-shadow: 0 0 0 1px rgba(247,189,82,.22), 0 0 18px rgba(247,189,82,.34), inset 0 1px 8px rgba(255,255,255,.035) !important;
+    }
+    .dock-radar-orb::before {
+      content: "" !important;
+      position: absolute !important;
+      inset: 7px !important;
+      border: 1px solid rgba(247,189,82,.42) !important;
+      border-radius: 50% !important;
+    }
+    .dock-radar-orb::after {
+      display: none !important;
+      content: none !important;
+    }
+    .dock-radar-orb img {
+      width: 27px !important;
+      height: 27px !important;
+      filter: brightness(0) saturate(100%) invert(82%) sepia(60%) saturate(1030%) hue-rotate(345deg) brightness(103%) contrast(96%) !important;
+    }
+    .dock-radar.active .dock-radar-orb {
+      box-shadow: 0 0 0 1px rgba(247,189,82,.34), 0 0 21px rgba(247,189,82,.48), inset 0 1px 8px rgba(255,255,255,.04) !important;
+    }
+    .dock-radar-label {
+      margin-top: 34px !important;
+      font-size: 10px !important;
+      line-height: 1 !important;
+      color: var(--gold) !important;
+      font-weight: 900 !important;
+    }
+
+    @media (max-width:720px) {
+      body { padding-bottom: 94px !important; }
+      .app-dock {
+        left: 50% !important;
+        right: auto !important;
+        transform: translateX(-50%) !important;
+        width: calc(100vw - 20px) !important;
+        max-width: none !important;
+        bottom: calc(8px + env(safe-area-inset-bottom)) !important;
+        min-height: 70px !important;
+        padding: 5px 7px 6px !important;
+        border: 1px solid #3a506b !important;
+        border-radius: 23px !important;
+      }
+      .dock-btn {
+        min-height: 56px !important;
+        font-size: 9px !important;
+        gap: 3px !important;
+      }
+      .dock-icon, .dock-icon svg {
+        width: 21px !important;
+        height: 21px !important;
+      }
+      .dock-radar-orb {
+        width: 52px !important;
+        height: 52px !important;
+        top: -15px !important;
+      }
+      .dock-radar-orb img {
+        width: 25px !important;
+        height: 25px !important;
+      }
+      .dock-radar-label {
+        margin-top: 33px !important;
+        font-size: 9px !important;
+      }
+    }
+
+    @media (max-width:390px) {
+      .app-dock { width: calc(100vw - 16px) !important; border-radius: 21px !important; }
+      .dock-btn { font-size: 8.5px !important; }
+      .dock-icon, .dock-icon svg { width: 20px !important; height: 20px !important; }
+      .dock-radar-orb { width: 50px !important; height: 50px !important; top: -14px !important; }
+      .dock-radar-orb img { width: 24px !important; height: 24px !important; }
+      .dock-radar-label { margin-top: 32px !important; }
     }
 
   </style>
@@ -1240,16 +1427,9 @@
 
 <header>
   <div class="wrap nav">
-    <a class="brand" href="#" data-view-target="radar" aria-label="回到 OX 雷達">
-      <span class="qian-symbol qian-symbol-header" aria-label="謙卦">
-        <i class="qian-line yin"><b></b><b></b></i>
-        <i class="qian-line yin"><b></b><b></b></i>
-        <i class="qian-line yin"><b></b><b></b></i>
-        <i class="qian-line yang"><b></b></i>
-        <i class="qian-line yin"><b></b><b></b></i>
-        <i class="qian-line yin"><b></b><b></b></i>
-      </span>
-      <span>OX 幣種篩選器 <small style="font-size:12px;color:var(--gold);font-weight:600">v3.3 · 主頁 / 強弱 / 雷達 / 媒體 / 設定</small></span>
+    <a class="brand" href="#" data-view-target="home" aria-label="回到 OX 首頁">
+      <img class="brand-logo" src="ox-logo.png" alt="OX Logo" onerror="this.style.display='none'">
+      <span>OX 幣種篩選器 <small style="font-size:12px;color:var(--gold);font-weight:600">v3.3 · 首頁 / 強弱 / 雷達 / 媒體 / 設定</small></span>
     </a>
     <div class="nav-stats">
       <div class="live"><i class="dot" id="dot"></i><span id="scan-status">全市場輪巡佇列準備中…</span></div>
@@ -1268,31 +1448,88 @@
 <main class="wrap" style="padding-top:10px;padding-bottom:40px">
 
 
-  <!-- ===== 首頁：市場總覽（非預設開啟） ===== -->
-  <section class="app-view" id="view-home" data-app-view="home">
+  <!-- ===== 首頁：OX Market Command Center ===== -->
+  <section class="app-view active" id="view-home" data-app-view="home">
     <div class="v33-home-page">
       <section class="v33-home-hero">
-        <div>
-          <div class="page-kicker">OX Market Command Center</div>
-          <h1>市場總覽</h1>
-          <p>首頁只負責快速整理市場環境；網站開啟時預設直接進入「雷達」看 K 線與 OX 篩選。</p>
+        <div class="v33-home-hero-top">
+          <div>
+            <div class="page-kicker">OX Market Command Center</div>
+            <h1>市場總覽</h1>
+            <p>先整理市場環境、重要異動與值得打開 K 線的候選，再決定要不要進入雷達。</p>
+          </div>
+          <span class="v33-market-state" id="home-market-state">資料整理中</span>
         </div>
-        <button class="btn-act v33-open-radar" type="button" data-view-target="radar">進入雷達</button>
+        <div class="v33-hero-stats">
+          <div class="v33-hero-stat"><label>OX 市場分數</label><strong id="home-market-score">—</strong><small>BTC 強度＋小幣強度綜合</small></div>
+          <div class="v33-hero-stat"><label>即戰力 T1</label><strong id="home-t1-count">0</strong><small>Trigger 已確認</small></div>
+          <div class="v33-hero-stat"><label>蹲點 T2</label><strong id="home-t2-count">0</strong><small>等待觸發</small></div>
+          <div class="v33-hero-stat"><label>異常活躍</label><strong id="home-surge-count">0</strong><small>資金 / 量能異動</small></div>
+        </div>
       </section>
-      <div class="v33-home-grid">
-        <article class="v33-home-card"><label>BTC</label><strong id="home-btc-price">—</strong><small id="home-btc-change">等待行情</small></article>
-        <article class="v33-home-card"><label>BTC 強弱</label><strong id="home-btc-strength">—</strong><small>0–100 市場環境分數</small></article>
-        <article class="v33-home-card"><label>小幣強弱</label><strong id="home-alt-strength">—</strong><small>流動性 / 結構 / 資金廣度</small></article>
-        <article class="v33-home-card"><label>T1 即戰力</label><strong id="home-t1-count">0</strong><small id="home-surge-count">異常活躍 0</small></article>
-      </div>
-      <section class="v33-home-note">
-        <b>OX 使用順序</b>
-        <span>首頁看環境 → 雷達找 T1 / T2 / T3 → 打開 K 線確認 → 再決定是否交易。</span>
+
+      <section class="v33-section">
+        <div class="v33-section-head"><div><h2>市場總覽</h2><p>BTC、ETH 與整體市場環境</p></div><span class="v33-section-tag">LIVE</span></div>
+        <div class="v33-market-grid">
+          <article class="v33-card v33-market-card" data-home-symbol="BTCUSDT" role="button" tabindex="0">
+            <div class="v33-market-card-top"><span class="v33-market-name">BTC</span><span class="v33-market-badge">市場基準</span></div>
+            <div class="v33-market-value"><strong id="home-btc-price">—</strong><span id="home-btc-change">—</span></div>
+            <div class="v33-market-note" id="home-btc-note">等待行情資料</div><div class="v33-meter"><i id="home-btc-meter"></i></div>
+          </article>
+          <article class="v33-card v33-market-card" data-home-symbol="ETHUSDT" role="button" tabindex="0">
+            <div class="v33-market-card-top"><span class="v33-market-name">ETH</span><span class="v33-market-badge">主流基準</span></div>
+            <div class="v33-market-value"><strong id="home-eth-price">—</strong><span id="home-eth-change">—</span></div>
+            <div class="v33-market-note" id="home-eth-note">等待行情資料</div><div class="v33-meter"><i id="home-eth-meter"></i></div>
+          </article>
+          <article class="v33-card v33-market-card">
+            <div class="v33-market-card-top"><span class="v33-market-name">BTC 強度</span><span class="v33-market-badge">0–100</span></div>
+            <div class="v33-market-value"><strong id="home-btc-strength">—</strong><span id="home-btc-strength-label">等待</span></div>
+            <div class="v33-market-note" id="home-btc-strength-note">結構 / 資金 / 動能 / Trigger</div><div class="v33-meter"><i id="home-btc-strength-meter"></i></div>
+          </article>
+          <article class="v33-card v33-market-card">
+            <div class="v33-market-card-top"><span class="v33-market-name">小幣強度</span><span class="v33-market-badge">市場廣度</span></div>
+            <div class="v33-market-value"><strong id="home-alt-strength">—</strong><span id="home-alt-strength-label">等待</span></div>
+            <div class="v33-market-note" id="home-alt-note">等待全市場輪巡</div><div class="v33-meter"><i id="home-alt-meter"></i></div>
+          </article>
+        </div>
+      </section>
+
+      <section class="v33-section v33-two-col">
+        <article class="v33-card"><div class="v33-list-head"><b>重要資訊</b><span>OX 系統事件</span></div><div id="home-events"><div class="v33-list-empty">全市場輪巡進行中</div></div></article>
+        <article class="v33-card"><div class="v33-list-head"><b>OX 重點觀察</b><span>T1 / T2 優先</span></div><div id="home-watchlist"><div class="v33-list-empty">等待候選標的</div></div></article>
+      </section>
+
+      <section class="v33-section">
+        <div class="v33-section-head"><div><h2>今日強弱</h2><p>Bitget USDT 永續 24H 漲跌幅</p></div><span class="v33-section-tag">TOP 5</span></div>
+        <div class="v33-rank-panels">
+          <article class="v33-card"><div class="v33-list-head"><b>今日強勢</b><span>由高到低</span></div><div id="home-gainers"><div class="v33-list-empty">等待 Ticker</div></div></article>
+          <article class="v33-card"><div class="v33-list-head"><b>今日弱勢</b><span>由低到高</span></div><div id="home-losers"><div class="v33-list-empty">等待 Ticker</div></div></article>
+        </div>
+      </section>
+
+      <section class="v33-section">
+        <div class="v33-section-head"><div><h2>雷達摘要</h2><p>目前雷達裡有多少東西值得看</p></div><button class="btn-act" type="button" data-view-target="radar">進入雷達</button></div>
+        <div class="v33-radar-summary">
+          <div class="v33-radar-cell"><label>T1 觸發確認</label><strong id="home-radar-t1">0</strong><small>即戰力</small></div>
+          <div class="v33-radar-cell"><label>T2 蹲點準備</label><strong id="home-radar-t2">0</strong><small>等待 Trigger</small></div>
+          <div class="v33-radar-cell"><label>T3 早期跟蹤</label><strong id="home-radar-t3">0</strong><small>早期形成</small></div>
+          <div class="v33-radar-cell"><label>異常活躍</label><strong id="home-radar-surge">0</strong><small>量能 / 資金</small></div>
+        </div>
+      </section>
+
+      <section class="v33-section">
+        <div class="v33-section-head"><div><h2>快捷入口</h2><p>不開新頁，直接切換 OX 工作區</p></div></div>
+        <div class="v33-actions">
+          <button class="v33-action" type="button" data-view-target="radar"><span class="v33-action-icon">⌁</span><b>進入雷達</b><small>找幣＋看標的</small></button>
+          <button class="v33-action" type="button" data-view-target="strength"><span class="v33-action-icon">↗</span><b>市場強弱</b><small>BTC / 小幣環境</small></button>
+          <button class="v33-action" type="button" data-view-target="settings"><span class="v33-action-icon">🔔</span><b>提醒設定</b><small>通知 / 主題</small></button>
+          <button class="v33-action" type="button" data-view-target="media"><span class="v33-action-icon">▶</span><b>OX 媒體</b><small>YouTube / 社群</small></button>
+        </div>
       </section>
     </div>
   </section>
 
-  <section class="app-view active" id="view-radar" data-app-view="radar">
+  <section class="app-view" id="view-radar" data-app-view="radar">
 
 
 
@@ -1600,34 +1837,20 @@
 
 
 <nav class="app-dock" aria-label="主要功能">
-  <button class="dock-btn" type="button" data-view-target="home" aria-label="首頁">
-    <span class="dock-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.2 12 4l9 7.2v8.3a1.5 1.5 0 0 1-1.5 1.5H15v-6H9v6H4.5A1.5 1.5 0 0 1 3 19.5z"/></svg></span>
-    <span>主頁</span><small>市場總覽</small>
+  <button class="dock-btn active" type="button" data-view-target="home" aria-label="首頁">
+    <span class="dock-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.2 12 4l9 7.2v8.3a1.5 1.5 0 0 1-1.5 1.5H15v-6H9v6H4.5A1.5 1.5 0 0 1 3 19.5z"/></svg></span><span>首頁</span>
   </button>
   <button class="dock-btn" type="button" data-view-target="strength" aria-label="強弱">
-    <span class="dock-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 18v-5M10 18V8M16 18V4M22 18V11"/></svg></span>
-    <span>強弱</span><small>市場環境</small>
+    <span class="dock-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 18v-5M10 18V8M16 18V4M22 18V11"/></svg></span><span>強弱</span>
   </button>
-  <button class="dock-btn dock-radar active" type="button" data-view-target="radar" aria-label="雷達">
-    <span class="dock-radar-orb" aria-hidden="true">
-      <span class="qian-symbol qian-symbol-radar">
-        <i class="qian-line yin"><b></b><b></b></i>
-        <i class="qian-line yin"><b></b><b></b></i>
-        <i class="qian-line yin"><b></b><b></b></i>
-        <i class="qian-line yang"><b></b></i>
-        <i class="qian-line yin"><b></b><b></b></i>
-        <i class="qian-line yin"><b></b><b></b></i>
-      </span>
-    </span>
-    <span class="dock-radar-label">雷達</span>
+  <button class="dock-btn dock-radar" type="button" data-view-target="radar" aria-label="雷達">
+    <span class="dock-radar-orb" aria-hidden="true"><img src="ox-logo.png" alt=""></span><span class="dock-radar-label">雷達</span>
   </button>
   <button class="dock-btn" type="button" data-view-target="media" aria-label="媒體">
-    <span class="dock-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m10 9 5 3-5 3z"/></svg></span>
-    <span>媒體</span><small>OX / 社群</small>
+    <span class="dock-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m10 9 5 3-5 3z"/></svg></span><span>媒體</span>
   </button>
   <button class="dock-btn" type="button" data-view-target="settings" aria-label="設定">
-    <span class="dock-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.2"/><path d="M19 13.5v-3l-2-.7-.8-1.9.9-1.9-2.1-2.1-1.9.9-1.9-.8-.7-2h-3l-.7 2-1.9.8-1.9-.9L.9 6l.9 1.9L1 9.8v3l2 .7.8 1.9-.9 1.9L5 19.4l1.9-.9 1.9.8.7 2h3l.7-2 1.9-.8 1.9.9 2.1-2.1-.9-1.9z" transform="scale(.82) translate(2.6 2.5)"/></svg></span>
-    <span>設定</span><small>通知 / 主題</small>
+    <span class="dock-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.2"/><path d="M19 13.5v-3l-2-.7-.8-1.9.9-1.9-2.1-2.1-1.9.9-1.9-.8-.7-2h-3l-.7 2-1.9.8-1.9-.9L.9 6l.9 1.9L1 9.8v3l2 .7.8 1.9-.9 1.9L5 19.4l1.9-.9 1.9.8.7 2h3l.7-2 1.9-.8 1.9.9 2.1-2.1-.9-1.9z" transform="scale(.82) translate(2.6 2.5)"/></svg></span><span>設定</span>
   </button>
 </nav>
 
@@ -1665,7 +1888,7 @@ const state = {
   symbol: "BTCUSDT",
   period: "1D",
   currentTab: "t1",
-  activeView: "radar",
+  activeView: "home",
   
   tickers: [],
   contracts: new Map(),
@@ -1977,21 +2200,105 @@ function switchAppView(view) {
 
 
 
+function homeStrengthLabel(v) {
+  const n = clamp(Math.round(num(v)));
+  if (n >= 80) return "強";
+  if (n >= 65) return "偏強";
+  if (n >= 45) return "中性";
+  if (n >= 30) return "偏弱";
+  return "弱";
+}
+
+function homeMarketState(strength) {
+  const btc = num(strength.btcRaw), alt = num(strength.altRaw);
+  if (btc >= 68 && alt >= 65) return "偏多趨勢";
+  if (btc >= 68 && alt < 52) return "BTC 主導";
+  if (alt >= 68 && alt - btc >= 8) return "小幣轉強";
+  if (btc <= 38 && alt <= 40) return "偏空環境";
+  return "中性整理";
+}
+
+function homeStructureText(a, ticker) {
+  if (a?.structureLabel) return a.structureLabel;
+  if (a?.side === "LONG") return "結構偏多";
+  if (a?.side === "SHORT") return "結構偏空";
+  if (ticker) return num(ticker.change24h) >= 0 ? "24H 偏強" : "24H 偏弱";
+  return "等待分析";
+}
+
 function renderHomeOverview() {
   const btc = state.btcTicker;
+  const eth = state.ethTicker;
+  const btcA = state.analyzedCache.get("BTCUSDT");
+  const ethA = state.analyzedCache.get("ETHUSDT");
   const strength = computeMarketStrength();
-  const priceEl = document.getElementById("home-btc-price");
-  const changeEl = document.getElementById("home-btc-change");
-  const btcStrengthEl = document.getElementById("home-btc-strength");
-  const altStrengthEl = document.getElementById("home-alt-strength");
-  const t1El = document.getElementById("home-t1-count");
-  const surgeEl = document.getElementById("home-surge-count");
-  if (priceEl) priceEl.textContent = btc ? fmtPrice(btc.lastPr) : "—";
-  if (changeEl) { changeEl.textContent = btc ? fmtPct(btc.change24h) : "等待行情"; changeEl.className = btc ? (num(btc.change24h) >= 0 ? "positive" : "negative") : ""; }
-  if (btcStrengthEl) btcStrengthEl.textContent = Number.isFinite(strength.btcRaw) ? Math.round(strength.btcRaw) : "—";
-  if (altStrengthEl) altStrengthEl.textContent = Number.isFinite(strength.altRaw) ? Math.round(strength.altRaw) : "—";
-  if (t1El) t1El.textContent = (state.tierMap.t1 || []).length;
-  if (surgeEl) surgeEl.textContent = `異常活躍 ${(state.tierMap.surge || []).length}`;
+  const btcStrength = clamp(Math.round(num(strength.btcRaw)));
+  const altStrength = clamp(Math.round(num(strength.altRaw)));
+  const marketScore = Math.round((btcStrength + altStrength) / 2);
+  const setText = (id, value) => { const el = document.getElementById(id); if (el) el.textContent = value; };
+  const setWidth = (id, value) => { const el = document.getElementById(id); if (el) el.style.width = `${clamp(value)}%`; };
+  const setChange = (id, ticker) => {
+    const el = document.getElementById(id); if (!el) return;
+    el.textContent = ticker ? fmtPct(ticker.change24h) : "—";
+    el.className = ticker ? (num(ticker.change24h) >= 0 ? "positive" : "negative") : "";
+  };
+
+  setText("home-market-state", homeMarketState(strength));
+  setText("home-market-score", marketScore);
+  setText("home-t1-count", (state.tierMap.t1 || []).length);
+  setText("home-t2-count", (state.tierMap.t2 || []).length);
+  setText("home-surge-count", (state.tierMap.surge || []).length);
+
+  setText("home-btc-price", btc ? fmtPrice(btc.lastPr) : "—"); setChange("home-btc-change", btc);
+  setText("home-btc-note", `${homeStructureText(btcA, btc)}${btcA ? ` · OX ${btcA.oxScore}` : ""}`);
+  setWidth("home-btc-meter", btcA?.oxScore ?? btcStrength);
+
+  setText("home-eth-price", eth ? fmtPrice(eth.lastPr) : "—"); setChange("home-eth-change", eth);
+  setText("home-eth-note", `${homeStructureText(ethA, eth)}${ethA ? ` · OX ${ethA.oxScore}` : ""}`);
+  setWidth("home-eth-meter", ethA?.oxScore ?? clamp(50 + num(eth?.change24h) * 350));
+
+  setText("home-btc-strength", btcStrength); setText("home-btc-strength-label", homeStrengthLabel(btcStrength));
+  setText("home-btc-strength-note", btcA ? `結構 ${qualitative(btcA.structScore)} · 資金 ${qualitative(btcA.flowScore)} · Setup ${qualitative(btcA.setupScore)}` : "結構 / 資金 / 動能 / Trigger");
+  setWidth("home-btc-strength-meter", btcStrength);
+
+  setText("home-alt-strength", altStrength); setText("home-alt-strength-label", homeStrengthLabel(altStrength));
+  const altP = strength.altParts;
+  setText("home-alt-note", altP ? `已分析 ${strength.sampleSize} · 結構廣度 ${Math.round(altP.structureBreadth)}% · 資金活躍 ${Math.round(altP.moneyBreadth)}%` : `已分析 ${strength.sampleSize} 檔 · 等待更多樣本`);
+  setWidth("home-alt-meter", altStrength);
+
+  // 重要資訊：只從現有 analyzedCache / tierMap 產生，不塞假資料
+  const events = [];
+  const seen = new Set();
+  const pushEvent = (coin, type, reason, tag, icon) => {
+    if (!coin?.symbol || seen.has(`${coin.symbol}:${type}`) || events.length >= 6) return;
+    seen.add(`${coin.symbol}:${type}`); events.push({ symbol:coin.symbol, type, reason, tag, icon });
+  };
+  for (const c of (state.tierMap.t1 || []).slice(0, 3)) pushEvent(c, "進入 T1", c.triggerType || c.statusText || "Trigger 已確認", "T1", "⚡");
+  for (const c of (state.tierMap.surge || []).slice(0, 3)) pushEvent(c, "異常活躍", `1H 放量 ${c.volRatio1h ?? "—"}x · 24H ${fmtPct(c.change24h)}`, "SURGE", "🔥");
+  for (const c of (state.tierMap.t2 || []).slice(0, 3)) pushEvent(c, "接近 Trigger", c.setupName || "結構已就緒", "T2", "◎");
+  const rsCandidates = Array.from(state.analyzedCache.values()).filter(c => !benchmarkSymbols.has(c.symbol) && num(c.rsScore) >= 75).sort((a,b)=>num(b.rsScore)-num(a.rsScore));
+  for (const c of rsCandidates.slice(0,2)) pushEvent(c, "相對 BTC 轉強", `Relative Strength ${c.rsScore}`, "RS", "↗");
+  const eventBox = document.getElementById("home-events");
+  if (eventBox) eventBox.innerHTML = events.length ? events.map(e => `<button class="v33-event-row" type="button" data-home-symbol="${e.symbol}"><span class="v33-event-icon">${e.icon}</span><span class="v33-row-main"><b>${e.symbol.replace(/USDT$/,"")} · ${e.type}</b><small>${e.reason}</small></span><span class="v33-row-pill">${e.tag}</span></button>`).join("") : `<div class="v33-list-empty">全市場輪巡進行中</div>`;
+
+  // OX 重點觀察：T1 / T2 最多三個
+  const watch = [...(state.tierMap.t1 || []), ...(state.tierMap.t2 || [])].filter((c,i,a)=>a.findIndex(x=>x.symbol===c.symbol)===i).slice(0,3);
+  const watchBox = document.getElementById("home-watchlist");
+  if (watchBox) watchBox.innerHTML = watch.length ? watch.map(c => `<button class="v33-watch-row" type="button" data-home-symbol="${c.symbol}"><span class="v33-row-main"><b>${c.symbol.replace(/USDT$/,"")} · ${c.setupName || "Setup 分析中"}</b><small>${c.structureLabel || c.side || "結構分析中"}</small><span class="v33-watch-stage">${c.tier === "t1" ? "T1 · 即戰力" : "T2 · 蹲點準備"}</span></span><span class="v33-watch-score">OX ${c.oxScore ?? "—"}</span></button>`).join("") : `<div class="v33-list-empty">等待 T1 / T2 候選標的</div>`;
+
+  // 強弱榜：直接讀現有 ticker 排名結果
+  const renderRank = (id, list) => {
+    const box = document.getElementById(id); if (!box) return;
+    const rows = (list || []).slice(0,5);
+    box.innerHTML = rows.length ? rows.map((t,i)=>`<button class="v33-rank-row" type="button" data-home-symbol="${t.symbol}"><span class="v33-rank-no">#${i+1}</span><span class="v33-rank-symbol">${t.symbol.replace(/USDT$/,"")}</span><span class="v33-rank-change ${num(t.change24h)>=0?"positive":"negative"}">${fmtPct(t.change24h)}</span></button>`).join("") : `<div class="v33-list-empty">等待 Ticker</div>`;
+  };
+  renderRank("home-gainers", state.tierMap.gainers);
+  renderRank("home-losers", state.tierMap.losers);
+
+  setText("home-radar-t1", (state.tierMap.t1 || []).length);
+  setText("home-radar-t2", (state.tierMap.t2 || []).length);
+  setText("home-radar-t3", (state.tierMap.t3 || []).length);
+  setText("home-radar-surge", (state.tierMap.surge || []).length);
 }
 
 function renderOxLive() {
@@ -2577,6 +2884,7 @@ function rebuildTierLists() {
   document.getElementById("badge-t3").textContent = t3.length;
   document.getElementById("badge-surge").textContent = surge.length;
   renderMarketStrength();
+  renderHomeOverview();
 }
 
 function renderCurrentTab() {
@@ -2639,8 +2947,8 @@ function renderCurrentTab() {
 function initChart() {
   const container = document.getElementById("chart");
   state.chart = LightweightCharts.createChart(container, {
-    width: container.clientWidth,
-    height: container.clientHeight,
+    width: container.clientWidth || 820,
+    height: container.clientHeight || 440,
     layout: {
       background: { type: "solid", color: "#090e17" },
       textColor: "#8b9db7"
@@ -3069,6 +3377,9 @@ function switchSymbol(symbol) {
 }
 
 document.addEventListener("click", e => {
+  const homeSymbol = e.target.closest("[data-home-symbol]");
+  if (homeSymbol?.dataset.homeSymbol) { switchSymbol(homeSymbol.dataset.homeSymbol); return; }
+
   const viewBtn = e.target.closest("[data-view-target]");
   if (viewBtn) { switchAppView(viewBtn.dataset.viewTarget); return; }
 
@@ -3121,6 +3432,12 @@ document.addEventListener("click", e => {
   }
 });
 
+document.addEventListener("keydown", e => {
+  if ((e.key === "Enter" || e.key === " ") && e.target?.dataset?.homeSymbol) {
+    e.preventDefault(); switchSymbol(e.target.dataset.homeSymbol);
+  }
+});
+
 document.getElementById("chk-vol").addEventListener("change", e => state.volumeSeries.applyOptions({ visible: e.target.checked }));
 document.getElementById("chk-ox-markers").addEventListener("change", () => renderChartData(state.candleData, false));
 
@@ -3162,7 +3479,3 @@ window.addEventListener("orientationchange", () => {
 document.addEventListener("keydown", e => {
   if (e.key === "Escape" && document.body.classList.contains("chart-focus")) setChartFocus(false);
 });
-
-</script>
-</body>
-</html>
