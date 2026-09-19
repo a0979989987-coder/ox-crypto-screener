@@ -651,6 +651,298 @@
       .metric-card:first-child strong { font-size:27px; }
     }
 
+
+    /* ===== v3.0 three-view shell ===== */
+    body { padding-bottom: 84px; }
+    .app-view { display:none; }
+    .app-view.active { display:block; }
+
+    .app-dock {
+      position:fixed;
+      left:50%;
+      bottom:14px;
+      transform:translateX(-50%);
+      z-index:90;
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:5px;
+      width:min(430px, calc(100vw - 28px));
+      padding:6px;
+      border:1px solid #30415a;
+      border-radius:16px;
+      background:#0a111dec;
+      box-shadow:0 14px 38px #000a;
+      backdrop-filter:blur(16px);
+    }
+    .dock-btn {
+      border:0;
+      border-radius:11px;
+      background:transparent;
+      color:var(--muted);
+      min-height:44px;
+      font-weight:800;
+      font-size:13px;
+      letter-spacing:.02em;
+      touch-action:manipulation;
+    }
+    .dock-btn.active {
+      color:var(--gold);
+      background:#f7bd5214;
+      box-shadow:inset 0 0 0 1px #f7bd523d;
+    }
+    .dock-btn small { display:block; font-size:9px; font-weight:650; margin-top:1px; opacity:.75; }
+
+    /* Market strength page */
+    .strength-page, .media-page { max-width:1050px; margin:0 auto; padding:10px 0 40px; }
+    .page-hero {
+      padding:24px 4px 18px;
+      border-bottom:1px solid var(--line);
+      margin-bottom:18px;
+    }
+    .page-kicker { color:var(--gold); font-size:11px; font-weight:800; letter-spacing:.14em; text-transform:uppercase; }
+    .page-hero h1 { margin:5px 0 6px; font-size:28px; line-height:1.1; }
+    .page-hero p { margin:0; color:var(--muted); max-width:700px; font-size:13px; }
+    .strength-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+    .strength-card {
+      background:linear-gradient(180deg,#101a29,#0b121d);
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:22px;
+      min-height:280px;
+    }
+    .strength-head { display:flex; align-items:flex-start; justify-content:space-between; gap:14px; }
+    .strength-head h2 { margin:0; font-size:18px; }
+    .strength-head p { margin:4px 0 0; color:var(--muted); font-size:11px; }
+    .strength-state {
+      border:1px solid #344b69;
+      background:#111d2c;
+      border-radius:999px;
+      padding:5px 9px;
+      font-size:10px;
+      font-weight:800;
+      white-space:nowrap;
+    }
+    .strength-value { font-size:58px; font-weight:850; line-height:1; margin:24px 0 18px; font-variant-numeric:tabular-nums; }
+    .strength-meter { position:relative; margin-top:2px; }
+    .strength-track {
+      height:12px;
+      border-radius:999px;
+      background:linear-gradient(90deg,#ee617c 0%,#d7a84e 50%,#38c99b 100%);
+      box-shadow:inset 0 0 0 1px #ffffff10;
+      position:relative;
+    }
+    .strength-needle {
+      position:absolute;
+      top:-6px;
+      width:3px;
+      height:24px;
+      border-radius:3px;
+      background:#fff;
+      box-shadow:0 0 0 2px #07101a, 0 0 10px #fff6;
+      transform:translateX(-50%);
+      transition:left .35s ease;
+    }
+    .strength-scale { display:grid; grid-template-columns:1fr 1fr 1fr; margin-top:9px; color:var(--muted); font-size:10px; }
+    .strength-scale span:nth-child(2) { text-align:center; }
+    .strength-scale span:last-child { text-align:right; }
+    .strength-scale b { color:var(--ink); font-weight:800; }
+    .strength-note {
+      margin-top:18px;
+      padding-top:14px;
+      border-top:1px solid #1c2a3d;
+      color:#b7c7da;
+      font-size:11px;
+      line-height:1.65;
+    }
+    .strength-note strong { color:var(--ink); }
+    .strength-explain {
+      margin-top:16px;
+      background:#0d1522;
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:16px 18px;
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.7;
+    }
+
+    /* Media / brand page */
+    .media-card {
+      background:linear-gradient(145deg,#101a29,#0b121d 58%,#111827);
+      border:1px solid var(--line);
+      border-radius:22px;
+      overflow:hidden;
+    }
+    .media-intro {
+      padding:34px 32px 28px;
+      display:grid;
+      grid-template-columns:auto 1fr;
+      gap:22px;
+      align-items:center;
+      border-bottom:1px solid var(--line);
+    }
+    .media-logo {
+      width:86px;
+      height:86px;
+      border-radius:22px;
+      border:1px solid #3c4e66;
+      background:#09111c;
+      display:grid;
+      place-items:center;
+      overflow:hidden;
+    }
+    .media-logo img { width:70px; height:70px; object-fit:contain; filter:invert(1); mix-blend-mode:screen; }
+    .media-logo-fallback { font-size:28px; font-weight:900; color:var(--gold); }
+    .media-intro h1 { margin:0 0 7px; font-size:29px; }
+    .media-intro p { margin:0; color:var(--muted); font-size:13px; line-height:1.7; }
+    .media-sections { display:grid; grid-template-columns:1fr 1fr; }
+    .media-section { padding:26px 28px; border-bottom:1px solid var(--line); }
+    .media-section:nth-child(odd) { border-right:1px solid var(--line); }
+    .media-section.full { grid-column:1/-1; border-right:0; }
+    .media-section h2 { margin:0 0 10px; font-size:16px; color:var(--gold); }
+    .media-section p { margin:0; color:#bcc9d9; font-size:13px; line-height:1.85; }
+    .media-function-list { display:grid; gap:9px; margin-top:4px; }
+    .media-function-item { padding:10px 12px; border-radius:9px; background:#0a121d; border:1px solid #1e2c40; }
+    .media-function-item b { display:block; font-size:12px; margin-bottom:2px; }
+    .media-function-item span { color:var(--muted); font-size:11px; }
+    .story-quote {
+      font-size:18px !important;
+      color:#e8f0fb !important;
+      font-family:Georgia,"Times New Roman",serif;
+      line-height:1.75 !important;
+    }
+    .media-links-placeholder {
+      margin-top:16px;
+      display:inline-flex;
+      align-items:center;
+      gap:7px;
+      color:var(--muted);
+      font-size:11px;
+      border:1px dashed #354861;
+      border-radius:9px;
+      padding:9px 11px;
+    }
+
+    .chart-focus-price { color:var(--gold); font-size:12px; font-weight:800; margin-left:auto; }
+
+    /* Fake landscape full-chart mode for phones */
+    body.chart-focus { overflow:hidden; }
+    body.chart-focus header,
+    body.chart-focus .app-dock,
+    body.chart-focus #view-strength,
+    body.chart-focus #view-media,
+    body.chart-focus #view-home > .benchmark-bar,
+    body.chart-focus #view-home > .top-summary,
+    body.chart-focus #view-home > .detail-panel,
+    body.chart-focus #view-home > .extra-section,
+    body.chart-focus #view-home > .workspace > aside { display:none !important; }
+    body.chart-focus #view-home { display:block !important; }
+    body.chart-focus #view-home > .workspace { display:block !important; padding:0 !important; }
+    body.chart-focus .chart-box {
+      position:fixed;
+      z-index:9999;
+      left:50%;
+      top:50%;
+      margin:0;
+      border-radius:0;
+      display:flex;
+      flex-direction:column;
+      background:#07101a;
+    }
+    body.chart-focus .chart-box .panel-head { flex:0 0 auto; }
+    body.chart-focus .chart-box .chart-controls { flex:0 0 auto; }
+    body.chart-focus .chart-box .chart-container { flex:1 1 auto; height:auto !important; min-height:0; }
+    body.chart-focus .chart-box .chart-quickbar { display:none !important; }
+    body.chart-focus .chart-controls .ctrl-group:nth-child(2) { display:none !important; }
+    body.chart-focus .chart-controls { display:grid; grid-template-columns:1fr auto; gap:8px; align-items:center; }
+    body.chart-focus .alert-controls { margin:0; display:flex; gap:5px; }
+
+    @media (max-width: 900px) and (orientation: portrait) {
+      body.chart-focus .chart-box {
+        width:100vh;
+        width:100dvh;
+        height:100vw;
+        height:100dvw;
+        transform:translate(-50%,-50%) rotate(90deg);
+      }
+    }
+    @media (max-width: 900px) and (orientation: landscape) {
+      body.chart-focus .chart-box {
+        width:100vw;
+        width:100dvw;
+        height:100vh;
+        height:100dvh;
+        transform:translate(-50%,-50%);
+      }
+    }
+
+    @media (max-width: 720px) {
+      body { padding-bottom:72px; }
+      .app-dock {
+        bottom:0;
+        width:100%;
+        max-width:none;
+        border-left:0;
+        border-right:0;
+        border-bottom:0;
+        border-radius:14px 14px 0 0;
+        padding:5px 8px calc(5px + env(safe-area-inset-bottom));
+      }
+      .dock-btn { min-height:41px; font-size:11px; }
+      .dock-btn small { font-size:7px; }
+
+      /* Main view: BTC / ETH are tiny jump buttons, not cards */
+      #view-home > .benchmark-bar {
+        grid-template-columns:auto auto;
+        justify-content:start;
+        gap:4px;
+        margin:0 0 4px;
+      }
+      #view-home > .benchmark-bar button.benchmark-card {
+        min-width:48px;
+        min-height:28px;
+        padding:4px 8px;
+        border-radius:999px;
+      }
+      #view-home > .benchmark-bar button.benchmark-card strong,
+      #view-home > .benchmark-bar button.benchmark-card .benchmark-sub { display:none !important; }
+      #view-home > .benchmark-bar .benchmark-bias { display:none !important; }
+      #view-home > .benchmark-bar .benchmark-card label { font-size:9px; }
+
+      .strength-page, .media-page { padding:3px 0 28px; }
+      .page-hero { padding:14px 2px 12px; margin-bottom:10px; }
+      .page-hero h1 { font-size:21px; }
+      .page-hero p { font-size:10px; line-height:1.55; }
+      .strength-grid { grid-template-columns:1fr; gap:9px; }
+      .strength-card { padding:15px 14px; min-height:220px; border-radius:13px; }
+      .strength-head h2 { font-size:14px; }
+      .strength-head p { font-size:9px; }
+      .strength-state { font-size:8px; padding:4px 7px; }
+      .strength-value { font-size:43px; margin:17px 0 14px; }
+      .strength-track { height:10px; }
+      .strength-needle { height:20px; top:-5px; }
+      .strength-scale { font-size:8px; margin-top:7px; }
+      .strength-note { font-size:9px; margin-top:13px; padding-top:10px; }
+      .strength-explain { margin-top:9px; padding:11px 12px; font-size:9px; }
+
+      .media-intro { grid-template-columns:54px 1fr; gap:12px; padding:18px 15px; }
+      .media-logo { width:54px; height:54px; border-radius:14px; }
+      .media-logo img { width:44px; height:44px; }
+      .media-logo-fallback { font-size:20px; }
+      .media-intro h1 { font-size:20px; margin-bottom:4px; }
+      .media-intro p { font-size:10px; line-height:1.55; }
+      .media-sections { grid-template-columns:1fr; }
+      .media-section, .media-section:nth-child(odd) { padding:16px 15px; border-right:0; }
+      .media-section h2 { font-size:13px; }
+      .media-section p { font-size:10px; line-height:1.75; }
+      .media-function-item { padding:8px 9px; }
+      .media-function-item b { font-size:10px; }
+      .media-function-item span { font-size:9px; }
+      .story-quote { font-size:14px !important; }
+      .chart-focus-price { font-size:9px; }
+      #btn-chart-fullscreen::after { content:""; }
+    }
+
   </style>
 </head>
 <body>
@@ -659,7 +951,7 @@
   <div class="wrap nav">
     <a class="brand" href="#">
       <img class="brand-logo" src="ox-logo.png" alt="OX Logo" onerror="this.style.display='none'">
-      <span>OX 幣種篩選器 <small style="font-size:12px;color:var(--gold);font-weight:600">v2.6 Mobile Compact</small></span>
+      <span>OX 幣種篩選器 <small style="font-size:12px;color:var(--gold);font-weight:600">v3.0 · 主頁 / 強弱 / 媒體</small></span>
     </a>
     <div class="nav-stats">
       <div class="live"><i class="dot" id="dot"></i><span id="scan-status">全市場輪巡佇列準備中…</span></div>
@@ -669,6 +961,8 @@
 </header>
 
 <main class="wrap" style="padding-top:16px;padding-bottom:40px">
+
+  <section class="app-view active" id="view-home" data-app-view="home">
 
   <section class="benchmark-bar" aria-label="市場基準">
     <button class="benchmark-card" type="button" data-benchmark-symbol="BTCUSDT">
@@ -724,6 +1018,7 @@
           <span class="pill" id="tf-pill">1D 日線</span>
         </h2>
         <div style="display:flex;gap:8px;align-items:center">
+          <span class="chart-focus-price" id="chart-focus-price">—</span>
           <button class="btn-act" id="btn-chart-fullscreen">全螢幕</button>
           <a class="btn-act" id="tv-ext-link" href="https://www.tradingview.com/" target="_blank" rel="noopener">TradingView ↗</a>
         </div>
@@ -820,7 +1115,108 @@
       </p>
     </div>
   </section>
+
+  </section><!-- /view-home -->
+
+  <section class="app-view" id="view-strength" data-app-view="strength">
+    <div class="strength-page">
+      <div class="page-hero">
+        <div class="page-kicker">OX Market Pulse</div>
+        <h1>市場強弱</h1>
+        <p>只看兩件事：BTC 現在強不強，以及小幣現在好不好做。內部會持續計算，但畫面只保留 0、50、100 三段。</p>
+      </div>
+
+      <div class="strength-grid">
+        <article class="strength-card">
+          <div class="strength-head">
+            <div><h2>BTC 強弱</h2><p>結構 · 資金 · 動能 · Trigger</p></div>
+            <span class="strength-state" id="btc-strength-state">中</span>
+          </div>
+          <div class="strength-value" id="btc-strength-value">50</div>
+          <div class="strength-meter">
+            <div class="strength-track"><i class="strength-needle" id="btc-strength-needle" style="left:50%"></i></div>
+            <div class="strength-scale"><span><b>0</b> 弱</span><span><b>50</b> 中</span><span><b>100</b> 強</span></div>
+          </div>
+          <div class="strength-note" id="btc-strength-note">等待 BTC 分析資料。</div>
+        </article>
+
+        <article class="strength-card">
+          <div class="strength-head">
+            <div><h2>小幣強弱</h2><p>流動性 · 型態廣度 · 結構 · 資金活躍</p></div>
+            <span class="strength-state" id="alt-strength-state">中</span>
+          </div>
+          <div class="strength-value" id="alt-strength-value">50</div>
+          <div class="strength-meter">
+            <div class="strength-track"><i class="strength-needle" id="alt-strength-needle" style="left:50%"></i></div>
+            <div class="strength-scale"><span><b>0</b> 弱</span><span><b>50</b> 中</span><span><b>100</b> 強</span></div>
+          </div>
+          <div class="strength-note" id="alt-strength-note">等待全市場輪巡累積足夠樣本。</div>
+        </article>
+      </div>
+
+      <div class="strength-explain">
+        <strong style="color:var(--ink)">怎麼看：</strong>
+        0 代表現在條件偏弱、好型態與有效流動性較少；50 代表市場混合、需要挑幣；100 代表資金、結構與型態廣度同步轉強。這是「市場環境」而不是買賣訊號。
+      </div>
+    </div>
+  </section>
+
+  <section class="app-view" id="view-media" data-app-view="media">
+    <div class="media-page">
+      <div class="media-card">
+        <div class="media-intro">
+          <div class="media-logo">
+            <img src="ox-logo.png" alt="OX Logo" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+            <span class="media-logo-fallback" style="display:none">OX</span>
+          </div>
+          <div>
+            <div class="page-kicker">OX Media</div>
+            <h1>OX</h1>
+            <p>把大量市場雜訊整理成真正值得花時間看的行情。這裡先作為 OX 的品牌與理念頁，之後再加入 YouTube、社群與其他媒體入口。</p>
+          </div>
+        </div>
+
+        <div class="media-sections">
+          <section class="media-section">
+            <h2>我是誰</h2>
+            <p>我是 OX 的創作者，也是一個長期把時間花在價格行為、趨勢、結構與資金流動上的交易者。OX 不是從「我想做一個網站」開始，而是從我每天都遇到的一個問題開始：市場裡有太多幣，但真正值得看的其實很少。</p>
+          </section>
+
+          <section class="media-section">
+            <h2>OX 是做什麼的</h2>
+            <p>OX 是一個市場篩選與看盤工具。它先從 Bitget 全市場裡找出有流動性、有資金活動、有結構、有相對強弱與 Setup 的標的，再用 T1、T2、T3 幫我縮小觀察範圍。最後的交易決策仍然交給人。</p>
+          </section>
+
+          <section class="media-section full">
+            <h2>核心功能</h2>
+            <div class="media-function-list">
+              <div class="media-function-item"><b>全市場輪巡</b><span>不是只看漲幅榜，而是持續掃描通過流動性門檻的 USDT 永續合約。</span></div>
+              <div class="media-function-item"><b>資金與結構篩選</b><span>成交額、放量、相對強弱、價格結構與 Setup 一起看，而不是只靠單一指標。</span></div>
+              <div class="media-function-item"><b>T1 / T2 / T3</b><span>把「已成熟」、「接近觸發」、「早期形成」分開，讓看盤有先後順序。</span></div>
+              <div class="media-function-item"><b>前高前低提醒</b><span>把真正重要的大級別結構位置變成可監控的提醒，而不是一直盯著螢幕。</span></div>
+            </div>
+          </section>
+
+          <section class="media-section full">
+            <h2>我的想法</h2>
+            <p class="story-quote">「市場最底層的東西不是指標，而是錢。錢進入市場，留下成交量、波動與價格行為；價格行為形成 K 線，K 線累積成結構，結構最後變成我們看到的趨勢。」</p>
+            <p style="margin-top:16px">我做 OX，不是希望它替人預測下一根 K 線，也不是要它告訴所有人現在該買什麼。我更想做的是把不值得看的行情先排除掉。因為交易裡，選擇不做什麼，常常跟選擇做什麼一樣重要。</p>
+            <p style="margin-top:12px">我真正想留下的只有四件事：<strong style="color:var(--ink)">有錢、有流動性、有結構，而且是我看得懂的行情。</strong> OX 的角色，就是把幾百個標的縮成少數值得我親自打開 K 線確認的候選。</p>
+            <div class="media-links-placeholder">媒體 / 社群連結將在下一階段加入</div>
+          </section>
+        </div>
+      </div>
+    </div>
+  </section>
+
 </main>
+
+
+<nav class="app-dock" aria-label="主要功能">
+  <button class="dock-btn active" type="button" data-view-target="home">主頁<small>篩選 / 圖表</small></button>
+  <button class="dock-btn" type="button" data-view-target="strength">強弱<small>市場環境</small></button>
+  <button class="dock-btn" type="button" data-view-target="media">媒體<small>OX / 理念</small></button>
+</nav>
 
 <div id="toast" class="toast" role="status"></div>
 
@@ -856,6 +1252,7 @@ const state = {
   symbol: "BTCUSDT",
   period: "1D",
   currentTab: "t1",
+  activeView: "home",
   
   tickers: [],
   contracts: new Map(),
@@ -1041,6 +1438,122 @@ function checkLevelAlerts() {
   }
 }
 
+
+
+function classifyStrength(raw) {
+  const v = clamp(Math.round(raw));
+  if (v < 40) return { display: 0, label: "弱", pos: 0 };
+  if (v < 65) return { display: 50, label: "中", pos: 50 };
+  return { display: 100, label: "強", pos: 100 };
+}
+
+function qualitative(v, low = 45, high = 65) {
+  if (!Number.isFinite(v)) return "等待";
+  if (v < low) return "偏弱";
+  if (v >= high) return "強";
+  return "普通";
+}
+
+function computeMarketStrength() {
+  const btc = state.btcTicker;
+  const btcA = state.analyzedCache.get("BTCUSDT");
+  let btcRaw = 50;
+  if (btcA) {
+    const momentum = clamp(50 + num(btc?.change24h) * 350);
+    btcRaw = clamp(
+      btcA.structScore * 0.35 +
+      btcA.flowScore * 0.30 +
+      btcA.setupScore * 0.15 +
+      momentum * 0.15 +
+      (btcA.triggerActive ? 100 : 50) * 0.05
+    );
+  } else if (btc) {
+    btcRaw = clamp(50 + num(btc.change24h) * 350);
+  }
+
+  const alts = Array.from(state.analyzedCache.values()).filter(c => !benchmarkSymbols.has(c.symbol));
+  let altRaw = 50;
+  let altParts = null;
+  if (alts.length >= 5) {
+    const avgLiq = alts.reduce((a,c)=>a+num(c.liqScore),0) / alts.length;
+    const setupBreadth = alts.filter(c => num(c.setupScore) >= 65).length / alts.length * 100;
+    const structureBreadth = alts.filter(c => num(c.structScore) >= 60).length / alts.length * 100;
+    const moneyBreadth = alts.filter(c => num(c.flowScore) >= 60 || c.isSurge).length / alts.length * 100;
+    const positiveBreadth = alts.filter(c => num(c.change24h) > 0).length / alts.length * 100;
+    altRaw = clamp(
+      avgLiq * 0.30 +
+      setupBreadth * 0.25 +
+      structureBreadth * 0.20 +
+      moneyBreadth * 0.15 +
+      positiveBreadth * 0.10
+    );
+    altParts = { avgLiq, setupBreadth, structureBreadth, moneyBreadth };
+  }
+
+  return { btcRaw, altRaw, btcA, altParts, sampleSize: alts.length };
+}
+
+function renderMarketStrength() {
+  const data = computeMarketStrength();
+  const btcS = classifyStrength(data.btcRaw);
+  const altS = classifyStrength(data.altRaw);
+
+  const setGauge = (prefix, s) => {
+    const value = document.getElementById(`${prefix}-strength-value`);
+    const stateEl = document.getElementById(`${prefix}-strength-state`);
+    const needle = document.getElementById(`${prefix}-strength-needle`);
+    if (value) value.textContent = s.display;
+    if (stateEl) stateEl.textContent = s.label;
+    if (needle) needle.style.left = `${s.pos}%`;
+  };
+  setGauge("btc", btcS);
+  setGauge("alt", altS);
+
+  const btcNote = document.getElementById("btc-strength-note");
+  if (btcNote) {
+    if (data.btcA) {
+      btcNote.innerHTML = `<strong>目前判讀：</strong>結構 ${qualitative(data.btcA.structScore)} · 資金 ${qualitative(data.btcA.flowScore)} · Setup ${qualitative(data.btcA.setupScore)}。`;
+    } else {
+      btcNote.textContent = "正在累積 BTC 結構與資金資料。";
+    }
+  }
+
+  const altNote = document.getElementById("alt-strength-note");
+  if (altNote) {
+    if (data.altParts) {
+      altNote.innerHTML = `<strong>目前判讀：</strong>流動性 ${qualitative(data.altParts.avgLiq)} · 型態廣度 ${qualitative(data.altParts.setupBreadth,35,60)} · 結構廣度 ${qualitative(data.altParts.structureBreadth,35,60)} · 資金活躍 ${qualitative(data.altParts.moneyBreadth,30,55)}。`;
+    } else {
+      altNote.textContent = `目前已分析 ${data.sampleSize} 檔，樣本還不夠，等待全市場輪巡。`;
+    }
+  }
+}
+
+function resizeChartToContainer() {
+  const container = document.getElementById("chart");
+  if (!state.chart || !container) return;
+  const rect = container.getBoundingClientRect();
+  if (rect.width > 0 && rect.height > 0) {
+    state.chart.applyOptions({ width: Math.round(rect.width), height: Math.round(rect.height) });
+  }
+}
+
+function setChartFocus(enabled) {
+  document.body.classList.toggle("chart-focus", enabled);
+  const btn = document.getElementById("btn-chart-fullscreen");
+  if (btn) btn.textContent = enabled ? "✕ 返回" : (window.matchMedia("(max-width: 900px)").matches ? "展開圖表" : "全螢幕");
+  setTimeout(() => { resizeChartToContainer(); updatePriceTimer(); }, 120);
+}
+
+function switchAppView(view) {
+  if (!['home','strength','media'].includes(view)) return;
+  if (document.body.classList.contains('chart-focus')) setChartFocus(false);
+  state.activeView = view;
+  document.querySelectorAll('[data-app-view]').forEach(el => el.classList.toggle('active', el.dataset.appView === view));
+  document.querySelectorAll('[data-view-target]').forEach(btn => btn.classList.toggle('active', btn.dataset.viewTarget === view));
+  if (view === 'strength') renderMarketStrength();
+  if (view === 'home') setTimeout(resizeChartToContainer, 80);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
 
 const BitgetAPI = {
   async fetchTickers() {
@@ -1555,6 +2068,7 @@ function rebuildTierLists() {
   document.getElementById("badge-t2").textContent = t2.length;
   document.getElementById("badge-t3").textContent = t3.length;
   document.getElementById("badge-surge").textContent = surge.length;
+  renderMarketStrength();
 }
 
 function renderCurrentTab() {
@@ -1977,6 +2491,8 @@ function updateHeaderHUD() {
 
   document.getElementById("ticker-pair").textContent = `${ticker.symbol} · Bitget 永續`;
   document.getElementById("price").textContent = fmtPrice(ticker.lastPr);
+  const focusPrice = document.getElementById("chart-focus-price");
+  if (focusPrice) focusPrice.textContent = fmtPrice(ticker.lastPr);
   
   const chgEl = document.getElementById("change");
   chgEl.textContent = fmtPct(ticker.change24h);
@@ -2021,6 +2537,9 @@ function switchSymbol(symbol) {
 }
 
 document.addEventListener("click", e => {
+  const viewBtn = e.target.closest("[data-view-target]");
+  if (viewBtn) { switchAppView(viewBtn.dataset.viewTarget); return; }
+
   const bench = e.target.closest("[data-benchmark-symbol]");
   if (bench) { switchSymbol(bench.dataset.benchmarkSymbol); return; }
   if (e.target.id === "btn-alert-high") { toggleLevelAlert("high"); return; }
@@ -2052,11 +2571,12 @@ document.addEventListener("click", e => {
   }
 
   if (e.target.id === "btn-chart-fullscreen") {
-    const box = document.querySelector(".chart-box");
-    if (!document.fullscreenElement) {
-      box.requestFullscreen?.();
+    if (window.matchMedia("(max-width: 900px)").matches) {
+      setChartFocus(!document.body.classList.contains("chart-focus"));
     } else {
-      document.exitFullscreen?.();
+      const box = document.querySelector(".chart-box");
+      if (!document.fullscreenElement) box.requestFullscreen?.();
+      else document.exitFullscreen?.();
     }
     return;
   }
@@ -2072,15 +2592,29 @@ document.getElementById("chk-vol").addEventListener("change", e => state.volumeS
 document.getElementById("chk-ox-markers").addEventListener("change", () => renderChartData(state.candleData, false));
 
 window.addEventListener("DOMContentLoaded", () => {
+  const fullscreenBtn = document.getElementById("btn-chart-fullscreen");
+  if (fullscreenBtn && window.matchMedia("(max-width: 900px)").matches) fullscreenBtn.textContent = "展開圖表";
   initChart();
   loadSymbolCandles(true);
   refreshMarketTickers();
   renderBenchmarkBar();
+  renderMarketStrength();
   updateAlertButtons();
   setInterval(refreshMarketTickers, CONFIG.tickerRefreshMs);
   setInterval(updatePriceTimer, 1000);
   setInterval(checkLevelAlerts, 5000);
 });
+
+window.addEventListener("resize", () => {
+  if (state.activeView === "home" || document.body.classList.contains("chart-focus")) {
+    setTimeout(resizeChartToContainer, 60);
+  }
+});
+
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape" && document.body.classList.contains("chart-focus")) setChartFocus(false);
+});
+
 </script>
 </body>
 </html>
