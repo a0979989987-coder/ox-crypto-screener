@@ -322,6 +322,7 @@
     .chart-quickitem { background:#0b1420; padding:8px 10px; min-width:0; }
     .chart-quickitem label { display:block; color:var(--muted); font-size:9px; margin-bottom:2px; }
     .chart-quickitem strong { display:block; font-size:11px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .mobile-coin-volume { display:none; }
 
     .detail-panel { margin-top:12px; }
     .detail-grid {
@@ -376,19 +377,20 @@
       .benchmark-card strong { font-size:10px; }
       .benchmark-sub { font-size:7px; gap:4px; }
 
-      .top-summary { grid-template-columns: 1.2fr .8fr .8fr; gap:5px; margin:0 0 7px; }
-      .top-summary .metric-card { padding:7px 8px; border-radius:9px; }
+      .top-summary { grid-template-columns: 1fr 1fr; gap:6px; margin:0 0 8px; }
+      .top-summary .metric-card { padding:9px 10px; border-radius:10px; min-width:0; }
+      .top-summary .metric-card:first-child { grid-column:1 / -1; }
       .top-summary .metric-card:nth-child(4),
       .top-summary .metric-card:nth-child(5) { display:none; }
-      .metric-card label { font-size:7px; }
-      .metric-card strong { font-size:12px; }
-      .metric-card:first-child strong { font-size:16px; }
-      .metric-card small { font-size:7px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+      .metric-card label { font-size:8px; line-height:1.3; }
+      .metric-card strong { font-size:15px; line-height:1.25; letter-spacing:.01em; }
+      .metric-card:first-child strong { font-size:20px; }
+      .metric-card small { font-size:8px; line-height:1.35; white-space:normal; overflow:visible; text-overflow:clip; margin-top:5px; }
 
-      .workspace { grid-template-columns:minmax(0,58%) minmax(0,42%); gap:7px; align-items:stretch; }
+      .workspace { grid-template-columns:minmax(0,66%) minmax(0,34%); gap:6px; align-items:stretch; }
       .panel { border-radius:10px; }
       .panel-head { padding:7px 8px; gap:5px; }
-      .panel-title { font-size:11px; gap:4px; line-height:1.25; }
+      .panel-title { font-size:10.5px; gap:4px; line-height:1.35; }
       .pill { font-size:8px; padding:2px 5px; }
       .chart-box { min-width:0; }
       .chart-box .panel-head a#tv-ext-link { display:none; }
@@ -402,30 +404,32 @@
       .alert-controls { margin-top:5px; display:grid; grid-template-columns:1fr 1fr; gap:4px; }
       .alert-btn { padding:7px 5px; font-size:8.5px; min-height:34px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; touch-action:manipulation; }
 
-      .chart-container { height:342px; }
+      .chart-container { height:360px; }
       .price-timer { min-width:58px; font-size:8px; padding:2px 3px; }
       .price-timer small { font-size:7px; }
-      .chart-quickbar { grid-template-columns:1fr 1fr; }
-      .chart-quickitem { padding:5px 6px; }
-      .chart-quickitem label { font-size:7px; line-height:1.25; }
-      .chart-quickitem strong { font-size:9px; line-height:1.25; }
+      .chart-quickbar { grid-template-columns:repeat(3,1fr); }
+      .chart-quickitem.quick-volume-item { display:none; }
+      .chart-quickitem { padding:7px 7px; }
+      .chart-quickitem label { font-size:7.5px; line-height:1.3; }
+      .chart-quickitem strong { font-size:10px; line-height:1.3; }
 
       .workspace > aside { min-width:0; display:flex; flex-direction:column; }
-      .workspace > aside .panel-head { min-height:39px; }
-      .scanner-tabs { padding:5px; gap:2px; display:grid; grid-template-columns:repeat(4,1fr); overflow:visible; }
-      .tab-btn { padding:7px 2px; font-size:8.5px; border-radius:6px; min-height:30px; touch-action:manipulation; }
+      .workspace > aside .panel-head { min-height:42px; padding:8px 7px; }
+      .scanner-tabs { padding:5px 4px; gap:2px; display:grid; grid-template-columns:repeat(4,1fr); overflow:visible; }
+      .tab-btn { padding:7px 1px; font-size:8px; border-radius:6px; min-height:31px; touch-action:manipulation; }
       .tab-btn[data-tab="gainers"], .tab-btn[data-tab="losers"] { display:none; }
       .tab-badge { display:none; }
-      .scanner-body { max-height:430px; flex:1; overflow-y:auto; }
-      .coin-card { padding:9px 7px; min-height:74px; }
+      .scanner-body { max-height:448px; flex:1; overflow-y:auto; }
+      .coin-card { padding:10px 7px; min-height:70px; }
       .coin-top { margin-bottom:2px; }
-      .coin-title { gap:4px; font-size:10px; min-width:0; line-height:1.25; }
-      .coin-title > span:nth-child(2) { max-width:66px; overflow:hidden; text-overflow:ellipsis; }
-      .coin-ox { font-size:9px; white-space:nowrap; }
-      .coin-mid { font-size:8.5px; margin-bottom:3px; display:block; line-height:1.35; }
-      .coin-mid .meta { display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-      .coin-mid > span:last-child { display:block; margin-top:2px; }
-      .coin-reason { padding:5px 6px; font-size:8px; line-height:1.35; }
+      .coin-title { gap:3px; font-size:9.5px; min-width:0; line-height:1.35; }
+      .coin-title > span:nth-child(2) { max-width:50px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+      .coin-ox { font-size:8.5px; white-space:nowrap; }
+      .coin-mid { font-size:8.5px; margin:5px 0 0; display:block; line-height:1.4; }
+      .coin-mid .desktop-coin-meta { display:none; }
+      .mobile-coin-volume { display:block; color:#d6e2f1; font-size:8px; line-height:1.35; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+      .coin-mid > .coin-change { display:block; margin-top:3px; font-size:9px; }
+      .coin-reason { display:none; }
       .coin-reason > div:not(.setup-head) { display:none; }
       .score-pills { display:none; }
       .score-pill { font-size:7px; padding:1px 3px; }
@@ -436,6 +440,7 @@
       .detail-panel { margin-top:7px; }
       .detail-panel .panel-head { padding:7px 8px; }
       .detail-grid { grid-template-columns:repeat(4,1fr); }
+      .detail-volume-cell { display:none; }
       .detail-cell { padding:6px 6px; }
       .detail-cell label { font-size:6px; }
       .detail-cell strong { font-size:8px; }
@@ -555,7 +560,7 @@
       </div>
       <div class="chart-quickbar">
         <div class="chart-quickitem"><label>24H 漲跌</label><strong id="quick-change">—</strong></div>
-        <div class="chart-quickitem"><label>24H USDT 成交量</label><strong id="quick-volume">—</strong></div>
+        <div class="chart-quickitem quick-volume-item"><label>24H USDT 成交量</label><strong id="quick-volume">—</strong></div>
         <div class="chart-quickitem"><label>前高</label><strong id="quick-high">—</strong></div>
         <div class="chart-quickitem"><label>前低</label><strong id="quick-low">—</strong></div>
       </div>
@@ -598,7 +603,7 @@
       <div class="detail-cell"><label>Setup Progress</label><strong id="detail-progress-text">—</strong><div class="detail-progress"><i id="detail-progress-bar"></i></div></div>
       <div class="detail-cell"><label>Signal Confidence</label><strong id="detail-confidence">—</strong></div>
       <div class="detail-cell"><label>Trigger</label><strong id="detail-trigger">—</strong></div>
-      <div class="detail-cell"><label>24H USDT 成交量</label><strong id="detail-volume">—</strong></div>
+      <div class="detail-cell detail-volume-cell"><label>24H USDT 成交量</label><strong id="detail-volume">—</strong></div>
       <div class="detail-cell"><label>前高 / 前低</label><strong id="detail-levels">—</strong></div>
     </div>
     <div class="detail-reasons">
@@ -1401,8 +1406,9 @@ function renderCurrentTab() {
         <span class="coin-ox">OX ${c.oxScore}</span>
       </div>
       <div class="coin-mid">
-        <span class="meta">${status} · Fit ${fit ?? '—'} · 24H Vol ${fmtUsd(c.quoteVol)} USDT</span>
-        <span class="${c.change24h >= 0 ? 'positive' : 'negative'}" style="font-weight:700">${fmtPct(c.change24h)}</span>
+        <span class="meta desktop-coin-meta">${status} · Fit ${fit ?? '—'} · 24H Vol ${fmtUsd(c.quoteVol)} USDT</span>
+        <span class="mobile-coin-volume">24H 成交量 ${fmtUsd(c.quoteVol)} USDT</span>
+        <span class="coin-change ${c.change24h >= 0 ? 'positive' : 'negative'}" style="font-weight:700">${fmtPct(c.change24h)}</span>
       </div>
       <div class="coin-reason"><div class="setup-head">${c.setupName}</div><div>• ${c.reasons.join('</div><div>• ')}</div></div>
       <div class="score-pills">
@@ -1438,6 +1444,14 @@ function initChart() {
     },
     crosshair: { mode: LightweightCharts.CrosshairMode.Normal }
   });
+
+  // Mobile only: keep price-axis text compact so the chart has more usable candle space.
+  if (window.matchMedia("(max-width: 720px)").matches) {
+    state.chart.applyOptions({
+      layout: { fontSize: 9 },
+      rightPriceScale: { borderColor: "#223147", autoScale: true, scaleMargins: { top: 0.08, bottom: 0.25 } }
+    });
+  }
 
   state.candleSeries = state.chart.addCandlestickSeries({
     upColor: "#38c99b",
