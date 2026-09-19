@@ -358,83 +358,270 @@
     }
 
 
+    .mobile-bench-label, .coin-symbol-mobile { display:none; }
+
     /* Mobile-first split workstation: chart left / screener right */
     @media (max-width: 720px) {
-      .wrap { max-width:none; padding:0 8px; }
+      .wrap { max-width:none; padding:0 7px; }
       header { position:sticky; }
-      .nav { height:54px; gap:8px; }
-      .brand { font-size:14px; gap:7px; line-height:1.2; }
-      .brand-logo { width:30px; height:30px; }
-      .nav-stats { gap:5px; font-size:9px; min-width:0; }
-      #btn-force-rescan { padding:4px 6px; font-size:9px; }
-      .live { font-size:9px; max-width:94px; min-width:0; }
-      #scan-status { display:block; max-width:82px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+      .nav { height:52px; gap:7px; }
+      .brand { font-size:13px; gap:6px; line-height:1.15; }
+      .brand small { font-size:9px !important; }
+      .brand-logo { width:28px; height:28px; }
+      .nav-stats { gap:4px; font-size:8px; min-width:0; }
+      #btn-force-rescan { padding:4px 6px; font-size:8px; min-height:30px; }
+      .live { font-size:8px; max-width:74px; min-width:0; }
+      #scan-status { display:block; max-width:66px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 
-      main.wrap { padding-top:8px !important; }
-      .benchmark-bar { grid-template-columns:1fr 1fr 1fr; gap:5px; margin-bottom:7px; }
-      .benchmark-card { padding:7px 8px; border-radius:9px; }
-      .benchmark-card label { font-size:7px; }
-      .benchmark-card strong { font-size:10px; }
-      .benchmark-sub { font-size:7px; gap:4px; }
+      main.wrap { padding-top:6px !important; }
 
-      .top-summary { grid-template-columns: 1fr 1fr; gap:6px; margin:0 0 8px; }
-      .top-summary .metric-card { padding:9px 10px; border-radius:10px; min-width:0; }
-      .top-summary .metric-card:first-child { grid-column:1 / -1; }
+      /* Compact BTC / ETH benchmark buttons */
+      .benchmark-bar {
+        grid-template-columns:auto auto minmax(0,1fr);
+        gap:4px;
+        margin-bottom:6px;
+        align-items:stretch;
+      }
+      .benchmark-card {
+        border-radius:8px;
+        min-height:34px;
+        padding:5px 7px;
+      }
+      button.benchmark-card {
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        gap:5px;
+        min-width:76px;
+      }
+      .desktop-bench-label { display:none; }
+      .mobile-bench-label { display:inline; }
+      .benchmark-card label {
+        font-size:8px;
+        line-height:1;
+        margin:0;
+        white-space:nowrap;
+      }
+      .benchmark-card strong {
+        font-size:10px;
+        line-height:1.05;
+        margin:0;
+        white-space:nowrap;
+      }
+      button.benchmark-card .benchmark-sub { display:none; }
+      .benchmark-bias {
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        gap:5px;
+        padding:5px 6px;
+        min-width:0;
+      }
+      .benchmark-bias label { font-size:7px; }
+      .benchmark-bias strong { font-size:10px; }
+      .benchmark-bias .benchmark-sub { display:none; }
+
+      /* Current pair: make price the hero; remove secondary copy on mobile */
+      .top-summary {
+        grid-template-columns:1fr 1fr;
+        gap:5px;
+        margin:0 0 7px;
+      }
+      .top-summary .metric-card {
+        padding:7px 9px;
+        border-radius:9px;
+        min-width:0;
+      }
+      .top-summary .metric-card:first-child {
+        grid-column:1 / -1;
+        min-height:72px;
+        display:flex;
+        flex-direction:column;
+        justify-content:center;
+      }
       .top-summary .metric-card:nth-child(4),
       .top-summary .metric-card:nth-child(5) { display:none; }
-      .metric-card label { font-size:8px; line-height:1.3; }
-      .metric-card strong { font-size:15px; line-height:1.25; letter-spacing:.01em; }
-      .metric-card:first-child strong { font-size:20px; }
-      .metric-card small { font-size:8px; line-height:1.35; white-space:normal; overflow:visible; text-overflow:clip; margin-top:5px; }
+      .metric-card label {
+        font-size:8px;
+        line-height:1.2;
+        margin-bottom:4px;
+      }
+      .metric-card strong {
+        font-size:18px;
+        line-height:1.08;
+        letter-spacing:.01em;
+      }
+      .metric-card:first-child strong {
+        font-size:29px;
+        line-height:1.05;
+      }
+      .top-summary .metric-card small { display:none; }
 
-      .workspace { grid-template-columns:minmax(0,66%) minmax(0,34%); gap:6px; align-items:stretch; }
-      .panel { border-radius:10px; }
-      .panel-head { padding:7px 8px; gap:5px; }
-      .panel-title { font-size:10.5px; gap:4px; line-height:1.35; }
-      .pill { font-size:8px; padding:2px 5px; }
+      /* Give chart more room; screener becomes a compact rail */
+      .workspace {
+        grid-template-columns:minmax(0,70%) minmax(0,30%);
+        gap:5px;
+        align-items:stretch;
+      }
+      .panel { border-radius:9px; }
+      .panel-head { padding:7px 7px; gap:4px; }
+      .panel-title { font-size:10px; gap:3px; line-height:1.2; }
+      .pill { font-size:7px; padding:2px 4px; }
       .chart-box { min-width:0; }
       .chart-box .panel-head a#tv-ext-link { display:none; }
       #btn-chart-fullscreen { padding:4px 5px; font-size:7px; }
 
-      .chart-controls { padding:5px 6px; display:block; }
-      .chart-controls .ctrl-group { gap:3px; flex-wrap:nowrap; overflow-x:auto; scrollbar-width:none; }
+      .chart-controls { padding:5px 5px; display:block; }
+      .chart-controls .ctrl-group {
+        gap:3px;
+        flex-wrap:nowrap;
+        overflow-x:auto;
+        scrollbar-width:none;
+      }
       .chart-controls .ctrl-group::-webkit-scrollbar { display:none; }
-      .btn-tf, .btn-act { padding:5px 7px; font-size:8.5px; border-radius:6px; min-height:28px; touch-action:manipulation; }
-      .toggle-lbl { font-size:8.5px; white-space:nowrap; line-height:1.3; }
-      .alert-controls { margin-top:5px; display:grid; grid-template-columns:1fr 1fr; gap:4px; }
-      .alert-btn { padding:7px 5px; font-size:8.5px; min-height:34px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; touch-action:manipulation; }
+      .btn-tf, .btn-act {
+        padding:5px 6px;
+        font-size:8px;
+        border-radius:6px;
+        min-height:28px;
+        touch-action:manipulation;
+      }
+      .toggle-lbl {
+        font-size:8px;
+        white-space:nowrap;
+        line-height:1.25;
+      }
+      .alert-controls {
+        margin-top:4px;
+        display:grid;
+        grid-template-columns:1fr 1fr;
+        gap:4px;
+      }
+      .alert-btn {
+        padding:7px 4px;
+        font-size:8px;
+        min-height:33px;
+        white-space:nowrap;
+        overflow:hidden;
+        text-overflow:ellipsis;
+        touch-action:manipulation;
+      }
 
-      .chart-container { height:360px; }
-      .price-timer { min-width:58px; font-size:8px; padding:2px 3px; }
+      .chart-container { height:370px; }
+      .price-timer { min-width:54px; font-size:8px; padding:2px 3px; }
       .price-timer small { font-size:7px; }
       .chart-quickbar { grid-template-columns:repeat(3,1fr); }
       .chart-quickitem.quick-volume-item { display:none; }
-      .chart-quickitem { padding:7px 7px; }
-      .chart-quickitem label { font-size:7.5px; line-height:1.3; }
-      .chart-quickitem strong { font-size:10px; line-height:1.3; }
+      .chart-quickitem { padding:6px 6px; }
+      .chart-quickitem label { font-size:7px; line-height:1.2; }
+      .chart-quickitem strong { font-size:9px; line-height:1.2; }
 
-      .workspace > aside { min-width:0; display:flex; flex-direction:column; }
-      .workspace > aside .panel-head { min-height:42px; padding:8px 7px; }
-      .scanner-tabs { padding:5px 4px; gap:2px; display:grid; grid-template-columns:repeat(4,1fr); overflow:visible; }
-      .tab-btn { padding:7px 1px; font-size:8px; border-radius:6px; min-height:31px; touch-action:manipulation; }
-      .tab-btn[data-tab="gainers"], .tab-btn[data-tab="losers"] { display:none; }
+      /* Screener rail */
+      .workspace > aside {
+        min-width:0;
+        display:flex;
+        flex-direction:column;
+      }
+      .workspace > aside .panel-head {
+        min-height:38px;
+        padding:7px 6px;
+      }
+      .workspace > aside .panel-title { font-size:9.5px; }
+      #pool-count { display:none; }
+
+      .scanner-tabs {
+        padding:4px 3px;
+        gap:1px;
+        display:grid;
+        grid-template-columns:repeat(4,1fr);
+        overflow:visible;
+      }
+      .tab-btn {
+        padding:6px 0;
+        font-size:7.5px;
+        border-radius:5px;
+        min-height:29px;
+        touch-action:manipulation;
+      }
+      .tab-btn[data-tab="gainers"],
+      .tab-btn[data-tab="losers"] { display:none; }
       .tab-badge { display:none; }
-      .scanner-body { max-height:448px; flex:1; overflow-y:auto; }
-      .coin-card { padding:10px 7px; min-height:70px; }
-      .coin-top { margin-bottom:2px; }
-      .coin-title { gap:3px; font-size:9.5px; min-width:0; line-height:1.35; }
-      .coin-title > span:nth-child(2) { max-width:50px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-      .coin-ox { font-size:8.5px; white-space:nowrap; }
-      .coin-mid { font-size:8.5px; margin:5px 0 0; display:block; line-height:1.4; }
+
+      .scanner-body {
+        max-height:470px;
+        flex:1;
+        overflow-y:auto;
+      }
+      .coin-card {
+        padding:9px 6px;
+        min-height:72px;
+      }
+      .coin-top {
+        margin-bottom:3px;
+        align-items:flex-start;
+        gap:3px;
+      }
+      .coin-title {
+        gap:3px;
+        font-size:10px;
+        min-width:0;
+        line-height:1.25;
+        flex:1;
+      }
+      .coin-title > span:first-child {
+        font-size:8px !important;
+        flex:0 0 auto;
+      }
+      .coin-symbol-full { display:none; }
+      .coin-symbol-mobile {
+        display:inline;
+        font-size:11px;
+        font-weight:850;
+        color:var(--ink);
+        max-width:none;
+        overflow:visible;
+        text-overflow:clip;
+        white-space:nowrap;
+      }
+
+      /* On mobile prioritise coin name + OX; badges caused the name to disappear */
+      .coin-title > .badge { display:none; }
+      .coin-ox {
+        font-size:8px;
+        line-height:1.2;
+        white-space:nowrap;
+        flex:0 0 auto;
+      }
+      .coin-mid {
+        font-size:8px;
+        margin:5px 0 0;
+        display:block;
+        line-height:1.3;
+      }
       .coin-mid .desktop-coin-meta { display:none; }
-      .mobile-coin-volume { display:block; color:#d6e2f1; font-size:8px; line-height:1.35; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-      .coin-mid > .coin-change { display:block; margin-top:3px; font-size:9px; }
-      .coin-reason { display:none; }
-      .coin-reason > div:not(.setup-head) { display:none; }
+      .mobile-coin-volume {
+        display:block;
+        color:#d6e2f1;
+        font-size:7.5px;
+        line-height:1.3;
+        white-space:nowrap;
+        overflow:hidden;
+        text-overflow:ellipsis;
+      }
+      .coin-mid > .coin-change {
+        display:block;
+        margin-top:4px;
+        font-size:9px;
+        line-height:1.2;
+      }
+      .coin-reason,
       .score-pills { display:none; }
-      .score-pill { font-size:7px; padding:1px 3px; }
-      .badge { font-size:6px; padding:1px 3px; }
-      .trad-row { grid-template-columns:18px 1.2fr; padding:7px 6px; font-size:7px; }
+
+      .trad-row {
+        grid-template-columns:16px 1fr;
+        padding:7px 5px;
+        font-size:7px;
+      }
       .trad-row > div:nth-last-child(-n+2) { display:none; }
 
       .detail-panel { margin-top:7px; }
@@ -456,6 +643,14 @@
       .mobile-only { display:block; }
     }
 
+    @media (max-width: 390px) {
+      .workspace { grid-template-columns:minmax(0,69%) minmax(0,31%); }
+      .coin-symbol-mobile { font-size:10px; }
+      .coin-card { padding-left:5px; padding-right:5px; }
+      button.benchmark-card { min-width:70px; padding-left:5px; padding-right:5px; }
+      .metric-card:first-child strong { font-size:27px; }
+    }
+
   </style>
 </head>
 <body>
@@ -464,7 +659,7 @@
   <div class="wrap nav">
     <a class="brand" href="#">
       <img class="brand-logo" src="ox-logo.png" alt="OX Logo" onerror="this.style.display='none'">
-      <span>OX 幣種篩選器 <small style="font-size:12px;color:var(--gold);font-weight:600">v2.4 Mobile Refined</small></span>
+      <span>OX 幣種篩選器 <small style="font-size:12px;color:var(--gold);font-weight:600">v2.6 Mobile Compact</small></span>
     </a>
     <div class="nav-stats">
       <div class="live"><i class="dot" id="dot"></i><span id="scan-status">全市場輪巡佇列準備中…</span></div>
@@ -477,12 +672,12 @@
 
   <section class="benchmark-bar" aria-label="市場基準">
     <button class="benchmark-card" type="button" data-benchmark-symbol="BTCUSDT">
-      <label>BTC 市場基準</label>
+      <label><span class="desktop-bench-label">BTC 市場基準</span><span class="mobile-bench-label">BTC</span></label>
       <strong id="bench-btc-price">—</strong>
       <div class="benchmark-sub"><span id="bench-btc-change">—</span><span id="bench-btc-trend">等待分析</span></div>
     </button>
     <button class="benchmark-card" type="button" data-benchmark-symbol="ETHUSDT">
-      <label>ETH 市場基準</label>
+      <label><span class="desktop-bench-label">ETH 市場基準</span><span class="mobile-bench-label">ETH</span></label>
       <strong id="bench-eth-price">—</strong>
       <div class="benchmark-sub"><span id="bench-eth-change">—</span><span id="bench-eth-trend">等待分析</span></div>
     </button>
@@ -1398,7 +1593,7 @@ function renderCurrentTab() {
       <div class="coin-top">
         <span class="coin-title">
           <span style="color:var(--muted);font-size:12px">#${idx + 1}</span>
-          <span>${c.symbol}</span>
+          <span class="coin-symbol-full">${c.symbol}</span><span class="coin-symbol-mobile">${c.symbol.replace(/USDT$/, "")}</span>
           <span class="badge badge-${c.side === 'SHORT' ? 'short' : 'long'}">${c.side}</span>
           <span class="badge badge-${displayTier}">${displayTier.toUpperCase()}</span>
           ${c.isSurge ? '<span class="badge badge-surge">🔥</span>' : ''}
