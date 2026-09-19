@@ -362,11 +362,12 @@
       .wrap { max-width:none; padding:0 8px; }
       header { position:sticky; }
       .nav { height:54px; gap:8px; }
-      .brand { font-size:13px; gap:7px; }
+      .brand { font-size:14px; gap:7px; line-height:1.2; }
       .brand-logo { width:30px; height:30px; }
-      .nav-stats { gap:6px; font-size:9px; }
+      .nav-stats { gap:5px; font-size:9px; min-width:0; }
       #btn-force-rescan { padding:4px 6px; font-size:9px; }
-      .live { font-size:9px; max-width:140px; }
+      .live { font-size:9px; max-width:94px; min-width:0; }
+      #scan-status { display:block; max-width:82px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 
       main.wrap { padding-top:8px !important; }
       .benchmark-bar { grid-template-columns:1fr 1fr 1fr; gap:5px; margin-bottom:7px; }
@@ -384,11 +385,11 @@
       .metric-card:first-child strong { font-size:16px; }
       .metric-card small { font-size:7px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 
-      .workspace { grid-template-columns:minmax(0,62%) minmax(0,38%); gap:6px; align-items:stretch; }
+      .workspace { grid-template-columns:minmax(0,58%) minmax(0,42%); gap:7px; align-items:stretch; }
       .panel { border-radius:10px; }
       .panel-head { padding:7px 8px; gap:5px; }
-      .panel-title { font-size:10px; gap:4px; }
-      .pill { font-size:7px; padding:2px 4px; }
+      .panel-title { font-size:11px; gap:4px; line-height:1.25; }
+      .pill { font-size:8px; padding:2px 5px; }
       .chart-box { min-width:0; }
       .chart-box .panel-head a#tv-ext-link { display:none; }
       #btn-chart-fullscreen { padding:4px 5px; font-size:7px; }
@@ -396,38 +397,38 @@
       .chart-controls { padding:5px 6px; display:block; }
       .chart-controls .ctrl-group { gap:3px; flex-wrap:nowrap; overflow-x:auto; scrollbar-width:none; }
       .chart-controls .ctrl-group::-webkit-scrollbar { display:none; }
-      .btn-tf, .btn-act { padding:4px 5px; font-size:7px; border-radius:5px; }
-      .toggle-lbl { font-size:7px; white-space:nowrap; }
+      .btn-tf, .btn-act { padding:5px 7px; font-size:8.5px; border-radius:6px; min-height:28px; touch-action:manipulation; }
+      .toggle-lbl { font-size:8.5px; white-space:nowrap; line-height:1.3; }
       .alert-controls { margin-top:5px; display:grid; grid-template-columns:1fr 1fr; gap:4px; }
-      .alert-btn { padding:5px 3px; font-size:7px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+      .alert-btn { padding:7px 5px; font-size:8.5px; min-height:34px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; touch-action:manipulation; }
 
-      .chart-container { height:326px; }
+      .chart-container { height:342px; }
       .price-timer { min-width:58px; font-size:8px; padding:2px 3px; }
       .price-timer small { font-size:7px; }
       .chart-quickbar { grid-template-columns:1fr 1fr; }
       .chart-quickitem { padding:5px 6px; }
-      .chart-quickitem label { font-size:6px; }
-      .chart-quickitem strong { font-size:8px; }
+      .chart-quickitem label { font-size:7px; line-height:1.25; }
+      .chart-quickitem strong { font-size:9px; line-height:1.25; }
 
       .workspace > aside { min-width:0; display:flex; flex-direction:column; }
       .workspace > aside .panel-head { min-height:39px; }
       .scanner-tabs { padding:5px; gap:2px; display:grid; grid-template-columns:repeat(4,1fr); overflow:visible; }
-      .tab-btn { padding:5px 1px; font-size:7px; border-radius:5px; }
+      .tab-btn { padding:7px 2px; font-size:8.5px; border-radius:6px; min-height:30px; touch-action:manipulation; }
       .tab-btn[data-tab="gainers"], .tab-btn[data-tab="losers"] { display:none; }
       .tab-badge { display:none; }
-      .scanner-body { max-height:404px; flex:1; overflow-y:auto; }
-      .coin-card { padding:7px 6px; }
+      .scanner-body { max-height:430px; flex:1; overflow-y:auto; }
+      .coin-card { padding:9px 7px; min-height:74px; }
       .coin-top { margin-bottom:2px; }
-      .coin-title { gap:3px; font-size:9px; min-width:0; }
-      .coin-title > span:nth-child(2) { max-width:56px; overflow:hidden; text-overflow:ellipsis; }
-      .coin-ox { font-size:8px; white-space:nowrap; }
-      .coin-mid { font-size:7px; margin-bottom:2px; display:block; }
+      .coin-title { gap:4px; font-size:10px; min-width:0; line-height:1.25; }
+      .coin-title > span:nth-child(2) { max-width:66px; overflow:hidden; text-overflow:ellipsis; }
+      .coin-ox { font-size:9px; white-space:nowrap; }
+      .coin-mid { font-size:8.5px; margin-bottom:3px; display:block; line-height:1.35; }
       .coin-mid .meta { display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
       .coin-mid > span:last-child { display:block; margin-top:2px; }
-      .coin-reason { padding:4px 5px; font-size:7px; line-height:1.3; }
+      .coin-reason { padding:5px 6px; font-size:8px; line-height:1.35; }
       .coin-reason > div:not(.setup-head) { display:none; }
-      .score-pills { margin-top:3px; gap:2px; }
-      .score-pill { font-size:6px; padding:1px 3px; }
+      .score-pills { display:none; }
+      .score-pill { font-size:7px; padding:1px 3px; }
       .badge { font-size:6px; padding:1px 3px; }
       .trad-row { grid-template-columns:18px 1.2fr; padding:7px 6px; font-size:7px; }
       .trad-row > div:nth-last-child(-n+2) { display:none; }
@@ -458,7 +459,7 @@
   <div class="wrap nav">
     <a class="brand" href="#">
       <img class="brand-logo" src="ox-logo.png" alt="OX Logo" onerror="this.style.display='none'">
-      <span>OX 幣種篩選器 <small style="font-size:12px;color:var(--gold);font-weight:600">v2.3 Mobile First</small></span>
+      <span>OX 幣種篩選器 <small style="font-size:12px;color:var(--gold);font-weight:600">v2.4 Mobile Refined</small></span>
     </a>
     <div class="nav-stats">
       <div class="live"><i class="dot" id="dot"></i><span id="scan-status">全市場輪巡佇列準備中…</span></div>
@@ -562,15 +563,15 @@
 
     <aside class="panel">
       <div class="panel-head">
-        <h3 class="panel-title">OX 決策篩選池</h3>
+        <h3 class="panel-title">OX 篩選</h3>
         <span class="pill" id="pool-count">掃描中…</span>
       </div>
 
       <div class="scanner-tabs" role="tablist">
-        <button class="tab-btn active" data-tab="t1">T1 首選 <span class="tab-badge" id="badge-t1">0</span></button>
-        <button class="tab-btn" data-tab="t2">T2 觀察 <span class="tab-badge" id="badge-t2">0</span></button>
-        <button class="tab-btn" data-tab="t3">T3 儲備 <span class="tab-badge" id="badge-t3">0</span></button>
-        <button class="tab-btn" data-tab="surge">🔥 異動資金 <span class="tab-badge" id="badge-surge">0</span></button>
+        <button class="tab-btn active" data-tab="t1">T1 <span class="tab-badge" id="badge-t1">0</span></button>
+        <button class="tab-btn" data-tab="t2">T2 <span class="tab-badge" id="badge-t2">0</span></button>
+        <button class="tab-btn" data-tab="t3">T3 <span class="tab-badge" id="badge-t3">0</span></button>
+        <button class="tab-btn" data-tab="surge">🔥 <span class="tab-badge" id="badge-surge">0</span></button>
         <button class="tab-btn" data-tab="gainers">漲幅榜</button>
         <button class="tab-btn" data-tab="losers">跌幅榜</button>
       </div>
@@ -607,7 +608,7 @@
     <div class="alert-state-row">
       <span class="alert-chip" id="detail-high-alert">🔕 前高提醒：未設定</span>
       <span class="alert-chip" id="detail-low-alert">🔕 前低提醒：未設定</span>
-      <span class="alert-chip">提醒優先支援 4H / 1D / 1W</span>
+      <span class="alert-chip">小級別看圖時，提醒自動使用 4H 結構關鍵位</span>
     </div>
   </section>
 
@@ -678,7 +679,7 @@ const state = {
   abortCtrl: null,
   keyHighLine: null,
   keyLowLine: null,
-  currentLevels: { high: 0, low: 0 },
+  currentLevels: { high: 0, low: 0, sourcePeriod: "4H", highTime: 0, lowTime: 0 },
   audioCtx: null
 };
 
@@ -699,8 +700,9 @@ const fmtPct = v => `${num(v) >= 0 ? "+" : ""}${(num(v) * 100).toFixed(2)}%`;
 
 const clamp = (v, min = 0, max = 100) => Math.max(min, Math.min(max, v));
 const benchmarkSymbols = new Set(["BTCUSDT", "ETHUSDT"]);
-const isAlertTimeframe = () => ["4H", "1D", "1W"].includes(state.period);
-const alertStorageKey = (kind, symbol = state.symbol, period = state.period) => `ox-level-alert:${symbol}:${period}:${kind}`;
+// 關鍵位以大級別為主：正在看 4H/1D/1W 就沿用該級別；看更小級別時自動參考 4H。
+const getKeyLevelPeriod = () => ["4H", "1D", "1W"].includes(state.period) ? state.period : "4H";
+const alertStorageKey = (kind, symbol = state.symbol, period = getKeyLevelPeriod()) => `ox-level-alert:${symbol}:${period}:${kind}`;
 
 function getStoredAlert(kind, symbol = state.symbol, period = state.period) {
   try { return JSON.parse(localStorage.getItem(alertStorageKey(kind, symbol, period)) || "null"); }
@@ -772,39 +774,45 @@ function updateAlertButtons() {
   const highBtn = document.getElementById("btn-alert-high");
   const lowBtn = document.getElementById("btn-alert-low");
   if (!highBtn || !lowBtn) return;
-  const supported = isAlertTimeframe();
-  highBtn.disabled = !supported || !state.currentLevels.high;
-  lowBtn.disabled = !supported || !state.currentLevels.low;
 
-  const high = getStoredAlert("high");
-  const low = getStoredAlert("low");
+  const sourcePeriod = state.currentLevels.sourcePeriod || getKeyLevelPeriod();
+  const high = getStoredAlert("high", state.symbol, sourcePeriod);
+  const low = getStoredAlert("low", state.symbol, sourcePeriod);
+
+  // 手機上不再因目前查看 1H/15m 而禁用；小級別畫面仍使用 4H 結構前高/前低。
+  highBtn.disabled = !state.currentLevels.high;
+  lowBtn.disabled = !state.currentLevels.low;
   highBtn.className = "alert-btn" + (high?.triggered ? " triggered" : high?.enabled ? " enabled-high" : "");
   lowBtn.className = "alert-btn" + (low?.triggered ? " triggered" : low?.enabled ? " enabled-low" : "");
-  highBtn.textContent = !supported ? "🔔 前高提醒(4H+)" : high?.triggered ? "✅ 前高已觸發" : high?.enabled ? `🔔 前高 ${fmtPrice(high.target)}` : "🔔 前高提醒";
-  lowBtn.textContent = !supported ? "🔔 前低提醒(4H+)" : low?.triggered ? "✅ 前低已觸發" : low?.enabled ? `🔔 前低 ${fmtPrice(low.target)}` : "🔔 前低提醒";
+  highBtn.textContent = high?.triggered ? `✅ ${sourcePeriod}前高已觸發` : high?.enabled ? `🔔 ${sourcePeriod}前高 ${fmtPrice(high.target)}` : `🔔 ${sourcePeriod}前高`;
+  lowBtn.textContent = low?.triggered ? `✅ ${sourcePeriod}前低已觸發` : low?.enabled ? `🔔 ${sourcePeriod}前低 ${fmtPrice(low.target)}` : `🔔 ${sourcePeriod}前低`;
 
   const highChip = document.getElementById("detail-high-alert");
   const lowChip = document.getElementById("detail-low-alert");
-  if (highChip) highChip.textContent = high?.triggered ? `✅ 前高提醒：已觸發 ${fmtPrice(high.target)}` : high?.enabled ? `🔔 前高提醒：${fmtPrice(high.target)}` : "🔕 前高提醒：未設定";
-  if (lowChip) lowChip.textContent = low?.triggered ? `✅ 前低提醒：已觸發 ${fmtPrice(low.target)}` : low?.enabled ? `🔔 前低提醒：${fmtPrice(low.target)}` : "🔕 前低提醒：未設定";
+  if (highChip) highChip.textContent = high?.triggered ? `✅ ${sourcePeriod}前高已觸發 ${fmtPrice(high.target)}` : high?.enabled ? `🔔 ${sourcePeriod}前高提醒 ${fmtPrice(high.target)}` : `🔕 ${sourcePeriod}前高提醒：未設定`;
+  if (lowChip) lowChip.textContent = low?.triggered ? `✅ ${sourcePeriod}前低已觸發 ${fmtPrice(low.target)}` : low?.enabled ? `🔔 ${sourcePeriod}前低提醒 ${fmtPrice(low.target)}` : `🔕 ${sourcePeriod}前低提醒：未設定`;
 }
 
 async function toggleLevelAlert(kind) {
-  if (!isAlertTimeframe()) {
-    showToast("前高 / 前低提醒目前優先支援 4H、1D、1W");
-    return;
-  }
+  const sourcePeriod = state.currentLevels.sourcePeriod || getKeyLevelPeriod();
   const target = kind === "high" ? state.currentLevels.high : state.currentLevels.low;
-  if (!target) return showToast("目前還沒有可用的前高 / 前低");
-  const existing = getStoredAlert(kind);
+  if (!target) return showToast(`正在取得 ${sourcePeriod} ${kind === "high" ? "前高" : "前低"}，請稍候再點一次`);
+
+  const existing = getStoredAlert(kind, state.symbol, sourcePeriod);
   if (existing?.enabled && !existing?.triggered) {
-    removeStoredAlert(kind);
-    showToast(`已關閉${kind === "high" ? "前高" : "前低"}提醒`);
+    removeStoredAlert(kind, state.symbol, sourcePeriod);
+    showToast(`已關閉 ${state.symbol} ${sourcePeriod} ${kind === "high" ? "前高" : "前低"}提醒`);
   } else {
     primeAlertAudio();
     await maybeRequestNotificationPermission();
-    setStoredAlert(kind, { enabled: true, triggered: false, target, createdAt: Date.now() });
-    showToast(`已設定 ${state.symbol} ${state.period} ${kind === "high" ? "前高" : "前低"}提醒 ${fmtPrice(target)}`);
+    setStoredAlert(kind, {
+      enabled: true,
+      triggered: false,
+      target,
+      sourcePeriod,
+      createdAt: Date.now()
+    }, state.symbol, sourcePeriod);
+    showToast(`已設定 ${state.symbol} ${sourcePeriod} ${kind === "high" ? "前高突破" : "前低跌破"}提醒 ${fmtPrice(target)}`);
   }
   updateAlertButtons();
 }
@@ -1221,7 +1229,7 @@ async function runScanQueueLoop() {
       state.scanIndex++;
     }
 
-    document.getElementById("scan-status").textContent = `輪巡中：${state.scanIndex}/${state.scanQueue.length} 檔 (${batchSymbols.slice(0, 3).join(', ')}…)`;
+    document.getElementById("scan-status").textContent = `輪巡 ${state.scanIndex}/${state.scanQueue.length}`;
     document.getElementById("dot").style.background = "#38c99b";
 
     await Promise.allSettled(batchSymbols.map(async symbol => {
@@ -1519,7 +1527,7 @@ function renderChartData(candles, fitContent = false) {
   }));
   state.volumeSeries.setData(volData);
 
-  updateKeyLevels(candles);
+  void refreshKeyLevels(candles);
 
   if (document.getElementById("chk-ox-markers").checked) {
     const markers = [];
@@ -1531,9 +1539,9 @@ function renderChartData(candles, fitContent = false) {
       const avgVol = prev20.reduce((s, x) => s + x.volume, 0) / prev20.length || 1;
       const ratio = c.volume / avgVol;
       if (c.close > prevHigh && ratio >= 1.45) {
-        markers.push({ time:c.time, position:"belowBar", color:"#38c99b", shape:"arrowUp", text:"OX 放量突破" });
+        markers.push({ time:c.time, position:"belowBar", color:"#38c99b", shape:"arrowUp", text: window.matchMedia("(max-width:720px)").matches ? "OX" : "OX 放量突破" });
       } else if (c.close < prevLow && ratio >= 1.45) {
-        markers.push({ time:c.time, position:"aboveBar", color:"#ee617c", shape:"arrowDown", text:"OX 放量跌破" });
+        markers.push({ time:c.time, position:"aboveBar", color:"#ee617c", shape:"arrowDown", text: window.matchMedia("(max-width:720px)").matches ? "OX" : "OX 放量跌破" });
       }
     }
     state.candleSeries.setMarkers(markers.slice(-6));
@@ -1547,28 +1555,112 @@ function renderChartData(candles, fitContent = false) {
   renderOxDetail();
 }
 
-function updateKeyLevels(candles) {
-  if (!state.candleSeries || !candles?.length) return;
+function averageTrueRange(candles, period = 14) {
+  if (!candles || candles.length < 3) return 0;
+  const trs = [];
+  for (let i = 1; i < candles.length; i++) {
+    const c = candles[i], p = candles[i - 1];
+    trs.push(Math.max(c.high - c.low, Math.abs(c.high - p.close), Math.abs(c.low - p.close)));
+  }
+  const slice = trs.slice(-period);
+  return slice.length ? slice.reduce((a,b) => a + b, 0) / slice.length : 0;
+}
+
+function findStructuralPivotLevels(candles, sourcePeriod) {
+  if (!candles || candles.length < 12) return { high:0, low:0, highTime:0, lowTime:0 };
+
+  // 不使用「最近 N 根的最高/最低」；改用已確認的局部 Swing High / Swing Low。
+  // 這樣週線不會直接抓到很久以前的絕對高點，而是抓近期結構真正要突破的前高。
+  const completed = candles.slice(0, -1); // 排除尚未收盤的當前 K
+  const span = sourcePeriod === "1W" ? 2 : sourcePeriod === "1D" ? 2 : 3;
+  const atr = averageTrueRange(completed, 14) || 0;
+  const highs = [];
+  const lows = [];
+
+  for (let i = span; i < completed.length - span; i++) {
+    const c = completed[i];
+    const left = completed.slice(i - span, i);
+    const right = completed.slice(i + 1, i + span + 1);
+
+    const isHigh = left.every(x => c.high > x.high) && right.every(x => c.high >= x.high);
+    const isLow = left.every(x => c.low < x.low) && right.every(x => c.low <= x.low);
+
+    if (isHigh) {
+      const wingLow = Math.max(Math.min(...left.map(x => x.low)), Math.min(...right.map(x => x.low)));
+      const prominence = c.high - wingLow;
+      if (!atr || prominence >= atr * 0.55) highs.push({ price:c.high, time:c.time, index:i });
+    }
+    if (isLow) {
+      const wingHigh = Math.min(Math.max(...left.map(x => x.high)), Math.max(...right.map(x => x.high)));
+      const prominence = wingHigh - c.low;
+      if (!atr || prominence >= atr * 0.55) lows.push({ price:c.low, time:c.time, index:i });
+    }
+  }
+
+  const current = candles[candles.length - 1].close;
+  // 前高：優先找「目前價格上方、最近形成」的已確認 pivot high；若沒有，再用最近一個已確認前高。
+  const overheadHighs = highs.filter(p => p.price > current * 1.0005);
+  const highPick = (overheadHighs.length ? overheadHighs : highs).at(-1) || null;
+  // 前低：優先找目前價格下方、最近形成的已確認 pivot low。
+  const supportLows = lows.filter(p => p.price < current * 0.9995);
+  const lowPick = (supportLows.length ? supportLows : lows).at(-1) || null;
+
+  return {
+    high: highPick?.price || 0,
+    low: lowPick?.price || 0,
+    highTime: highPick?.time || 0,
+    lowTime: lowPick?.time || 0
+  };
+}
+
+async function refreshKeyLevels(chartCandles) {
+  if (!state.candleSeries) return;
+  const symbolAtRequest = state.symbol;
+  const sourcePeriod = getKeyLevelPeriod();
+
   if (state.keyHighLine) { try { state.candleSeries.removePriceLine(state.keyHighLine); } catch (e) {} }
   if (state.keyLowLine) { try { state.candleSeries.removePriceLine(state.keyLowLine); } catch (e) {} }
-  state.keyHighLine = null; state.keyLowLine = null;
-
-  const windowSize = Math.min(40, candles.length - 1);
-  if (windowSize < 5) return;
-  const history = candles.slice(-(windowSize + 1), -1);
-  const high = Math.max(...history.map(c => c.high));
-  const low = Math.min(...history.map(c => c.low));
-  state.currentLevels = { high, low };
-
-  state.keyHighLine = state.candleSeries.createPriceLine({
-    price: high, color: "#f7bd52", lineWidth: 1, lineStyle: LightweightCharts.LineStyle.Dashed,
-    axisLabelVisible: true, title: "前高"
-  });
-  state.keyLowLine = state.candleSeries.createPriceLine({
-    price: low, color: "#5ca5ff", lineWidth: 1, lineStyle: LightweightCharts.LineStyle.Dashed,
-    axisLabelVisible: true, title: "前低"
-  });
+  state.keyHighLine = null;
+  state.keyLowLine = null;
+  state.currentLevels = { high:0, low:0, sourcePeriod, highTime:0, lowTime:0 };
   updateAlertButtons();
+  updateQuickStats();
+
+  try {
+    const sourceCandles = state.period === sourcePeriod
+      ? chartCandles
+      : await BitgetAPI.fetchCandles(symbolAtRequest, sourcePeriod, 100);
+
+    if (state.symbol !== symbolAtRequest || getKeyLevelPeriod() !== sourcePeriod) return;
+    const levels = findStructuralPivotLevels(sourceCandles, sourcePeriod);
+    state.currentLevels = { ...levels, sourcePeriod };
+
+    if (levels.high) {
+      state.keyHighLine = state.candleSeries.createPriceLine({
+        price: levels.high,
+        color: "#f7bd52",
+        lineWidth: 1,
+        lineStyle: LightweightCharts.LineStyle.Dashed,
+        axisLabelVisible: true,
+        title: `前高 ${sourcePeriod}`
+      });
+    }
+    if (levels.low) {
+      state.keyLowLine = state.candleSeries.createPriceLine({
+        price: levels.low,
+        color: "#5ca5ff",
+        lineWidth: 1,
+        lineStyle: LightweightCharts.LineStyle.Dashed,
+        axisLabelVisible: true,
+        title: `前低 ${sourcePeriod}`
+      });
+    }
+    updateAlertButtons();
+    updateQuickStats();
+    renderOxDetail();
+  } catch (e) {
+    console.warn("關鍵前高/前低取得失敗", symbolAtRequest, sourcePeriod, e);
+  }
 }
 
 function updatePriceTimer() {
@@ -1619,8 +1711,8 @@ function updateQuickStats() {
   const chg = document.getElementById("quick-change");
   chg.textContent = fmtPct(ticker.change24h); chg.className = num(ticker.change24h) >= 0 ? "positive" : "negative";
   document.getElementById("quick-volume").textContent = `${fmtUsd(ticker.usdtVolume)} USDT`;
-  document.getElementById("quick-high").textContent = state.currentLevels.high ? fmtPrice(state.currentLevels.high) : "—";
-  document.getElementById("quick-low").textContent = state.currentLevels.low ? fmtPrice(state.currentLevels.low) : "—";
+  document.getElementById("quick-high").textContent = state.currentLevels.high ? `${fmtPrice(state.currentLevels.high)} · ${state.currentLevels.sourcePeriod || getKeyLevelPeriod()}` : "—";
+  document.getElementById("quick-low").textContent = state.currentLevels.low ? `${fmtPrice(state.currentLevels.low)} · ${state.currentLevels.sourcePeriod || getKeyLevelPeriod()}` : "—";
 }
 
 function renderOxDetail() {
@@ -1630,7 +1722,7 @@ function renderOxDetail() {
   const isBenchmark = benchmarkSymbols.has(symbol);
   document.getElementById("detail-symbol").textContent = symbol;
   document.getElementById("detail-volume").textContent = ticker ? `${fmtUsd(ticker.usdtVolume)} USDT` : "—";
-  document.getElementById("detail-levels").textContent = `${state.currentLevels.high ? fmtPrice(state.currentLevels.high) : '—'} / ${state.currentLevels.low ? fmtPrice(state.currentLevels.low) : '—'}`;
+  document.getElementById("detail-levels").textContent = `${state.currentLevels.sourcePeriod || getKeyLevelPeriod()}｜${state.currentLevels.high ? fmtPrice(state.currentLevels.high) : '—'} / ${state.currentLevels.low ? fmtPrice(state.currentLevels.low) : '—'}`;
 
   if (!scored) {
     document.getElementById("detail-tier").textContent = isBenchmark ? "Benchmark" : "等待分析";
@@ -1712,7 +1804,7 @@ function updateHeaderHUD() {
 function switchSymbol(symbol) {
   if (symbol === state.symbol) { updateHeaderHUD(); return; }
   state.symbol = symbol;
-  state.currentLevels = { high: 0, low: 0 };
+  state.currentLevels = { high: 0, low: 0, sourcePeriod: getKeyLevelPeriod(), highTime: 0, lowTime: 0 };
   updateHeaderHUD();
   renderCurrentTab();
   updateAlertButtons();
@@ -1744,7 +1836,7 @@ document.addEventListener("click", e => {
     state.period = tfBtn.dataset.tf;
     document.querySelectorAll(".btn-tf").forEach(b => b.classList.toggle("active", b === tfBtn));
     document.getElementById("tf-pill").textContent = `${tfBtn.textContent} ${tfBtn.dataset.tf.includes('D') ? '日線' : tfBtn.dataset.tf.includes('W') ? '週線' : ''}`;
-    state.currentLevels = { high: 0, low: 0 };
+    state.currentLevels = { high: 0, low: 0, sourcePeriod: getKeyLevelPeriod(), highTime: 0, lowTime: 0 };
     updateAlertButtons();
     loadSymbolCandles(true);
     return;
