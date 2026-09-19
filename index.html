@@ -831,6 +831,7 @@
     body.chart-focus .app-dock,
     body.chart-focus #view-strength,
     body.chart-focus #view-media,
+    body.chart-focus #view-settings,
     body.chart-focus #view-home > .benchmark-bar,
     body.chart-focus #view-home > .top-summary,
     body.chart-focus #view-home > .detail-panel,
@@ -943,6 +944,228 @@
       #btn-chart-fullscreen::after { content:""; }
     }
 
+
+    /* ===== OX v3.1 UI refinement (篩選策略保留) ===== */
+    .ox-live-shell { padding-top: 7px; }
+    .ox-live-strip {
+      height: 30px;
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+      border: 1px solid #5d4824;
+      border-radius: 8px;
+      background: linear-gradient(90deg,#f7bd520d,#0c1420);
+    }
+    .ox-live-badge {
+      flex: 0 0 auto;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      padding: 0 9px;
+      color: var(--gold);
+      border-right: 1px solid #5d4824;
+      font-size: 9px;
+      font-weight: 900;
+      letter-spacing: .08em;
+    }
+    .ox-live-window { min-width: 0; flex: 1; overflow: hidden; white-space: nowrap; }
+    #ox-live-text {
+      display: inline-block;
+      min-width: max-content;
+      padding-left: 100%;
+      color: #c8d5e5;
+      font-size: 10px;
+      animation: ox-live-scroll 22s linear infinite;
+    }
+    @keyframes ox-live-scroll { to { transform: translateX(-100%); } }
+
+    .compact-summary {
+      display: grid;
+      grid-template-columns: minmax(0,2.35fr) minmax(150px,.55fr) minmax(180px,.8fr);
+      gap: 8px;
+      margin: 10px 0 12px;
+    }
+    .market-line-card { display: grid; grid-template-columns: 1.35fr .72fr .88fr; padding: 0; overflow: hidden; }
+    .market-line-item { min-width: 0; padding: 9px 13px; border-right: 1px solid var(--line); }
+    .market-line-item:last-child { border-right: 0; }
+    .market-line-item label { margin: 0 0 2px; font-size: 9px; }
+    .market-line-item strong { font-size: 16px; line-height: 1.12; }
+    .market-line-price strong { font-size: 21px; }
+    .market-line-item small { font-size: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .summary-mini { padding: 9px 12px; }
+    .summary-mini strong { font-size: 18px; }
+
+    .chart-benchmark-bar { border-top: 1px solid var(--line); padding: 7px 10px; background: #0a111b; }
+    .chart-benchmark-bar .benchmark-bar { display: flex; gap: 6px; align-items: center; margin: 0; }
+    .chart-benchmark-bar .benchmark-card { width: auto; min-width: 108px; padding: 6px 9px; border-radius: 999px; }
+    .chart-benchmark-bar .benchmark-card label,
+    .chart-benchmark-bar .benchmark-card strong { display: inline; font-size: 9px; }
+    .chart-benchmark-bar .benchmark-sub { display: none; }
+    .chart-benchmark-bar .benchmark-bias { margin-left: auto; min-width: 120px; }
+
+    .strength-dial { position: relative; width: min(330px,92%); aspect-ratio: 2 / 1; margin: 20px auto 0; overflow: hidden; }
+    .strength-arc {
+      position: absolute; inset: 0;
+      border-radius: 999px 999px 0 0;
+      background: conic-gradient(from 270deg at 50% 100%, #ee617c 0deg, #d7a84e 90deg, #38c99b 180deg, transparent 180deg 360deg);
+    }
+    .strength-arc::after {
+      content: ""; position: absolute; left: 14%; right: 14%; top: 28%; bottom: -2px;
+      background: #0d1623; border-radius: 999px 999px 0 0;
+    }
+    .strength-dial .strength-needle {
+      position: absolute; left: 50%; bottom: 0; top: auto; z-index: 3;
+      width: 3px; height: 47%; border-radius: 4px; background: #fff;
+      transform-origin: 50% 100%; transform: translateX(-50%) rotate(0deg);
+      box-shadow: 0 0 0 2px #07101a, 0 0 10px #fff6;
+      transition: transform .35s ease;
+    }
+    .strength-dial .strength-needle::after {
+      content: ""; position: absolute; left: 50%; bottom: -6px; width: 13px; height: 13px;
+      border-radius: 50%; background: #fff; transform: translateX(-50%);
+    }
+    .strength-dial .strength-value {
+      position: absolute; left: 50%; bottom: 4%; z-index: 4;
+      transform: translateX(-50%); margin: 0; font-size: 42px;
+    }
+    .strength-card > .strength-scale { margin-top: 5px; }
+
+    .media-social-links { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px; }
+    .media-social-links a {
+      text-decoration: none; border: 1px solid #354861; background: #0a121d;
+      border-radius: 9px; padding: 9px 12px; color: #e2ebf7; font-size: 11px; font-weight: 800;
+    }
+
+    .settings-page { max-width: 1050px; margin: 0 auto; padding: 10px 0 40px; }
+    .settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .settings-card {
+      background: linear-gradient(180deg,#101a29,#0b121d);
+      border: 1px solid var(--line); border-radius: 16px; padding: 18px;
+    }
+    .settings-card h2 { margin: 0 0 12px; font-size: 15px; color: var(--gold); }
+    .settings-wide { grid-column: 1 / -1; }
+    .settings-field, .settings-switch {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      padding: 10px 0; border-bottom: 1px solid #1c2a3d; font-size: 11px;
+    }
+    .settings-field:last-child, .settings-switch:last-child { border-bottom: 0; }
+    .settings-field input, .settings-field select {
+      width: min(230px,55%); border: 1px solid var(--line); background: #0a121d;
+      color: var(--ink); border-radius: 8px; padding: 8px 9px;
+    }
+    .settings-switch input { width: 18px; height: 18px; accent-color: var(--gold); }
+    .settings-switch small { color: var(--muted); }
+    .theme-buttons { display: flex; gap: 8px; }
+    .theme-choice.active { color: var(--gold); border-color: var(--gold); background: #f7bd5212; }
+    .settings-hint { margin: 10px 0 0; color: var(--muted); font-size: 10px; }
+    .app-dock { grid-template-columns: repeat(4,1fr); width: min(520px, calc(100vw - 28px)); }
+
+    body.theme-light {
+      --bg:#eef3f8; --panel:#ffffff; --panel-alt:#f6f9fc; --ink:#111827;
+      --line:#d3deea; --muted:#637389; --gold:#b87400;
+      background:#eef3f8; color:#111827;
+    }
+    body.theme-light header,
+    body.theme-light .panel-head,
+    body.theme-light .chart-controls,
+    body.theme-light .chart-benchmark-bar,
+    body.theme-light .scanner-tabs,
+    body.theme-light .app-dock { background:#f7fafc; }
+    body.theme-light .panel,
+    body.theme-light .metric-card,
+    body.theme-light .benchmark-card,
+    body.theme-light .strength-card,
+    body.theme-light .settings-card,
+    body.theme-light .media-card { background:#fff; }
+    body.theme-light .coin-reason,
+    body.theme-light .media-function-item,
+    body.theme-light .media-social-links a { background:#f4f7fa; color:#26354a; }
+    body.theme-light .detail-cell { background:#f8fafc; }
+    body.theme-light .settings-field input,
+    body.theme-light .settings-field select { background:#fff; color:#111827; }
+    body.theme-light .strength-arc::after { background:#fff; }
+    body.theme-light #ox-live-text { color:#42536a; }
+
+    body.chart-focus .ox-live-shell,
+    body.chart-focus #view-settings { display:none !important; }
+
+    @media (max-width:720px) {
+      .ox-live-shell { padding: 4px 7px 0; }
+      .ox-live-strip { height: 24px; border-radius: 6px; }
+      .ox-live-badge { padding: 0 6px; font-size: 7px; }
+      #ox-live-text { font-size: 7px; }
+
+      .compact-summary { display:block; margin: 0 0 5px; }
+      .summary-mini { display:none !important; }
+      .market-line-card { grid-template-columns: 1.34fr .72fr .86fr; border-radius: 9px; }
+      .market-line-item { padding: 5px 6px; }
+      .market-line-item label { font-size: 6px; }
+      .market-line-item strong { font-size: 9px; }
+      .market-line-price strong { font-size: 13px; }
+      .market-line-item small { display:none; }
+
+      .chart-benchmark-bar { padding: 4px 5px; }
+      .chart-benchmark-bar .benchmark-bar { display:flex; gap:4px; }
+      .chart-benchmark-bar .benchmark-card { min-width: 0; min-height: 26px; padding: 4px 9px; border-radius:999px; }
+      .chart-benchmark-bar .benchmark-card label { font-size: 8px; }
+      .chart-benchmark-bar .benchmark-card strong,
+      .chart-benchmark-bar .benchmark-sub,
+      .chart-benchmark-bar .benchmark-bias { display:none !important; }
+
+      .strength-dial { width: min(270px,95%); margin-top: 12px; }
+      .strength-dial .strength-value { font-size: 34px; }
+      .strength-dial .strength-needle { height: 48%; }
+
+      .settings-grid { grid-template-columns:1fr; gap:8px; }
+      .settings-wide { grid-column:auto; }
+      .settings-card { padding:13px; }
+      .settings-page { padding:3px 0 28px; }
+      .settings-field,.settings-switch { font-size:9px; padding:8px 0; }
+      .settings-field input,.settings-field select { font-size:9px; padding:7px; }
+      .app-dock { width:100%; }
+    }
+
+  
+
+    /* --- mobile fix: top market row must stay horizontal and compact --- */
+    @media (max-width:720px) {
+      #view-home > .top-summary.compact-summary {
+        display: block !important;
+        margin: 0 0 4px !important;
+      }
+      #view-home > .top-summary.compact-summary > .market-line-card.metric-card,
+      #view-home > .top-summary.compact-summary > .market-line-card.metric-card:first-child {
+        display: grid !important;
+        grid-template-columns: minmax(0,1.28fr) minmax(0,.76fr) minmax(0,.82fr) !important;
+        align-items: center !important;
+        min-height: 0 !important;
+        padding: 0 !important;
+        flex-direction: initial !important;
+        justify-content: initial !important;
+        grid-column: auto !important;
+      }
+      #view-home > .top-summary.compact-summary > .market-line-card .market-line-item {
+        padding: 6px 7px !important;
+      }
+      #view-home > .top-summary.compact-summary > .market-line-card .market-line-item label {
+        font-size: 6px !important;
+        margin: 0 0 1px !important;
+      }
+      #view-home > .top-summary.compact-summary > .market-line-card .market-line-item strong {
+        font-size: 10px !important;
+        line-height: 1.05 !important;
+      }
+      #view-home > .top-summary.compact-summary > .market-line-card .market-line-price strong {
+        font-size: 15px !important;
+      }
+      #view-home > .top-summary.compact-summary > .market-line-card .market-line-item small {
+        display: none !important;
+      }
+      #view-home > .top-summary.compact-summary > .summary-mini {
+        display: none !important;
+      }
+    }
+
   </style>
 </head>
 <body>
@@ -951,7 +1174,7 @@
   <div class="wrap nav">
     <a class="brand" href="#">
       <img class="brand-logo" src="ox-logo.png" alt="OX Logo" onerror="this.style.display='none'">
-      <span>OX 幣種篩選器 <small style="font-size:12px;color:var(--gold);font-weight:600">v3.0 · 主頁 / 強弱 / 媒體</small></span>
+      <span>OX 幣種篩選器 <small style="font-size:12px;color:var(--gold);font-weight:600">v3.1 · 主頁 / 強弱 / 媒體 / 設定</small></span>
     </a>
     <div class="nav-stats">
       <div class="live"><i class="dot" id="dot"></i><span id="scan-status">全市場輪巡佇列準備中…</span></div>
@@ -960,50 +1183,43 @@
   </div>
 </header>
 
-<main class="wrap" style="padding-top:16px;padding-bottom:40px">
+<div class="wrap ox-live-shell" aria-live="polite">
+  <div class="ox-live-strip">
+    <span class="ox-live-badge">OX LIVE</span>
+    <div class="ox-live-window"><span id="ox-live-text">正在整理市場即時資訊…</span></div>
+  </div>
+</div>
+
+<main class="wrap" style="padding-top:10px;padding-bottom:40px">
 
   <section class="app-view active" id="view-home" data-app-view="home">
 
-  <section class="benchmark-bar" aria-label="市場基準">
-    <button class="benchmark-card" type="button" data-benchmark-symbol="BTCUSDT">
-      <label><span class="desktop-bench-label">BTC 市場基準</span><span class="mobile-bench-label">BTC</span></label>
-      <strong id="bench-btc-price">—</strong>
-      <div class="benchmark-sub"><span id="bench-btc-change">—</span><span id="bench-btc-trend">等待分析</span></div>
-    </button>
-    <button class="benchmark-card" type="button" data-benchmark-symbol="ETHUSDT">
-      <label><span class="desktop-bench-label">ETH 市場基準</span><span class="mobile-bench-label">ETH</span></label>
-      <strong id="bench-eth-price">—</strong>
-      <div class="benchmark-sub"><span id="bench-eth-change">—</span><span id="bench-eth-trend">等待分析</span></div>
-    </button>
-    <div class="benchmark-card benchmark-bias">
-      <label>Market Bias</label>
-      <strong id="market-bias">Neutral</strong>
-      <div class="benchmark-sub"><span>BTC / ETH 結構背景</span></div>
-    </div>
-  </section>
 
-  <section class="top-summary">
-    <div class="metric-card">
-      <label id="ticker-pair">BTCUSDT · Bitget 永續</label>
-      <strong id="price">—</strong>
-      <small id="ticker-meta">等待行情資料中…</small>
+
+  <section class="top-summary compact-summary">
+    <div class="metric-card market-line-card">
+      <div class="market-line-item market-line-price">
+        <label id="ticker-pair">BTCUSDT · Bitget 永續</label>
+        <strong id="price">—</strong>
+        <small id="ticker-meta">等待行情資料中…</small>
+      </div>
+      <div class="market-line-item">
+        <label>24H 漲跌幅</label>
+        <strong id="change">—</strong>
+        <small id="btc-rel">相對 BTC：—</small>
+      </div>
+      <div class="market-line-item">
+        <label>24H 成交額</label>
+        <strong id="quote">—</strong>
+        <small id="quote-rank">全市場百分位：—</small>
+      </div>
     </div>
-    <div class="metric-card">
-      <label>24H 漲跌幅</label>
-      <strong id="change">—</strong>
-      <small id="btc-rel">相對 BTC：—</small>
-    </div>
-    <div class="metric-card">
-      <label>24H 成交額</label>
-      <strong id="quote">—</strong>
-      <small id="quote-rank">全市場百分位：—</small>
-    </div>
-    <div class="metric-card">
+    <div class="metric-card summary-mini">
       <label>OX 綜合評分</label>
       <strong id="ox-score" style="color:var(--gold)">—</strong>
       <small id="ox-tier-label">分級：待評定</small>
     </div>
-    <div class="metric-card">
+    <div class="metric-card summary-mini">
       <label>主導 Setup 型態</label>
       <strong id="ox-setup" style="font-size:17px;padding-top:4px">—</strong>
       <small id="ox-rs-desc">RS 狀態：—</small>
@@ -1053,6 +1269,25 @@
         <div class="chart-quickitem quick-volume-item"><label>24H USDT 成交量</label><strong id="quick-volume">—</strong></div>
         <div class="chart-quickitem"><label>前高</label><strong id="quick-high">—</strong></div>
         <div class="chart-quickitem"><label>前低</label><strong id="quick-low">—</strong></div>
+      </div>
+      <div class="chart-benchmark-bar">
+      <section class="benchmark-bar" aria-label="市場基準">
+      <button class="benchmark-card" type="button" data-benchmark-symbol="BTCUSDT">
+      <label><span class="desktop-bench-label">BTC 市場基準</span><span class="mobile-bench-label">BTC</span></label>
+      <strong id="bench-btc-price">—</strong>
+      <div class="benchmark-sub"><span id="bench-btc-change">—</span><span id="bench-btc-trend">等待分析</span></div>
+      </button>
+      <button class="benchmark-card" type="button" data-benchmark-symbol="ETHUSDT">
+      <label><span class="desktop-bench-label">ETH 市場基準</span><span class="mobile-bench-label">ETH</span></label>
+      <strong id="bench-eth-price">—</strong>
+      <div class="benchmark-sub"><span id="bench-eth-change">—</span><span id="bench-eth-trend">等待分析</span></div>
+      </button>
+      <div class="benchmark-card benchmark-bias">
+      <label>Market Bias</label>
+      <strong id="market-bias">Neutral</strong>
+      <div class="benchmark-sub"><span>BTC / ETH 結構背景</span></div>
+      </div>
+      </section>
       </div>
     </article>
 
@@ -1123,7 +1358,7 @@
       <div class="page-hero">
         <div class="page-kicker">OX Market Pulse</div>
         <h1>市場強弱</h1>
-        <p>只看兩件事：BTC 現在強不強，以及小幣現在好不好做。內部會持續計算，但畫面只保留 0、50、100 三段。</p>
+        <p>只看兩件事：BTC 現在強不強，以及小幣現在好不好做。儀表刻度保留 0、50、100，但實際分數會依市場條件在 0–100 間連續變化。</p>
       </div>
 
       <div class="strength-grid">
@@ -1132,11 +1367,12 @@
             <div><h2>BTC 強弱</h2><p>結構 · 資金 · 動能 · Trigger</p></div>
             <span class="strength-state" id="btc-strength-state">中</span>
           </div>
-          <div class="strength-value" id="btc-strength-value">50</div>
-          <div class="strength-meter">
-            <div class="strength-track"><i class="strength-needle" id="btc-strength-needle" style="left:50%"></i></div>
-            <div class="strength-scale"><span><b>0</b> 弱</span><span><b>50</b> 中</span><span><b>100</b> 強</span></div>
+          <div class="strength-dial" aria-label="BTC 強弱儀表">
+            <div class="strength-arc"></div>
+            <i class="strength-needle" id="btc-strength-needle"></i>
+            <div class="strength-value" id="btc-strength-value">50</div>
           </div>
+          <div class="strength-scale"><span><b>0</b> 弱</span><span><b>50</b> 中</span><span><b>100</b> 強</span></div>
           <div class="strength-note" id="btc-strength-note">等待 BTC 分析資料。</div>
         </article>
 
@@ -1145,18 +1381,19 @@
             <div><h2>小幣強弱</h2><p>流動性 · 型態廣度 · 結構 · 資金活躍</p></div>
             <span class="strength-state" id="alt-strength-state">中</span>
           </div>
-          <div class="strength-value" id="alt-strength-value">50</div>
-          <div class="strength-meter">
-            <div class="strength-track"><i class="strength-needle" id="alt-strength-needle" style="left:50%"></i></div>
-            <div class="strength-scale"><span><b>0</b> 弱</span><span><b>50</b> 中</span><span><b>100</b> 強</span></div>
+          <div class="strength-dial" aria-label="小幣強弱儀表">
+            <div class="strength-arc"></div>
+            <i class="strength-needle" id="alt-strength-needle"></i>
+            <div class="strength-value" id="alt-strength-value">50</div>
           </div>
+          <div class="strength-scale"><span><b>0</b> 弱</span><span><b>50</b> 中</span><span><b>100</b> 強</span></div>
           <div class="strength-note" id="alt-strength-note">等待全市場輪巡累積足夠樣本。</div>
         </article>
       </div>
 
       <div class="strength-explain">
         <strong style="color:var(--ink)">怎麼看：</strong>
-        0 代表現在條件偏弱、好型態與有效流動性較少；50 代表市場混合、需要挑幣；100 代表資金、結構與型態廣度同步轉強。這是「市場環境」而不是買賣訊號。
+        0 靠近極弱、50 為中性區、100 靠近極強；實際分數會落在兩者之間。這是「市場環境」評分，不是買賣訊號。
       </div>
     </div>
   </section>
@@ -1202,9 +1439,60 @@
             <p class="story-quote">「市場最底層的東西不是指標，而是錢。錢進入市場，留下成交量、波動與價格行為；價格行為形成 K 線，K 線累積成結構，結構最後變成我們看到的趨勢。」</p>
             <p style="margin-top:16px">我做 OX，不是希望它替人預測下一根 K 線，也不是要它告訴所有人現在該買什麼。我更想做的是把不值得看的行情先排除掉。因為交易裡，選擇不做什麼，常常跟選擇做什麼一樣重要。</p>
             <p style="margin-top:12px">我真正想留下的只有四件事：<strong style="color:var(--ink)">有錢、有流動性、有結構，而且是我看得懂的行情。</strong> OX 的角色，就是把幾百個標的縮成少數值得我親自打開 K 線確認的候選。</p>
-            <div class="media-links-placeholder">媒體 / 社群連結將在下一階段加入</div>
+            <div class="media-social-links">
+              <a href="https://youtube.com/@snsheng?si=Dgl_f_Xv5SfPXvX-" target="_blank" rel="noopener">▶ YouTube</a>
+              <a href="https://line.me/ti/g2/FXj0yahd04U4JecSoC4uPInXiqhLulqdCl54Ag?utm_source=invitation&amp;utm_medium=link_copy&amp;utm_campaign=default" target="_blank" rel="noopener">LINE 社群</a>
+            </div>
           </section>
         </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="app-view" id="view-settings" data-app-view="settings">
+    <div class="settings-page">
+      <div class="page-hero">
+        <div class="page-kicker">OX Settings</div>
+        <h1>設定</h1>
+        <p>通知偏好與主題會先保存在這台裝置；Email、簡訊與背景推送需要後端服務，之後可以直接接上。</p>
+      </div>
+
+      <div class="settings-grid">
+        <article class="settings-card">
+          <h2>接收方式與頻率</h2>
+          <label class="settings-field"><span>Gmail</span><input id="setting-email" type="email" autocomplete="email" placeholder="yourname@gmail.com"></label>
+          <label class="settings-field"><span>電話</span><input id="setting-phone" type="tel" autocomplete="tel" placeholder="+886 9xx xxx xxx"></label>
+          <label class="settings-field"><span>推算 / 彙整頻率</span>
+            <select id="setting-frequency">
+              <option value="1h">每 1 小時</option>
+              <option value="4h">每 4 小時</option>
+              <option value="8h">每 8 小時</option>
+              <option value="1d">每天</option>
+              <option value="1w">每週</option>
+            </select>
+          </label>
+        </article>
+
+        <article class="settings-card">
+          <h2>推送內容</h2>
+          <label class="settings-switch"><span>🔔 幣種突破前高 / 跌破前低</span><input type="checkbox" data-setting-key="breakout" checked></label>
+          <label class="settings-switch"><span>每小時強勢幣 T1 / T2 / T3</span><input type="checkbox" data-setting-key="tiers" checked></label>
+          <label class="settings-switch"><span>小幣強度到達 50</span><input type="checkbox" data-setting-key="alt50" checked></label>
+          <label class="settings-switch"><span>小幣強度到達 75</span><input type="checkbox" data-setting-key="alt75" checked></label>
+          <label class="settings-switch"><span>BTC 強度到達 50</span><input type="checkbox" data-setting-key="btc50" checked></label>
+          <label class="settings-switch"><span>BTC 強度到達 75</span><input type="checkbox" data-setting-key="btc75" checked></label>
+          <label class="settings-switch"><span>BTC 技術分析內容</span><input type="checkbox" data-setting-key="btcAnalysis" checked></label>
+          <label class="settings-switch"><span>重要新聞 <small>（功能預留）</small></span><input type="checkbox" data-setting-key="news"></label>
+        </article>
+
+        <article class="settings-card settings-wide">
+          <h2>背景主題</h2>
+          <div class="theme-buttons">
+            <button type="button" class="btn-act theme-choice active" data-theme-choice="dark">黑色</button>
+            <button type="button" class="btn-act theme-choice" data-theme-choice="light">白色</button>
+          </div>
+          <p class="settings-hint" id="settings-status">設定會自動保存在目前瀏覽器。</p>
+        </article>
       </div>
     </div>
   </section>
@@ -1215,7 +1503,8 @@
 <nav class="app-dock" aria-label="主要功能">
   <button class="dock-btn active" type="button" data-view-target="home">主頁<small>篩選 / 圖表</small></button>
   <button class="dock-btn" type="button" data-view-target="strength">強弱<small>市場環境</small></button>
-  <button class="dock-btn" type="button" data-view-target="media">媒體<small>OX / 理念</small></button>
+  <button class="dock-btn" type="button" data-view-target="media">媒體<small>OX / 社群</small></button>
+  <button class="dock-btn" type="button" data-view-target="settings">設定<small>通知 / 主題</small></button>
 </nav>
 
 <div id="toast" class="toast" role="status"></div>
@@ -1276,7 +1565,10 @@ const state = {
   abortCtrl: null,
   keyHighLine: null,
   keyLowLine: null,
+  secondaryKeyHighLine: null,
+  secondaryKeyLowLine: null,
   currentLevels: { high: 0, low: 0, sourcePeriod: "4H", highTime: 0, lowTime: 0 },
+  secondaryLevels: null,
   audioCtx: null
 };
 
@@ -1297,8 +1589,9 @@ const fmtPct = v => `${num(v) >= 0 ? "+" : ""}${(num(v) * 100).toFixed(2)}%`;
 
 const clamp = (v, min = 0, max = 100) => Math.max(min, Math.min(max, v));
 const benchmarkSymbols = new Set(["BTCUSDT", "ETHUSDT"]);
-// 關鍵位以大級別為主：正在看 4H/1D/1W 就沿用該級別；看更小級別時自動參考 4H。
-const getKeyLevelPeriod = () => ["4H", "1D", "1W"].includes(state.period) ? state.period : "4H";
+// 關鍵位顯示規則：1m / 5m / 15m 同時顯示 4H + 1D；1H / 4H / 1D / 1W 各顯示自身週期。
+const getKeyLevelPeriods = () => ["1m","5m","15m"].includes(state.period) ? ["4H","1D"] : [state.period];
+const getKeyLevelPeriod = () => getKeyLevelPeriods()[0];
 const alertStorageKey = (kind, symbol = state.symbol, period = getKeyLevelPeriod()) => `ox-level-alert:${symbol}:${period}:${kind}`;
 
 function getStoredAlert(kind, symbol = state.symbol, period = state.period) {
@@ -1434,7 +1727,7 @@ function checkLevelAlerts() {
     alert.triggeredAt = Date.now();
     localStorage.setItem(key, JSON.stringify(alert));
     fireLevelAlert(kind, alert, price, symbol, period);
-    if (symbol === state.symbol && period === state.period) updateAlertButtons();
+    if (symbol === state.symbol && getKeyLevelPeriods().includes(period)) updateAlertButtons();
   }
 }
 
@@ -1442,9 +1735,9 @@ function checkLevelAlerts() {
 
 function classifyStrength(raw) {
   const v = clamp(Math.round(raw));
-  if (v < 40) return { display: 0, label: "弱", pos: 0 };
-  if (v < 65) return { display: 50, label: "中", pos: 50 };
-  return { display: 100, label: "強", pos: 100 };
+  if (v < 40) return { display: v, label: "弱", pos: v };
+  if (v < 65) return { display: v, label: "中", pos: v };
+  return { display: v, label: "強", pos: v };
 }
 
 function qualitative(v, low = 45, high = 65) {
@@ -1504,7 +1797,7 @@ function renderMarketStrength() {
     const needle = document.getElementById(`${prefix}-strength-needle`);
     if (value) value.textContent = s.display;
     if (stateEl) stateEl.textContent = s.label;
-    if (needle) needle.style.left = `${s.pos}%`;
+    if (needle) needle.style.transform = `translateX(-50%) rotate(${-90 + (s.pos / 100) * 180}deg)`;
   };
   setGauge("btc", btcS);
   setGauge("alt", altS);
@@ -1531,9 +1824,11 @@ function renderMarketStrength() {
 function resizeChartToContainer() {
   const container = document.getElementById("chart");
   if (!state.chart || !container) return;
-  const rect = container.getBoundingClientRect();
-  if (rect.width > 0 && rect.height > 0) {
-    state.chart.applyOptions({ width: Math.round(rect.width), height: Math.round(rect.height) });
+  // 手機旋轉的全圖模式使用 layout 尺寸，避免 transform 後 bounding rect 寬高互換造成只畫半屏。
+  const width = container.clientWidth;
+  const height = container.clientHeight;
+  if (width > 0 && height > 0) {
+    state.chart.applyOptions({ width: Math.round(width), height: Math.round(height) });
   }
 }
 
@@ -1541,11 +1836,11 @@ function setChartFocus(enabled) {
   document.body.classList.toggle("chart-focus", enabled);
   const btn = document.getElementById("btn-chart-fullscreen");
   if (btn) btn.textContent = enabled ? "✕ 返回" : (window.matchMedia("(max-width: 900px)").matches ? "展開圖表" : "全螢幕");
-  setTimeout(() => { resizeChartToContainer(); updatePriceTimer(); }, 120);
+  [0, 80, 180, 320].forEach(ms => setTimeout(() => { resizeChartToContainer(); updatePriceTimer(); }, ms));
 }
 
 function switchAppView(view) {
-  if (!['home','strength','media'].includes(view)) return;
+  if (!['home','strength','media','settings'].includes(view)) return;
   if (document.body.classList.contains('chart-focus')) setChartFocus(false);
   state.activeView = view;
   document.querySelectorAll('[data-app-view]').forEach(el => el.classList.toggle('active', el.dataset.appView === view));
@@ -1554,6 +1849,76 @@ function switchAppView(view) {
   if (view === 'home') setTimeout(resizeChartToContainer, 80);
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
+
+
+function renderOxLive() {
+  const el = document.getElementById("ox-live-text");
+  if (!el) return;
+  const parts = [];
+  const surge = (state.tierMap.surge || [])[0];
+  if (surge) parts.push(`🔥 ${surge.symbol.replace(/USDT$/, "")} 異常活躍 · OX ${surge.oxScore ?? "—"} · 24H ${fmtPct(surge.change24h)}`);
+  if (state.btcTicker) parts.push(`BTC ${fmtPrice(state.btcTicker.lastPr)} · ${fmtPct(state.btcTicker.change24h)}`);
+  const strength = computeMarketStrength();
+  if (Number.isFinite(strength.btcRaw)) parts.push(`BTC 強度 ${Math.round(strength.btcRaw)}`);
+  if (Number.isFinite(strength.altRaw)) parts.push(`小幣強度 ${Math.round(strength.altRaw)}`);
+  parts.push("新聞功能預留");
+  el.textContent = parts.join("　｜　") || "正在整理市場即時資訊…";
+}
+
+function applyTheme(theme) {
+  const light = theme === "light";
+  document.body.classList.toggle("theme-light", light);
+  document.querySelector('meta[name="color-scheme"]')?.setAttribute("content", light ? "light" : "dark");
+  document.querySelectorAll("[data-theme-choice]").forEach(btn => btn.classList.toggle("active", btn.dataset.themeChoice === theme));
+  if (state.chart) {
+    state.chart.applyOptions({
+      layout: { background: { type: "solid", color: light ? "#f2f6fa" : "#090e17" }, textColor: light ? "#66758b" : "#8b9db7" },
+      grid: { vertLines: { color: light ? "#dde5ee" : "#162335" }, horzLines: { color: light ? "#dde5ee" : "#162335" } },
+      rightPriceScale: { borderColor: light ? "#cbd6e3" : "#223147" },
+      timeScale: { borderColor: light ? "#cbd6e3" : "#223147" }
+    });
+  }
+}
+
+function flashSettingsSaved() {
+  const el = document.getElementById("settings-status");
+  if (!el) return;
+  el.textContent = "已儲存在這台裝置。";
+  clearTimeout(flashSettingsSaved._t);
+  flashSettingsSaved._t = setTimeout(() => { el.textContent = "設定會自動保存在目前瀏覽器。"; }, 1800);
+}
+
+function initSettings() {
+  const theme = localStorage.getItem("ox-ui-theme") || "dark";
+  applyTheme(theme);
+
+  const email = document.getElementById("setting-email");
+  const phone = document.getElementById("setting-phone");
+  const freq = document.getElementById("setting-frequency");
+  if (email) email.value = localStorage.getItem("ox-setting-email") || "";
+  if (phone) phone.value = localStorage.getItem("ox-setting-phone") || "";
+  if (freq) freq.value = localStorage.getItem("ox-setting-frequency") || "1h";
+
+  email?.addEventListener("change", () => { localStorage.setItem("ox-setting-email", email.value.trim()); flashSettingsSaved(); });
+  phone?.addEventListener("change", () => { localStorage.setItem("ox-setting-phone", phone.value.trim()); flashSettingsSaved(); });
+  freq?.addEventListener("change", () => { localStorage.setItem("ox-setting-frequency", freq.value); flashSettingsSaved(); });
+
+  document.querySelectorAll("[data-setting-key]").forEach(input => {
+    const key = `ox-setting-${input.dataset.settingKey}`;
+    const stored = localStorage.getItem(key);
+    if (stored !== null) input.checked = stored === "1";
+    input.addEventListener("change", () => { localStorage.setItem(key, input.checked ? "1" : "0"); flashSettingsSaved(); });
+  });
+
+  document.querySelectorAll("[data-theme-choice]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      localStorage.setItem("ox-ui-theme", btn.dataset.themeChoice);
+      applyTheme(btn.dataset.themeChoice);
+      flashSettingsSaved();
+    });
+  });
+}
+
 
 const BitgetAPI = {
   async fetchTickers() {
@@ -2184,14 +2549,9 @@ function initChart() {
     if (range.from <= 2) loadMoreHistoricalCandles();
   });
 
-  new ResizeObserver(entries => {
-    for (const entry of entries) {
-      state.chart.applyOptions({
-        width: entry.contentRect.width,
-        height: entry.contentRect.height
-      });
-      updatePriceTimer();
-    }
+  new ResizeObserver(() => {
+    resizeChartToContainer();
+    updatePriceTimer();
   }).observe(container);
 }
 
@@ -2339,50 +2699,70 @@ function findStructuralPivotLevels(candles, sourcePeriod) {
 async function refreshKeyLevels(chartCandles) {
   if (!state.candleSeries) return;
   const symbolAtRequest = state.symbol;
-  const sourcePeriod = getKeyLevelPeriod();
+  const sourcePeriods = getKeyLevelPeriods();
 
-  if (state.keyHighLine) { try { state.candleSeries.removePriceLine(state.keyHighLine); } catch (e) {} }
-  if (state.keyLowLine) { try { state.candleSeries.removePriceLine(state.keyLowLine); } catch (e) {} }
-  state.keyHighLine = null;
-  state.keyLowLine = null;
-  state.currentLevels = { high:0, low:0, sourcePeriod, highTime:0, lowTime:0 };
+  for (const key of ["keyHighLine","keyLowLine","secondaryKeyHighLine","secondaryKeyLowLine"]) {
+    if (state[key]) { try { state.candleSeries.removePriceLine(state[key]); } catch (e) {} }
+    state[key] = null;
+  }
+  state.currentLevels = { high:0, low:0, sourcePeriod:sourcePeriods[0], highTime:0, lowTime:0 };
+  state.secondaryLevels = null;
   updateAlertButtons();
   updateQuickStats();
 
   try {
-    const sourceCandles = state.period === sourcePeriod
-      ? chartCandles
-      : await BitgetAPI.fetchCandles(symbolAtRequest, sourcePeriod, 100);
+    const results = [];
+    for (const sourcePeriod of sourcePeriods) {
+      const sourceCandles = state.period === sourcePeriod
+        ? chartCandles
+        : await BitgetAPI.fetchCandles(symbolAtRequest, sourcePeriod, 100);
 
-    if (state.symbol !== symbolAtRequest || getKeyLevelPeriod() !== sourcePeriod) return;
-    const levels = findStructuralPivotLevels(sourceCandles, sourcePeriod);
-    state.currentLevels = { ...levels, sourcePeriod };
+      if (state.symbol !== symbolAtRequest || !getKeyLevelPeriods().includes(sourcePeriod)) return;
+      results.push({ sourcePeriod, levels: findStructuralPivotLevels(sourceCandles, sourcePeriod) });
+    }
 
-    if (levels.high) {
+    const primary = results[0];
+    state.currentLevels = { ...primary.levels, sourcePeriod: primary.sourcePeriod };
+
+    if (primary.levels.high) {
       state.keyHighLine = state.candleSeries.createPriceLine({
-        price: levels.high,
-        color: "#f7bd52",
-        lineWidth: 1,
-        lineStyle: LightweightCharts.LineStyle.Dashed,
-        axisLabelVisible: true,
-        title: `前高 ${sourcePeriod}`
+        price: primary.levels.high, color: "#f7bd52", lineWidth: 1,
+        lineStyle: LightweightCharts.LineStyle.Dashed, axisLabelVisible: true,
+        title: `前高 ${primary.sourcePeriod}`
       });
     }
-    if (levels.low) {
+    if (primary.levels.low) {
       state.keyLowLine = state.candleSeries.createPriceLine({
-        price: levels.low,
-        color: "#5ca5ff",
-        lineWidth: 1,
-        lineStyle: LightweightCharts.LineStyle.Dashed,
-        axisLabelVisible: true,
-        title: `前低 ${sourcePeriod}`
+        price: primary.levels.low, color: "#5ca5ff", lineWidth: 1,
+        lineStyle: LightweightCharts.LineStyle.Dashed, axisLabelVisible: true,
+        title: `前低 ${primary.sourcePeriod}`
       });
     }
+
+    if (results[1]) {
+      const secondary = results[1];
+      state.secondaryLevels = { ...secondary.levels, sourcePeriod: secondary.sourcePeriod };
+      if (secondary.levels.high) {
+        state.secondaryKeyHighLine = state.candleSeries.createPriceLine({
+          price: secondary.levels.high, color: "rgba(247,189,82,.58)", lineWidth: 1,
+          lineStyle: LightweightCharts.LineStyle.Dotted, axisLabelVisible: true,
+          title: `前高 ${secondary.sourcePeriod}`
+        });
+      }
+      if (secondary.levels.low) {
+        state.secondaryKeyLowLine = state.candleSeries.createPriceLine({
+          price: secondary.levels.low, color: "rgba(92,165,255,.58)", lineWidth: 1,
+          lineStyle: LightweightCharts.LineStyle.Dotted, axisLabelVisible: true,
+          title: `前低 ${secondary.sourcePeriod}`
+        });
+      }
+    }
+
     updateAlertButtons();
     updateQuickStats();
     renderOxDetail();
   } catch (e) {
-    console.warn("關鍵前高/前低取得失敗", symbolAtRequest, sourcePeriod, e);
+    console.warn("關鍵前高/前低取得失敗", symbolAtRequest, sourcePeriods, e);
   }
 }
 
@@ -2434,8 +2814,10 @@ function updateQuickStats() {
   const chg = document.getElementById("quick-change");
   chg.textContent = fmtPct(ticker.change24h); chg.className = num(ticker.change24h) >= 0 ? "positive" : "negative";
   document.getElementById("quick-volume").textContent = `${fmtUsd(ticker.usdtVolume)} USDT`;
-  document.getElementById("quick-high").textContent = state.currentLevels.high ? `${fmtPrice(state.currentLevels.high)} · ${state.currentLevels.sourcePeriod || getKeyLevelPeriod()}` : "—";
-  document.getElementById("quick-low").textContent = state.currentLevels.low ? `${fmtPrice(state.currentLevels.low)} · ${state.currentLevels.sourcePeriod || getKeyLevelPeriod()}` : "—";
+  const secondaryHigh = state.secondaryLevels?.high ? ` / ${fmtPrice(state.secondaryLevels.high)} · ${state.secondaryLevels.sourcePeriod}` : "";
+  const secondaryLow = state.secondaryLevels?.low ? ` / ${fmtPrice(state.secondaryLevels.low)} · ${state.secondaryLevels.sourcePeriod}` : "";
+  document.getElementById("quick-high").textContent = state.currentLevels.high ? `${fmtPrice(state.currentLevels.high)} · ${state.currentLevels.sourcePeriod || getKeyLevelPeriod()}${secondaryHigh}` : "—";
+  document.getElementById("quick-low").textContent = state.currentLevels.low ? `${fmtPrice(state.currentLevels.low)} · ${state.currentLevels.sourcePeriod || getKeyLevelPeriod()}${secondaryLow}` : "—";
 }
 
 function renderOxDetail() {
@@ -2445,7 +2827,11 @@ function renderOxDetail() {
   const isBenchmark = benchmarkSymbols.has(symbol);
   document.getElementById("detail-symbol").textContent = symbol;
   document.getElementById("detail-volume").textContent = ticker ? `${fmtUsd(ticker.usdtVolume)} USDT` : "—";
-  document.getElementById("detail-levels").textContent = `${state.currentLevels.sourcePeriod || getKeyLevelPeriod()}｜${state.currentLevels.high ? fmtPrice(state.currentLevels.high) : '—'} / ${state.currentLevels.low ? fmtPrice(state.currentLevels.low) : '—'}`;
+  const primaryLevelText = `${state.currentLevels.sourcePeriod || getKeyLevelPeriod()}｜${state.currentLevels.high ? fmtPrice(state.currentLevels.high) : '—'} / ${state.currentLevels.low ? fmtPrice(state.currentLevels.low) : '—'}`;
+  const secondaryLevelText = state.secondaryLevels
+    ? ` · ${state.secondaryLevels.sourcePeriod}｜${state.secondaryLevels.high ? fmtPrice(state.secondaryLevels.high) : '—'} / ${state.secondaryLevels.low ? fmtPrice(state.secondaryLevels.low) : '—'}`
+    : "";
+  document.getElementById("detail-levels").textContent = primaryLevelText + secondaryLevelText;
 
   if (!scored) {
     document.getElementById("detail-tier").textContent = isBenchmark ? "Benchmark" : "等待分析";
@@ -2530,6 +2916,7 @@ function switchSymbol(symbol) {
   if (symbol === state.symbol) { updateHeaderHUD(); return; }
   state.symbol = symbol;
   state.currentLevels = { high: 0, low: 0, sourcePeriod: getKeyLevelPeriod(), highTime: 0, lowTime: 0 };
+  state.secondaryLevels = null;
   updateHeaderHUD();
   renderCurrentTab();
   updateAlertButtons();
@@ -2565,6 +2952,7 @@ document.addEventListener("click", e => {
     document.querySelectorAll(".btn-tf").forEach(b => b.classList.toggle("active", b === tfBtn));
     document.getElementById("tf-pill").textContent = `${tfBtn.textContent} ${tfBtn.dataset.tf.includes('D') ? '日線' : tfBtn.dataset.tf.includes('W') ? '週線' : ''}`;
     state.currentLevels = { high: 0, low: 0, sourcePeriod: getKeyLevelPeriod(), highTime: 0, lowTime: 0 };
+    state.secondaryLevels = null;
     updateAlertButtons();
     loadSymbolCandles(true);
     return;
@@ -2594,13 +2982,17 @@ document.getElementById("chk-ox-markers").addEventListener("change", () => rende
 window.addEventListener("DOMContentLoaded", () => {
   const fullscreenBtn = document.getElementById("btn-chart-fullscreen");
   if (fullscreenBtn && window.matchMedia("(max-width: 900px)").matches) fullscreenBtn.textContent = "展開圖表";
+  initSettings();
   initChart();
+  applyTheme(localStorage.getItem("ox-ui-theme") || "dark");
   loadSymbolCandles(true);
   refreshMarketTickers();
   renderBenchmarkBar();
   renderMarketStrength();
+  renderOxLive();
   updateAlertButtons();
   setInterval(refreshMarketTickers, CONFIG.tickerRefreshMs);
+  setInterval(renderOxLive, CONFIG.tickerRefreshMs);
   setInterval(updatePriceTimer, 1000);
   setInterval(checkLevelAlerts, 5000);
 });
@@ -2611,10 +3003,16 @@ window.addEventListener("resize", () => {
   }
 });
 
+window.visualViewport?.addEventListener("resize", () => {
+  if (state.activeView === "home" || document.body.classList.contains("chart-focus")) {
+    [50, 160, 300].forEach(ms => setTimeout(resizeChartToContainer, ms));
+  }
+});
+
+window.addEventListener("orientationchange", () => {
+  [80, 220, 420].forEach(ms => setTimeout(resizeChartToContainer, ms));
+});
+
 document.addEventListener("keydown", e => {
   if (e.key === "Escape" && document.body.classList.contains("chart-focus")) setChartFocus(false);
 });
-
-</script>
-</body>
-</html>
