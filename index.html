@@ -2231,6 +2231,202 @@
       }
     }
 
+
+    /* ===== OX v3.4 · Right Control Center (isolated module UI) ===== */
+    .ox-menu-btn {
+      width: 38px; height: 36px; flex: 0 0 38px; padding: 0;
+      display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+      color: var(--muted); background: #0c1522; border: 1px solid #283a53; border-radius: 10px;
+      box-shadow: inset 0 1px 0 #ffffff08; transition: border-color .18s ease, color .18s ease, background .18s ease, transform .18s ease;
+    }
+    .ox-menu-btn span { width: 16px; height: 1.5px; border-radius: 999px; background: currentColor; display: block; }
+    .ox-menu-btn:hover, .ox-menu-btn[aria-expanded="true"] { color: var(--ink); border-color: #455d7c; background: #111d2c; }
+    .ox-menu-btn:active { transform: scale(.97); }
+
+    .ox-control-overlay {
+      position: fixed; inset: 0; z-index: 160; pointer-events: none; opacity: 0;
+      background: rgba(2, 7, 15, 0); transition: opacity .28s ease-out, background .28s ease-out;
+    }
+    .ox-control-overlay.is-open { pointer-events: auto; opacity: 1; background: rgba(2, 7, 15, .22); }
+    .ox-control-panel {
+      position: absolute; top: 0; right: 0; width: min(31vw, 420px); min-width: 340px; height: 100vh; height: 100dvh;
+      display: flex; flex-direction: column; color: var(--ink); background: rgba(9, 15, 25, .985);
+      border-left: 1px solid #2b3c54; box-shadow: -20px 0 50px #0008; transform: translateX(102%);
+      transition: transform .3s ease-out; overflow: hidden; overscroll-behavior: contain;
+    }
+    .ox-control-overlay.is-open .ox-control-panel { transform: translateX(0); }
+    body.ox-control-open { overflow: hidden; }
+    .ox-control-panel-head {
+      display: flex; align-items: flex-start; gap: 12px; padding: 19px 18px 15px; border-bottom: 1px solid var(--line);
+      background: linear-gradient(180deg, #101b2a, #0b1420);
+    }
+    .ox-control-title { min-width: 0; flex: 1; }
+    .ox-control-kicker { color: var(--gold); font-size: 9px; font-weight: 900; letter-spacing: .22em; text-transform: uppercase; }
+    .ox-control-title h2 { margin: 3px 0 0; font-size: 19px; letter-spacing: .04em; }
+    .ox-control-system-state { margin-top: 5px; display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 9px; }
+    .ox-control-system-state i { width: 6px; height: 6px; border-radius: 50%; background: var(--green); box-shadow: 0 0 9px #38d3a66b; }
+    .ox-control-close, .ox-control-back {
+      width: 34px; height: 34px; border-radius: 9px; border: 1px solid #2b3d56; background: #0b1420; color: #b6c3d5;
+      display: grid; place-items: center; font-size: 18px; line-height: 1; padding: 0;
+    }
+    .ox-control-close:hover, .ox-control-back:hover { color: var(--ink); border-color: #4b607d; background: #111d2b; }
+    .ox-control-scroll { flex: 1; overflow: auto; padding: 12px 12px 28px; scrollbar-width: thin; scrollbar-color: #394b63 transparent; }
+    .ox-control-view { display: none; }
+    .ox-control-view.active { display: block; }
+    .ox-control-group {
+      margin-bottom: 10px; background: #0c1522; border: 1px solid #26374e; border-radius: 13px; overflow: hidden;
+      box-shadow: inset 0 1px 0 #ffffff06;
+    }
+    .ox-control-row {
+      min-height: 62px; display: grid; grid-template-columns: 34px minmax(0,1fr) auto; gap: 10px; align-items: center;
+      padding: 10px 12px; border-bottom: 1px solid #1d2b3e;
+    }
+    .ox-control-row:last-child { border-bottom: 0; }
+    button.ox-control-row { width: 100%; color: inherit; text-align: left; background: transparent; border-top: 0; border-left: 0; border-right: 0; }
+    button.ox-control-row:hover { background: #ffffff04; }
+    .ox-control-icon {
+      width: 32px; height: 32px; border-radius: 9px; display: grid; place-items: center; color: #a7b6ca; background: #111d2b; border: 1px solid #2c4059;
+    }
+    .ox-control-icon svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+    .ox-control-copy { min-width: 0; }
+    .ox-control-copy b { display: block; color: var(--ink); font-size: 11px; font-weight: 800; }
+    .ox-control-copy small { display: block; margin-top: 2px; color: var(--muted); font-size: 8.5px; line-height: 1.35; white-space: normal; }
+    .ox-control-side { display: inline-flex; align-items: center; justify-content: flex-end; gap: 7px; color: #8294ab; font-size: 8.5px; white-space: nowrap; }
+    .ox-control-live-tag { color: var(--green); border: 1px solid #2b7d6b; background: #1da98410; border-radius: 999px; padding: 3px 6px; font-size: 7.5px; font-weight: 800; }
+    .ox-control-ui-tag { color: #91a2b8; border: 1px solid #354860; border-radius: 999px; padding: 3px 6px; font-size: 7.5px; }
+    .ox-control-arrow { font-size: 16px; line-height: 1; color: #6f829a; }
+    .ox-control-section-label { margin: 13px 4px 6px; color: #71859e; font-size: 8px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
+
+    .ox-theme-segment { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; width: 152px; padding: 3px; border-radius: 9px; background: #09111c; border: 1px solid #263950; }
+    .ox-theme-segment button { min-height: 27px; padding: 0 6px; border: 0; border-radius: 6px; background: transparent; color: #8395ad; font-size: 8px; font-weight: 800; }
+    .ox-theme-segment button.active { color: #16120b; background: var(--gold); box-shadow: 0 1px 7px #f7bd522d; }
+
+    .ox-control-toggle { position: relative; width: 36px; height: 20px; flex: 0 0 36px; }
+    .ox-control-toggle input { position: absolute; opacity: 0; pointer-events: none; }
+    .ox-control-toggle span { position: absolute; inset: 0; border-radius: 999px; background: #26364a; border: 1px solid #354a64; transition: .2s ease; }
+    .ox-control-toggle span::after { content: ""; position: absolute; width: 14px; height: 14px; top: 2px; left: 2px; border-radius: 50%; background: #8294aa; transition: .2s ease; }
+    .ox-control-toggle input:checked + span { background: #a87417; border-color: #c18b25; }
+    .ox-control-toggle input:checked + span::after { transform: translateX(16px); background: #fff4d6; }
+
+    .ox-control-refresh { padding: 6px 8px; border-radius: 7px; border: 1px solid #3a4c64; background: #111c2a; color: #b7c3d3; font-size: 8px; font-weight: 800; }
+    .ox-control-refresh:hover { color: var(--ink); border-color: #637590; }
+    .ox-market-segment { display: flex; gap: 5px; flex-wrap: wrap; justify-content: flex-end; }
+    .ox-market-chip { border: 1px solid #35475e; border-radius: 999px; padding: 4px 7px; color: #8192a8; background: #0a1320; font-size: 7.5px; }
+    .ox-market-chip.active { color: var(--gold); border-color: #8d6a28; background: #f7bd520a; }
+    .ox-market-chip[disabled] { opacity: .45; cursor: default; }
+
+    .ox-control-note { margin: 10px 2px 0; color: #71839a; font-size: 8px; line-height: 1.5; }
+    .ox-control-note strong { color: #9fb0c5; }
+    .ox-control-changelog { display: none; padding: 9px 12px 11px 56px; border-top: 1px solid #1d2b3e; color: var(--muted); font-size: 8.5px; line-height: 1.5; }
+    .ox-control-changelog.open { display: block; }
+
+    .ox-feedback-head { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+    .ox-feedback-head h3 { margin: 0; font-size: 16px; }
+    .ox-feedback-head small { color: var(--muted); font-size: 8px; }
+    .ox-feedback-form { padding: 14px; border-radius: 13px; background: #0c1522; border: 1px solid #26374e; }
+    .ox-feedback-field { display: block; margin-bottom: 12px; }
+    .ox-feedback-field span { display: block; margin-bottom: 5px; color: #9eafc3; font-size: 9px; font-weight: 700; }
+    .ox-feedback-field input, .ox-feedback-field select, .ox-feedback-field textarea {
+      width: 100%; color: var(--ink); background: #09121d; border: 1px solid #2b3f58; border-radius: 9px; padding: 9px 10px; font-size: 10px; outline: 0;
+    }
+    .ox-feedback-field textarea { min-height: 120px; resize: vertical; line-height: 1.5; }
+    .ox-feedback-field input:focus, .ox-feedback-field select:focus, .ox-feedback-field textarea:focus { border-color: #8d6a28; box-shadow: 0 0 0 2px #f7bd5212; }
+    .ox-feedback-submit { width: 100%; min-height: 38px; border: 1px solid #9a7126; border-radius: 9px; background: #f7bd5212; color: var(--gold); font-size: 10px; font-weight: 850; }
+    .ox-feedback-status { min-height: 32px; margin-top: 9px; padding: 8px 9px; border-radius: 8px; background: #111b28; border: 1px dashed #32455e; color: #8fa1b8; font-size: 8.5px; line-height: 1.45; }
+
+    body.theme-light .ox-menu-btn { color: #52677f; background: #f6f9fc; border-color: #b9c8d8; box-shadow: inset 0 1px 0 #fff; }
+    body.theme-light .ox-menu-btn:hover, body.theme-light .ox-menu-btn[aria-expanded="true"] { color: #172033; background: #edf3f8; border-color: #8fa3b8; }
+    body.theme-light .ox-control-overlay.is-open { background: rgba(30, 41, 59, .12); }
+    body.theme-light .ox-control-panel { color: #172033; background: rgba(248,250,252,.995); border-color: #becddd; box-shadow: -18px 0 48px #33415526; }
+    body.theme-light .ox-control-panel-head { background: linear-gradient(180deg,#ffffff,#f4f7fa); border-color: #ced9e4; }
+    body.theme-light .ox-control-close, body.theme-light .ox-control-back { color: #52677f; background: #f4f7fa; border-color: #c1cedc; }
+    body.theme-light .ox-control-close:hover, body.theme-light .ox-control-back:hover { color: #172033; background: #eaf0f6; }
+    body.theme-light .ox-control-group, body.theme-light .ox-feedback-form { background: #ffffff; border-color: #c7d4e1; box-shadow: 0 7px 18px #3341550a, inset 0 1px 0 #fff; }
+    body.theme-light .ox-control-row { border-color: #dce4ec; }
+    body.theme-light button.ox-control-row:hover { background: #f8fafc; }
+    body.theme-light .ox-control-icon { color: #536980; background: #f3f7fa; border-color: #c8d4df; }
+    body.theme-light .ox-control-copy b { color: #182235; }
+    body.theme-light .ox-control-copy small, body.theme-light .ox-control-side, body.theme-light .ox-control-note, body.theme-light .ox-feedback-head small { color: #65778d; }
+    body.theme-light .ox-control-section-label { color: #6d7e92; }
+    body.theme-light .ox-theme-segment { background: #eef3f7; border-color: #c6d2de; }
+    body.theme-light .ox-theme-segment button { color: #5d7188; }
+    body.theme-light .ox-theme-segment button.active { color: #fff; background: #b97600; }
+    body.theme-light .ox-control-toggle span { background: #d9e2ea; border-color: #b9c7d5; }
+    body.theme-light .ox-control-toggle span::after { background: #fff; box-shadow: 0 1px 3px #33415533; }
+    body.theme-light .ox-control-toggle input:checked + span { background: #c58a22; border-color: #b97600; }
+    body.theme-light .ox-control-refresh { color: #425870; background: #f2f6f9; border-color: #bac8d6; }
+    body.theme-light .ox-market-chip { color: #65788d; background: #f3f7fa; border-color: #c3d0dc; }
+    body.theme-light .ox-market-chip.active { color: #a76400; background: #fff6e5; border-color: #b97600; }
+    body.theme-light .ox-control-changelog { border-color: #dce4ec; color: #5c7086; }
+    body.theme-light .ox-feedback-field span { color: #475d75; }
+    body.theme-light .ox-feedback-field input, body.theme-light .ox-feedback-field select, body.theme-light .ox-feedback-field textarea { color: #182235; background: #f8fafc; border-color: #c5d2de; }
+    body.theme-light .ox-feedback-status { background: #f5f8fb; border-color: #c8d4df; color: #5b6f85; }
+    body.theme-light .ox-feedback-submit { color: #a76400; background: #fff8ea; border-color: #b97600; }
+
+    @media (max-width: 900px) {
+      .ox-control-panel { width: min(86vw, 390px); min-width: 0; }
+    }
+    @media (max-width: 720px) {
+      .ox-menu-btn { width: 32px; height: 30px; flex-basis: 32px; border-radius: 8px; gap: 3px; }
+      .ox-menu-btn span { width: 13px; height: 1.25px; }
+      .ox-control-panel { width: 86vw; max-width: 370px; }
+      .ox-control-panel-head { padding: 15px 13px 12px; }
+      .ox-control-scroll { padding: 9px 9px 22px; }
+      .ox-control-row { min-height: 57px; grid-template-columns: 31px minmax(0,1fr) auto; gap: 8px; padding: 8px 9px; }
+      .ox-control-icon { width: 29px; height: 29px; border-radius: 8px; }
+      .ox-control-copy b { font-size: 10px; }
+      .ox-control-copy small { font-size: 7.7px; }
+      .ox-theme-segment { width: 132px; }
+      .ox-theme-segment button { min-height: 25px; font-size: 7.5px; }
+      .ox-control-side { font-size: 7.7px; }
+      .ox-control-changelog { padding-left: 49px; }
+    }
+
+  
+
+    /* ===== v3.4 refinement: compact header / chart future-space labels / notification health ===== */
+    .nav { height: 58px; }
+    .brand { line-height: 1; }
+    .chart-key-labels {
+      position:absolute; inset:0; z-index:3; pointer-events:none; overflow:hidden;
+    }
+    .chart-key-label {
+      position:absolute; right:64px; transform:translateY(-50%); max-width:132px;
+      padding:3px 6px; border-radius:4px; border:1px solid currentColor;
+      background:#09111deb; box-shadow:0 2px 7px #0007; color:#d7e2ef;
+      font:800 9px/1.15 ui-monospace,SFMono-Regular,Menlo,monospace; white-space:nowrap;
+    }
+    .chart-key-label.high { color:#f7bd52; }
+    .chart-key-label.low { color:#69adff; }
+    .chart-key-label.secondary { opacity:.72; font-size:8px; }
+    .price-timer { right:64px; }
+    .notification-health {
+      margin-top:10px; padding:11px 12px; border:1px solid var(--line); border-radius:10px;
+      background:#0b1420;
+    }
+    .notification-health-head { display:flex; align-items:center; justify-content:space-between; gap:10px; font-size:11px; }
+    .notification-health-head strong { color:var(--gold); font-size:10px; }
+    .notification-health > small { display:block; margin-top:5px; color:var(--muted); font-size:9px; line-height:1.45; }
+    .notification-health-actions { display:flex; gap:6px; flex-wrap:wrap; margin-top:9px; }
+    .notification-health-actions .btn-act { font-size:9px; padding:6px 8px; }
+    body.theme-light .chart-key-label { background:#fffffff2; box-shadow:0 2px 8px #3341551f; }
+    body.theme-light .chart-key-label.high { color:#a96800; }
+    body.theme-light .chart-key-label.low { color:#1d67b8; }
+    body.theme-light .notification-health { background:#f8fafc; border-color:#c9d5e1; }
+    body.theme-light .notification-health-head { color:#172033; }
+    body.theme-light .notification-health > small { color:#62758c; }
+    @media (max-width:720px) {
+      .nav { height:46px; }
+      .price-timer { right:54px !important; min-width:68px; }
+      .chart-key-label { right:54px; max-width:104px; font-size:7px; padding:2px 4px; }
+      .chart-key-label.secondary { font-size:6.5px; }
+      .notification-health { padding:9px 10px; }
+      .notification-health-head { font-size:9px; }
+      .notification-health-head strong { font-size:8px; }
+      .notification-health > small { font-size:7.5px; }
+      .notification-health-actions .btn-act { font-size:7.5px; padding:5px 7px; }
+    }
+
   </style>
 </head>
 <body>
@@ -2248,11 +2444,14 @@
           <rect x="0" y="396" width="202" height="43"/><rect x="247" y="396" width="203" height="43"/>
         </g>
       </svg>
-      <span>OX 幣種篩選器 <small style="font-size:12px;color:var(--gold);font-weight:600">v3.4 · 首頁 / 強弱 / 雷達 / 媒體 / 設定</small></span>
+      <span>OX 幣種篩選器</span>
     </a>
     <div class="nav-stats">
       <div class="live"><i class="dot" id="dot"></i><span id="scan-status">全市場輪巡佇列準備中…</span></div>
       <button class="btn-act" id="btn-force-rescan" title="重新掃描">重啟輪巡</button>
+      <button class="ox-menu-btn" id="ox-control-open" type="button" aria-label="開啟 OX 控制中心" aria-controls="ox-control-panel" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
     </div>
   </div>
 </header>
@@ -2262,6 +2461,111 @@
     <span class="ox-live-badge">OX LIVE</span>
     <div class="ox-live-window"><span id="ox-live-text">正在整理市場即時資訊…</span></div>
   </div>
+</div>
+
+<!-- ===== OX CONTROL：右側控制中心（v3.4 isolated UI module） ===== -->
+<div class="ox-control-overlay" id="ox-control-overlay" aria-hidden="true">
+  <aside class="ox-control-panel" id="ox-control-panel" role="dialog" aria-modal="true" aria-labelledby="ox-control-heading">
+    <div class="ox-control-panel-head">
+      <div class="ox-control-title">
+        <div class="ox-control-kicker">SYSTEM CENTER</div>
+        <h2 id="ox-control-heading">OX CONTROL</h2>
+        <div class="ox-control-system-state"><i></i><span>v3.4 · SYSTEM ONLINE</span></div>
+      </div>
+      <button class="ox-control-close" id="ox-control-close" type="button" aria-label="關閉控制中心">×</button>
+    </div>
+
+    <div class="ox-control-scroll">
+      <div class="ox-control-view active" data-control-view="main">
+        <div class="ox-control-section-label">Identity</div>
+        <div class="ox-control-group">
+          <div class="ox-control-row">
+            <span class="ox-control-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c.7-4.2 3-6.3 7-6.3s6.3 2.1 7 6.3"/></svg></span>
+            <span class="ox-control-copy"><b>帳號 / 登入</b><small>帳號系統尚未建立，先保留入口與狀態。</small></span>
+            <span class="ox-control-side"><span class="ox-control-ui-tag">UI ONLY</span></span>
+          </div>
+        </div>
+
+        <div class="ox-control-section-label">Appearance</div>
+        <div class="ox-control-group">
+          <div class="ox-control-row">
+            <span class="ox-control-icon"><svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 9 9 7 7 0 0 1-9-9Z"/></svg></span>
+            <span class="ox-control-copy"><b>主題切換</b><small>直接使用目前 v3.4 黑 / 白 / 隨系統邏輯。</small></span>
+            <span class="ox-control-side">
+              <span class="ox-theme-segment" aria-label="主題切換">
+                <button type="button" data-control-theme="dark">深色</button>
+                <button type="button" data-control-theme="light">淺色</button>
+                <button type="button" data-control-theme="system">自動</button>
+              </span>
+            </span>
+          </div>
+        </div>
+
+        <div class="ox-control-section-label">System</div>
+        <div class="ox-control-group">
+          <div class="ox-control-row">
+            <span class="ox-control-icon"><svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 20h4"/></svg></span>
+            <span class="ox-control-copy"><b>通知提醒</b><small id="ox-control-notify-status">檢查瀏覽器通知權限中…</small></span>
+            <span class="ox-control-side">
+              <label class="ox-control-toggle" title="通知偏好總開關"><input id="ox-control-notify-toggle" type="checkbox"><span></span></label>
+            </span>
+          </div>
+          <button class="ox-control-row" id="ox-control-open-notifications" type="button">
+            <span class="ox-control-icon"><svg viewBox="0 0 24 24"><path d="M4 12h16M12 4v16"/></svg></span>
+            <span class="ox-control-copy"><b>通知詳細設定</b><small>前高 / 前低、T1 / T2 / T3、BTC 強度等現有設定。</small></span>
+            <span class="ox-control-side"><span>設定</span><span class="ox-control-arrow">›</span></span>
+          </button>
+          <div class="ox-control-row">
+            <span class="ox-control-icon"><svg viewBox="0 0 24 24"><path d="M20 6v5h-5"/><path d="M18.4 15A7 7 0 1 1 19 8"/></svg></span>
+            <span class="ox-control-copy"><b>資料更新</b><small id="ox-control-data-status">即時 / 自動更新</small></span>
+            <span class="ox-control-side"><span class="ox-control-live-tag">LIVE</span><button class="ox-control-refresh" id="ox-control-refresh" type="button">重新整理</button></span>
+          </div>
+        </div>
+
+        <div class="ox-control-section-label">Market</div>
+        <div class="ox-control-group">
+          <div class="ox-control-row">
+            <span class="ox-control-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.6 2.7 4 5.7 4 9s-1.4 6.3-4 9c-2.6-2.7-4-5.7-4-9s1.4-6.3 4-9Z"/></svg></span>
+            <span class="ox-control-copy"><b>市場設定</b><small>目前僅啟用加密貨幣；其他市場先保留位置。</small></span>
+            <span class="ox-control-side ox-market-segment">
+              <span class="ox-market-chip active">加密</span><button class="ox-market-chip" type="button" disabled>美股</button><button class="ox-market-chip" type="button" disabled>台股</button>
+            </span>
+          </div>
+        </div>
+
+        <div class="ox-control-section-label">Support</div>
+        <div class="ox-control-group">
+          <button class="ox-control-row" id="ox-control-feedback-open" type="button">
+            <span class="ox-control-icon"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H8l-4 4Z"/><path d="M8 9h8M8 12h5"/></svg></span>
+            <span class="ox-control-copy"><b>意見回饋</b><small>在控制中心內填寫；目前尚未接 Email / 表單後端。</small></span>
+            <span class="ox-control-side"><span class="ox-control-ui-tag">UI</span><span class="ox-control-arrow">›</span></span>
+          </button>
+          <button class="ox-control-row" id="ox-control-about-toggle" type="button" aria-expanded="false">
+            <span class="ox-control-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.2"/></svg></span>
+            <span class="ox-control-copy"><b>關於 / 版本</b><small>OX Crypto Screener · Stable</small></span>
+            <span class="ox-control-side"><b style="color:var(--gold)">v3.4</b><span class="ox-control-arrow">›</span></span>
+          </button>
+          <div class="ox-control-changelog" id="ox-control-changelog">v3.4 穩定版 · 右側控制中心加入。Changelog 介面已預留，後續可在這裡維護版本紀錄。</div>
+        </div>
+
+        <p class="ox-control-note"><strong>目前未串接：</strong>帳號登入、Email / SMS / 背景推送、意見回饋寄信。控制中心不會假裝這些服務已經啟用。</p>
+      </div>
+
+      <div class="ox-control-view" data-control-view="feedback">
+        <div class="ox-feedback-head">
+          <button class="ox-control-back" id="ox-control-feedback-back" type="button" aria-label="返回控制中心">‹</button>
+          <div><h3>意見回饋</h3><small>FEEDBACK · UI READY / BACKEND NOT CONNECTED</small></div>
+        </div>
+        <form class="ox-feedback-form" id="ox-feedback-form">
+          <label class="ox-feedback-field"><span>回饋類型</span><select id="ox-feedback-type"><option>功能建議</option><option>操作問題</option><option>資料 / 顯示問題</option><option>其他</option></select></label>
+          <label class="ox-feedback-field"><span>問題 / 建議內容</span><textarea id="ox-feedback-message" placeholder="告訴我你遇到的問題，或希望 OX 下一步改善什麼。" required></textarea></label>
+          <label class="ox-feedback-field"><span>Email（選填）</span><input id="ox-feedback-email" type="email" placeholder="yourname@gmail.com"></label>
+          <button class="ox-feedback-submit" type="submit">送出</button>
+          <div class="ox-feedback-status" id="ox-feedback-status">目前沒有串接 Formspree、Web3Forms 或自建後端，因此按下送出不會寄信。</div>
+        </form>
+      </div>
+    </div>
+  </aside>
 </div>
 
 <main class="wrap" style="padding-top:10px;padding-bottom:40px">
@@ -2413,6 +2717,7 @@
 
       <div id="chart" class="chart-container">
         <div id="chart-loading" class="chart-loading-overlay">載入歷史 K 線中…</div>
+        <div id="chart-key-labels" class="chart-key-labels" aria-hidden="true"></div>
         <div id="price-timer" class="price-timer">—</div>
       </div>
       <div class="chart-quickbar">
@@ -2626,6 +2931,18 @@
               <option value="1w">每週</option>
             </select>
           </label>
+          <div class="notification-health">
+            <div class="notification-health-head">
+              <span>瀏覽器通知</span>
+              <strong id="notification-permission-state">檢查中…</strong>
+            </div>
+            <small id="notification-support-hint">通知權限會以瀏覽器實際狀態為準，不會只看網站內的開關。</small>
+            <div class="notification-health-actions">
+              <button class="btn-act" id="btn-request-notification" type="button">授權 / 檢查</button>
+              <button class="btn-act" id="btn-test-notification" type="button">測試通知</button>
+              <button class="btn-act" id="btn-test-sound" type="button">測試鈴聲</button>
+            </div>
+          </div>
         </article>
 
         <article class="settings-card">
@@ -2794,48 +3111,159 @@ function showToast(message) {
   showToast._t = setTimeout(() => el.classList.remove("show"), 3200);
 }
 
-function primeAlertAudio() {
+async function primeAlertAudio(fromUserGesture = false) {
   try {
     const Ctx = window.AudioContext || window.webkitAudioContext;
-    if (!Ctx) return;
-    if (!state.audioCtx) state.audioCtx = new Ctx();
-    if (state.audioCtx.state === "suspended") state.audioCtx.resume();
-  } catch (e) {}
+    if (!Ctx) return false;
+    if (!state.audioCtx || state.audioCtx.state === "closed") state.audioCtx = new Ctx();
+    if (state.audioCtx.state === "suspended") {
+      try { await state.audioCtx.resume(); } catch (e) {}
+    }
+    if (fromUserGesture && state.audioCtx.state === "running" && !state.audioPrimed) {
+      // Play a silent one-sample buffer during a real user gesture so Safari / iOS / Chrome
+      // considers this AudioContext user-unlocked before an alert happens later.
+      const buffer = state.audioCtx.createBuffer(1, 1, state.audioCtx.sampleRate || 44100);
+      const source = state.audioCtx.createBufferSource();
+      const gain = state.audioCtx.createGain();
+      gain.gain.value = 0.00001;
+      source.buffer = buffer;
+      source.connect(gain); gain.connect(state.audioCtx.destination);
+      source.start(0);
+      state.audioPrimed = true;
+    }
+    return state.audioCtx.state === "running";
+  } catch (e) {
+    console.warn("OX alert audio unlock failed", e);
+    return false;
+  }
 }
 
-function playAlertTone(kind = "high") {
+async function playAlertTone(kind = "high") {
   try {
-    primeAlertAudio();
-    if (!state.audioCtx) return;
+    const ready = await primeAlertAudio(false);
+    if (!ready || !state.audioCtx) return false;
+    const now = state.audioCtx.currentTime;
     const osc = state.audioCtx.createOscillator();
     const gain = state.audioCtx.createGain();
     osc.type = "sine";
-    osc.frequency.value = kind === "high" ? 880 : 520;
-    gain.gain.setValueAtTime(0.0001, state.audioCtx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.18, state.audioCtx.currentTime + 0.02);
-    gain.gain.exponentialRampToValueAtTime(0.0001, state.audioCtx.currentTime + 0.55);
+    osc.frequency.setValueAtTime(kind === "high" ? 880 : 520, now);
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.exponentialRampToValueAtTime(0.16, now + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.5);
     osc.connect(gain); gain.connect(state.audioCtx.destination);
-    osc.start(); osc.stop(state.audioCtx.currentTime + 0.58);
-  } catch (e) {}
+    osc.start(now); osc.stop(now + 0.54);
+    return true;
+  } catch (e) {
+    console.warn("OX alert sound failed", e);
+    return false;
+  }
 }
 
-async function maybeRequestNotificationPermission() {
+function notificationPlatformInfo() {
+  const ua = navigator.userAgent || "";
+  const isiOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  const standalone = window.matchMedia?.("(display-mode: standalone)")?.matches || navigator.standalone === true;
+  const supported = "Notification" in window;
+  return { isiOS, standalone, supported, permission: supported ? Notification.permission : "unsupported" };
+}
+
+function notificationMasterEnabled() {
+  return localStorage.getItem("ox-control-notifications-enabled") === "1";
+}
+
+function notificationPermissionText() {
+  const info = notificationPlatformInfo();
+  if (!info.supported) return info.isiOS && !info.standalone ? "iPhone 瀏覽器頁籤不支援" : "此瀏覽器不支援";
+  if (info.permission === "granted") return "已授權";
+  if (info.permission === "denied") return "已封鎖";
+  return "尚未詢問";
+}
+
+function syncNotificationPermissionUI() {
+  const info = notificationPlatformInfo();
+  const stateEl = document.getElementById("notification-permission-state");
+  const hintEl = document.getElementById("notification-support-hint");
+  const controlStatus = document.getElementById("ox-control-notify-status");
+  const controlToggle = document.getElementById("ox-control-notify-toggle");
+  const grantedAndOn = info.supported && info.permission === "granted" && notificationMasterEnabled();
+
+  if (stateEl) stateEl.textContent = notificationPermissionText();
+  if (hintEl) {
+    if (info.isiOS && !info.standalone) hintEl.textContent = "iPhone / iPad 的系統通知通常需要先把網站加入主畫面並以 Web App 開啟；一般 Safari 分頁仍會保留頁內提示與鈴聲。";
+    else if (!info.supported) hintEl.textContent = "這個瀏覽器沒有提供 Notification API；OX 仍會使用頁內提示與鈴聲。";
+    else if (info.permission === "denied") hintEl.textContent = "瀏覽器已封鎖通知。請到瀏覽器 / 系統網站權限中重新允許；網站本身不能繞過封鎖。";
+    else if (info.permission === "granted") hintEl.textContent = notificationMasterEnabled() ? "瀏覽器已授權，OX 系統通知總開關目前為開啟。" : "瀏覽器已授權，但 OX 系統通知總開關目前為關閉。";
+    else hintEl.textContent = "尚未取得瀏覽器授權。請由按鈕或設定前高 / 前低提醒時主動授權。";
+  }
+  if (controlStatus) {
+    if (!info.supported) controlStatus.textContent = "瀏覽器通知不可用；頁內提示 / 鈴聲仍可使用。";
+    else if (info.permission === "granted") controlStatus.textContent = grantedAndOn ? "瀏覽器已授權 · 系統通知開啟" : "瀏覽器已授權 · OX 總開關關閉";
+    else if (info.permission === "denied") controlStatus.textContent = "瀏覽器已封鎖；需到瀏覽器 / 系統權限重新允許。";
+    else controlStatus.textContent = "尚未授權；開啟時會向瀏覽器要求權限。";
+  }
+  if (controlToggle) {
+    controlToggle.checked = grantedAndOn;
+    controlToggle.disabled = !info.supported || info.permission === "denied";
+  }
+}
+
+async function maybeRequestNotificationPermission({ interactive = false } = {}) {
+  const info = notificationPlatformInfo();
+  if (!info.supported) {
+    syncNotificationPermissionUI();
+    return "unsupported";
+  }
+  if (Notification.permission !== "default") {
+    syncNotificationPermissionUI();
+    return Notification.permission;
+  }
+  if (!interactive) return "default";
   try {
-    if (!("Notification" in window)) return;
-    if (Notification.permission === "default") await Notification.requestPermission();
-  } catch (e) {}
+    const result = await Notification.requestPermission();
+    if (result === "granted" && localStorage.getItem("ox-control-notifications-enabled") === null) {
+      localStorage.setItem("ox-control-notifications-enabled", "1");
+    }
+    syncNotificationPermissionUI();
+    return result;
+  } catch (e) {
+    console.warn("OX notification permission request failed", e);
+    syncNotificationPermissionUI();
+    return "error";
+  }
 }
 
-function fireLevelAlert(kind, alert, price, symbol = state.symbol, period = state.period) {
+async function sendBrowserNotification(title, options = {}, { bypassMaster = false } = {}) {
+  const info = notificationPlatformInfo();
+  if (!info.supported || Notification.permission !== "granted") return false;
+  if (!bypassMaster && !notificationMasterEnabled()) return false;
+  const payload = { ...options, tag: options.tag || `ox-${Date.now()}` };
+  try {
+    // If the site already has a service worker, prefer it for better background-tab behavior.
+    if (navigator.serviceWorker?.getRegistration) {
+      const reg = await navigator.serviceWorker.getRegistration();
+      if (reg?.showNotification) {
+        await reg.showNotification(title, payload);
+        return true;
+      }
+    }
+    const n = new Notification(title, payload);
+    n.onclick = () => { try { window.focus(); n.close(); } catch (e) {} };
+    return true;
+  } catch (e) {
+    console.warn("OX browser notification failed", e);
+    return false;
+  }
+}
+
+async function fireLevelAlert(kind, alert, price, symbol = state.symbol, period = state.period) {
   const isHigh = kind === "high";
   const title = `${symbol} ${isHigh ? "突破前高" : "跌破前低"}`;
   const body = `${period}｜目標 ${fmtPrice(alert.target)}｜目前 ${fmtPrice(price)}`;
-  playAlertTone(kind);
+  const soundPlayed = await playAlertTone(kind);
   if (navigator.vibrate) navigator.vibrate([180, 80, 180]);
-  try {
-    if ("Notification" in window && Notification.permission === "granted") new Notification(title, { body });
-  } catch (e) {}
-  showToast(`🔔 ${title}：${fmtPrice(price)}`);
+  const notified = await sendBrowserNotification(title, { body, icon: "ox-logo.png", tag: `ox-level-${symbol}-${period}-${kind}` });
+  const suffix = notified ? "" : (notificationPlatformInfo().permission === "granted" && !notificationMasterEnabled() ? "（系統通知總開關關閉）" : "（頁內提醒）");
+  showToast(`🔔 ${title}：${fmtPrice(price)}${suffix}${soundPlayed ? "" : " · 音效未解鎖"}`);
 }
 
 function updateAlertButtons() {
@@ -2871,8 +3299,11 @@ async function toggleLevelAlert(kind) {
     removeStoredAlert(kind, state.symbol, sourcePeriod);
     showToast(`已關閉 ${state.symbol} ${sourcePeriod} ${kind === "high" ? "前高" : "前低"}提醒`);
   } else {
-    primeAlertAudio();
-    await maybeRequestNotificationPermission();
+    await primeAlertAudio(true);
+    const permission = await maybeRequestNotificationPermission({ interactive: true });
+    if (permission === "granted" && localStorage.getItem("ox-control-notifications-enabled") === null) {
+      localStorage.setItem("ox-control-notifications-enabled", "1");
+    }
     setStoredAlert(kind, {
       enabled: true,
       triggered: false,
@@ -2880,13 +3311,16 @@ async function toggleLevelAlert(kind) {
       sourcePeriod,
       createdAt: Date.now()
     }, state.symbol, sourcePeriod);
-    showToast(`已設定 ${state.symbol} ${sourcePeriod} ${kind === "high" ? "前高突破" : "前低跌破"}提醒 ${fmtPrice(target)}`);
+    syncNotificationPermissionUI();
+    const delivery = permission === "granted" && notificationMasterEnabled() ? "瀏覽器通知＋鈴聲" : "頁內提示＋鈴聲";
+    showToast(`已設定 ${state.symbol} ${sourcePeriod} ${kind === "high" ? "前高突破" : "前低跌破"}提醒 ${fmtPrice(target)} · ${delivery}`);
   }
   updateAlertButtons();
 }
 
 function checkLevelAlerts() {
   if (!state.tickers.length) return;
+  if (localStorage.getItem("ox-setting-breakout") === "0") return;
   for (let i = 0; i < localStorage.length; i++) {
     const key = localStorage.key(i);
     if (!key || !key.startsWith("ox-level-alert:")) continue;
@@ -3007,6 +3441,8 @@ function resizeChartToContainer() {
   const height = container.clientHeight;
   if (width > 0 && height > 0) {
     state.chart.applyOptions({ width: Math.round(width), height: Math.round(height) });
+    applyChartFutureSpace(false);
+    requestAnimationFrame(updateKeyLevelVisualLabels);
   }
 }
 
@@ -3179,6 +3615,7 @@ function applyTheme(themeMode = "system") {
   document.documentElement.style.colorScheme = resolved;
   document.querySelector('meta[name="color-scheme"]')?.setAttribute("content", resolved);
   document.querySelectorAll("[data-theme-choice]").forEach(btn => btn.classList.toggle("active", btn.dataset.themeChoice === mode));
+  document.dispatchEvent(new CustomEvent("ox:themechange", { detail: { mode, resolved } }));
 
   if (state.chart) {
     state.chart.applyOptions({
@@ -3227,6 +3664,40 @@ function initSettings() {
       flashSettingsSaved();
     });
   });
+
+  const requestNotificationBtn = document.getElementById("btn-request-notification");
+  const testNotificationBtn = document.getElementById("btn-test-notification");
+  const testSoundBtn = document.getElementById("btn-test-sound");
+  requestNotificationBtn?.addEventListener("click", async () => {
+    await primeAlertAudio(true);
+    const permission = await maybeRequestNotificationPermission({ interactive: true });
+    if (permission === "granted") {
+      localStorage.setItem("ox-control-notifications-enabled", "1");
+      showToast("瀏覽器通知已授權");
+    } else if (permission === "denied") {
+      showToast("通知已被瀏覽器封鎖，請到網站 / 系統權限重新允許");
+    } else {
+      showToast("此環境目前無法取得瀏覽器通知權限");
+    }
+    syncNotificationPermissionUI();
+  });
+  testNotificationBtn?.addEventListener("click", async () => {
+    await primeAlertAudio(true);
+    let permission = notificationPlatformInfo().permission;
+    if (permission === "default") permission = await maybeRequestNotificationPermission({ interactive: true });
+    if (permission !== "granted") {
+      syncNotificationPermissionUI();
+      return showToast("尚未取得瀏覽器通知權限");
+    }
+    const sent = await sendBrowserNotification("OX 通知測試", { body: "如果你看到這則通知，瀏覽器 Notification API 已正常工作。", icon: "ox-logo.png", tag: "ox-test-notification" }, { bypassMaster: true });
+    showToast(sent ? "測試通知已送出" : "瀏覽器沒有成功顯示通知；請查看下方權限狀態");
+  });
+  testSoundBtn?.addEventListener("click", async () => {
+    const unlocked = await primeAlertAudio(true);
+    const played = unlocked ? await playAlertTone("high") : false;
+    showToast(played ? "🔔 測試鈴聲已播放" : "瀏覽器尚未解鎖音效，請再點一次或檢查靜音 / 音量");
+  });
+  syncNotificationPermissionUI();
 }
 
 // 系統深淺色改變時，若使用者選擇「隨系統」，即時跟著切換，不需重新整理。
@@ -3812,6 +4283,63 @@ function renderCurrentTab() {
     </button>`;
   }).join('');
 }
+function getChartRightOffset() {
+  return window.matchMedia("(max-width: 720px)").matches ? 18 : 12;
+}
+
+function applyChartFutureSpace(snapToLatest = false) {
+  if (!state.chart) return;
+  const ts = state.chart.timeScale();
+  ts.applyOptions({ rightOffset: getChartRightOffset(), fixRightEdge: false, lockVisibleTimeRangeOnResize: true });
+  if (snapToLatest) requestAnimationFrame(() => {
+    try { ts.scrollToPosition(getChartRightOffset(), false); } catch (e) {}
+  });
+}
+
+function updateKeyLevelVisualLabels() {
+  const layer = document.getElementById("chart-key-labels");
+  const chartEl = document.getElementById("chart");
+  if (!layer || !chartEl || !state.candleSeries) return;
+  const levels = [];
+  const add = (price, type, period, secondary = false) => {
+    const y = price ? state.candleSeries.priceToCoordinate(price) : null;
+    if (!Number.isFinite(y)) return;
+    levels.push({ price, type, period, secondary, y });
+  };
+  add(state.currentLevels?.high, "high", state.currentLevels?.sourcePeriod || getKeyLevelPeriod(), false);
+  add(state.currentLevels?.low, "low", state.currentLevels?.sourcePeriod || getKeyLevelPeriod(), false);
+  if (state.secondaryLevels) {
+    add(state.secondaryLevels.high, "high", state.secondaryLevels.sourcePeriod, true);
+    add(state.secondaryLevels.low, "low", state.secondaryLevels.sourcePeriod, true);
+  }
+
+  const h = chartEl.clientHeight || 0;
+  const last = state.candleData?.at(-1);
+  const reservedY = last ? state.candleSeries.priceToCoordinate(last.close) : null;
+  const gap = window.matchMedia("(max-width:720px)").matches ? 19 : 23;
+  levels.sort((a,b) => a.y - b.y);
+
+  let prevY = -Infinity;
+  for (const item of levels) {
+    let y = Math.max(14, Math.min(h - 14, item.y));
+    if (Number.isFinite(reservedY) && Math.abs(y - reservedY) < gap) y = reservedY + (y <= reservedY ? -gap : gap);
+    if (y - prevY < gap) y = prevY + gap;
+    item.displayY = Math.max(14, Math.min(h - 14, y));
+    prevY = item.displayY;
+  }
+  // If the last label was pushed past the bottom edge, shift the group back upward while preserving spacing.
+  if (levels.length && levels.at(-1).displayY > h - 14) {
+    const shift = levels.at(-1).displayY - (h - 14);
+    levels.forEach(x => x.displayY = Math.max(14, x.displayY - shift));
+  }
+
+  layer.innerHTML = levels.map(item => {
+    const cls = `chart-key-label ${item.type}${item.secondary ? " secondary" : ""}`;
+    const label = `${item.type === "high" ? "前高" : "前低"} ${item.period} ${fmtPrice(item.price)}`;
+    return `<span class="${cls}" style="top:${item.displayY}px">${label}</span>`;
+  }).join("");
+}
+
 function initChart() {
   const container = document.getElementById("chart");
   state.chart = LightweightCharts.createChart(container, {
@@ -3833,7 +4361,10 @@ function initChart() {
     timeScale: {
       borderColor: "#223147",
       timeVisible: true,
-      secondsVisible: false
+      secondsVisible: false,
+      rightOffset: window.matchMedia("(max-width: 720px)").matches ? 18 : 12,
+      fixRightEdge: false,
+      lockVisibleTimeRangeOnResize: true
     },
     crosshair: { mode: LightweightCharts.CrosshairMode.Normal }
   });
@@ -3864,6 +4395,7 @@ function initChart() {
 
 
   state.chart.timeScale().subscribeVisibleLogicalRangeChange(range => {
+    requestAnimationFrame(() => { updatePriceTimer(); updateKeyLevelVisualLabels(); });
     if (!range || state.isLoadingOlder || !state.hasMoreHistory) return;
     if (range.from <= 2) loadMoreHistoricalCandles();
   });
@@ -3951,8 +4483,14 @@ function renderChartData(candles, fitContent = false) {
     state.candleSeries.setMarkers([]);
   }
 
-  if (fitContent) state.chart.timeScale().fitContent();
+  if (fitContent) {
+    state.chart.timeScale().fitContent();
+    applyChartFutureSpace(true);
+  } else {
+    applyChartFutureSpace(false);
+  }
   updatePriceTimer();
+  requestAnimationFrame(updateKeyLevelVisualLabels);
   updateQuickStats();
   renderOxDetail();
 }
@@ -4046,14 +4584,14 @@ async function refreshKeyLevels(chartCandles) {
     if (primary.levels.high) {
       state.keyHighLine = state.candleSeries.createPriceLine({
         price: primary.levels.high, color: "#f7bd52", lineWidth: 1,
-        lineStyle: LightweightCharts.LineStyle.Dashed, axisLabelVisible: true,
+        lineStyle: LightweightCharts.LineStyle.Dashed, axisLabelVisible: false,
         title: `前高 ${primary.sourcePeriod}`
       });
     }
     if (primary.levels.low) {
       state.keyLowLine = state.candleSeries.createPriceLine({
         price: primary.levels.low, color: "#5ca5ff", lineWidth: 1,
-        lineStyle: LightweightCharts.LineStyle.Dashed, axisLabelVisible: true,
+        lineStyle: LightweightCharts.LineStyle.Dashed, axisLabelVisible: false,
         title: `前低 ${primary.sourcePeriod}`
       });
     }
@@ -4064,14 +4602,14 @@ async function refreshKeyLevels(chartCandles) {
       if (secondary.levels.high) {
         state.secondaryKeyHighLine = state.candleSeries.createPriceLine({
           price: secondary.levels.high, color: "rgba(247,189,82,.58)", lineWidth: 1,
-          lineStyle: LightweightCharts.LineStyle.Dotted, axisLabelVisible: true,
+          lineStyle: LightweightCharts.LineStyle.Dotted, axisLabelVisible: false,
           title: `前高 ${secondary.sourcePeriod}`
         });
       }
       if (secondary.levels.low) {
         state.secondaryKeyLowLine = state.candleSeries.createPriceLine({
           price: secondary.levels.low, color: "rgba(92,165,255,.58)", lineWidth: 1,
-          lineStyle: LightweightCharts.LineStyle.Dotted, axisLabelVisible: true,
+          lineStyle: LightweightCharts.LineStyle.Dotted, axisLabelVisible: false,
           title: `前低 ${secondary.sourcePeriod}`
         });
       }
@@ -4080,6 +4618,7 @@ async function refreshKeyLevels(chartCandles) {
     updateAlertButtons();
     updateQuickStats();
     renderOxDetail();
+    requestAnimationFrame(updateKeyLevelVisualLabels);
   } catch (e) {
     console.warn("關鍵前高/前低取得失敗", symbolAtRequest, sourcePeriods, e);
   }
@@ -4244,6 +4783,142 @@ function switchSymbol(symbol) {
   loadSymbolCandles(true);
 }
 
+
+
+/* ===== OX CONTROL module: isolated from OX Engine / radar logic ===== */
+const OXControlPanel = (() => {
+  const q = sel => document.querySelector(sel);
+  let overlay, panel, openBtn, closeBtn, scanObserver;
+
+  const setView = name => {
+    document.querySelectorAll("[data-control-view]").forEach(view => view.classList.toggle("active", view.dataset.controlView === name));
+  };
+
+  const syncTheme = () => {
+    const mode = getSavedThemeMode();
+    document.querySelectorAll("[data-control-theme]").forEach(btn => btn.classList.toggle("active", btn.dataset.controlTheme === mode));
+  };
+
+  const syncDataStatus = () => {
+    const target = q("#ox-control-data-status");
+    const source = q("#scan-status");
+    if (!target) return;
+    const cadence = Math.max(1, Math.round(CONFIG.tickerRefreshMs / 1000));
+    target.textContent = source?.textContent ? `${source.textContent} · 行情 ${cadence}s 自動更新` : `即時 / 行情 ${cadence}s 自動更新`;
+  };
+
+  const open = () => {
+    if (!overlay) return;
+    overlay.classList.add("is-open");
+    overlay.setAttribute("aria-hidden", "false");
+    openBtn?.setAttribute("aria-expanded", "true");
+    document.body.classList.add("ox-control-open");
+    setView("main");
+    syncTheme();
+    syncDataStatus();
+    syncNotificationPermissionUI();
+    setTimeout(() => closeBtn?.focus(), 310);
+  };
+
+  const close = () => {
+    if (!overlay) return;
+    overlay.classList.remove("is-open");
+    overlay.setAttribute("aria-hidden", "true");
+    openBtn?.setAttribute("aria-expanded", "false");
+    document.body.classList.remove("ox-control-open");
+    setView("main");
+  };
+
+  const init = () => {
+    overlay = q("#ox-control-overlay");
+    panel = q("#ox-control-panel");
+    openBtn = q("#ox-control-open");
+    closeBtn = q("#ox-control-close");
+    if (!overlay || !panel || !openBtn || !closeBtn) return;
+
+    openBtn.addEventListener("click", open);
+    closeBtn.addEventListener("click", close);
+    overlay.addEventListener("click", e => { if (e.target === overlay) close(); });
+    panel.addEventListener("click", e => e.stopPropagation());
+    document.addEventListener("keydown", e => { if (e.key === "Escape" && overlay.classList.contains("is-open")) close(); });
+
+    document.querySelectorAll("[data-control-theme]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const mode = btn.dataset.controlTheme;
+        localStorage.setItem("ox-ui-theme", mode);
+        applyTheme(mode);
+        syncTheme();
+      });
+    });
+    document.addEventListener("ox:themechange", syncTheme);
+
+    const notify = q("#ox-control-notify-toggle");
+    if (notify) {
+      syncNotificationPermissionUI();
+      notify.addEventListener("change", async () => {
+        if (!notify.checked) {
+          localStorage.setItem("ox-control-notifications-enabled", "0");
+          syncNotificationPermissionUI();
+          return;
+        }
+        await primeAlertAudio(true);
+        const permission = await maybeRequestNotificationPermission({ interactive: true });
+        if (permission === "granted") {
+          localStorage.setItem("ox-control-notifications-enabled", "1");
+          showToast("瀏覽器通知已授權並開啟");
+        } else {
+          localStorage.setItem("ox-control-notifications-enabled", "0");
+          showToast(permission === "denied" ? "瀏覽器已封鎖通知，請到網站權限重新允許" : "此瀏覽器目前無法啟用系統通知");
+        }
+        syncNotificationPermissionUI();
+      });
+    }
+
+    q("#ox-control-open-notifications")?.addEventListener("click", () => {
+      close();
+      switchAppView("settings");
+      setTimeout(() => document.querySelector("#view-settings .settings-grid")?.scrollIntoView({ behavior: "smooth", block: "start" }), 120);
+    });
+
+    q("#ox-control-refresh")?.addEventListener("click", () => {
+      syncDataStatus();
+      q("#btn-force-rescan")?.click();
+    });
+
+    q("#ox-control-feedback-open")?.addEventListener("click", () => setView("feedback"));
+    q("#ox-control-feedback-back")?.addEventListener("click", () => setView("main"));
+
+    const about = q("#ox-control-about-toggle");
+    const changelog = q("#ox-control-changelog");
+    about?.addEventListener("click", () => {
+      const expanded = about.getAttribute("aria-expanded") === "true";
+      about.setAttribute("aria-expanded", String(!expanded));
+      changelog?.classList.toggle("open", !expanded);
+    });
+
+    q("#ox-feedback-form")?.addEventListener("submit", e => {
+      e.preventDefault();
+      const status = q("#ox-feedback-status");
+      const msg = q("#ox-feedback-message")?.value.trim();
+      if (!msg) {
+        if (status) status.textContent = "請先填寫問題或建議內容。";
+        return;
+      }
+      if (status) status.textContent = "目前尚未連接寄信後端，因此這份回饋沒有送出。等串接 Formspree、Web3Forms 或自建 API 後，再啟用真正送出。";
+    });
+
+    const scanStatus = q("#scan-status");
+    if (scanStatus) {
+      scanObserver = new MutationObserver(syncDataStatus);
+      scanObserver.observe(scanStatus, { childList: true, characterData: true, subtree: true });
+    }
+    syncTheme();
+    syncDataStatus();
+  };
+
+  return { init, open, close, syncTheme, syncDataStatus };
+})();
+
 document.addEventListener("click", e => {
   const homeSymbol = e.target.closest("[data-home-symbol]");
   if (homeSymbol?.dataset.homeSymbol) { switchSymbol(homeSymbol.dataset.homeSymbol); return; }
@@ -4310,9 +4985,23 @@ document.getElementById("chk-vol").addEventListener("change", e => state.volumeS
 document.getElementById("chk-ox-markers").addEventListener("change", () => renderChartData(state.candleData, false));
 
 window.addEventListener("DOMContentLoaded", () => {
+  const unlockAudioFromGesture = async () => {
+    const ok = await primeAlertAudio(true);
+    if (ok) {
+      document.removeEventListener("pointerdown", unlockAudioFromGesture, true);
+      document.removeEventListener("touchstart", unlockAudioFromGesture, true);
+      document.removeEventListener("keydown", unlockAudioFromGesture, true);
+    }
+  };
+  document.addEventListener("pointerdown", unlockAudioFromGesture, true);
+  document.addEventListener("touchstart", unlockAudioFromGesture, true);
+  document.addEventListener("keydown", unlockAudioFromGesture, true);
+  window.addEventListener("focus", syncNotificationPermissionUI);
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) syncNotificationPermissionUI(); });
   const fullscreenBtn = document.getElementById("btn-chart-fullscreen");
   if (fullscreenBtn && window.matchMedia("(max-width: 900px)").matches) fullscreenBtn.textContent = "展開圖表";
   initSettings();
+  OXControlPanel.init();
   initChart();
   applyTheme(getSavedThemeMode());
   switchAppView("radar");
