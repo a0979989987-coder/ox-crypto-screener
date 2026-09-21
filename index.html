@@ -3268,103 +3268,417 @@ body.theme-light .dock-radar-orb{background:radial-gradient(circle at 50% 30%,#F
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important;scroll-behavior:auto !important}
 }
+</style>
 
 
-/* ===== v3.4: mobile scanner clarity + liquidation market module ===== */
-.coin-mobile-bottom { display:none; }
-.sr-only { position:absolute!important; width:1px!important; height:1px!important; padding:0!important; margin:-1px!important; overflow:hidden!important; clip:rect(0,0,0,0)!important; white-space:nowrap!important; border:0!important; }
+<style id="ox-liquid-glass-design-system">
+/* =========================================================
+   OX v3.4 — Liquid Glass Material System
+   Apple Liquid Glass inspired + OX Black Gold financial UI.
+   UI only: no market / OX Engine / scanner / alert logic here.
+   ========================================================= */
+:root{
+  --glass-bg:rgba(7,17,29,.40);
+  --glass-bg-strong:rgba(6,15,26,.53);
+  --glass-bg-soft:rgba(16,31,49,.30);
+  --glass-border:rgba(196,225,255,.17);
+  --glass-border-cool:rgba(112,175,235,.16);
+  --glass-border-gold:rgba(245,191,85,.22);
+  --glass-highlight:rgba(255,255,255,.16);
+  --glass-highlight-soft:rgba(210,235,255,.085);
+  --glass-shadow:0 18px 50px rgba(0,0,0,.31),0 4px 14px rgba(0,0,0,.15),inset 0 1px 0 rgba(255,255,255,.13),inset 1px 0 0 rgba(143,194,239,.045),inset -1px 0 0 rgba(30,55,83,.10),inset 0 -1px 0 rgba(0,0,0,.30);
+  --glass-shadow-soft:0 10px 28px rgba(0,0,0,.20),inset 0 1px 0 rgba(255,255,255,.10),inset 0 -1px 0 rgba(0,0,0,.20);
+  --glass-blur:18px;
+  --glass-blur-strong:22px;
+  --glass-saturation:148%;
+  --glass-radius:18px;
+  --glass-radius-sm:12px;
+  --glass-ease:cubic-bezier(.2,.74,.2,1);
+  --lg-x:18%;
+  --lg-y:4%;
 
-.ox-liquidation-section { position:relative; }
-.ox-liquidation-head { align-items:flex-end; }
-.ox-liquidation-filters { display:flex; align-items:center; gap:7px; }
-.ox-liquidation-filters select {
-  min-width:78px; height:31px; padding:0 28px 0 10px; border-radius:8px;
-  border:1px solid rgba(109,142,181,.28); color:var(--ink); background:#0b1521;
-  font-size:9px; font-weight:800; outline:none;
-}
-.ox-liquidation-filters select:focus { border-color:rgba(247,189,82,.72); box-shadow:0 0 0 2px rgba(247,189,82,.08); }
-.ox-liquidation-card { overflow:hidden; padding:0!important; }
-.ox-liquidation-status { min-height:34px; display:flex; align-items:center; padding:8px 12px; color:var(--muted); font-size:9px; border-bottom:1px solid rgba(102,136,177,.13); }
-.ox-liquidation-table-head,.ox-liquidation-row {
-  display:grid; grid-template-columns:minmax(105px,1.15fr) repeat(4,minmax(90px,1fr)) minmax(125px,1.25fr);
-  gap:8px; align-items:center; padding:9px 12px;
-}
-.ox-liquidation-table-head { color:#71869f; font-size:8px; font-weight:800; letter-spacing:.03em; background:rgba(5,12,20,.32); border-bottom:1px solid rgba(102,136,177,.14); }
-.ox-liquidation-row { min-height:47px; border-bottom:1px solid rgba(102,136,177,.10); color:#dce7f4; font-size:9px; transition:background .18s ease; }
-.ox-liquidation-row:last-child { border-bottom:0; }
-.ox-liquidation-row:hover { background:rgba(83,118,158,.07); }
-.ox-liq-exchange { display:flex; align-items:center; gap:8px; min-width:0; }
-.ox-liq-exchange i { width:7px; height:7px; flex:0 0 7px; border-radius:50%; background:var(--gold); box-shadow:0 0 9px rgba(247,189,82,.24); }
-.ox-liq-exchange b { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.ox-liq-num { font-variant-numeric:tabular-nums; text-align:right; white-space:nowrap; }
-.ox-liq-long { color:var(--green); }
-.ox-liq-short { color:var(--red); }
-.ox-liq-ratio { display:flex; justify-content:flex-end; align-items:center; gap:5px; white-space:nowrap; font-size:8px; }
-.ox-liq-ratio b { font-size:9px; }
-.ox-liquidation-mobile { display:none; }
-.ox-liquidation-empty { padding:20px 16px; text-align:center; color:var(--muted); }
-.ox-liquidation-empty b { display:block; color:var(--ink); font-size:11px; }
-.ox-liquidation-empty p { max-width:660px; margin:6px auto 9px; font-size:8.5px; line-height:1.55; }
-.ox-liquidation-empty code { display:inline-block; padding:5px 8px; border:1px solid rgba(113,145,181,.22); border-radius:6px; background:rgba(4,10,18,.36); color:#94a7bd; font-size:8px; }
-.ox-liq-mobile-card { padding:10px 11px; border-bottom:1px solid rgba(102,136,177,.12); }
-.ox-liq-mobile-card:last-child { border-bottom:0; }
-.ox-liq-mobile-top { display:flex; align-items:center; justify-content:space-between; gap:10px; }
-.ox-liq-mobile-top b { font-size:10px; letter-spacing:.02em; }
-.ox-liq-mobile-top span { color:var(--muted); font-size:8px; }
-.ox-liq-mobile-total { margin-top:4px; font-size:17px; font-weight:900; font-variant-numeric:tabular-nums; }
-.ox-liq-mobile-split { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:5px; color:var(--muted); font-size:8px; }
-.ox-liq-mobile-split b { font-variant-numeric:tabular-nums; }
-.ox-liq-bar { display:flex; height:5px; margin-top:8px; overflow:hidden; border-radius:999px; background:#162235; }
-.ox-liq-bar .long { background:linear-gradient(90deg,#2cab83,var(--green)); }
-.ox-liq-bar .short { background:linear-gradient(90deg,#d84966,var(--red)); }
-.ox-liq-mobile-foot { margin-top:5px; font-size:8px; color:var(--muted); text-align:right; }
-.ox-liq-mobile-foot strong.long { color:var(--green); }
-.ox-liq-mobile-foot strong.short { color:var(--red); }
-
-body.theme-light .ox-liquidation-filters select { color:#24364d; background:#fff; border-color:#c9d6e3; }
-body.theme-light .ox-liquidation-status { color:#61758d; border-bottom-color:#dbe4ed; }
-body.theme-light .ox-liquidation-table-head { color:#66798f; background:#f7fafc; border-bottom-color:#dbe4ed; }
-body.theme-light .ox-liquidation-row { color:#23364d; border-bottom-color:#e1e7ee; }
-body.theme-light .ox-liquidation-row:hover { background:#f5f8fb; }
-body.theme-light .ox-liquidation-empty { color:#687b91; }
-body.theme-light .ox-liquidation-empty b { color:#1f3148; }
-body.theme-light .ox-liquidation-empty code { background:#f7fafc; color:#52677f; border-color:#d4dee8; }
-body.theme-light .ox-liq-mobile-card { border-bottom-color:#dde5ed; }
-body.theme-light .ox-liq-bar { background:#e7edf3; }
-
-@media(max-width:720px) {
-  /* Mobile scanner: symbol first, fixed OX score at right, star moves to lower-left. */
-  .coin-card { position:relative!important; padding:8px 6px 8px!important; min-height:78px!important; }
-  .coin-top { display:grid!important; grid-template-columns:minmax(0,1fr) 38px!important; align-items:center!important; gap:3px!important; }
-  .coin-title { min-width:0!important; max-width:100%!important; overflow:hidden!important; flex-wrap:nowrap!important; }
-  .coin-rank,.coin-title>span:first-child { flex:0 0 auto!important; font-size:7px!important; }
-  .coin-symbol-mobile { display:block!important; min-width:0!important; max-width:100%!important; overflow:hidden!important; text-overflow:ellipsis!important; white-space:nowrap!important; font-size:9px!important; }
-  .coin-top-right { width:38px!important; min-width:38px!important; display:block!important; position:static!important; }
-  .coin-ox { display:block!important; width:38px!important; max-width:38px!important; text-align:right!important; font-size:7px!important; line-height:1!important; overflow:hidden!important; white-space:nowrap!important; }
-  .watch-star-desktop { display:none!important; }
-  .coin-mid { display:block!important; margin:5px 0 0!important; }
-  .desktop-coin-change { display:none!important; }
-  .mobile-coin-volume { display:block!important; max-width:100%!important; font-size:7.2px!important; white-space:nowrap!important; overflow:hidden!important; text-overflow:ellipsis!important; }
-  .coin-mobile-bottom { display:flex!important; align-items:center!important; justify-content:space-between!important; min-height:23px; margin-top:4px; padding-right:1px; }
-  .watch-star-mobile { display:grid!important; position:relative!important; width:19px!important; height:19px!important; min-width:19px!important; padding:0!important; border-radius:5px!important; font-size:10px!important; line-height:1!important; }
-  .watch-star-mobile::after { content:""; position:absolute; inset:-8px; }
-  .coin-mobile-bottom .coin-change { margin:0!important; font-size:9px!important; line-height:1!important; text-align:right; }
-
-  .ox-liquidation-head { align-items:flex-end!important; gap:7px!important; }
-  .ox-liquidation-head h2 { font-size:13px!important; }
-  .ox-liquidation-head p { font-size:7px!important; }
-  .ox-liquidation-filters { gap:4px; }
-  .ox-liquidation-filters select { min-width:58px; height:26px; padding:0 20px 0 7px; border-radius:6px; font-size:7px; }
-  .ox-liquidation-status { min-height:30px; padding:7px 9px; font-size:7px; }
-  .ox-liquidation-desktop { display:none!important; }
-  .ox-liquidation-mobile[hidden] { display:none!important; }
-  .ox-liquidation-mobile:not([hidden]) { display:block!important; }
-  .ox-liquidation-empty { padding:15px 10px; }
-  .ox-liquidation-empty b { font-size:9px; }
-  .ox-liquidation-empty p { font-size:7px; }
-  .ox-liquidation-empty code { max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:6.5px; }
+  --ox-gold:#F5BF55;
+  --ox-blue:#5CA5FF;
+  --ox-green:#36D399;
+  --ox-red:#EF617A;
+  --ox-purple:#A77BFF;
 }
 
+/* ---------- Environment behind the glass ---------- */
+html{background:#040910 !important;}
+body{
+  background:
+    radial-gradient(900px 560px at 12% -7%,rgba(83,142,210,.17),transparent 66%),
+    radial-gradient(760px 520px at 86% 11%,rgba(245,191,85,.095),transparent 69%),
+    radial-gradient(620px 460px at 62% 50%,rgba(42,94,153,.075),transparent 72%),
+    linear-gradient(180deg,#08111D 0%,#050B13 48%,#04080E 100%) !important;
+  background-attachment:fixed !important;
+}
+main.wrap{position:relative;isolation:isolate;}
+main.wrap::before{
+  content:"";position:absolute;z-index:-2;pointer-events:none;
+  inset:-70px -8vw -180px;
+  background:
+    radial-gradient(circle at 12% 16%,rgba(86,153,228,.14),transparent 18%),
+    radial-gradient(circle at 79% 21%,rgba(245,191,85,.075),transparent 17%),
+    radial-gradient(ellipse at 89% 10%,transparent 0 46.4%,rgba(126,179,235,.050) 46.65%,transparent 46.95%),
+    radial-gradient(ellipse at 85% 13%,transparent 0 57.1%,rgba(245,191,85,.040) 57.32%,transparent 57.58%),
+    radial-gradient(circle at 37% 62%,rgba(31,81,139,.065),transparent 24%);
+  filter:saturate(115%);
+}
+main.wrap::after{
+  content:"";position:absolute;z-index:-1;pointer-events:none;inset:-50px -5vw -100px;opacity:.18;
+  background:
+    linear-gradient(116deg,transparent 0 33%,rgba(135,182,230,.050) 33.08% 33.15%,transparent 33.22% 100%),
+    linear-gradient(64deg,transparent 0 71%,rgba(245,191,85,.033) 71.08% 71.14%,transparent 71.2% 100%);
+  mask-image:linear-gradient(180deg,#000,transparent 86%);
+}
+
+/* ---------- Shared Liquid Glass materials ---------- */
+.glass,.glass-strong,.glass-light,.glass-button,.glass-pill,.glass-nav,.glass-orb{box-sizing:border-box;}
+.glass,.glass-strong{
+  position:relative;isolation:isolate;
+  background:
+    radial-gradient(120% 95% at 8% -8%,rgba(255,255,255,.105),transparent 35%),
+    radial-gradient(85% 100% at 105% 100%,rgba(58,111,173,.060),transparent 56%),
+    linear-gradient(135deg,rgba(255,255,255,.055),rgba(104,153,211,.018) 44%,rgba(2,8,15,.16) 100%),
+    var(--glass-bg) !important;
+  border:1px solid rgba(174,212,249,.14) !important;
+  box-shadow:var(--glass-shadow) !important;
+  backdrop-filter:blur(var(--glass-blur)) saturate(var(--glass-saturation)) brightness(1.055) !important;
+  -webkit-backdrop-filter:blur(var(--glass-blur)) saturate(var(--glass-saturation)) brightness(1.055) !important;
+}
+.glass-strong{
+  background:
+    radial-gradient(115% 90% at 12% -5%,rgba(255,255,255,.125),transparent 36%),
+    radial-gradient(95% 110% at 100% 100%,rgba(65,125,192,.075),transparent 58%),
+    linear-gradient(138deg,rgba(255,255,255,.064),rgba(81,132,190,.020) 48%,rgba(2,8,15,.21) 100%),
+    var(--glass-bg-strong) !important;
+  border-color:rgba(196,225,255,.175) !important;
+  backdrop-filter:blur(var(--glass-blur-strong)) saturate(155%) brightness(1.06) !important;
+  -webkit-backdrop-filter:blur(var(--glass-blur-strong)) saturate(155%) brightness(1.06) !important;
+}
+.glass-light{
+  position:relative;isolation:isolate;
+  background:
+    radial-gradient(110% 100% at 7% 0%,rgba(255,255,255,.085),transparent 38%),
+    linear-gradient(145deg,rgba(255,255,255,.038),rgba(80,134,192,.014) 52%,rgba(2,8,15,.10)),
+    rgba(11,25,41,.32) !important;
+  border:1px solid rgba(172,210,247,.12) !important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.095),inset 0 -1px 0 rgba(0,0,0,.20),0 8px 22px rgba(0,0,0,.12) !important;
+  /* no backdrop-filter: avoids nested glass blur */
+}
+
+/* Gradient optical edge for reusable top-level glass cards. */
+.glass:not(.v34-home-btc-primary)::before{
+  content:"";position:absolute;inset:0;z-index:5;pointer-events:none;border-radius:inherit;padding:1px;
+  background:linear-gradient(135deg,rgba(255,255,255,.30),rgba(128,186,239,.12) 33%,rgba(59,91,126,.035) 64%,rgba(0,0,0,.24));
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor;mask-composite:exclude;
+  opacity:.62;
+}
+.glass:not(.v34-home-btc-primary)::after{
+  content:"";position:absolute;z-index:4;pointer-events:none;border-radius:inherit;
+  inset:1px;
+  background:
+    radial-gradient(80% 46% at 12% -4%,rgba(255,255,255,.13),transparent 56%),
+    linear-gradient(180deg,rgba(255,255,255,.025),transparent 22%,transparent 76%,rgba(0,0,0,.08));
+  opacity:.68;
+}
+
+/* Dedicated liquid optics for Hero / BTC, because they already use decorative pseudo layers. */
+.liquid-interactive{--lg-x:18%;--lg-y:4%;}
+.liquid-optics{
+  position:absolute !important;inset:0 !important;z-index:1 !important;pointer-events:none !important;border-radius:inherit !important;overflow:hidden !important;
+  background:
+    radial-gradient(circle at var(--lg-x) var(--lg-y),rgba(255,255,255,.125),transparent 25%),
+    radial-gradient(55% 36% at 22% -8%,rgba(180,220,255,.09),transparent 60%),
+    linear-gradient(118deg,rgba(255,255,255,.028),transparent 33%,rgba(76,137,202,.022) 62%,transparent 82%);
+  mix-blend-mode:screen;opacity:.86;
+  transition:opacity .22s ease,filter .22s ease;
+}
+.liquid-optics::before{
+  content:"";position:absolute;inset:0;border-radius:inherit;padding:1px;
+  background:linear-gradient(136deg,rgba(255,255,255,.34),rgba(130,188,241,.13) 33%,rgba(46,77,110,.025) 66%,rgba(0,0,0,.28));
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor;mask-composite:exclude;
+}
+.liquid-optics::after{
+  content:"";position:absolute;left:8%;right:36%;top:0;height:38%;border-radius:50%;
+  background:radial-gradient(ellipse at top,rgba(255,255,255,.11),transparent 72%);filter:blur(8px);opacity:.65;
+}
+.liquid-optics-gold{
+  background:
+    radial-gradient(circle at var(--lg-x) var(--lg-y),rgba(255,255,255,.12),transparent 23%),
+    radial-gradient(58% 72% at 96% 8%,rgba(245,191,85,.12),transparent 66%),
+    linear-gradient(118deg,rgba(255,255,255,.022),transparent 36%,rgba(245,191,85,.018) 70%,transparent 88%);
+}
+.liquid-interactive:hover .liquid-optics{opacity:1;filter:brightness(1.04);}
+.v33-home-hero>.v33-home-hero-top,.v33-home-hero>.v33-hero-stats,
+.v34-home-btc-primary> :not(.liquid-optics){position:relative;z-index:2;}
+.v33-home-hero::after,.v34-home-btc-primary::before{z-index:0 !important;}
+
+/* ---------- Existing top-level surfaces mapped to the material system ---------- */
+.panel,.metric-card,.benchmark-card,.strength-card,.media-card,.settings-card,.detail-panel,.extra-section,.market-unavailable-card,.ox-control-panel{
+  background:
+    radial-gradient(120% 90% at 8% -5%,rgba(255,255,255,.085),transparent 35%),
+    linear-gradient(145deg,rgba(255,255,255,.043),rgba(72,121,177,.018) 48%,rgba(3,9,16,.15)),
+    rgba(7,17,29,.43) !important;
+  border-color:rgba(177,215,250,.14) !important;
+  box-shadow:var(--glass-shadow-soft) !important;
+  backdrop-filter:blur(15px) saturate(142%) brightness(1.045) !important;
+  -webkit-backdrop-filter:blur(15px) saturate(142%) brightness(1.045) !important;
+}
+/* Keep chart rendering itself optically clean and non-glass. */
+.chart-container,.v34-home-main-chart{
+  backdrop-filter:none !important;-webkit-backdrop-filter:none !important;
+  background:linear-gradient(180deg,rgba(4,11,19,.96),rgba(4,9,16,.99)) !important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.015),inset 0 0 34px rgba(20,58,98,.055) !important;
+}
+.panel-head,.chart-controls,.chart-benchmark-bar,.scanner-tabs{
+  background:linear-gradient(180deg,rgba(255,255,255,.024),rgba(5,13,23,.08)) !important;
+  border-color:rgba(152,192,232,.11) !important;
+}
+
+/* ---------- Header / OX Live ---------- */
+header{
+  background:linear-gradient(180deg,rgba(10,20,33,.57),rgba(5,12,21,.43)) !important;
+  border-bottom:1px solid rgba(189,220,251,.11) !important;
+  box-shadow:0 9px 28px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.04) !important;
+  backdrop-filter:blur(18px) saturate(150%) brightness(1.04) !important;
+  -webkit-backdrop-filter:blur(18px) saturate(150%) brightness(1.04) !important;
+}
+.ox-live-strip{
+  position:relative;overflow:hidden;
+  background:
+    radial-gradient(72% 140% at 0% -10%,rgba(245,191,85,.09),transparent 58%),
+    linear-gradient(90deg,rgba(255,255,255,.045),rgba(70,126,188,.025) 48%,rgba(4,11,19,.12)),
+    rgba(8,18,31,.40) !important;
+  border:1px solid rgba(245,191,85,.19) !important;
+  box-shadow:0 9px 26px rgba(0,0,0,.16),inset 0 1px 0 rgba(255,255,255,.105),inset 0 -1px 0 rgba(0,0,0,.21) !important;
+  backdrop-filter:blur(13px) saturate(148%) !important;
+  -webkit-backdrop-filter:blur(13px) saturate(148%) !important;
+}
+.ox-live-strip::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(105deg,rgba(255,255,255,.06),transparent 19%,transparent 81%,rgba(92,165,255,.025));}
+
+/* ---------- Buttons and pills: optical material, no nested blur ---------- */
+.glass-button,.btn-act,.btn-tf,.alert-btn,.theme-choice,.direction-toggle-btn,.v34-home-mini-tf,.v34-home-open-radar,.ox-control-refresh,.ox-menu-btn{
+  position:relative;
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.060),rgba(255,255,255,.015)),
+    rgba(10,23,39,.48) !important;
+  border:1px solid rgba(177,215,249,.15) !important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.105),inset 0 -1px 0 rgba(0,0,0,.22),0 5px 14px rgba(0,0,0,.12) !important;
+  transition:background .20s ease,border-color .20s ease,box-shadow .20s ease,color .20s ease,filter .20s ease !important;
+}
+.glass-button:hover,.btn-act:hover,.btn-tf:hover,.alert-btn:hover,.theme-choice:hover,.v34-home-mini-tf:hover,.v34-home-open-radar:hover,.ox-control-refresh:hover,.ox-menu-btn:hover{
+  background:linear-gradient(180deg,rgba(255,255,255,.082),rgba(255,255,255,.022)),rgba(13,28,47,.56) !important;
+  border-color:rgba(209,232,255,.24) !important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.14),inset 0 -1px 0 rgba(0,0,0,.21),0 8px 20px rgba(0,0,0,.15) !important;
+  filter:brightness(1.04);
+}
+.btn-tf.active,.theme-choice.active,.v34-home-mini-tf.active,.v34-home-open-radar{
+  background:linear-gradient(180deg,rgba(245,191,85,.14),rgba(245,191,85,.045)),rgba(19,25,32,.45) !important;
+  border-color:rgba(245,191,85,.40) !important;color:var(--ox-gold) !important;
+  box-shadow:inset 0 1px 0 rgba(255,235,194,.16),inset 0 -1px 0 rgba(88,58,12,.22),0 7px 18px rgba(245,191,85,.055) !important;
+}
+.glass-pill,.v33-market-state,.v33-section-tag,.v33-market-badge,.v33-row-pill,.badge,.score-pill{
+  background:linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.012)),rgba(11,24,39,.44) !important;
+  border:1px solid rgba(174,211,248,.14) !important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.09),inset 0 -1px 0 rgba(0,0,0,.18) !important;
+}
+
+/* ---------- Home: liquid depth and adaptive tints ---------- */
+.v33-home-hero{
+  overflow:hidden !important;
+  background:
+    radial-gradient(74% 120% at 96% -8%,rgba(245,191,85,.085),transparent 58%),
+    radial-gradient(86% 120% at -5% 105%,rgba(92,165,255,.11),transparent 62%),
+    linear-gradient(140deg,rgba(255,255,255,.055),rgba(55,101,156,.022) 48%,rgba(2,8,15,.16)),
+    rgba(7,17,29,.48) !important;
+  box-shadow:0 22px 56px rgba(0,0,0,.30),inset 0 1px 0 rgba(255,255,255,.14),inset 0 -1px 0 rgba(0,0,0,.26) !important;
+}
+.v33-home-hero::after{opacity:.52;filter:blur(.15px);}
+.v33-hero-stat{
+  transition:background .20s ease,border-color .20s ease,box-shadow .20s ease,filter .20s ease !important;
+}
+@media(hover:hover){
+  .v33-hero-stat:hover{background:linear-gradient(145deg,rgba(255,255,255,.060),rgba(83,139,201,.020)),rgba(11,25,41,.36) !important;border-color:rgba(198,225,252,.19) !important;box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 10px 26px rgba(0,0,0,.14) !important;}
+}
+.v34-home-btc-primary{
+  overflow:hidden !important;
+  border-color:rgba(245,191,85,.25) !important;
+  background:
+    radial-gradient(62% 98% at 100% 6%,rgba(245,191,85,.115),transparent 61%),
+    radial-gradient(85% 120% at 2% 100%,rgba(53,111,176,.08),transparent 66%),
+    linear-gradient(140deg,rgba(255,255,255,.060),rgba(85,131,181,.018) 46%,rgba(2,8,15,.20)),
+    rgba(7,16,28,.49) !important;
+  box-shadow:0 24px 64px rgba(0,0,0,.33),0 0 0 1px rgba(245,191,85,.035),inset 0 1px 0 rgba(255,237,202,.15),inset 0 -1px 0 rgba(0,0,0,.29) !important;
+}
+.v34-home-btc-primary::before{
+  color:rgba(245,191,85,.070) !important;
+  text-shadow:0 0 35px rgba(245,191,85,.12),0 0 80px rgba(245,191,85,.055) !important;
+  transform:rotate(-4deg);
+}
+.v34-home-btc-head,.v34-home-main-toolbar,.v34-home-btc-footer{background:transparent !important;}
+.v34-home-main-toolbar{border-color:rgba(173,211,249,.095) !important;}
+.v34-home-side-card{
+  position:relative;overflow:hidden;
+  background:
+    radial-gradient(100% 95% at 0% 0%,rgba(255,255,255,.075),transparent 40%),
+    linear-gradient(145deg,rgba(255,255,255,.042),rgba(65,116,177,.014) 50%,rgba(3,9,16,.12)),
+    rgba(8,19,32,.38) !important;
+  border-color:rgba(175,213,249,.13) !important;
+  box-shadow:0 11px 28px rgba(0,0,0,.17),inset 0 1px 0 rgba(255,255,255,.095),inset 0 -1px 0 rgba(0,0,0,.18) !important;
+  backdrop-filter:blur(11px) saturate(138%) !important;
+  -webkit-backdrop-filter:blur(11px) saturate(138%) !important;
+}
+.liquid-tint-blue{box-shadow:0 11px 28px rgba(0,0,0,.17),inset 0 1px 0 rgba(199,226,255,.12),inset 0 -1px 0 rgba(0,0,0,.18),0 0 26px rgba(92,165,255,.026) !important;}
+.liquid-tint-gold{box-shadow:0 11px 28px rgba(0,0,0,.17),inset 0 1px 0 rgba(255,235,192,.105),inset 0 -1px 0 rgba(0,0,0,.18),0 0 25px rgba(245,191,85,.025) !important;}
+.liquid-tint-cyan{box-shadow:0 11px 28px rgba(0,0,0,.17),inset 0 1px 0 rgba(195,255,239,.095),inset 0 -1px 0 rgba(0,0,0,.18),0 0 25px rgba(54,211,153,.024) !important;}
+.v33-card.glass{overflow:hidden;}
+.v33-event-row,.v33-watch-row,.v33-rank-row{transition:background .18s ease,box-shadow .18s ease !important;}
+.v33-event-row:hover,.v33-watch-row:hover,.v33-rank-row:hover{background:linear-gradient(90deg,rgba(255,255,255,.035),rgba(92,165,255,.016),transparent) !important;box-shadow:inset 2px 0 0 rgba(245,191,85,.16);}
+
+/* ---------- Professional trading workspace: glass frame, solid chart ---------- */
+.workspace>.panel,.detail-panel,.extra-section .panel{
+  border-color:rgba(174,213,250,.14) !important;
+  box-shadow:0 18px 46px rgba(0,0,0,.25),inset 0 1px 0 rgba(255,255,255,.09),inset 0 -1px 0 rgba(0,0,0,.20) !important;
+}
+.coin-card{
+  background:linear-gradient(145deg,rgba(255,255,255,.033),rgba(58,105,159,.010)),rgba(8,19,32,.30) !important;
+  border-color:rgba(163,203,242,.10) !important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.055),inset 0 -1px 0 rgba(0,0,0,.13) !important;
+  backdrop-filter:none !important;
+}
+.coin-card:hover{background:linear-gradient(145deg,rgba(255,255,255,.052),rgba(76,129,188,.018)),rgba(9,22,36,.36) !important;border-color:rgba(194,224,253,.17) !important;}
+.coin-card.selected{background:linear-gradient(145deg,rgba(245,191,85,.085),rgba(255,255,255,.025)),rgba(9,21,34,.38) !important;border-color:rgba(245,191,85,.29) !important;}
+
+/* ---------- Floating Liquid Glass Navigation ---------- */
+.app-dock.glass-nav{
+  position:fixed !important;overflow:visible !important;
+  background:
+    radial-gradient(90% 130% at 16% -20%,rgba(255,255,255,.125),transparent 48%),
+    radial-gradient(80% 120% at 88% 120%,rgba(67,124,187,.080),transparent 58%),
+    linear-gradient(180deg,rgba(255,255,255,.057),rgba(255,255,255,.016)),
+    rgba(6,15,26,.43) !important;
+  border:1px solid rgba(196,225,255,.17) !important;
+  box-shadow:0 18px 45px rgba(0,0,0,.36),0 4px 15px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.16),inset 0 -1px 0 rgba(0,0,0,.28) !important;
+  backdrop-filter:blur(22px) saturate(165%) brightness(1.065) !important;
+  -webkit-backdrop-filter:blur(22px) saturate(165%) brightness(1.065) !important;
+}
+.app-dock.glass-nav::before{
+  content:"";position:absolute;inset:0;border-radius:inherit;padding:1px;pointer-events:none;z-index:4;
+  background:linear-gradient(135deg,rgba(255,255,255,.34),rgba(138,196,248,.13) 34%,rgba(46,74,104,.035) 70%,rgba(0,0,0,.27));
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor;mask-composite:exclude;
+}
+.app-dock.glass-nav::after{
+  content:"";position:absolute;left:7%;right:32%;top:1px;height:39%;border-radius:999px;pointer-events:none;z-index:3;
+  background:radial-gradient(ellipse at top,rgba(255,255,255,.12),transparent 74%);filter:blur(7px);opacity:.75;
+}
+.dock-btn{position:relative;isolation:isolate;}
+.dock-btn>*{position:relative;z-index:2;}
+.dock-btn.active:not(.dock-radar)::before{
+  content:"";position:absolute;z-index:1;inset:5px 12%;border-radius:999px;
+  background:linear-gradient(180deg,rgba(255,255,255,.080),rgba(255,255,255,.020)),rgba(62,108,160,.070);
+  border:1px solid rgba(195,223,250,.095);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.10),0 7px 17px rgba(0,0,0,.10);
+}
+
+/* ---------- Liquid Glass Radar Orb ---------- */
+.dock-radar-orb.glass-orb{
+  overflow:hidden !important;
+  background:
+    radial-gradient(circle at 31% 18%,rgba(255,255,255,.18),transparent 23%),
+    radial-gradient(circle at 70% 78%,rgba(245,191,85,.085),transparent 43%),
+    linear-gradient(145deg,rgba(255,255,255,.075),rgba(75,128,185,.020) 45%,rgba(2,8,15,.22)),
+    rgba(7,16,28,.52) !important;
+  border:1px solid rgba(245,191,85,.42) !important;
+  box-shadow:0 11px 25px rgba(0,0,0,.31),0 0 22px rgba(245,191,85,.13),inset 0 1px 0 rgba(255,239,204,.19),inset 0 -1px 0 rgba(0,0,0,.28) !important;
+  backdrop-filter:blur(18px) saturate(160%) brightness(1.05) !important;
+  -webkit-backdrop-filter:blur(18px) saturate(160%) brightness(1.05) !important;
+}
+.dock-radar-orb.glass-orb::before{
+  content:"" !important;position:absolute !important;inset:0 !important;border-radius:50% !important;padding:1px !important;pointer-events:none !important;
+  background:linear-gradient(140deg,rgba(255,245,220,.48),rgba(245,191,85,.29) 33%,rgba(125,86,22,.10) 68%,rgba(0,0,0,.31)) !important;
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0) !important;
+  -webkit-mask-composite:xor !important;mask-composite:exclude !important;
+}
+.dock-radar-orb.glass-orb::after{
+  display:block !important;content:"" !important;position:absolute !important;left:18% !important;top:9% !important;width:48% !important;height:28% !important;border-radius:50% !important;
+  background:radial-gradient(ellipse,rgba(255,255,255,.19),transparent 72%) !important;filter:blur(2px) !important;opacity:.88 !important;pointer-events:none !important;
+}
+.dock-radar-logo{
+  display:block !important;position:relative !important;z-index:3 !important;object-fit:contain !important;
+  filter:brightness(0) saturate(100%) invert(82%) sepia(58%) saturate(1010%) hue-rotate(346deg) brightness(103%) contrast(95%) drop-shadow(0 0 6px rgba(245,191,85,.16)) !important;
+}
+@keyframes oxLiquidOrbBreath{
+  0%,100%{box-shadow:0 11px 25px rgba(0,0,0,.31),0 0 17px rgba(245,191,85,.10),inset 0 1px 0 rgba(255,239,204,.18),inset 0 -1px 0 rgba(0,0,0,.28)}
+  50%{box-shadow:0 11px 25px rgba(0,0,0,.31),0 0 25px rgba(245,191,85,.18),inset 0 1px 0 rgba(255,239,204,.20),inset 0 -1px 0 rgba(0,0,0,.28)}
+}
+.dock-radar.active .dock-radar-orb.glass-orb{animation:oxLiquidOrbBreath 3.8s ease-in-out infinite !important;}
+
+/* ---------- Light theme: same material, brighter adaptive tint ---------- */
+body.theme-light{
+  --glass-bg:rgba(247,251,255,.53);
+  --glass-bg-strong:rgba(249,252,255,.64);
+  --glass-border:rgba(87,122,159,.18);
+  --glass-highlight:rgba(255,255,255,.68);
+  background:
+    radial-gradient(900px 560px at 10% -5%,rgba(92,165,255,.15),transparent 66%),
+    radial-gradient(720px 460px at 88% 9%,rgba(245,191,85,.11),transparent 68%),
+    linear-gradient(180deg,#F7FAFE 0%,#EEF3F8 100%) !important;
+}
+body.theme-light main.wrap::before{background:radial-gradient(circle at 13% 14%,rgba(92,165,255,.11),transparent 18%),radial-gradient(circle at 79% 20%,rgba(245,191,85,.10),transparent 17%),radial-gradient(ellipse at 88% 11%,transparent 0 46.4%,rgba(75,127,179,.040) 46.7%,transparent 47%),radial-gradient(circle at 36% 60%,rgba(79,136,196,.06),transparent 24%);}
+body.theme-light .glass,body.theme-light .glass-strong,
+body.theme-light .panel,body.theme-light .metric-card,body.theme-light .benchmark-card,body.theme-light .strength-card,body.theme-light .media-card,body.theme-light .settings-card,body.theme-light .detail-panel,body.theme-light .extra-section,body.theme-light .market-unavailable-card,body.theme-light .ox-control-panel{
+  background:
+    radial-gradient(120% 90% at 8% -5%,rgba(255,255,255,.82),transparent 34%),
+    linear-gradient(145deg,rgba(255,255,255,.60),rgba(185,215,243,.10) 46%,rgba(235,242,249,.20)),
+    rgba(247,251,255,.53) !important;
+  border-color:rgba(87,122,159,.16) !important;
+  box-shadow:0 16px 42px rgba(70,90,116,.10),inset 0 1px 0 rgba(255,255,255,.94),inset 0 -1px 0 rgba(100,122,147,.11) !important;
+  backdrop-filter:blur(18px) saturate(135%) brightness(1.02) !important;
+  -webkit-backdrop-filter:blur(18px) saturate(135%) brightness(1.02) !important;
+}
+body.theme-light .glass-light{background:linear-gradient(145deg,rgba(255,255,255,.60),rgba(190,218,244,.09)),rgba(247,251,255,.42) !important;border-color:rgba(87,122,159,.13) !important;box-shadow:inset 0 1px 0 rgba(255,255,255,.88),inset 0 -1px 0 rgba(108,130,153,.08),0 8px 20px rgba(78,96,120,.055) !important;}
+body.theme-light .v33-home-hero{background:radial-gradient(80% 120% at 95% -5%,rgba(245,191,85,.11),transparent 60%),radial-gradient(90% 120% at -5% 110%,rgba(92,165,255,.13),transparent 63%),linear-gradient(140deg,rgba(255,255,255,.63),rgba(203,224,245,.13) 50%,rgba(244,248,252,.25)),rgba(247,251,255,.55) !important;}
+body.theme-light .v34-home-btc-primary{background:radial-gradient(60% 95% at 100% 5%,rgba(245,191,85,.16),transparent 63%),radial-gradient(80% 120% at 0% 100%,rgba(92,165,255,.09),transparent 66%),linear-gradient(140deg,rgba(255,255,255,.68),rgba(211,227,244,.10) 48%,rgba(246,249,252,.23)),rgba(249,252,255,.58) !important;}
+body.theme-light .v34-home-main-chart,body.theme-light .chart-container{background:linear-gradient(180deg,#F7FAFD,#F2F6FA) !important;}
+body.theme-light .v34-home-side-card{background:linear-gradient(145deg,rgba(255,255,255,.66),rgba(201,223,244,.08)),rgba(247,251,255,.48) !important;border-color:rgba(87,122,159,.14) !important;box-shadow:0 10px 26px rgba(65,85,109,.075),inset 0 1px 0 rgba(255,255,255,.88),inset 0 -1px 0 rgba(99,119,142,.08) !important;}
+body.theme-light .app-dock.glass-nav{background:radial-gradient(90% 130% at 16% -20%,rgba(255,255,255,.96),transparent 47%),linear-gradient(180deg,rgba(255,255,255,.70),rgba(235,243,250,.36)),rgba(245,249,253,.60) !important;border-color:rgba(96,126,158,.20) !important;box-shadow:0 16px 38px rgba(58,75,97,.14),inset 0 1px 0 rgba(255,255,255,.98),inset 0 -1px 0 rgba(101,122,144,.12) !important;backdrop-filter:blur(22px) saturate(140%) brightness(1.02) !important;-webkit-backdrop-filter:blur(22px) saturate(140%) brightness(1.02) !important;}
+body.theme-light .dock-radar-orb.glass-orb{background:radial-gradient(circle at 30% 18%,rgba(255,255,255,.98),transparent 24%),radial-gradient(circle at 70% 78%,rgba(245,191,85,.11),transparent 43%),linear-gradient(145deg,rgba(255,255,255,.70),rgba(224,234,244,.25)),rgba(246,250,253,.68) !important;border-color:rgba(181,128,38,.42) !important;box-shadow:0 10px 24px rgba(63,79,99,.15),0 0 18px rgba(181,128,38,.10),inset 0 1px 0 #fff,inset 0 -1px 0 rgba(96,116,138,.10) !important;}
+body.theme-light .coin-card{background:linear-gradient(145deg,rgba(255,255,255,.66),rgba(219,231,243,.08)),rgba(250,252,254,.56) !important;border-color:rgba(88,120,153,.12) !important;}
+body.theme-light .glass-button,body.theme-light .btn-act,body.theme-light .btn-tf,body.theme-light .alert-btn,body.theme-light .theme-choice,body.theme-light .v34-home-mini-tf,body.theme-light .v34-home-open-radar,body.theme-light .ox-control-refresh,body.theme-light .ox-menu-btn{background:linear-gradient(180deg,rgba(255,255,255,.80),rgba(232,240,248,.34)),rgba(245,249,253,.58) !important;border-color:rgba(83,116,150,.17) !important;box-shadow:inset 0 1px 0 #fff,inset 0 -1px 0 rgba(83,107,132,.08),0 5px 13px rgba(62,80,104,.06) !important;}
+
+/* ---------- Responsive / performance ---------- */
+@media(max-width:720px){
+  :root{--glass-blur:10px;--glass-blur-strong:12px;}
+  .glass,.glass-strong,.panel,.strength-card,.media-card,.settings-card,.detail-panel,.extra-section,.market-unavailable-card,.ox-control-panel{
+    backdrop-filter:blur(10px) saturate(132%) brightness(1.035) !important;
+    -webkit-backdrop-filter:blur(10px) saturate(132%) brightness(1.035) !important;
+  }
+  .v33-card.glass,.v34-home-side-card{
+    backdrop-filter:none !important;-webkit-backdrop-filter:none !important;
+  }
+  .v33-home-hero,.v34-home-btc-primary,.app-dock.glass-nav,.dock-radar-orb.glass-orb{
+    backdrop-filter:blur(11px) saturate(140%) brightness(1.04) !important;
+    -webkit-backdrop-filter:blur(11px) saturate(140%) brightness(1.04) !important;
+  }
+  main.wrap::before{inset:-30px -40px -90px;opacity:.82;}
+  .liquid-optics{opacity:.70;}
+  .app-dock.glass-nav::after{opacity:.55;}
+}
+@media(max-width:430px){
+  .v33-home-hero,.v34-home-btc-primary{border-radius:16px !important;}
+  .v33-hero-stat{border-radius:11px !important;}
+  .app-dock.glass-nav{border-radius:19px !important;}
+}
+@media(prefers-reduced-motion:reduce){
+  .dock-radar.active .dock-radar-orb.glass-orb{animation:none !important;}
+  .liquid-optics,.glass-button,.btn-act,.btn-tf,.v33-hero-stat{transition:none !important;}
+}
 </style>
 
 </head>
@@ -3546,7 +3860,8 @@ body.theme-light .ox-liq-bar { background:#e7edf3; }
   <!-- ===== 首頁：OX Market Command Center ===== -->
   <section class="app-view" id="view-home" data-app-view="home">
     <div class="v33-home-page">
-      <section class="v33-home-hero">
+      <section class="v33-home-hero glass-strong liquid-interactive">
+        <span class="liquid-optics" aria-hidden="true"></span>
         <div class="v33-home-hero-top">
           <div>
             <div class="page-kicker">OX Market Command Center</div>
@@ -3556,17 +3871,18 @@ body.theme-light .ox-liq-bar { background:#e7edf3; }
           <span class="v33-market-state" id="home-market-state">資料整理中</span>
         </div>
         <div class="v33-hero-stats">
-          <div class="v33-hero-stat"><label>OX 市場分數</label><strong id="home-market-score">—</strong><small>BTC 強度＋小幣強度綜合</small></div>
-          <div class="v33-hero-stat"><label>即戰力 T1</label><strong id="home-t1-count">0</strong><small>Trigger 已確認</small></div>
-          <div class="v33-hero-stat"><label>蹲點 T2</label><strong id="home-t2-count">0</strong><small>等待觸發</small></div>
-          <div class="v33-hero-stat"><label>異常活躍</label><strong id="home-surge-count">0</strong><small>資金 / 量能異動</small></div>
+          <div class="v33-hero-stat glass-light"><label>OX 市場分數</label><strong id="home-market-score">—</strong><small>BTC 強度＋小幣強度綜合</small></div>
+          <div class="v33-hero-stat glass-light"><label>即戰力 T1</label><strong id="home-t1-count">0</strong><small>Trigger 已確認</small></div>
+          <div class="v33-hero-stat glass-light"><label>蹲點 T2</label><strong id="home-t2-count">0</strong><small>等待觸發</small></div>
+          <div class="v33-hero-stat glass-light"><label>異常活躍</label><strong id="home-surge-count">0</strong><small>資金 / 量能異動</small></div>
         </div>
       </section>
 
       <section class="v33-section v34-home-market-section">
         <div class="v33-section-head"><div><h2>BTC 市場主圖</h2><p>Crypto 首頁主視覺 · 與雷達共用 Bitget K 線資料來源</p></div><span class="v33-section-tag">LIVE</span></div>
         <div class="v34-home-market-layout">
-          <article class="v33-card v34-home-btc-primary">
+          <article class="v33-card v34-home-btc-primary glass-strong liquid-interactive">
+            <span class="liquid-optics liquid-optics-gold" aria-hidden="true"></span>
             <div class="v34-home-btc-head">
               <div class="v34-home-btc-identity">
                 <span class="v34-home-btc-kicker">BTC / BTCUSDT</span>
@@ -3593,22 +3909,22 @@ body.theme-light .ox-liq-bar { background:#e7edf3; }
           </article>
 
           <div class="v34-home-side-stack">
-            <article class="v33-card v33-market-card v34-home-side-card" data-home-symbol="ETHUSDT" role="button" tabindex="0">
+            <article class="v33-card v33-market-card v34-home-side-card glass liquid-tint-blue" data-home-symbol="ETHUSDT" role="button" tabindex="0">
               <div class="v33-market-card-top"><span class="v33-market-name">ETH</span><span class="v33-market-badge">主流基準</span></div>
               <div class="v33-market-value"><strong id="home-eth-price">—</strong><span id="home-eth-change">—</span></div>
               <div class="v33-market-note" id="home-eth-note">等待行情資料</div><div class="v33-meter"><i id="home-eth-meter"></i></div>
             </article>
-            <article class="v33-card v33-market-card v34-home-side-card">
+            <article class="v33-card v33-market-card v34-home-side-card glass liquid-tint-gold">
               <div class="v33-market-card-top"><span class="v33-market-name">BTC 強度</span><span class="v33-market-badge">0–100</span></div>
               <div class="v33-market-value"><strong id="home-btc-strength">—</strong><span id="home-btc-strength-label">等待</span></div>
               <div class="v33-market-note" id="home-btc-strength-note">結構 / 資金 / 動能 / Trigger</div><div class="v33-meter"><i id="home-btc-strength-meter"></i></div>
             </article>
-            <article class="v33-card v33-market-card v34-home-side-card">
+            <article class="v33-card v33-market-card v34-home-side-card glass liquid-tint-cyan">
               <div class="v33-market-card-top"><span class="v33-market-name">小幣強度</span><span class="v33-market-badge">市場廣度</span></div>
               <div class="v33-market-value"><strong id="home-alt-strength">—</strong><span id="home-alt-strength-label">等待</span></div>
               <div class="v33-market-note" id="home-alt-note">等待全市場輪巡</div><div class="v33-meter"><i id="home-alt-meter"></i></div>
             </article>
-            <article class="v33-card v33-market-card v34-home-side-card v34-home-market-snapshot">
+            <article class="v33-card v33-market-card v34-home-side-card v34-home-market-snapshot glass liquid-tint-neutral">
               <div class="v33-market-card-top"><span class="v33-market-name">市場摘要</span><span class="v33-market-badge">OX</span></div>
               <div class="v33-market-value"><strong id="home-side-market-score">—</strong><span>Market Score</span></div>
               <div class="v33-market-note" id="home-side-market-state">資料整理中</div>
@@ -3618,42 +3934,16 @@ body.theme-light .ox-liq-bar { background:#e7edf3; }
         </div>
       </section>
 
-      <section class="v33-section ox-liquidation-section" id="home-liquidations" aria-labelledby="liquidation-title">
-        <div class="v33-section-head ox-liquidation-head">
-          <div>
-            <h2 id="liquidation-title">交易所爆倉</h2>
-            <p>市場強制平倉分布 · Long / Short 代表被強制平倉的部位方向</p>
-          </div>
-          <div class="ox-liquidation-filters" aria-label="爆倉資料篩選">
-            <label><span class="sr-only">幣種</span><select id="liquidation-symbol"><option value="ALL">全部</option><option value="BTC">BTC</option><option value="ETH">ETH</option><option value="SOL">SOL</option><option value="XRP">XRP</option></select></label>
-            <label><span class="sr-only">時間</span><select id="liquidation-interval"><option value="4h" selected>4H</option><option value="12h">12H</option><option value="24h">24H</option></select></label>
-          </div>
-        </div>
-        <article class="v33-card ox-liquidation-card">
-          <div class="ox-liquidation-status" id="liquidation-status" role="status" aria-live="polite">正在檢查爆倉資料來源…</div>
-          <div class="ox-liquidation-desktop" id="liquidation-desktop" hidden>
-            <div class="ox-liquidation-table-head"><span>交易所</span><span>爆倉金額</span><span>多單爆倉</span><span>空單爆倉</span><span>佔比</span><span>比例</span></div>
-            <div id="liquidation-table-body"></div>
-          </div>
-          <div class="ox-liquidation-mobile" id="liquidation-mobile" hidden></div>
-          <div class="ox-liquidation-empty" id="liquidation-empty" hidden>
-            <b>安全資料端點尚未連接</b>
-            <p>爆倉 UI 與 Data Adapter 已完成，但 GitHub Pages 不會保存第三方 API Secret。請先透過 Serverless Proxy / Cloudflare Worker 串接資料商，再提供前端自己的 endpoint。</p>
-            <code>/api/liquidations?symbol=BTC&amp;interval=4h</code>
-          </div>
-        </article>
-      </section>
-
       <section class="v33-section v33-two-col">
-        <article class="v33-card"><div class="v33-list-head"><b>重要資訊</b><span>OX 系統事件</span></div><div id="home-events"><div class="v33-list-empty">全市場輪巡進行中</div></div></article>
-        <article class="v33-card"><div class="v33-list-head"><b>OX 重點觀察</b><span>T1 / T2 優先</span></div><div id="home-watchlist"><div class="v33-list-empty">等待候選標的</div></div></article>
+        <article class="v33-card glass"><div class="v33-list-head"><b>重要資訊</b><span>OX 系統事件</span></div><div id="home-events"><div class="v33-list-empty">全市場輪巡進行中</div></div></article>
+        <article class="v33-card glass"><div class="v33-list-head"><b>OX 重點觀察</b><span>T1 / T2 優先</span></div><div id="home-watchlist"><div class="v33-list-empty">等待候選標的</div></div></article>
       </section>
 
       <section class="v33-section">
         <div class="v33-section-head"><div><h2>今日強弱</h2><p>Bitget USDT 永續 24H 漲跌幅</p></div><span class="v33-section-tag">TOP 5</span></div>
         <div class="v33-rank-panels">
-          <article class="v33-card"><div class="v33-list-head"><b>今日強勢</b><span>由高到低</span></div><div id="home-gainers"><div class="v33-list-empty">等待 Ticker</div></div></article>
-          <article class="v33-card"><div class="v33-list-head"><b>今日弱勢</b><span>由低到高</span></div><div id="home-losers"><div class="v33-list-empty">等待 Ticker</div></div></article>
+          <article class="v33-card glass"><div class="v33-list-head"><b>今日強勢</b><span>由高到低</span></div><div id="home-gainers"><div class="v33-list-empty">等待 Ticker</div></div></article>
+          <article class="v33-card glass"><div class="v33-list-head"><b>今日弱勢</b><span>由低到高</span></div><div id="home-losers"><div class="v33-list-empty">等待 Ticker</div></div></article>
         </div>
       </section>
 
@@ -3670,10 +3960,10 @@ body.theme-light .ox-liq-bar { background:#e7edf3; }
       <section class="v33-section">
         <div class="v33-section-head"><div><h2>快捷入口</h2><p>不開新頁，直接切換 OX 工作區</p></div></div>
         <div class="v33-actions">
-          <button class="v33-action" type="button" data-view-target="radar"><span class="v33-action-icon">⌁</span><b>進入雷達</b><small>找幣＋看標的</small></button>
-          <button class="v33-action" type="button" data-view-target="strength"><span class="v33-action-icon">↗</span><b>市場強弱</b><small>BTC / 小幣環境</small></button>
-          <button class="v33-action" type="button" data-view-target="settings"><span class="v33-action-icon">🔔</span><b>提醒設定</b><small>通知 / 主題</small></button>
-          <button class="v33-action" type="button" data-view-target="media"><span class="v33-action-icon">▶</span><b>OX 媒體</b><small>YouTube / 社群</small></button>
+          <button class="v33-action glass-button" type="button" data-view-target="radar"><span class="v33-action-icon">⌁</span><b>進入雷達</b><small>找幣＋看標的</small></button>
+          <button class="v33-action glass-button" type="button" data-view-target="strength"><span class="v33-action-icon">↗</span><b>市場強弱</b><small>BTC / 小幣環境</small></button>
+          <button class="v33-action glass-button" type="button" data-view-target="settings"><span class="v33-action-icon">🔔</span><b>提醒設定</b><small>通知 / 主題</small></button>
+          <button class="v33-action glass-button" type="button" data-view-target="media"><span class="v33-action-icon">▶</span><b>OX 媒體</b><small>YouTube / 社群</small></button>
         </div>
       </section>
     </div>
@@ -3998,7 +4288,7 @@ body.theme-light .ox-liq-bar { background:#e7edf3; }
 </main>
 
 
-<nav class="app-dock" aria-label="主要功能">
+<nav class="app-dock glass-nav" aria-label="主要功能">
   <button class="dock-btn" type="button" data-view-target="home" aria-label="首頁">
     <span class="dock-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.2 12 4l9 7.2v8.3a1.5 1.5 0 0 1-1.5 1.5H15v-6H9v6H4.5A1.5 1.5 0 0 1 3 19.5z"/></svg></span><span>首頁</span>
   </button>
@@ -4006,17 +4296,8 @@ body.theme-light .ox-liq-bar { background:#e7edf3; }
     <span class="dock-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 18v-5M10 18V8M16 18V4M22 18V11"/></svg></span><span>強弱</span>
   </button>
   <button class="dock-btn dock-radar active" type="button" data-view-target="radar" aria-label="雷達">
-    <span class="dock-radar-orb" aria-hidden="true">
-      <svg class="dock-radar-logo" viewBox="0 0 450 439" aria-hidden="true" focusable="false">
-        <g fill="currentColor">
-          <rect x="0" y="0" width="202" height="43"/><rect x="247" y="0" width="203" height="43"/>
-          <rect x="0" y="80" width="202" height="42"/><rect x="247" y="80" width="202" height="42"/>
-          <rect x="0" y="159" width="202" height="42"/><rect x="247" y="159" width="202" height="42"/>
-          <rect x="0" y="238" width="449" height="42"/>
-          <rect x="0" y="317" width="202" height="42"/><rect x="248" y="317" width="202" height="42"/>
-          <rect x="0" y="396" width="202" height="43"/><rect x="247" y="396" width="203" height="43"/>
-        </g>
-      </svg>
+    <span class="dock-radar-orb glass-orb" aria-hidden="true">
+      <img class="dock-radar-logo" src="ox-logo.png" alt="OX Radar Logo">
     </span><span class="dock-radar-label">雷達</span>
   </button>
   <button class="dock-btn" type="button" data-view-target="media" aria-label="媒體">
@@ -4067,8 +4348,6 @@ const state = {
   
   tickers: [],
   contracts: new Map(),
-  instrumentCatalog: new Map(),
-  assetClassCounts: { crypto: 0, stock: 0, etf: 0, commodity: 0, index: 0, other: 0 },
   btcTicker: null,
   ethTicker: null,
   
@@ -4823,81 +5102,6 @@ if (systemThemeQuery.addEventListener) systemThemeQuery.addEventListener("change
 else if (systemThemeQuery.addListener) systemThemeQuery.addListener(onSystemThemeChange);
 
 
-
-/* ===== Asset Classification: Crypto radar must be crypto-only before OX analysis ===== */
-const ASSET_CLASS = Object.freeze({
-  CRYPTO: "crypto",
-  STOCK: "stock",
-  ETF: "etf",
-  COMMODITY: "commodity",
-  INDEX: "index",
-  OTHER: "other"
-});
-
-// Centralized fallback only. Official Bitget instrument metadata is preferred whenever available.
-const NON_CRYPTO_UNDERLYINGS = Object.freeze({
-  stock: new Set([
-    "AAPL","TSLA","NVDA","META","MSFT","INTC","COIN","PLTR","NFLX","BABA","AMZN","GOOG","GOOGL","AMD","MSTR","HOOD","MARA","RIOT","SMCI","AVGO","ORCL","CRM","MU","TSM","QCOM","ARM","RDDT","UBER","NIO","JD","PDD","SHOP","PYPL","DIS","BA","JPM","GS","BAC","WMT","COST","KO","MCD","SBUX","XOM","CVX","LLY","UNH","JNJ"
-  ]),
-  etf: new Set([
-    "SPY","QQQ","IWM","DIA","SOXL","SOXS","TQQQ","SQQQ","ARKK","GLD","SLV","USO","BITO","IBIT","ETHA"
-  ]),
-  commodity: new Set([
-    "XAU","XAG","XPT","XPD","GOLD","SILVER","WTI","BRENT","USOIL","UKOIL","NATGAS","NG","COPPER"
-  ]),
-  index: new Set([
-    "SPX","SP500","NDX","NASDAQ","NAS100","DJI","DOW","VIX","DXY","US100","US30","US500","HK50","GER40","JPN225"
-  ])
-});
-
-// Asset-backed crypto tokens remain crypto contracts even if their economics reference metals.
-const CRYPTO_TOKEN_EXCEPTIONS = new Set(["PAXG","XAUT","DGX"]);
-
-function normalizeUnderlyingSymbol(contract = {}) {
-  const raw = String(contract.baseCoin || contract.baseAsset || contract.underlying || contract.symbol || "").toUpperCase().trim();
-  return raw.replace(/USDT$|USDC$/i, "").replace(/[^A-Z0-9._-]/g, "");
-}
-
-function classifyInstrument(contract = {}) {
-  const base = normalizeUnderlyingSymbol(contract);
-  if (CRYPTO_TOKEN_EXCEPTIONS.has(base)) return ASSET_CLASS.CRYPTO;
-
-  // Bitget v3 instrument metadata exposes crypto / metal / stock / commodity symbol types.
-  const type = String(contract.assetSymbolType || contract.instrumentSymbolType || contract.v3SymbolType || contract.symbolTypeV3 || "").toLowerCase();
-  if (type === "crypto") return ASSET_CLASS.CRYPTO;
-  if (type === "stock") return NON_CRYPTO_UNDERLYINGS.etf.has(base) ? ASSET_CLASS.ETF : ASSET_CLASS.STOCK;
-  if (type === "metal" || type === "commodity") return ASSET_CLASS.COMMODITY;
-  if (type === "index") return ASSET_CLASS.INDEX;
-  if (type === "etf") return ASSET_CLASS.ETF;
-
-  // Future-proof metadata hints if Bitget extends the schema.
-  const metadataHint = [contract.assetClass, contract.assetType, contract.underlyingType, contract.category, contract.instrumentType]
-    .filter(Boolean).join(" ").toLowerCase();
-  if (/\betf\b/.test(metadataHint)) return ASSET_CLASS.ETF;
-  if (/\b(index|indices)\b/.test(metadataHint)) return ASSET_CLASS.INDEX;
-  if (/\b(stock|equity|share)\b/.test(metadataHint)) return ASSET_CLASS.STOCK;
-  if (/\b(metal|commodity)\b/.test(metadataHint)) return ASSET_CLASS.COMMODITY;
-  if (/\bcrypto(currency)?\b/.test(metadataHint)) return ASSET_CLASS.CRYPTO;
-
-  for (const cls of [ASSET_CLASS.STOCK, ASSET_CLASS.ETF, ASSET_CLASS.COMMODITY, ASSET_CLASS.INDEX]) {
-    if (NON_CRYPTO_UNDERLYINGS[cls]?.has(base)) return cls;
-  }
-
-  // v2 contract endpoint is crypto-heavy and does not expose a reliable asset class for every listing.
-  // If v3 metadata is unavailable, default to crypto after centralized non-crypto fallbacks above.
-  return ASSET_CLASS.CRYPTO;
-}
-
-function isCryptoInstrument(contract) {
-  return classifyInstrument(contract) === ASSET_CLASS.CRYPTO;
-}
-
-function isCryptoSymbolAllowed(symbol) {
-  const known = state.instrumentCatalog?.get(symbol) || state.contracts?.get(symbol);
-  if (known) return isCryptoInstrument(known);
-  return isCryptoInstrument({ symbol, baseCoin: String(symbol || "").replace(/USDT$|USDC$/i, "") });
-}
-
 const BitgetAPI = {
   async fetchTickers() {
     const res = await fetch(`${CONFIG.apiBase}/tickers?productType=${CONFIG.productType}`, { cache: "no-store" });
@@ -4911,17 +5115,6 @@ const BitgetAPI = {
     const json = await res.json();
     if (json.code !== "00000" || !Array.isArray(json.data)) return [];
     return json.data.filter(x => x.symbolStatus === "normal" && x.symbolType === "perpetual" && x.quoteCoin === "USDT");
-  },
-
-  async fetchInstrumentMetadata() {
-    try {
-      const res = await fetch(`https://api.bitget.com/api/v3/market/instruments?category=${CONFIG.productType}`, { cache: "no-store" });
-      const json = await res.json();
-      if (json.code !== "00000" || !Array.isArray(json.data)) return [];
-      return json.data;
-    } catch (e) {
-      return [];
-    }
   },
 
   async fetchCandles(symbol, granularity, limit = 100, endTime = null) {
@@ -5245,42 +5438,14 @@ async function refreshMarketTickers() {
   try {
     const rawTickers = await BitgetAPI.fetchTickers();
     if (!state.contracts.size) {
-      const [contractList, instrumentMetadata] = await Promise.all([
-        BitgetAPI.fetchContracts(),
-        BitgetAPI.fetchInstrumentMetadata()
-      ]);
-      const metaBySymbol = new Map((instrumentMetadata || []).map(m => [m.symbol, m]));
-      state.instrumentCatalog.clear();
-      state.contracts.clear();
-      state.assetClassCounts = { crypto: 0, stock: 0, etf: 0, commodity: 0, index: 0, other: 0 };
-
-      contractList.forEach(c => {
-        const meta = metaBySymbol.get(c.symbol) || {};
-        const merged = {
-          ...c,
-          assetSymbolType: meta.symbolType || "",
-          isRwa: meta.isRwa ?? c.isRwa,
-          assetClass: undefined
-        };
-        const assetClass = classifyInstrument(merged);
-        const tagged = { ...merged, assetClass };
-        state.instrumentCatalog.set(tagged.symbol, tagged);
-        state.assetClassCounts[assetClass] = (state.assetClassCounts[assetClass] || 0) + 1;
-        if (assetClass === ASSET_CLASS.CRYPTO) state.contracts.set(tagged.symbol, tagged);
-      });
+      const contractList = await BitgetAPI.fetchContracts();
+      contractList.forEach(c => state.contracts.set(c.symbol, c));
     }
 
     state.tickers = rawTickers.filter(t => 
       state.contracts.has(t.symbol) && 
-      isCryptoSymbolAllowed(t.symbol) &&
       [t.lastPr, t.change24h, t.usdtVolume].every(v => Number.isFinite(num(v)))
     );
-
-    // Purge any stale non-crypto records before rebuilding ranking / scanner state.
-    for (const symbol of Array.from(state.analyzedCache.keys())) {
-      if (!isCryptoSymbolAllowed(symbol)) state.analyzedCache.delete(symbol);
-    }
-    state.scanQueue = state.scanQueue.filter(isCryptoSymbolAllowed);
 
     state.btcTicker = state.tickers.find(t => t.symbol === "BTCUSDT") || null;
     state.ethTicker = state.tickers.find(t => t.symbol === "ETHUSDT") || null;
@@ -5474,7 +5639,7 @@ function renderCurrentTab() {
   syncScannerFilterUI();
 
   if (tab === "watch") {
-    const savedAll = getWatchlistRecords().filter(rec => state.activeMarket !== "crypto" || isCryptoSymbolAllowed(rec.symbol));
+    const savedAll = getWatchlistRecords();
     const saved = savedAll.filter(rec => {
       const analyzed = state.analyzedCache.get(rec.symbol);
       return passesDirectionFilter(analyzed?.side || rec.side || "—");
@@ -5539,15 +5704,11 @@ function renderCurrentTab() {
           <span class="badge badge-${displayTier}">${displayTier.toUpperCase()}</span>
           ${c.isSurge ? '<span class="badge badge-surge">🔥</span>' : ''}
         </span>
-        <span class="coin-top-right"><span class="coin-ox">OX ${c.oxScore}</span>${allowStar ? `<button class="watch-star watch-star-desktop ${starred?'is-starred':''}" type="button" data-watch-symbol="${c.symbol}" aria-label="${starred?'移除':'加入'} ${c.symbol} 收藏"><span aria-hidden="true">${starred?'★':'☆'}</span></button>` : ''}</span>
+        <span class="coin-top-right"><span class="coin-ox">OX ${c.oxScore}</span>${allowStar ? `<button class="watch-star ${starred?'is-starred':''}" type="button" data-watch-symbol="${c.symbol}" aria-label="${starred?'移除':'加入'} ${c.symbol} 收藏"><span aria-hidden="true">${starred?'★':'☆'}</span></button>` : ''}</span>
       </div>
       <div class="coin-mid">
         <span class="meta desktop-coin-meta">${status} · Fit ${fit ?? '—'} · 24H Vol ${fmtUsd(c.quoteVol)} USDT</span>
         <span class="mobile-coin-volume">24H 成交量 ${fmtUsd(c.quoteVol)} USDT</span>
-        <span class="coin-change desktop-coin-change ${c.change24h >= 0 ? 'positive' : 'negative'}" style="font-weight:700">${fmtPct(c.change24h)}</span>
-      </div>
-      <div class="coin-mobile-bottom">
-        ${allowStar ? `<button class="watch-star watch-star-mobile ${starred?'is-starred':''}" type="button" data-watch-symbol="${c.symbol}" aria-label="${starred?'移除':'加入'} ${c.symbol} 收藏"><span aria-hidden="true">${starred?'★':'☆'}</span></button>` : '<span></span>'}
         <span class="coin-change ${c.change24h >= 0 ? 'positive' : 'negative'}" style="font-weight:700">${fmtPct(c.change24h)}</span>
       </div>
       <div class="coin-reason"><div class="setup-head">${c.setupName}</div><div>• ${c.reasons.join('</div><div>• ')}</div></div>
@@ -6474,172 +6635,6 @@ const OXControlPanel = (() => {
   return { init, open, close, syncTheme, syncDataStatus };
 })();
 
-
-/* ===== Exchange Liquidation module: safe proxy adapter, no third-party secret in frontend ===== */
-const LiquidationService = (() => {
-  const toNum = value => {
-    if (typeof value === "number") return Number.isFinite(value) ? value : 0;
-    const n = Number(String(value ?? "").replace(/[$,%\s,]/g, ""));
-    return Number.isFinite(n) ? n : 0;
-  };
-  const pick = (obj, keys) => {
-    for (const key of keys) if (obj && obj[key] != null && obj[key] !== "") return toNum(obj[key]);
-    return 0;
-  };
-  const endpoint = () => String(window.OX_LIQUIDATION_PROXY_ENDPOINT || window.OX_CONFIG?.liquidationEndpoint || "").trim();
-
-  function extractRows(payload) {
-    if (Array.isArray(payload)) return payload;
-    if (Array.isArray(payload?.data)) return payload.data;
-    if (Array.isArray(payload?.data?.exchanges)) return payload.data.exchanges;
-    if (Array.isArray(payload?.exchanges)) return payload.exchanges;
-    if (Array.isArray(payload?.rows)) return payload.rows;
-    return [];
-  }
-
-  function normalize(payload) {
-    const rawRows = extractRows(payload);
-    const baseRows = rawRows.map(row => {
-      const long = pick(row, ["long", "longLiquidation", "longLiquidationUsd", "longAmount", "longUsd"]);
-      const short = pick(row, ["short", "shortLiquidation", "shortLiquidationUsd", "shortAmount", "shortUsd"]);
-      const explicitTotal = pick(row, ["total", "liquidation", "liquidationUsd", "totalLiquidation", "totalAmount", "amount"]);
-      const total = explicitTotal > 0 ? explicitTotal : long + short;
-      return {
-        exchange: String(row.exchange || row.exchangeName || row.name || row.venue || "Unknown"),
-        total,
-        long,
-        short
-      };
-    }).filter(r => r.exchange && r.total > 0);
-
-    const payloadTotal = pick(payload, ["totalMarketLiquidation", "marketTotal", "totalLiquidation", "total"])
-      || pick(payload?.data, ["totalMarketLiquidation", "marketTotal", "totalLiquidation", "total"]);
-    const totalMarket = payloadTotal > 0 ? payloadTotal : baseRows.reduce((sum, r) => sum + r.total, 0);
-
-    return baseRows.map(r => {
-      const directionalTotal = r.long + r.short || r.total;
-      const longRatio = directionalTotal > 0 ? r.long / directionalTotal * 100 : 0;
-      const shortRatio = directionalTotal > 0 ? r.short / directionalTotal * 100 : 0;
-      return {
-        ...r,
-        marketShare: totalMarket > 0 ? r.total / totalMarket * 100 : 0,
-        longRatio,
-        shortRatio
-      };
-    }).sort((a,b) => b.total - a.total);
-  }
-
-  async function fetchSnapshot({ symbol = "ALL", interval = "4h" } = {}) {
-    const proxy = endpoint();
-    if (!proxy) return { configured: false, rows: [], symbol, interval };
-    const url = new URL(proxy, window.location.href);
-    url.searchParams.set("symbol", symbol);
-    url.searchParams.set("interval", interval);
-    const res = await fetch(url.toString(), { cache: "no-store", headers: { "Accept": "application/json" } });
-    if (!res.ok) throw new Error(`Liquidation proxy HTTP ${res.status}`);
-    const payload = await res.json();
-    return { configured: true, rows: normalize(payload), symbol, interval };
-  }
-
-  return { fetchSnapshot, normalize };
-})();
-
-const LiquidationModule = (() => {
-  const state = { symbol: "ALL", interval: "4h", loading: false };
-  const q = id => document.getElementById(id);
-  const fmtMoney = value => {
-    const n = Number(value) || 0;
-    if (Math.abs(n) >= 1e9) return `$${(n/1e9).toFixed(2)}B`;
-    if (Math.abs(n) >= 1e6) return `$${(n/1e6).toFixed(2)}M`;
-    if (Math.abs(n) >= 1e3) return `$${(n/1e3).toFixed(2)}K`;
-    return `$${n.toFixed(0)}`;
-  };
-  const pct = value => `${(Number(value) || 0).toFixed(2)}%`;
-  const dominant = row => row.shortRatio >= row.longRatio
-    ? { key: "short", value: row.shortRatio, label: "空單爆倉" }
-    : { key: "long", value: row.longRatio, label: "多單爆倉" };
-
-  function setVisibility(mode) {
-    const desktop = q("liquidation-desktop");
-    const mobile = q("liquidation-mobile");
-    const empty = q("liquidation-empty");
-    if (desktop) desktop.hidden = mode !== "data";
-    if (mobile) mobile.hidden = mode !== "data";
-    if (empty) empty.hidden = mode !== "empty";
-  }
-
-  function render(rows) {
-    const body = q("liquidation-table-body");
-    const mobile = q("liquidation-mobile");
-    if (!rows.length) {
-      setVisibility("empty");
-      const status = q("liquidation-status");
-      if (status) status.textContent = "目前沒有可顯示的爆倉資料。";
-      return;
-    }
-    setVisibility("data");
-    if (body) body.innerHTML = rows.map(row => {
-      const d = dominant(row);
-      return `<div class="ox-liquidation-row">
-        <span class="ox-liq-exchange"><i></i><b>${row.exchange}</b></span>
-        <span class="ox-liq-num"><b>${fmtMoney(row.total)}</b></span>
-        <span class="ox-liq-num ox-liq-long">${fmtMoney(row.long)}</span>
-        <span class="ox-liq-num ox-liq-short">${fmtMoney(row.short)}</span>
-        <span class="ox-liq-num">${pct(row.marketShare)}</span>
-        <span class="ox-liq-ratio"><b class="ox-liq-${d.key}">${pct(d.value)}</b>${d.label}</span>
-      </div>`;
-    }).join("");
-    if (mobile) mobile.innerHTML = rows.map(row => {
-      const d = dominant(row);
-      const longW = Math.max(0, Math.min(100, row.longRatio));
-      const shortW = Math.max(0, Math.min(100, row.shortRatio));
-      return `<div class="ox-liq-mobile-card">
-        <div class="ox-liq-mobile-top"><b>${row.exchange.toUpperCase()}</b><span>${pct(row.marketShare)}</span></div>
-        <div class="ox-liq-mobile-total">${fmtMoney(row.total)}</div>
-        <div class="ox-liq-mobile-split"><span>多單 <b class="ox-liq-long">${fmtMoney(row.long)}</b></span><span>空單 <b class="ox-liq-short">${fmtMoney(row.short)}</b></span></div>
-        <div class="ox-liq-bar" aria-label="多空爆倉比例"><i class="long" style="width:${longW}%"></i><i class="short" style="width:${shortW}%"></i></div>
-        <div class="ox-liq-mobile-foot"><strong class="${d.key}">${pct(d.value)}</strong> ${d.label}</div>
-      </div>`;
-    }).join("");
-    const status = q("liquidation-status");
-    if (status) status.textContent = `${state.symbol === "ALL" ? "全市場" : state.symbol} · ${state.interval.toUpperCase()} · ${rows.length} 間交易所`;
-  }
-
-  async function refresh() {
-    if (state.loading) return;
-    state.loading = true;
-    const status = q("liquidation-status");
-    if (status) status.textContent = "爆倉資料更新中…";
-    try {
-      const result = await LiquidationService.fetchSnapshot(state);
-      if (!result.configured) {
-        setVisibility("empty");
-        if (status) status.textContent = `${state.symbol === "ALL" ? "全部幣種" : state.symbol} · ${state.interval.toUpperCase()} · 等待安全 Proxy`;
-        return;
-      }
-      render(result.rows);
-    } catch (error) {
-      setVisibility("empty");
-      if (status) status.textContent = `爆倉資料暫時無法取得：${error.message}`;
-    } finally {
-      state.loading = false;
-    }
-  }
-
-  function init() {
-    const symbol = q("liquidation-symbol");
-    const interval = q("liquidation-interval");
-    if (!symbol || !interval) return;
-    symbol.value = state.symbol;
-    interval.value = state.interval;
-    symbol.addEventListener("change", () => { state.symbol = symbol.value; refresh(); });
-    interval.addEventListener("change", () => { state.interval = interval.value; refresh(); });
-    refresh();
-  }
-
-  return { init, refresh };
-})();
-
 document.addEventListener("click", e => {
   const star = e.target.closest("[data-watch-symbol]");
   if (star?.dataset.watchSymbol) { e.preventDefault(); e.stopPropagation(); toggleWatchSymbol(star.dataset.watchSymbol); return; }
@@ -6739,7 +6734,6 @@ window.addEventListener("DOMContentLoaded", () => {
   initSettings();
   OXControlPanel.init();
   OXFeaturePack.init();
-  LiquidationModule.init();
   syncScannerFilterUI();
   const oxMarkerToggle = document.getElementById("chk-ox-markers");
   if (oxMarkerToggle) oxMarkerToggle.checked = false;
@@ -6783,5 +6777,26 @@ document.addEventListener("keydown", e => {
 });
 
 </script>
+
+<script id="ox-liquid-glass-pointer-effects">
+(() => {
+  const finePointer = window.matchMedia && window.matchMedia('(hover:hover) and (pointer:fine)').matches;
+  const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (!finePointer || reduced) return;
+  document.querySelectorAll('.liquid-interactive').forEach((el) => {
+    const reset = () => { el.style.setProperty('--lg-x','18%'); el.style.setProperty('--lg-y','4%'); };
+    el.addEventListener('pointermove', (event) => {
+      const r = el.getBoundingClientRect();
+      if (!r.width || !r.height) return;
+      const x = Math.max(0, Math.min(100, ((event.clientX - r.left) / r.width) * 100));
+      const y = Math.max(0, Math.min(100, ((event.clientY - r.top) / r.height) * 100));
+      el.style.setProperty('--lg-x', `${x.toFixed(1)}%`);
+      el.style.setProperty('--lg-y', `${y.toFixed(1)}%`);
+    }, { passive:true });
+    el.addEventListener('pointerleave', reset, { passive:true });
+  });
+})();
+</script>
+
 </body>
 </html>
