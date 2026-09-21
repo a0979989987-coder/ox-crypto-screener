@@ -4081,6 +4081,321 @@ html.ox-motion-lite .dock-radar.active .dock-radar-orb.glass-orb{animation:none!
   .dock-radar.active .dock-radar-orb.glass-orb{animation:none!important;}
   body.ox-control-open main.wrap,body.ox-control-open>header,body.ox-control-open .ox-live-shell{transform:none!important;filter:none!important;}
 }
+
+
+/* =====================================================================
+   OX v3.6 — Navigation repair + Premium BTC Hero Card
+   UI/layout only. Core OX Engine / radar / scanner logic is untouched.
+   ===================================================================== */
+
+/* --- Bottom navigation hardening: lock the five options to stable columns --- */
+.app-dock{
+  display:grid !important;
+  grid-template-columns:repeat(5,minmax(0,1fr)) !important;
+  grid-template-rows:1fr !important;
+}
+.app-dock > .dock-btn{
+  grid-row:1 !important;
+  min-width:0 !important;
+  pointer-events:auto !important;
+  touch-action:manipulation !important;
+  white-space:nowrap !important;
+}
+.app-dock > .dock-btn[data-view-target="home"]{grid-column:1 !important;}
+.app-dock > .dock-btn[data-view-target="strength"]{grid-column:2 !important;}
+.app-dock > .dock-btn[data-view-target="radar"]{grid-column:3 !important;}
+.app-dock > .dock-btn[data-view-target="media"]{grid-column:4 !important;}
+.app-dock > .dock-btn[data-view-target="settings"]{grid-column:5 !important;}
+.app-dock > .ox-dock-indicator,
+.app-dock > .ox-motion-shine{
+  position:absolute !important;
+  grid-column:auto !important;
+  grid-row:auto !important;
+  pointer-events:none !important;
+}
+.app-dock .dock-btn > span:last-child{
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+  max-width:100% !important;
+}
+
+/* --- Market layout: BTC remains the lead visual, side stack becomes supporting UI --- */
+.v34-home-market-layout{
+  grid-template-columns:minmax(0,1.92fr) minmax(238px,.82fr) !important;
+  gap:12px !important;
+  align-items:stretch !important;
+}
+.btc-premium-hero{
+  position:relative !important;
+  isolation:isolate !important;
+  min-height:0 !important;
+  height:auto !important;
+  overflow:hidden !important;
+  border-color:rgba(245,191,85,.27) !important;
+  background:
+    radial-gradient(42% 80% at 88% 8%,rgba(245,191,85,.14),transparent 70%),
+    radial-gradient(65% 100% at 8% 100%,rgba(69,128,190,.09),transparent 72%),
+    linear-gradient(145deg,rgba(255,255,255,.060),rgba(255,255,255,.012) 50%,rgba(7,14,24,.30)),
+    rgba(7,16,27,.56) !important;
+  box-shadow:
+    0 18px 48px rgba(0,0,0,.32),
+    0 0 0 1px rgba(245,191,85,.035),
+    inset 0 1px 0 rgba(255,244,218,.13),
+    inset 0 -1px 0 rgba(0,0,0,.30) !important;
+}
+.btc-premium-hero::before{
+  content:"" !important;
+  position:absolute !important;
+  inset:0 !important;
+  z-index:0 !important;
+  pointer-events:none !important;
+  background:
+    radial-gradient(circle at var(--glass-pointer-x,22%) var(--glass-pointer-y,5%),rgba(255,255,255,.11),transparent 24%),
+    linear-gradient(115deg,transparent 4%,rgba(255,233,188,.028) 42%,rgba(255,255,255,.065) 49%,transparent 58%) !important;
+  opacity:.78 !important;
+}
+.btc-premium-hero > :not(.liquid-optics):not(.btc-premium-visual){
+  position:relative !important;
+  z-index:3 !important;
+}
+.btc-premium-visual{
+  position:absolute;
+  z-index:1;
+  right:-16px;
+  top:-18px;
+  width:36%;
+  min-width:190px;
+  max-width:300px;
+  aspect-ratio:1;
+  pointer-events:none;
+  opacity:.88;
+  transform:translate3d(0,0,0);
+  transition:transform var(--motion-slow,340ms) var(--ease-smooth,cubic-bezier(.22,1,.36,1)),opacity .24s ease;
+}
+.btc-premium-hero:hover .btc-premium-visual{transform:translate3d(-2px,2px,0);}
+.btc-premium-coin{
+  position:absolute;
+  inset:16%;
+  border-radius:50%;
+  display:grid;
+  place-items:center;
+  transform:rotate(-10deg);
+  background:
+    radial-gradient(circle at 28% 20%,rgba(255,248,214,.85),transparent 9%),
+    radial-gradient(circle at 37% 31%,#f8d36f 0 4%,#bd7c18 30%,#6f410d 58%,#d9a136 74%,#6b3d0b 100%);
+  border:1px solid rgba(255,217,132,.48);
+  box-shadow:
+    0 0 48px rgba(245,191,85,.21),
+    0 10px 35px rgba(0,0,0,.34),
+    inset 0 2px 3px rgba(255,246,211,.54),
+    inset 0 -7px 14px rgba(77,42,5,.44);
+}
+.btc-premium-coin::before,
+.btc-premium-coin::after{
+  content:"";
+  position:absolute;
+  border-radius:50%;
+  pointer-events:none;
+}
+.btc-premium-coin::before{
+  inset:8%;
+  border:2px solid rgba(255,225,155,.34);
+  box-shadow:inset 0 0 0 5px rgba(62,34,3,.13),0 0 0 1px rgba(90,49,4,.28);
+}
+.btc-premium-coin::after{
+  inset:16%;
+  border:1px dashed rgba(255,228,166,.28);
+}
+.btc-premium-coin span{
+  position:relative;
+  z-index:2;
+  color:#3b2105;
+  font:900 clamp(55px,6.3vw,96px)/1 system-ui,-apple-system,sans-serif;
+  text-shadow:
+    1px 1px 0 rgba(255,231,168,.58),
+    -1px -1px 0 rgba(88,46,3,.45),
+    0 4px 8px rgba(0,0,0,.16);
+}
+.btc-premium-orbit{
+  position:absolute;
+  border:1px solid rgba(245,191,85,.13);
+  border-radius:50%;
+  transform:rotate(-18deg);
+}
+.btc-premium-orbit-a{inset:4% -8% 13% 8%;}
+.btc-premium-orbit-b{inset:19% -1% 1% 23%;opacity:.55;}
+
+.btc-premium-top{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:14px;
+  padding:16px 18px 8px;
+  min-height:96px;
+}
+.btc-premium-copy{min-width:0;max-width:66%;}
+.btc-premium-title-row{display:flex;align-items:center;gap:9px;}
+.btc-premium-icon{
+  width:31px;height:31px;border-radius:9px;display:grid;place-items:center;
+  color:#291702;background:linear-gradient(145deg,#ffd86a,#b67516);
+  box-shadow:0 7px 18px rgba(245,191,85,.16),inset 0 1px 0 rgba(255,255,255,.48);
+  font-weight:950;font-size:20px;
+}
+.btc-premium-name{color:var(--ox-text-strong,#eef4fc);font-size:12px;font-weight:900;letter-spacing:.02em;}
+.btc-premium-name span{color:var(--muted);font-weight:720;margin-left:4px;}
+.btc-premium-name em{
+  display:inline-flex;align-items:center;height:17px;padding:0 6px;margin-left:6px;
+  border:1px solid rgba(245,191,85,.18);border-radius:999px;
+  color:var(--gold);background:rgba(245,191,85,.055);font-size:7px;font-style:normal;
+}
+.btc-premium-pair{margin-top:1px;color:var(--muted);font-size:7px;font-weight:720;letter-spacing:.07em;}
+.btc-premium-price{margin-top:10px !important;gap:9px !important;}
+.btc-premium-price strong{font-size:36px !important;letter-spacing:-.035em;color:#f1f6fb !important;}
+.btc-premium-price span{font-size:11px !important;}
+.btc-premium-actions{
+  position:relative;z-index:4;display:flex;flex-direction:column;align-items:flex-end;gap:7px;max-width:30%;
+}
+.btc-premium-state{
+  display:inline-flex;align-items:center;min-height:22px;padding:0 8px;border-radius:999px;
+  border:1px solid rgba(245,191,85,.20);background:rgba(245,191,85,.055);color:#e8bd67;
+  font-size:7px;font-weight:850;white-space:nowrap;backdrop-filter:none !important;
+}
+.btc-premium-radar-btn{
+  min-height:29px !important;padding:0 9px !important;border-radius:999px !important;
+  font-size:7.5px !important;position:relative;z-index:5;
+}
+.btc-premium-period-row{
+  display:flex;align-items:center;gap:10px;
+  padding:0 18px 7px;
+}
+.btc-premium-toolbar{
+  min-height:28px !important;padding:2px !important;gap:2px !important;
+  width:max-content;border:1px solid rgba(141,173,208,.12) !important;border-radius:9px !important;
+  background:rgba(5,13,23,.31) !important;
+}
+.btc-premium-toolbar .v34-home-mini-tf{
+  min-width:38px !important;height:24px !important;border-radius:7px !important;border-color:transparent !important;
+  background:transparent !important;
+}
+.btc-premium-toolbar .v34-home-mini-tf.active{
+  color:var(--gold) !important;
+  border-color:rgba(245,191,85,.31) !important;
+  background:linear-gradient(180deg,rgba(245,191,85,.13),rgba(245,191,85,.055)) !important;
+  box-shadow:inset 0 1px 0 rgba(255,241,205,.09),0 4px 10px rgba(0,0,0,.12) !important;
+}
+.btc-premium-note{
+  min-width:0;max-width:55%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  color:#8194ac;font-size:7px;
+}
+.btc-premium-chart-wrap{
+  position:relative;
+  height:178px;
+  margin:0 12px;
+  border:1px solid rgba(105,145,188,.10);
+  border-radius:10px;
+  overflow:hidden;
+  background:
+    linear-gradient(180deg,rgba(5,12,21,.28),rgba(5,10,17,.06)),
+    rgba(4,10,18,.18);
+  cursor:pointer;
+}
+.btc-premium-chart-wrap::before{
+  content:"";position:absolute;inset:0;pointer-events:none;z-index:3;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.025);
+  border-radius:inherit;
+}
+.btc-premium-chart{
+  width:100% !important;
+  height:100% !important;
+  min-height:0 !important;
+  background:transparent !important;
+}
+.btc-premium-stats{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  margin-top:9px;
+  border-top:1px solid rgba(118,158,199,.10);
+  background:rgba(3,9,16,.18);
+}
+.btc-premium-stats>div{
+  min-width:0;padding:9px 12px 10px;border-right:1px solid rgba(118,158,199,.09);
+}
+.btc-premium-stats>div:last-child{border-right:0;}
+.btc-premium-stats small{
+  display:block;color:#71859e;font-size:6.5px;margin-bottom:2px;white-space:nowrap;
+}
+.btc-premium-stats strong{
+  display:block;color:#e8eff7;font-size:10px;font-weight:850;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.btc-premium-stats>div:last-child strong{color:var(--gold);}
+
+/* supporting cards stay visually subordinate */
+.v34-home-side-stack .v34-home-side-card{
+  opacity:.93;
+  box-shadow:0 10px 25px rgba(0,0,0,.16) !important;
+}
+
+/* Light mode still reads as premium material, not flat white */
+body.theme-light .btc-premium-hero{
+  background:
+    radial-gradient(42% 80% at 88% 8%,rgba(190,132,32,.10),transparent 70%),
+    radial-gradient(65% 100% at 8% 100%,rgba(92,165,255,.08),transparent 72%),
+    linear-gradient(145deg,rgba(255,255,255,.83),rgba(235,243,250,.50)),
+    rgba(248,251,254,.66) !important;
+  border-color:rgba(170,120,34,.24) !important;
+}
+body.theme-light .btc-premium-price strong{color:#101a2b !important;}
+body.theme-light .btc-premium-toolbar{background:rgba(235,242,248,.56) !important;}
+body.theme-light .btc-premium-chart-wrap{background:rgba(246,249,252,.46);}
+body.theme-light .btc-premium-stats{background:rgba(240,246,251,.46);border-top-color:rgba(71,102,136,.11);}
+body.theme-light .btc-premium-stats>div{border-right-color:rgba(71,102,136,.10);}
+body.theme-light .btc-premium-stats strong{color:#172235;}
+body.theme-light .btc-premium-note{color:#667a92;}
+body.theme-light .btc-premium-state{color:#9b6500;border-color:rgba(174,119,20,.22);background:rgba(245,191,85,.10);}
+
+/* desktop size target: hero card approx 330–370px, not trading-terminal height */
+@media(min-width:721px){
+  .btc-premium-hero{min-height:348px !important;}
+  .v34-home-side-stack{grid-template-rows:repeat(4,minmax(0,1fr)) !important;}
+}
+
+/* Mobile: one large hero card first; supporting cards follow */
+@media(max-width:720px){
+  .v34-home-market-layout{display:block !important;}
+  .btc-premium-hero{min-height:0 !important;margin-bottom:8px !important;border-radius:15px !important;}
+  .btc-premium-visual{width:43%;min-width:118px;max-width:165px;right:-14px;top:-5px;opacity:.72;}
+  .btc-premium-coin span{font-size:50px;}
+  .btc-premium-top{min-height:86px;padding:11px 10px 5px;gap:6px;}
+  .btc-premium-copy{max-width:68%;}
+  .btc-premium-icon{width:27px;height:27px;border-radius:8px;font-size:17px;}
+  .btc-premium-name{font-size:10px;}
+  .btc-premium-name em{height:15px;font-size:6px;margin-left:4px;}
+  .btc-premium-pair{font-size:6px;}
+  .btc-premium-price{margin-top:8px !important;gap:6px !important;}
+  .btc-premium-price strong{font-size:27px !important;}
+  .btc-premium-price span{font-size:8px !important;}
+  .btc-premium-actions{max-width:31%;gap:5px;}
+  .btc-premium-state{font-size:6px;min-height:19px;padding:0 6px;}
+  .btc-premium-radar-btn{min-height:25px !important;padding:0 7px !important;font-size:6px !important;}
+  .btc-premium-period-row{padding:0 10px 5px;gap:6px;}
+  .btc-premium-toolbar{min-height:25px !important;}
+  .btc-premium-toolbar .v34-home-mini-tf{min-width:32px !important;height:21px !important;font-size:6.5px !important;}
+  .btc-premium-note{font-size:5.8px;max-width:46%;}
+  .btc-premium-chart-wrap{height:154px;margin:0 7px;border-radius:8px;}
+  .btc-premium-stats{margin-top:6px;grid-template-columns:repeat(2,minmax(0,1fr));}
+  .btc-premium-stats>div{padding:7px 8px;border-bottom:1px solid rgba(118,158,199,.08);}
+  .btc-premium-stats>div:nth-child(2){border-right:0;}
+  .btc-premium-stats>div:nth-child(3),.btc-premium-stats>div:nth-child(4){border-bottom:0;}
+  .btc-premium-stats small{font-size:5.7px;}
+  .btc-premium-stats strong{font-size:8.5px;}
+  .v34-home-side-stack{display:grid !important;grid-template-columns:repeat(2,minmax(0,1fr)) !important;gap:6px !important;}
+}
+@media(max-width:390px){
+  .btc-premium-chart-wrap{height:146px;}
+  .btc-premium-price strong{font-size:24px !important;}
+  .btc-premium-visual{width:41%;min-width:108px;}
+}
+
 </style>
 
 </head>
@@ -4283,30 +4598,54 @@ html.ox-motion-lite .dock-radar.active .dock-radar-orb.glass-orb{animation:none!
       <section class="v33-section v34-home-market-section">
         <div class="v33-section-head"><div><h2>BTC 市場主圖</h2><p>Crypto 首頁主視覺 · 與雷達共用 Bitget K 線資料來源</p></div><span class="v33-section-tag">LIVE</span></div>
         <div class="v34-home-market-layout">
-          <article class="v33-card v34-home-btc-primary glass-strong liquid-interactive">
+          <article class="v33-card v34-home-btc-primary btc-premium-hero glass-strong liquid-interactive">
             <span class="liquid-optics liquid-optics-gold" aria-hidden="true"></span>
-            <div class="v34-home-btc-head">
-              <div class="v34-home-btc-identity">
-                <span class="v34-home-btc-kicker">BTC / BTCUSDT</span>
-                <div class="v34-home-btc-price-line"><strong id="home-btc-price">—</strong><span id="home-btc-change">—</span></div>
+            <div class="btc-premium-visual" aria-hidden="true">
+              <div class="btc-premium-orbit btc-premium-orbit-a"></div>
+              <div class="btc-premium-orbit btc-premium-orbit-b"></div>
+              <div class="btc-premium-coin"><span>₿</span></div>
+            </div>
+
+            <div class="btc-premium-top">
+              <div class="btc-premium-copy">
+                <div class="btc-premium-title-row">
+                  <span class="btc-premium-icon">₿</span>
+                  <div>
+                    <div class="btc-premium-name">BTC <span>比特幣</span><em>#1</em></div>
+                    <div class="btc-premium-pair">BTC / BTCUSDT</div>
+                  </div>
+                </div>
+                <div class="v34-home-btc-price-line btc-premium-price">
+                  <strong id="home-btc-price">—</strong>
+                  <span id="home-btc-change">—</span>
+                </div>
               </div>
-              <div class="v34-home-btc-facts">
-                <span><small>24H 成交量</small><b id="home-btc-volume">—</b></span>
-                <span><small>市場狀態</small><b id="home-btc-market-state">資料整理中</b></span>
-                <button class="v34-home-open-radar" type="button" data-home-symbol="BTCUSDT">打開雷達 ↗</button>
+
+              <div class="btc-premium-actions">
+                <span class="btc-premium-state" id="home-btc-market-state">資料整理中</span>
+                <button class="v34-home-open-radar btc-premium-radar-btn glass-button" type="button" data-home-symbol="BTCUSDT">打開雷達 ↗</button>
               </div>
             </div>
-            <div class="v34-home-main-toolbar" aria-label="BTC 首頁主圖週期">
-              <button class="v34-home-mini-tf active" type="button" data-home-mini-tf="1H">1H</button>
-              <button class="v34-home-mini-tf" type="button" data-home-mini-tf="4H">4H</button>
-              <button class="v34-home-mini-tf" type="button" data-home-mini-tf="1D">1D</button>
-              <button class="v34-home-mini-tf" type="button" data-home-mini-tf="1W">1W</button>
-              <span class="v34-home-chart-source">Bitget USDT 永續</span>
+
+            <div class="btc-premium-period-row">
+              <div class="v34-home-main-toolbar btc-premium-toolbar" aria-label="BTC 首頁主圖週期">
+                <button class="v34-home-mini-tf active" type="button" data-home-mini-tf="1H">1H</button>
+                <button class="v34-home-mini-tf" type="button" data-home-mini-tf="4H">4H</button>
+                <button class="v34-home-mini-tf" type="button" data-home-mini-tf="1D">1D</button>
+                <button class="v34-home-mini-tf" type="button" data-home-mini-tf="1W">1W</button>
+              </div>
+              <span class="btc-premium-note" id="home-btc-note">等待行情資料</span>
             </div>
-            <div id="home-btc-mini-chart" class="v34-home-main-chart" aria-label="BTC 首頁大型 K 線"></div>
-            <div class="v34-home-btc-footer">
-              <span id="home-btc-note">等待行情資料</span>
-              <div class="v33-meter"><i id="home-btc-meter"></i></div>
+
+            <div class="btc-premium-chart-wrap" data-home-symbol="BTCUSDT" role="button" tabindex="0" aria-label="打開 BTC 雷達">
+              <div id="home-btc-mini-chart" class="v34-home-main-chart btc-premium-chart" aria-label="BTC 首頁簡潔 K 線"></div>
+            </div>
+
+            <div class="btc-premium-stats">
+              <div><small>24H 最高</small><strong id="home-btc-high">—</strong></div>
+              <div><small>24H 最低</small><strong id="home-btc-low">—</strong></div>
+              <div><small>24H 成交額</small><strong id="home-btc-volume">—</strong></div>
+              <div><small>BTC 強度</small><strong id="home-btc-hero-strength">—</strong></div>
             </div>
           </article>
 
@@ -5425,6 +5764,11 @@ function renderHomeOverview() {
 
   setText("home-btc-price", btc ? fmtPrice(btc.lastPr) : "—"); setChange("home-btc-change", btc);
   setText("home-btc-volume", btc ? `${fmtUsd(btc.usdtVolume)} USDT` : "—");
+  const btcHigh24 = btc ? num(btc.high24h ?? btc.high24H ?? btc.highPr ?? btc.highPrice24h) : NaN;
+  const btcLow24 = btc ? num(btc.low24h ?? btc.low24H ?? btc.lowPr ?? btc.lowPrice24h) : NaN;
+  setText("home-btc-high", Number.isFinite(btcHigh24) && btcHigh24 > 0 ? fmtPrice(btcHigh24) : "—");
+  setText("home-btc-low", Number.isFinite(btcLow24) && btcLow24 > 0 ? fmtPrice(btcLow24) : "—");
+  setText("home-btc-hero-strength", btcStrength);
   setText("home-btc-market-state", marketStateText);
   setText("home-btc-note", `${homeStructureText(btcA, btc)}${btcA ? ` · OX ${btcA.oxScore}` : ""}`);
   setWidth("home-btc-meter", btcA?.oxScore ?? btcStrength);
@@ -7054,50 +7398,99 @@ const MarketController = (() => {
 function showMarketToast(msg){ let el=document.getElementById("market-switch-toast"); if(!el){ el=document.createElement("div"); el.id="market-switch-toast"; el.className="market-switch-toast"; document.body.appendChild(el); } el.textContent=msg; el.classList.add("show"); clearTimeout(showMarketToast._t); showMarketToast._t=setTimeout(()=>el.classList.remove("show"),1500); }
 
 const HomeChartVariant = (()=>{
-  let chart=null, series=null, period="1H", loading=false, ro=null;
+  let chart=null, series=null, volumeSeries=null, period="1H", loading=false, ro=null;
   const theme=()=>document.body.classList.contains("theme-light");
   const chartColors=()=> theme() ? {
-    bg:"#ffffff", text:"#596b80", grid:"#e5ebf2", border:"#c4d0dc"
-  } : { bg:"#09111c", text:"#8092aa", grid:"#172438", border:"#223147" };
+    bg:"rgba(255,255,255,0)", text:"#718197",
+    grid:"rgba(91,119,148,.10)", cross:"rgba(72,104,140,.20)"
+  } : {
+    bg:"rgba(0,0,0,0)", text:"#7f91a9",
+    grid:"rgba(91,132,178,.085)", cross:"rgba(139,180,222,.18)"
+  };
+
   const ensure=()=>{
     const el=document.getElementById("home-btc-mini-chart"); if(!el||chart) return !!chart;
     const c=chartColors();
     chart=LightweightCharts.createChart(el,{
-      width:el.clientWidth||640,height:el.clientHeight||300,
-      layout:{background:{type:"solid",color:c.bg},textColor:c.text},
+      width:el.clientWidth||640,
+      height:el.clientHeight||175,
+      layout:{background:{type:"solid",color:c.bg},textColor:c.text,fontSize:9},
       grid:{vertLines:{color:c.grid},horzLines:{color:c.grid}},
-      rightPriceScale:{visible:true,borderColor:c.border,scaleMargins:{top:.08,bottom:.12}},
-      timeScale:{visible:true,borderVisible:true,borderColor:c.border,timeVisible:true,secondsVisible:false,rightOffset:8,fixRightEdge:false},
-      crosshair:{mode:LightweightCharts.CrosshairMode.Normal},
+      rightPriceScale:{
+        visible:true,borderVisible:false,
+        scaleMargins:{top:.08,bottom:.24},
+        minimumWidth:52
+      },
+      timeScale:{
+        visible:true,borderVisible:false,timeVisible:true,secondsVisible:false,
+        rightOffset:7,fixRightEdge:false,barSpacing:7,minBarSpacing:3
+      },
+      crosshair:{
+        mode:LightweightCharts.CrosshairMode.Normal,
+        vertLine:{color:c.cross,width:1,style:2,labelVisible:false},
+        horzLine:{color:c.cross,width:1,style:2,labelVisible:false}
+      },
       handleScroll:{mouseWheel:true,pressedMouseMove:true,horzTouchDrag:true,vertTouchDrag:false},
-      handleScale:{axisPressedMouseMove:true,mouseWheel:true,pinch:true}
+      handleScale:{axisPressedMouseMove:false,mouseWheel:true,pinch:true}
     });
-    series=chart.addCandlestickSeries({upColor:"#38c99b",downColor:"#ee617c",borderVisible:false,wickUpColor:"#38c99b",wickDownColor:"#ee617c",priceLineVisible:true,lastValueVisible:true});
-    ro=new ResizeObserver(()=>{ if(el.clientWidth&&el.clientHeight) chart.applyOptions({width:el.clientWidth,height:el.clientHeight}); });
-    ro.observe(el); return true;
+    series=chart.addCandlestickSeries({
+      upColor:"#38c99b",downColor:"#ee617c",
+      borderVisible:false,wickUpColor:"#38c99b",wickDownColor:"#ee617c",
+      priceLineVisible:true,lastValueVisible:true
+    });
+    volumeSeries=chart.addHistogramSeries({
+      priceFormat:{type:"volume"},
+      priceScaleId:"",
+      lastValueVisible:false,
+      priceLineVisible:false
+    });
+    volumeSeries.priceScale().applyOptions({scaleMargins:{top:.82,bottom:0}});
+    ro=new ResizeObserver(()=>{
+      if(el.clientWidth&&el.clientHeight) chart.applyOptions({width:el.clientWidth,height:el.clientHeight});
+    });
+    ro.observe(el);
+    return true;
   };
+
   const applyThemeHome=()=>{
-    if(!chart) return; const c=chartColors();
-    chart.applyOptions({layout:{background:{type:"solid",color:c.bg},textColor:c.text},grid:{vertLines:{color:c.grid},horzLines:{color:c.grid}},rightPriceScale:{borderColor:c.border},timeScale:{borderColor:c.border}});
+    if(!chart) return;
+    const c=chartColors();
+    chart.applyOptions({
+      layout:{background:{type:"solid",color:c.bg},textColor:c.text,fontSize:9},
+      grid:{vertLines:{color:c.grid},horzLines:{color:c.grid}},
+      crosshair:{
+        vertLine:{color:c.cross,width:1,style:2,labelVisible:false},
+        horzLine:{color:c.cross,width:1,style:2,labelVisible:false}
+      }
+    });
   };
+
   const load=async(force=false)=>{
-    if(state.activeMarket!=="crypto"||loading||!ensure()) return; loading=true;
+    if(state.activeMarket!=="crypto"||loading||!ensure()) return;
+    loading=true;
     try{
-      const data=await BitgetAPI.fetchCandles("BTCUSDT",period,160);
+      const data=await BitgetAPI.fetchCandles("BTCUSDT",period,120);
       if(data.length){
         series.setData(data);
+        volumeSeries?.setData(data.map(c=>({
+          time:c.time,
+          value:num(c.quoteVolume || c.volume),
+          color:c.close>=c.open ? "rgba(56,201,155,.26)" : "rgba(238,97,124,.23)"
+        })));
         chart.timeScale().fitContent();
-        chart.timeScale().applyOptions({rightOffset:8});
-        requestAnimationFrame(()=>{ try{ chart.timeScale().scrollToPosition(8,false); }catch(e){} });
+        chart.timeScale().applyOptions({rightOffset:7});
+        requestAnimationFrame(()=>{ try{ chart.timeScale().scrollToPosition(7,false); }catch(e){} });
       }
     }catch(e){}finally{loading=false;}
   };
+
   const setPeriod=p=>{
     if(!["1H","4H","1D","1W"].includes(p)) return;
     period=p;
     document.querySelectorAll("[data-home-mini-tf]").forEach(b=>b.classList.toggle("active",b.dataset.homeMiniTf===p));
     load(true);
   };
+
   document.addEventListener("ox:themechange",applyThemeHome);
   return {ensureAndLoad:load,setPeriod,applyTheme:applyThemeHome};
 })();
@@ -7853,6 +8246,50 @@ document.addEventListener("keydown", e => {
   });
 
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init,{once:true}); else init();
+})();
+</script>
+
+
+
+<script id="ox-v36-nav-repair">
+(() => {
+  "use strict";
+  const bind = () => {
+    const dock = document.querySelector(".app-dock");
+    if (!dock || typeof switchAppView !== "function") return;
+
+    const ordered = ["home","strength","radar","media","settings"];
+    ordered.forEach((view, index) => {
+      const btn = dock.querySelector(`.dock-btn[data-view-target="${view}"]`);
+      if (!btn) return;
+      btn.style.gridColumn = String(index + 1);
+      btn.style.gridRow = "1";
+      if (view === "radar" || btn.dataset.oxNavBound === "1") return;
+      btn.dataset.oxNavBound = "1";
+      btn.addEventListener("click", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        switchAppView(view);
+      }, true);
+    });
+
+    const chart = document.querySelector(".btc-premium-chart-wrap");
+    if (chart && chart.dataset.oxHeroBound !== "1") {
+      chart.dataset.oxHeroBound = "1";
+      chart.addEventListener("keydown", e => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          switchSymbol("BTCUSDT");
+        }
+      });
+    }
+
+    requestAnimationFrame(() => {
+      try { window.OXMotionController?.syncDockIndicator?.(); } catch {}
+    });
+  };
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", bind, {once:true});
+  else bind();
 })();
 </script>
 
