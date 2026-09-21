@@ -6,6 +6,7 @@
   <meta name="color-scheme" content="dark light">
   <meta name="description" content="OX Market Command Center - 市場總覽、強弱、雷達篩選、K 線與提醒工作區。">
   <title>OX 幣種篩選器 v3.6｜Market Command Center</title>
+  <!-- build: v3.6-uiux-complete-2026-09-21 -->
   <script src="https://unpkg.com/lightweight-charts@4.2.3/dist/lightweight-charts.standalone.production.js"></script>
   <style>
     :root {
@@ -4775,12 +4776,7 @@ body.theme-light #view-home .btc-premium-hero::after{opacity:.34!important;}
 body.theme-light #view-home .btc-visual-context b{color:rgba(33,47,64,.78)!important;}
 </style>
 
-<!--
-OX v3.6 FINAL RESPONSIVE / UX PATCH
-Target: latest GitHub main v3.6
-Scope: Responsive UI only.
-DO NOT change OX Engine, T1/T2/T3, candle loading, visible range, barSpacing or rightOffset.
-Place this block immediately BEFORE 
+<!-- OX v3.6 · current main UI/UX optimization · active -->
 <style id="ox-v36-current-main-uiux-optimization">
 /* =========================================================
    OX v3.6 · CURRENT MAIN UI/UX OPTIMIZATION · 2026-09-21
@@ -4813,7 +4809,7 @@ Place this block immediately BEFORE
 #view-home .btc-premium-chart-wrap,#view-home .btc-premium-chart{height:var(--btc-hero-chart-h)!important;min-height:var(--btc-hero-chart-h)!important;}
 
 /* 4) Control center — always anchored to RIGHT, slides right -> left */
-.ox-control-overlay{position:fixed!important;inset:0!important;width:100vw!important;max-width:100vw!important;overflow:hidden!important;}
+.ox-control-overlay{position:fixed!important;inset:0!important;width:100%!important;max-width:100%!important;overflow:hidden!important;overscroll-behavior:contain!important;}
 .ox-control-panel{
   position:fixed!important;
   top:0!important;right:0!important;left:auto!important;bottom:0!important;
@@ -4925,7 +4921,7 @@ html,body{max-width:100%!important;overflow-x:clip!important;}
   #view-settings .settings-grid{margin-top:0!important;}
 
   /* Right drawer remains a right-side sheet on iPhone */
-  .ox-control-panel{right:0!important;left:auto!important;width:min(88vw,370px)!important;max-width:370px!important;min-width:0!important;}
+  .ox-control-panel{right:0!important;left:auto!important;width:min(88%,370px)!important;max-width:calc(100% - 12px)!important;min-width:0!important;touch-action:pan-y!important;}
 
   /* Mobile control bar: 7 equal timeframes + 3 clean toggles */
   .chart-controls{padding:7px 6px!important;gap:6px!important;overflow:visible!important;}
@@ -4936,11 +4932,12 @@ html,body{max-width:100%!important;overflow-x:clip!important;}
   }
   .chart-controls .btn-tf{height:32px!important;min-height:32px!important;padding:0 2px!important;border-radius:8px!important;font-size:8.5px!important;}
   .chart-controls>.ctrl-group:nth-child(2){grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:4px!important;margin-top:0!important;}
-  .chart-controls .toggle-lbl{min-height:31px!important;padding:4px 6px!important;gap:5px!important;border-radius:9px!important;font-size:7.5px!important;justify-content:center!important;}
+  .chart-controls .toggle-lbl{min-height:31px!important;padding:4px 5px!important;gap:4px!important;border-radius:9px!important;font-size:7.5px!important;justify-content:center!important;text-align:center!important;}
   .chart-controls .toggle-lbl input{width:24px!important;height:14px!important;min-width:24px!important;}
   .chart-controls .toggle-lbl input::after{width:8px!important;height:8px!important;}
   .chart-controls .toggle-lbl input:checked::after{transform:translateX(10px)!important;}
-  #key-level-toggle-text{overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;}
+  #key-level-toggle-text{overflow:visible!important;text-overflow:clip!important;white-space:nowrap!important;font-size:0!important;}
+  #key-level-toggle-text::after{content:"前高前低";font-size:7.5px!important;}
   body.chart-focus .chart-controls{grid-template-columns:1fr!important;}
   body.chart-focus .chart-controls .ctrl-group:nth-child(2){display:grid!important;}
 }
@@ -4951,14 +4948,16 @@ html,body{max-width:100%!important;overflow-x:clip!important;}
   .chart-controls .toggle-lbl{font-size:7px!important;padding-inline:4px!important;gap:4px!important;}
 }
 
+
+/* Final containment for the radar control system. */
+.chart-controls,.chart-controls>.ctrl-group{width:100%!important;max-width:100%!important;min-width:0!important;}
+.chart-controls .btn-tf,.chart-controls .toggle-lbl{max-width:100%!important;}
 body.theme-light .chart-controls>.ctrl-group:first-child{background:rgba(237,243,248,.76)!important;border-color:#d1dce7!important;}
 body.theme-light .chart-controls .btn-tf{color:#5e7188!important;}
 body.theme-light .chart-controls .btn-tf.active{color:#9d6500!important;background:#fff5df!important;border-color:#d3a650!important;}
 body.theme-light .chart-controls .toggle-lbl{background:rgba(248,250,252,.88)!important;border-color:#d4dee8!important;color:#52677f!important;}
 </style>
 
-</head>.
--->
 <style id="ox-v36-final-responsive-ux">
 /* =========================================================
    1. VIEWPORT / OVERFLOW ROOT FIX
