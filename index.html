@@ -2427,7 +2427,64 @@
       .notification-health-actions .btn-act { font-size:7.5px; padding:5px 7px; }
     }
 
-  </style>
+  
+
+    /* ===== v3.4 feature pack: watchlist / local account / market switch / home BTC mini chart ===== */
+    .coin-card { position: relative; cursor: pointer; }
+    .coin-top-right { display:flex; align-items:center; gap:7px; }
+    .watch-star { width:27px; height:27px; display:grid; place-items:center; flex:0 0 27px; border:1px solid #34485f; border-radius:8px; background:#0b1420; color:#7f91a8; font-size:16px; line-height:1; cursor:pointer; transition:.15s ease; }
+    .watch-star:hover { color:var(--gold); border-color:#8e6a27; background:#f7bd520c; }
+    .watch-star.is-starred { color:var(--gold); border-color:#9a7329; background:#f7bd5213; }
+    .watch-card-main { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:8px; align-items:center; }
+    .watch-metrics { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:5px; margin-top:6px; }
+    .watch-metric { padding:5px 6px; border-radius:6px; border:1px solid #22334a; background:#0a111b; min-width:0; }
+    .watch-metric label { display:block; color:var(--muted); font-size:7px; }
+    .watch-metric strong { display:block; margin-top:1px; font-size:9px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
+
+    .v34-btc-mini-card { cursor:pointer; }
+    .v34-home-mini-toolbar { display:flex; gap:4px; margin:7px 0 4px; position:relative; z-index:2; }
+    .v34-home-mini-tf { border:1px solid #2b3d55; background:#0b1420; color:#8799b0; border-radius:6px; min-width:31px; height:22px; padding:0 6px; font-size:7px; font-weight:800; }
+    .v34-home-mini-tf.active { color:var(--gold); border-color:#8c6927; background:#f7bd520c; }
+    .v34-home-mini-chart { height:78px; width:100%; border-radius:8px; overflow:hidden; background:#09111c; border:1px solid #1f3045; position:relative; }
+
+    .ox-auth-card { padding:14px; border-radius:13px; background:#0c1522; border:1px solid #26374e; }
+    .ox-auth-actions { display:grid; grid-template-columns:1fr 1fr; gap:7px; }
+    .ox-auth-actions button { min-height:38px; border:1px solid #52627a; border-radius:9px; background:#101a28; color:#c1ccda; font-size:10px; font-weight:850; }
+    .ox-auth-actions button:last-child { color:var(--gold); border-color:#9a7126; background:#f7bd5212; }
+    .ox-auth-user { display:flex; align-items:center; gap:10px; margin-bottom:13px; }
+    .ox-auth-avatar { width:38px; height:38px; border-radius:11px; display:grid; place-items:center; color:#15120b; background:var(--gold); font-size:11px; font-weight:950; }
+    .ox-auth-user b { display:block; font-size:11px; color:var(--ink); word-break:break-all; }
+    .ox-auth-user small { display:block; color:var(--muted); font-size:8px; margin-top:3px; }
+    .ox-auth-logout { margin-bottom:10px; }
+
+    .market-unavailable-card { min-height:330px; display:flex; align-items:center; justify-content:center; gap:18px; margin:10px 0 30px; padding:28px; border:1px solid #2a3c54; border-radius:16px; background:radial-gradient(circle at 15% 10%,#f7bd520b,transparent 40%),#0b131f; }
+    .market-unavailable-card[hidden] { display:none!important; }
+    .market-unavailable-icon { width:56px; height:56px; border-radius:17px; display:grid; place-items:center; border:1px solid #8d6a28; color:var(--gold); background:#f7bd520c; font-weight:950; }
+    .market-unavailable-card h2 { margin:4px 0 6px; font-size:21px; }
+    .market-unavailable-card p { margin:0; max-width:520px; color:var(--muted); font-size:10px; line-height:1.6; }
+    body.market-data-unavailable .compact-summary, body.market-data-unavailable .top-summary { display:none!important; }
+
+    .market-switch-toast { position:fixed; left:50%; bottom:92px; transform:translate(-50%,14px); z-index:140; opacity:0; pointer-events:none; padding:8px 12px; border:1px solid #7c5c24; border-radius:999px; background:#09111cee; color:var(--gold); font-size:10px; font-weight:850; box-shadow:0 10px 28px #0008; transition:.18s ease; }
+    .market-switch-toast.show { opacity:1; transform:translate(-50%,0); }
+
+    body.theme-light .watch-star { background:#f6f9fc; color:#63778f; border-color:#c8d4df; }
+    body.theme-light .watch-star.is-starred { color:#a66800; background:#fff6df; border-color:#c79635; }
+    body.theme-light .watch-metric, body.theme-light .v34-home-mini-chart, body.theme-light .v34-home-mini-tf, body.theme-light .ox-auth-card { background:#fff; border-color:#cbd7e3; }
+    body.theme-light .v34-home-mini-tf { color:#65778d; }
+    body.theme-light .v34-home-mini-tf.active { color:#9e6500; background:#fff6df; border-color:#c28b29; }
+    body.theme-light .ox-auth-actions button { background:#f5f8fb; color:#425870; border-color:#bdcad8; }
+    body.theme-light .ox-auth-actions button:last-child { color:#9e6500; background:#fff7e3; border-color:#c28b29; }
+    body.theme-light .market-unavailable-card { background:radial-gradient(circle at 15% 10%,#f2b83c18,transparent 40%),#fff; border-color:#cbd7e3; }
+    body.theme-light .market-switch-toast { background:#fffdf8f5; color:#925e00; border-color:#c89637; box-shadow:0 10px 28px #3341552b; }
+
+    @media(max-width:720px){
+      .watch-star{width:24px;height:24px;flex-basis:24px;font-size:14px;border-radius:7px}
+      .watch-metrics{gap:3px}.watch-metric{padding:4px}.watch-metric label{font-size:6px}.watch-metric strong{font-size:8px}
+      .v34-home-mini-chart{height:60px}.v34-home-mini-toolbar{margin-top:5px}.v34-home-mini-tf{height:20px;min-width:28px;font-size:6px}
+      .market-unavailable-card{min-height:260px;margin:5px 0 20px;padding:20px 15px;gap:12px}.market-unavailable-icon{width:45px;height:45px;border-radius:13px}.market-unavailable-card h2{font-size:17px}.market-unavailable-card p{font-size:8px}
+    }
+
+</style>
 </head>
 <body>
 
@@ -2479,11 +2536,11 @@
       <div class="ox-control-view active" data-control-view="main">
         <div class="ox-control-section-label">Identity</div>
         <div class="ox-control-group">
-          <div class="ox-control-row">
+          <button class="ox-control-row" id="ox-control-account-open" type="button">
             <span class="ox-control-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c.7-4.2 3-6.3 7-6.3s6.3 2.1 7 6.3"/></svg></span>
-            <span class="ox-control-copy"><b>帳號 / 登入</b><small>帳號系統尚未建立，先保留入口與狀態。</small></span>
-            <span class="ox-control-side"><span class="ox-control-ui-tag">UI ONLY</span></span>
-          </div>
+            <span class="ox-control-copy"><b id="ox-account-title">登入 / 註冊</b><small id="ox-account-sub">第一版本機帳號，可保持登入並綁定個人偏好。</small></span>
+            <span class="ox-control-side"><span class="ox-control-ui-tag" id="ox-account-action-tag">LOCAL</span><span class="ox-control-arrow">›</span></span>
+          </button>
         </div>
 
         <div class="ox-control-section-label">Appearance</div>
@@ -2515,6 +2572,16 @@
             <span class="ox-control-copy"><b>通知詳細設定</b><small>前高 / 前低、T1 / T2 / T3、BTC 強度等現有設定。</small></span>
             <span class="ox-control-side"><span>設定</span><span class="ox-control-arrow">›</span></span>
           </button>
+          <button class="ox-control-row" id="ox-control-test-notification" type="button">
+            <span class="ox-control-icon"><svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M12 5v14"/></svg></span>
+            <span class="ox-control-copy"><b>測試通知＋鈴聲</b><small>直接驗證瀏覽器通知與 OX 鈴聲，不必等待市場訊號。</small></span>
+            <span class="ox-control-side"><span class="ox-control-live-tag">TEST</span><span class="ox-control-arrow">›</span></span>
+          </button>
+          <div class="ox-control-row">
+            <span class="ox-control-icon"><svg viewBox="0 0 24 24"><path d="M5 9v6h4l5 4V5L9 9Z"/><path d="M17 9c1 .8 1.5 1.8 1.5 3S18 14.2 17 15"/></svg></span>
+            <span class="ox-control-copy"><b>通知鈴聲</b><small>關閉後仍可保留瀏覽器通知，只停止 OX 頁面鈴聲。</small></span>
+            <span class="ox-control-side"><label class="ox-control-toggle"><input id="ox-control-sound-toggle" type="checkbox" checked><span></span></label></span>
+          </div>
           <div class="ox-control-row">
             <span class="ox-control-icon"><svg viewBox="0 0 24 24"><path d="M20 6v5h-5"/><path d="M18.4 15A7 7 0 1 1 19 8"/></svg></span>
             <span class="ox-control-copy"><b>資料更新</b><small id="ox-control-data-status">即時 / 自動更新</small></span>
@@ -2526,9 +2593,9 @@
         <div class="ox-control-group">
           <div class="ox-control-row">
             <span class="ox-control-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.6 2.7 4 5.7 4 9s-1.4 6.3-4 9c-2.6-2.7-4-5.7-4-9s1.4-6.3 4-9Z"/></svg></span>
-            <span class="ox-control-copy"><b>市場設定</b><small>目前僅啟用加密貨幣；其他市場先保留位置。</small></span>
+            <span class="ox-control-copy"><b>市場設定</b><small id="ox-market-status-text">Crypto 已接資料；US / TW 先完成切換架構，不混入加密資料。</small></span>
             <span class="ox-control-side ox-market-segment">
-              <span class="ox-market-chip active">加密</span><button class="ox-market-chip" type="button" disabled>美股</button><button class="ox-market-chip" type="button" disabled>台股</button>
+              <button class="ox-market-chip active" type="button" data-market-choice="crypto">加密</button><button class="ox-market-chip" type="button" data-market-choice="us">美股</button><button class="ox-market-chip" type="button" data-market-choice="tw">台股</button>
             </span>
           </div>
         </div>
@@ -2548,7 +2615,25 @@
           <div class="ox-control-changelog" id="ox-control-changelog">v3.4 穩定版 · 右側控制中心加入。Changelog 介面已預留，後續可在這裡維護版本紀錄。</div>
         </div>
 
-        <p class="ox-control-note"><strong>目前未串接：</strong>帳號登入、Email / SMS / 背景推送、意見回饋寄信。控制中心不會假裝這些服務已經啟用。</p>
+        <p class="ox-control-note"><strong>帳號第一版：</strong>目前使用本機加密雜湊＋LocalStorage，能保持登入與綁定偏好，但不是雲端帳號，無法跨裝置同步。Email / SMS / 背景推送與意見回饋寄信仍需要後端。</p>
+      </div>
+
+      <div class="ox-control-view" data-control-view="account">
+        <div class="ox-feedback-head">
+          <button class="ox-control-back" id="ox-control-account-back" type="button" aria-label="返回控制中心">‹</button>
+          <div><h3>帳號</h3><small>LOCAL ACCOUNT · FIRST VERSION</small></div>
+        </div>
+        <div class="ox-auth-card" id="ox-auth-logged-out">
+          <label class="ox-feedback-field"><span>Email</span><input id="ox-auth-email" type="email" autocomplete="username" placeholder="you@example.com"></label>
+          <label class="ox-feedback-field"><span>密碼</span><input id="ox-auth-password" type="password" autocomplete="current-password" minlength="6" placeholder="至少 6 碼"></label>
+          <div class="ox-auth-actions"><button type="button" id="ox-auth-login">登入</button><button type="button" id="ox-auth-register">註冊</button></div>
+          <div class="ox-feedback-status" id="ox-auth-status">帳號資料只存在這台裝置；密碼只儲存 SHA-256 雜湊，不會建立雲端帳號。</div>
+        </div>
+        <div class="ox-auth-card" id="ox-auth-logged-in" hidden>
+          <div class="ox-auth-user"><span class="ox-auth-avatar">OX</span><div><b id="ox-auth-current-email">—</b><small>已保持登入 · 個人偏好已綁定</small></div></div>
+          <button class="ox-feedback-submit ox-auth-logout" id="ox-auth-logout" type="button">登出</button>
+          <div class="ox-feedback-status">目前同步範圍：⭐觀察列表、通知設定、鈴聲、主題、前高前低顯示。僅限此裝置。</div>
+        </div>
       </div>
 
       <div class="ox-control-view" data-control-view="feedback">
@@ -2569,6 +2654,11 @@
 </div>
 
 <main class="wrap" style="padding-top:10px;padding-bottom:40px">
+
+  <section class="market-unavailable-card" id="market-unavailable-card" hidden>
+    <div class="market-unavailable-icon">OX</div>
+    <div><div class="page-kicker">MARKET ARCHITECTURE READY</div><h2 id="market-unavailable-title">美股市場</h2><p id="market-unavailable-copy">市場切換架構已完成；資料源尚未接入，因此不會把加密貨幣資料混入這個市場。</p></div>
+  </section>
 
 
   <!-- ===== 首頁：OX Market Command Center ===== -->
@@ -2594,9 +2684,15 @@
       <section class="v33-section">
         <div class="v33-section-head"><div><h2>市場總覽</h2><p>BTC、ETH 與整體市場環境</p></div><span class="v33-section-tag">LIVE</span></div>
         <div class="v33-market-grid">
-          <article class="v33-card v33-market-card" data-home-symbol="BTCUSDT" role="button" tabindex="0">
+          <article class="v33-card v33-market-card v34-btc-mini-card" data-home-symbol="BTCUSDT" role="button" tabindex="0">
             <div class="v33-market-card-top"><span class="v33-market-name">BTC</span><span class="v33-market-badge">市場基準</span></div>
             <div class="v33-market-value"><strong id="home-btc-price">—</strong><span id="home-btc-change">—</span></div>
+            <div class="v34-home-mini-toolbar" aria-label="BTC 首頁小型 K 線週期">
+              <button class="v34-home-mini-tf active" type="button" data-home-mini-tf="1H">1H</button>
+              <button class="v34-home-mini-tf" type="button" data-home-mini-tf="4H">4H</button>
+              <button class="v34-home-mini-tf" type="button" data-home-mini-tf="1D">1D</button>
+            </div>
+            <div id="home-btc-mini-chart" class="v34-home-mini-chart" aria-label="BTC 簡易 K 線"></div>
             <div class="v33-market-note" id="home-btc-note">等待行情資料</div><div class="v33-meter"><i id="home-btc-meter"></i></div>
           </article>
           <article class="v33-card v33-market-card" data-home-symbol="ETHUSDT" role="button" tabindex="0">
@@ -2712,6 +2808,10 @@
         <div class="ctrl-group">
           <label class="toggle-lbl"><input type="checkbox" id="chk-vol" checked>成交量</label>
           <label class="toggle-lbl"><input type="checkbox" id="chk-ox-markers" checked>OX 訊號標記</label>
+          <label class="toggle-lbl key-level-visibility-toggle" title="只切換圖表顯示，不停止前高前低計算與提醒">
+            <input type="checkbox" id="chk-key-levels" checked>
+            <span id="key-level-toggle-text">前高前低 ON</span>
+          </label>
         </div>
       </div>
 
@@ -2762,8 +2862,7 @@
         <button class="tab-btn" data-tab="t2">T2 <span class="tab-badge" id="badge-t2">0</span></button>
         <button class="tab-btn" data-tab="t3">T3 <span class="tab-badge" id="badge-t3">0</span></button>
         <button class="tab-btn" data-tab="surge">🔥 <span class="tab-badge" id="badge-surge">0</span></button>
-        <button class="tab-btn" data-tab="gainers">漲幅榜</button>
-        <button class="tab-btn" data-tab="losers">跌幅榜</button>
+        <button class="tab-btn" data-tab="watch">⭐觀察 <span class="tab-badge" id="badge-watch">0</span></button>
       </div>
 
       <div id="screener-list" class="scanner-body">
@@ -3037,6 +3136,7 @@ const state = {
   period: "1D",
   currentTab: "t1",
   activeView: "radar",
+  activeMarket: "crypto",
   
   tickers: [],
   contracts: new Map(),
@@ -3064,8 +3164,15 @@ const state = {
   secondaryKeyLowLine: null,
   currentLevels: { high: 0, low: 0, sourcePeriod: "4H", highTime: 0, lowTime: 0 },
   secondaryLevels: null,
+  keyLevelsVisible: true,
   audioCtx: null
 };
+
+try {
+  state.keyLevelsVisible = localStorage.getItem("ox-chart-key-levels-visible") !== "0";
+} catch (e) {
+  state.keyLevelsVisible = true;
+}
 
 const periods = {
   "1m": 60, "5m": 300, "15m": 900, "1H": 3600, "4H": 14400, "1D": 86400, "1W": 604800
@@ -3139,6 +3246,7 @@ async function primeAlertAudio(fromUserGesture = false) {
 }
 
 async function playAlertTone(kind = "high") {
+  if (localStorage.getItem("ox-alert-sound-enabled") === "0") return false;
   try {
     const ready = await primeAlertAudio(false);
     if (!ready || !state.audioCtx) return false;
@@ -3460,8 +3568,9 @@ function switchAppView(view) {
   document.querySelectorAll('[data-app-view]').forEach(el => el.classList.toggle('active', el.dataset.appView === view));
   document.querySelectorAll('[data-view-target]').forEach(btn => btn.classList.toggle('active', btn.dataset.viewTarget === view));
   if (view === 'strength') renderMarketStrength();
-  if (view === 'home') renderHomeOverview();
+  if (view === 'home') { renderHomeOverview(); setTimeout(() => HomeMiniChart.ensureAndLoad(false), 60); }
   if (view === 'radar') setTimeout(resizeChartToContainer, 80);
+  MarketController.syncPlaceholder();
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -3571,6 +3680,12 @@ function renderHomeOverview() {
 function renderOxLive() {
   const el = document.getElementById("ox-live-text");
   if (!el) return;
+  if (state.activeMarket && state.activeMarket !== "crypto") {
+    const name = state.activeMarket === "us" ? "美股" : "台股";
+    el.textContent = `${name}市場架構已切換 · 資料源尚未接入 · 不會混用 Crypto 資料`;
+    el.title = el.textContent;
+    return;
+  }
   const parts = [];
 
   // T1 TOP 10：直接讀取目前雷達 state.tierMap.t1，與雷達完全同一份資料、同一個排序。
@@ -4040,6 +4155,7 @@ const OXEngine = {
 };
 
 async function refreshMarketTickers() {
+  if (state.activeMarket && state.activeMarket !== "crypto") return;
   try {
     const rawTickers = await BitgetAPI.fetchTickers();
     if (!state.contracts.size) {
@@ -4221,6 +4337,7 @@ function rebuildTierLists() {
   document.getElementById("badge-t2").textContent = t2.length;
   document.getElementById("badge-t3").textContent = t3.length;
   document.getElementById("badge-surge").textContent = surge.length;
+  syncWatchBadge();
   renderMarketStrength();
   renderHomeOverview();
   renderOxLive();
@@ -4229,25 +4346,44 @@ function rebuildTierLists() {
 function renderCurrentTab() {
   const container = document.getElementById("screener-list");
   const tab = state.currentTab;
+  if (!container) return;
 
-  if (tab === "gainers" || tab === "losers") {
-    const list = state.tierMap[tab] || [];
-    if (!list.length) {
-      container.innerHTML = `<div style="padding:24px;text-align:center;color:var(--muted)">暫無資料</div>`;
+  if (tab === "watch") {
+    const saved = getWatchlistRecords();
+    document.getElementById("pool-count").textContent = `${saved.length} 檔收藏`;
+    syncWatchBadge();
+    if (!saved.length) {
+      container.innerHTML = `<div style="padding:30px 16px;text-align:center;color:var(--muted)"><b>還沒有收藏標的</b><p style="font-size:11px">在 T1 / T2 / T3 點 ☆ 即可加入 ⭐觀察。</p></div>`;
       return;
     }
-    container.innerHTML = list.map((t, idx) => `
-      <div class="trad-row ${t.symbol === state.symbol ? 'selected' : ''}" data-symbol="${t.symbol}">
-        <span style="color:var(--muted)">${idx + 1}</span>
-        <div><b style="font-size:13px">${t.symbol}</b><small style="display:block;color:var(--muted)">${fmtUsd(t.usdtVolume)} USDT</small></div>
-        <div style="text-align:right">${fmtPrice(t.lastPr)}</div>
-        <div style="text-align:right;font-weight:700" class="${num(t.change24h) >= 0 ? 'positive' : 'negative'}">${fmtPct(t.change24h)}</div>
-      </div>`).join('');
+    container.innerHTML = saved.map((rec, idx) => {
+      const analyzed = state.analyzedCache.get(rec.symbol);
+      const ticker = state.tickers.find(t => t.symbol === rec.symbol);
+      const c = analyzed || rec;
+      const tier = String(c.displayTier || c.tier || rec.tier || "t3").toLowerCase();
+      const side = c.side || rec.side || "—";
+      const price = ticker ? ticker.lastPr : (c.lastPr || rec.lastPr);
+      const change = ticker ? ticker.change24h : (c.change24h ?? rec.change24h);
+      return `<div class="coin-card watch-list-card ${rec.symbol === state.symbol ? 'selected' : ''}" data-symbol="${rec.symbol}" role="button" tabindex="0">
+        <div class="watch-card-main">
+          <div>
+            <div class="coin-title"><span style="color:var(--muted);font-size:12px">#${idx+1}</span><span>${rec.symbol}</span><span class="badge badge-${side === 'SHORT' ? 'short' : 'long'}">${side}</span><span class="badge badge-${['t1','t2','t3'].includes(tier)?tier:'t3'}">${tier.toUpperCase()}</span></div>
+            <div class="watch-metrics">
+              <span class="watch-metric"><label>最新價格</label><strong>${fmtPrice(price)}</strong></span>
+              <span class="watch-metric"><label>24H 漲跌</label><strong class="${num(change)>=0?'positive':'negative'}">${fmtPct(change)}</strong></span>
+              <span class="watch-metric"><label>OX 分數</label><strong style="color:var(--gold)">${c.oxScore ?? rec.oxScore ?? '—'}</strong></span>
+            </div>
+          </div>
+          <button class="watch-star is-starred" type="button" data-watch-symbol="${rec.symbol}" aria-label="移除 ${rec.symbol} 收藏">★</button>
+        </div>
+      </div>`;
+    }).join('');
     return;
   }
 
   const list = state.tierMap[tab] || [];
   document.getElementById("pool-count").textContent = `${list.length} 檔標的`;
+  syncWatchBadge();
   if (!list.length) {
     container.innerHTML = `<div style="padding:30px 16px;text-align:center;color:var(--muted)"><b>目前仍在輪巡分析</b><p style="font-size:11px">結果會逐步出現。</p></div>`;
     return;
@@ -4257,8 +4393,9 @@ function renderCurrentTab() {
     const displayTier = tab === "surge" ? (c.tier !== "none" ? c.tier : "t3") : (c.displayTier || c.tier || "t3");
     const status = tab === "surge" ? "SURGE" : (c.rankStatus || c.statusText || "WATCH");
     const fit = displayTier === "t1" ? c.t1Fit : displayTier === "t2" ? c.t2Fit : c.t3Fit;
-    return `
-    <button class="coin-card ${c.symbol === state.symbol ? 'selected' : ''}" data-symbol="${c.symbol}" type="button">
+    const allowStar = ["t1","t2","t3"].includes(tab);
+    const starred = isWatchlisted(c.symbol);
+    return `<div class="coin-card ${c.symbol === state.symbol ? 'selected' : ''}" data-symbol="${c.symbol}" role="button" tabindex="0">
       <div class="coin-top">
         <span class="coin-title">
           <span style="color:var(--muted);font-size:12px">#${idx + 1}</span>
@@ -4267,7 +4404,7 @@ function renderCurrentTab() {
           <span class="badge badge-${displayTier}">${displayTier.toUpperCase()}</span>
           ${c.isSurge ? '<span class="badge badge-surge">🔥</span>' : ''}
         </span>
-        <span class="coin-ox">OX ${c.oxScore}</span>
+        <span class="coin-top-right"><span class="coin-ox">OX ${c.oxScore}</span>${allowStar ? `<button class="watch-star ${starred?'is-starred':''}" type="button" data-watch-symbol="${c.symbol}" aria-label="${starred?'移除':'加入'} ${c.symbol} 收藏">${starred?'★':'☆'}</button>` : ''}</span>
       </div>
       <div class="coin-mid">
         <span class="meta desktop-coin-meta">${status} · Fit ${fit ?? '—'} · 24H Vol ${fmtUsd(c.quoteVol)} USDT</span>
@@ -4280,9 +4417,10 @@ function renderCurrentTab() {
         <span class="score-pill">結構 ${c.structScore}</span><span class="score-pill">RS ${c.rsScore}</span>
         <span class="score-pill">Progress ${c.setupProgress ?? '—'}%</span>
       </div>
-    </button>`;
+    </div>`;
   }).join('');
 }
+
 function getChartRightOffset() {
   return window.matchMedia("(max-width: 720px)").matches ? 18 : 12;
 }
@@ -4296,10 +4434,82 @@ function applyChartFutureSpace(snapToLatest = false) {
   });
 }
 
+function clearKeyLevelPriceLines() {
+  if (!state.candleSeries) return;
+  for (const key of ["keyHighLine","keyLowLine","secondaryKeyHighLine","secondaryKeyLowLine"]) {
+    if (state[key]) {
+      try { state.candleSeries.removePriceLine(state[key]); } catch (e) {}
+    }
+    state[key] = null;
+  }
+}
+
+function renderKeyLevelPriceLinesFromState() {
+  clearKeyLevelPriceLines();
+  if (!state.keyLevelsVisible || !state.candleSeries) return;
+
+  const primary = state.currentLevels;
+  if (primary?.high) {
+    state.keyHighLine = state.candleSeries.createPriceLine({
+      price: primary.high, color: "#f7bd52", lineWidth: 1,
+      lineStyle: LightweightCharts.LineStyle.Dashed, axisLabelVisible: false,
+      title: `前高 ${primary.sourcePeriod || getKeyLevelPeriod()}`
+    });
+  }
+  if (primary?.low) {
+    state.keyLowLine = state.candleSeries.createPriceLine({
+      price: primary.low, color: "#5ca5ff", lineWidth: 1,
+      lineStyle: LightweightCharts.LineStyle.Dashed, axisLabelVisible: false,
+      title: `前低 ${primary.sourcePeriod || getKeyLevelPeriod()}`
+    });
+  }
+
+  const secondary = state.secondaryLevels;
+  if (secondary?.high) {
+    state.secondaryKeyHighLine = state.candleSeries.createPriceLine({
+      price: secondary.high, color: "rgba(247,189,82,.58)", lineWidth: 1,
+      lineStyle: LightweightCharts.LineStyle.Dotted, axisLabelVisible: false,
+      title: `前高 ${secondary.sourcePeriod}`
+    });
+  }
+  if (secondary?.low) {
+    state.secondaryKeyLowLine = state.candleSeries.createPriceLine({
+      price: secondary.low, color: "rgba(92,165,255,.58)", lineWidth: 1,
+      lineStyle: LightweightCharts.LineStyle.Dotted, axisLabelVisible: false,
+      title: `前低 ${secondary.sourcePeriod}`
+    });
+  }
+}
+
+function syncKeyLevelVisibilityUI() {
+  const checkbox = document.getElementById("chk-key-levels");
+  const textEl = document.getElementById("key-level-toggle-text");
+  if (checkbox) checkbox.checked = !!state.keyLevelsVisible;
+  if (textEl) textEl.textContent = `前高前低 ${state.keyLevelsVisible ? "ON" : "OFF"}`;
+}
+
+function setKeyLevelsVisible(visible, { persist = true } = {}) {
+  state.keyLevelsVisible = !!visible;
+  if (persist) {
+    try { localStorage.setItem("ox-chart-key-levels-visible", state.keyLevelsVisible ? "1" : "0"); } catch (e) {}
+  }
+
+  const layer = document.getElementById("chart-key-labels");
+  if (state.keyLevelsVisible) {
+    renderKeyLevelPriceLinesFromState();
+    requestAnimationFrame(updateKeyLevelVisualLabels);
+  } else {
+    clearKeyLevelPriceLines();
+    if (layer) layer.innerHTML = "";
+  }
+  syncKeyLevelVisibilityUI();
+}
+
 function updateKeyLevelVisualLabels() {
   const layer = document.getElementById("chart-key-labels");
   const chartEl = document.getElementById("chart");
   if (!layer || !chartEl || !state.candleSeries) return;
+  if (!state.keyLevelsVisible) { layer.innerHTML = ""; return; }
   const levels = [];
   const add = (price, type, period, secondary = false) => {
     const y = price ? state.candleSeries.priceToCoordinate(price) : null;
@@ -4407,6 +4617,7 @@ function initChart() {
 }
 
 async function loadSymbolCandles(isInitial = true) {
+  if (state.activeMarket && state.activeMarket !== "crypto") return;
   state.abortCtrl?.abort();
   state.abortCtrl = new AbortController();
   const overlay = document.getElementById("chart-loading");
@@ -4558,10 +4769,7 @@ async function refreshKeyLevels(chartCandles) {
   const symbolAtRequest = state.symbol;
   const sourcePeriods = getKeyLevelPeriods();
 
-  for (const key of ["keyHighLine","keyLowLine","secondaryKeyHighLine","secondaryKeyLowLine"]) {
-    if (state[key]) { try { state.candleSeries.removePriceLine(state[key]); } catch (e) {} }
-    state[key] = null;
-  }
+  clearKeyLevelPriceLines();
   state.currentLevels = { high:0, low:0, sourcePeriod:sourcePeriods[0], highTime:0, lowTime:0 };
   state.secondaryLevels = null;
   updateAlertButtons();
@@ -4581,40 +4789,13 @@ async function refreshKeyLevels(chartCandles) {
     const primary = results[0];
     state.currentLevels = { ...primary.levels, sourcePeriod: primary.sourcePeriod };
 
-    if (primary.levels.high) {
-      state.keyHighLine = state.candleSeries.createPriceLine({
-        price: primary.levels.high, color: "#f7bd52", lineWidth: 1,
-        lineStyle: LightweightCharts.LineStyle.Dashed, axisLabelVisible: false,
-        title: `前高 ${primary.sourcePeriod}`
-      });
-    }
-    if (primary.levels.low) {
-      state.keyLowLine = state.candleSeries.createPriceLine({
-        price: primary.levels.low, color: "#5ca5ff", lineWidth: 1,
-        lineStyle: LightweightCharts.LineStyle.Dashed, axisLabelVisible: false,
-        title: `前低 ${primary.sourcePeriod}`
-      });
-    }
 
     if (results[1]) {
       const secondary = results[1];
       state.secondaryLevels = { ...secondary.levels, sourcePeriod: secondary.sourcePeriod };
-      if (secondary.levels.high) {
-        state.secondaryKeyHighLine = state.candleSeries.createPriceLine({
-          price: secondary.levels.high, color: "rgba(247,189,82,.58)", lineWidth: 1,
-          lineStyle: LightweightCharts.LineStyle.Dotted, axisLabelVisible: false,
-          title: `前高 ${secondary.sourcePeriod}`
-        });
-      }
-      if (secondary.levels.low) {
-        state.secondaryKeyLowLine = state.candleSeries.createPriceLine({
-          price: secondary.levels.low, color: "rgba(92,165,255,.58)", lineWidth: 1,
-          lineStyle: LightweightCharts.LineStyle.Dotted, axisLabelVisible: false,
-          title: `前低 ${secondary.sourcePeriod}`
-        });
-      }
     }
 
+    renderKeyLevelPriceLinesFromState();
     updateAlertButtons();
     updateQuickStats();
     renderOxDetail();
@@ -4785,6 +4966,167 @@ function switchSymbol(symbol) {
 
 
 
+
+/* ===== v3.4 feature pack: watchlist / local account / market architecture / home BTC mini chart ===== */
+const OX_GUEST_PREFS_KEY = "ox-guest-prefs-v1";
+const OX_USERS_KEY = "ox-local-users-v1";
+const OX_SESSION_KEY = "ox-local-session-v1";
+
+function normalizeEmail(v) { return String(v || "").trim().toLowerCase(); }
+function safeAccountToken(email) { try { return btoa(unescape(encodeURIComponent(email))).replace(/=+$/g, "").replace(/\+/g,"-").replace(/\//g,"_"); } catch { return email.replace(/[^a-z0-9]/gi,"_"); } }
+function currentLocalAccountEmail() { return normalizeEmail(localStorage.getItem(OX_SESSION_KEY) || ""); }
+function watchStorageKey() { const e = currentLocalAccountEmail(); return e ? `ox-user-watchlist:${safeAccountToken(e)}` : "ox-watchlist"; }
+function getWatchlistRecords() { try { const v = JSON.parse(localStorage.getItem(watchStorageKey()) || "[]"); return Array.isArray(v) ? v.filter(x => x && x.symbol) : []; } catch { return []; } }
+function isWatchlisted(symbol) { return getWatchlistRecords().some(x => x.symbol === symbol); }
+function syncWatchBadge() { const el = document.getElementById("badge-watch"); if (el) el.textContent = getWatchlistRecords().length; }
+function saveWatchlistRecords(list) { localStorage.setItem(watchStorageKey(), JSON.stringify(list)); syncWatchBadge(); AccountStore.capturePrefs(); }
+function watchSnapshot(symbol) {
+  const c = state.analyzedCache.get(symbol) || {};
+  const t = state.tickers.find(x => x.symbol === symbol) || {};
+  return { symbol, side:c.side || "—", tier:c.displayTier || c.tier || "t3", displayTier:c.displayTier || c.tier || "t3", oxScore:c.oxScore ?? null, change24h:t.change24h ?? c.change24h ?? 0, lastPr:t.lastPr ?? c.lastPr ?? 0, savedAt:Date.now() };
+}
+function toggleWatchSymbol(symbol) {
+  const list = getWatchlistRecords();
+  const i = list.findIndex(x => x.symbol === symbol);
+  if (i >= 0) { list.splice(i,1); showToast(`☆ 已從觀察移除 ${symbol.replace(/USDT$/,'')}`); }
+  else { list.unshift(watchSnapshot(symbol)); showToast(`★ 已加入觀察 ${symbol.replace(/USDT$/,'')}`); }
+  saveWatchlistRecords(list.slice(0,100));
+  renderCurrentTab();
+}
+
+const AccountStore = (() => {
+  const loadUsers = () => { try { const v = JSON.parse(localStorage.getItem(OX_USERS_KEY) || "{}"); return v && typeof v === "object" ? v : {}; } catch { return {}; } };
+  const saveUsers = users => localStorage.setItem(OX_USERS_KEY, JSON.stringify(users));
+  const sha256 = async value => { const bytes = new TextEncoder().encode(value); const digest = await crypto.subtle.digest("SHA-256", bytes); return Array.from(new Uint8Array(digest)).map(b=>b.toString(16).padStart(2,"0")).join(""); };
+  const collectPrefs = () => {
+    const settings = {};
+    ["breakout","tiers","alt50","alt75","btc50","btc75","btcAnalysis","news"].forEach(k => settings[k] = localStorage.getItem(`ox-setting-${k}`));
+    return {
+      theme: localStorage.getItem("ox-ui-theme") || "system",
+      keyLevels: localStorage.getItem("ox-chart-key-levels-visible") !== "0",
+      notifications: localStorage.getItem("ox-control-notifications-enabled") === "1",
+      sound: localStorage.getItem("ox-alert-sound-enabled") !== "0",
+      settings,
+      emailSetting: localStorage.getItem("ox-setting-email") || "",
+      phoneSetting: localStorage.getItem("ox-setting-phone") || "",
+      frequency: localStorage.getItem("ox-setting-frequency") || "1h",
+      levelAlerts: Object.fromEntries(Object.keys(localStorage).filter(k => k.startsWith("ox-level-alert:")).map(k => [k, localStorage.getItem(k)]))
+    };
+  };
+  const applyPrefs = prefs => {
+    if (!prefs) return;
+    if (prefs.theme) localStorage.setItem("ox-ui-theme", prefs.theme);
+    localStorage.setItem("ox-chart-key-levels-visible", prefs.keyLevels === false ? "0" : "1");
+    localStorage.setItem("ox-control-notifications-enabled", prefs.notifications ? "1" : "0");
+    localStorage.setItem("ox-alert-sound-enabled", prefs.sound === false ? "0" : "1");
+    Object.entries(prefs.settings || {}).forEach(([k,v]) => { if (v !== null && v !== undefined) localStorage.setItem(`ox-setting-${k}`, String(v)); });
+    if (prefs.emailSetting !== undefined) localStorage.setItem("ox-setting-email", prefs.emailSetting);
+    if (prefs.phoneSetting !== undefined) localStorage.setItem("ox-setting-phone", prefs.phoneSetting);
+    if (prefs.frequency) localStorage.setItem("ox-setting-frequency", prefs.frequency);
+    Object.keys(localStorage).filter(k => k.startsWith("ox-level-alert:")).forEach(k => localStorage.removeItem(k));
+    Object.entries(prefs.levelAlerts || {}).forEach(([k,v]) => { if (k.startsWith("ox-level-alert:") && v !== null) localStorage.setItem(k, String(v)); });
+
+    applyTheme(getSavedThemeMode());
+    setKeyLevelsVisible(localStorage.getItem("ox-chart-key-levels-visible") !== "0");
+    const notify = document.getElementById("ox-control-notify-toggle"); if (notify) notify.checked = localStorage.getItem("ox-control-notifications-enabled") === "1";
+    const sound = document.getElementById("ox-control-sound-toggle"); if (sound) sound.checked = localStorage.getItem("ox-alert-sound-enabled") !== "0";
+    const email = document.getElementById("setting-email"); if (email) email.value = localStorage.getItem("ox-setting-email") || "";
+    const phone = document.getElementById("setting-phone"); if (phone) phone.value = localStorage.getItem("ox-setting-phone") || "";
+    const freq = document.getElementById("setting-frequency"); if (freq) freq.value = localStorage.getItem("ox-setting-frequency") || "1h";
+    document.querySelectorAll("[data-setting-key]").forEach(input => { const v=localStorage.getItem(`ox-setting-${input.dataset.settingKey}`); if(v!==null) input.checked = v === "1"; });
+    syncNotificationPermissionUI(); syncWatchBadge(); renderCurrentTab();
+  };
+  const capturePrefs = () => {
+    const email = currentLocalAccountEmail(); if (!email) return;
+    const users = loadUsers(); if (!users[email]) return;
+    users[email].prefs = collectPrefs(); users[email].updatedAt = Date.now(); saveUsers(users);
+  };
+  const saveGuest = () => localStorage.setItem(OX_GUEST_PREFS_KEY, JSON.stringify(collectPrefs()));
+  const restoreGuest = () => { try { const p=JSON.parse(localStorage.getItem(OX_GUEST_PREFS_KEY)||"null"); if(p) applyPrefs(p); } catch{} };
+  const register = async (email, password) => {
+    email=normalizeEmail(email); if(!/^\S+@\S+\.\S+$/.test(email)) throw new Error("請輸入有效 Email"); if(String(password).length<6) throw new Error("密碼至少 6 碼");
+    const users=loadUsers(); if(users[email]) throw new Error("這個 Email 已在此裝置註冊"); saveGuest();
+    const guestWatch = getWatchlistRecords();
+    const passwordHash=await sha256(`${email}::${password}`); users[email]={passwordHash,createdAt:Date.now(),updatedAt:Date.now(),prefs:collectPrefs()}; saveUsers(users); localStorage.setItem(OX_SESSION_KEY,email);
+    localStorage.setItem(watchStorageKey(), JSON.stringify(guestWatch));
+    updateAccountUI(); syncWatchBadge(); renderCurrentTab(); return email;
+  };
+  const login = async (email,password) => {
+    email=normalizeEmail(email); const users=loadUsers(); const u=users[email]; if(!u) throw new Error("此裝置找不到這個帳號"); const h=await sha256(`${email}::${password}`); if(h!==u.passwordHash) throw new Error("密碼不正確"); saveGuest(); localStorage.setItem(OX_SESSION_KEY,email); applyPrefs(u.prefs); updateAccountUI(); return email;
+  };
+  const logout = () => { capturePrefs(); localStorage.removeItem(OX_SESSION_KEY); restoreGuest(); updateAccountUI(); syncWatchBadge(); renderCurrentTab(); };
+  return { loadUsers, collectPrefs, applyPrefs, capturePrefs, register, login, logout, currentEmail:currentLocalAccountEmail };
+})();
+
+function updateAccountUI() {
+  const email = currentLocalAccountEmail();
+  const title = document.getElementById("ox-account-title"), sub=document.getElementById("ox-account-sub"), tag=document.getElementById("ox-account-action-tag");
+  const out=document.getElementById("ox-auth-logged-out"), inn=document.getElementById("ox-auth-logged-in"), cur=document.getElementById("ox-auth-current-email");
+  if (email) { if(title) title.textContent=email; if(sub) sub.textContent="本機帳號已登入 · 個人偏好綁定中"; if(tag) tag.textContent="SIGNED IN"; if(out) out.hidden=true; if(inn) inn.hidden=false; if(cur) cur.textContent=email; }
+  else { if(title) title.textContent="登入 / 註冊"; if(sub) sub.textContent="第一版本機帳號，可保持登入並綁定個人偏好。"; if(tag) tag.textContent="LOCAL"; if(out) out.hidden=false; if(inn) inn.hidden=true; }
+}
+
+const MarketController = (() => {
+  const labels={crypto:"加密貨幣",us:"美股",tw:"台股"};
+  const setMarket = (market,{toast=true,kick=true}={}) => {
+    if(!labels[market]) return; state.activeMarket=market; localStorage.setItem("ox-active-market",market); document.body.dataset.market=market;
+    document.querySelectorAll("[data-market-choice]").forEach(b=>b.classList.toggle("active",b.dataset.marketChoice===market));
+    const st=document.getElementById("ox-market-status-text"); if(st) st.textContent = market==="crypto" ? "Crypto 已接資料；US / TW 先完成切換架構，不混入加密資料。" : `${labels[market]}架構已啟用 · 資料源尚未接入`;
+    syncPlaceholder(); renderOxLive();
+    if (market === "crypto" && kick) { refreshMarketTickers(); if(state.activeView==="radar") loadSymbolCandles(true); if(state.activeView==="home") HomeMiniChart.ensureAndLoad(true); }
+    if(toast) showMarketToast(`已切換至${labels[market]}`);
+  };
+  const syncPlaceholder = () => {
+    const unsupported = state.activeMarket !== "crypto" && ["home","strength","radar"].includes(state.activeView);
+    document.body.classList.toggle("market-data-unavailable", unsupported);
+    document.querySelectorAll("[data-app-view]").forEach(v => { if(["home","strength","radar"].includes(v.dataset.appView)) v.style.display = unsupported ? "none" : ""; });
+    const card=document.getElementById("market-unavailable-card"); if(card) { card.hidden=!unsupported; if(unsupported){ const name=labels[state.activeMarket]; document.getElementById("market-unavailable-title").textContent=`${name}市場`; document.getElementById("market-unavailable-copy").textContent=`${name}的市場切換架構已完成；資料源尚未接入，因此目前不會顯示或混入 Crypto 資料。`; } }
+  };
+  const cycle = () => { const order=["crypto","us","tw"]; const i=order.indexOf(state.activeMarket); setMarket(order[(i+1)%order.length]); };
+  const init=()=>{ const saved=localStorage.getItem("ox-active-market"); state.activeMarket=["crypto","us","tw"].includes(saved)?saved:"crypto"; setMarket(state.activeMarket,{toast:false,kick:false}); };
+  return {setMarket,syncPlaceholder,cycle,init,labels};
+})();
+
+function showMarketToast(msg){ let el=document.getElementById("market-switch-toast"); if(!el){ el=document.createElement("div"); el.id="market-switch-toast"; el.className="market-switch-toast"; document.body.appendChild(el); } el.textContent=msg; el.classList.add("show"); clearTimeout(showMarketToast._t); showMarketToast._t=setTimeout(()=>el.classList.remove("show"),1500); }
+
+const HomeMiniChart = (()=>{
+  let chart=null, series=null, period="1H", loading=false, ro=null;
+  const theme=()=>document.body.classList.contains("theme-light");
+  const ensure=()=>{
+    const el=document.getElementById("home-btc-mini-chart"); if(!el||chart) return !!chart;
+    chart=LightweightCharts.createChart(el,{width:el.clientWidth||220,height:el.clientHeight||78,layout:{background:{type:"solid",color:theme()?"#ffffff":"#09111c"},textColor:theme()?"#5d7086":"#8092aa"},grid:{vertLines:{visible:false},horzLines:{visible:false}},rightPriceScale:{visible:false},timeScale:{visible:false,borderVisible:false,rightOffset:4},crosshair:{mode:0},handleScroll:{mouseWheel:false,pressedMouseMove:false,horzTouchDrag:false,vertTouchDrag:false},handleScale:{axisPressedMouseMove:false,mouseWheel:false,pinch:false}});
+    series=chart.addCandlestickSeries({upColor:"#38c99b",downColor:"#ee617c",borderVisible:false,wickUpColor:"#38c99b",wickDownColor:"#ee617c",priceLineVisible:false,lastValueVisible:false});
+    ro=new ResizeObserver(()=>{ if(el.clientWidth&&el.clientHeight) chart.applyOptions({width:el.clientWidth,height:el.clientHeight}); }); ro.observe(el); return true;
+  };
+  const applyThemeMini=()=>{ if(!chart) return; chart.applyOptions({layout:{background:{type:"solid",color:theme()?"#ffffff":"#09111c"},textColor:theme()?"#5d7086":"#8092aa"}}); };
+  const load=async(force=false)=>{ if(state.activeMarket!=="crypto"||loading||!ensure()) return; loading=true; try{ const data=await BitgetAPI.fetchCandles("BTCUSDT",period,80); if(data.length){ series.setData(data); chart.timeScale().fitContent(); chart.timeScale().applyOptions({rightOffset:4}); } }catch(e){}finally{loading=false;} };
+  const setPeriod=p=>{ if(!["1H","4H","1D"].includes(p)) return; period=p; document.querySelectorAll("[data-home-mini-tf]").forEach(b=>b.classList.toggle("active",b.dataset.homeMiniTf===p)); load(true); };
+  document.addEventListener("ox:themechange",applyThemeMini);
+  return {ensureAndLoad:load,setPeriod,applyTheme:applyThemeMini};
+})();
+
+const OXFeaturePack = (()=>{
+  let lastRadarTap=0;
+  const init=()=>{
+    updateAccountUI(); syncWatchBadge(); MarketController.init();
+    const sound=document.getElementById("ox-control-sound-toggle"); if(sound){ sound.checked=localStorage.getItem("ox-alert-sound-enabled")!=="0"; sound.addEventListener("change",()=>{localStorage.setItem("ox-alert-sound-enabled",sound.checked?"1":"0"); AccountStore.capturePrefs();}); }
+    document.querySelectorAll("[data-market-choice]").forEach(b=>b.addEventListener("click",()=>MarketController.setMarket(b.dataset.marketChoice)));
+    document.getElementById("ox-control-account-open")?.addEventListener("click",()=>document.querySelectorAll("[data-control-view]").forEach(v=>v.classList.toggle("active",v.dataset.controlView==="account")));
+    document.getElementById("ox-control-account-back")?.addEventListener("click",()=>document.querySelectorAll("[data-control-view]").forEach(v=>v.classList.toggle("active",v.dataset.controlView==="main")));
+    document.getElementById("ox-auth-register")?.addEventListener("click",async()=>{ const st=document.getElementById("ox-auth-status"); try{ const e=await AccountStore.register(document.getElementById("ox-auth-email").value,document.getElementById("ox-auth-password").value); if(st)st.textContent=`已註冊並登入 ${e}。這是本機帳號，不會上傳伺服器。`; }catch(err){if(st)st.textContent=err.message;} });
+    document.getElementById("ox-auth-login")?.addEventListener("click",async()=>{ const st=document.getElementById("ox-auth-status"); try{ const e=await AccountStore.login(document.getElementById("ox-auth-email").value,document.getElementById("ox-auth-password").value); if(st)st.textContent=`已登入 ${e}，已載入此帳號的個人偏好。`; }catch(err){if(st)st.textContent=err.message;} });
+    document.getElementById("ox-auth-logout")?.addEventListener("click",()=>{AccountStore.logout(); showToast("已登出本機帳號");});
+    document.getElementById("ox-control-test-notification")?.addEventListener("click",async()=>{ await primeAlertAudio(true); let p=notificationPlatformInfo().permission; if(p==="default")p=await maybeRequestNotificationPermission({interactive:true}); const soundOk=await playAlertTone("high"); const notifyOk=p==="granted"?await sendBrowserNotification("OX 測試通知",{body:"OX 通知與鈴聲測試已執行。",icon:"ox-logo.png",tag:"ox-control-test"},{bypassMaster:true}):false; showToast(`${notifyOk?"通知✓":"通知×"} · ${soundOk?"鈴聲✓":"鈴聲×"}`); syncNotificationPermissionUI(); });
+    document.addEventListener("change",e=>{ if(e.target.matches("#chk-key-levels,[data-setting-key],#ox-control-notify-toggle,#setting-email,#setting-phone,#setting-frequency")) setTimeout(AccountStore.capturePrefs,0); });
+    document.addEventListener("click",e=>{ if(e.target.closest("[data-theme-choice],[data-control-theme]")) setTimeout(AccountStore.capturePrefs,0); });
+    document.querySelectorAll("[data-home-mini-tf]").forEach(b=>b.addEventListener("click",e=>{e.preventDefault();e.stopPropagation();HomeMiniChart.setPeriod(b.dataset.homeMiniTf);}));
+    const radar=document.querySelector(".dock-radar"); if(radar){ radar.addEventListener("dblclick",e=>{e.preventDefault();e.stopPropagation();MarketController.cycle();}); radar.addEventListener("pointerup",e=>{ if(e.pointerType!=="touch")return; const now=Date.now(); if(now-lastRadarTap<330){e.preventDefault();MarketController.cycle();lastRadarTap=0;}else lastRadarTap=now; }); }
+    if(state.activeView==="home") setTimeout(()=>HomeMiniChart.ensureAndLoad(true),80);
+    setInterval(()=>{ if(state.activeView==="home"&&state.activeMarket==="crypto") HomeMiniChart.ensureAndLoad(false); },60000);
+  };
+  return {init};
+})();
+
 /* ===== OX CONTROL module: isolated from OX Engine / radar logic ===== */
 const OXControlPanel = (() => {
   const q = sel => document.querySelector(sel);
@@ -4816,6 +5158,8 @@ const OXControlPanel = (() => {
     setView("main");
     syncTheme();
     syncDataStatus();
+    updateAccountUI();
+    MarketController.syncPlaceholder();
     syncNotificationPermissionUI();
     setTimeout(() => closeBtn?.focus(), 310);
   };
@@ -4920,6 +5264,9 @@ const OXControlPanel = (() => {
 })();
 
 document.addEventListener("click", e => {
+  const star = e.target.closest("[data-watch-symbol]");
+  if (star?.dataset.watchSymbol) { e.preventDefault(); e.stopPropagation(); toggleWatchSymbol(star.dataset.watchSymbol); return; }
+
   const homeSymbol = e.target.closest("[data-home-symbol]");
   if (homeSymbol?.dataset.homeSymbol) { switchSymbol(homeSymbol.dataset.homeSymbol); return; }
 
@@ -4977,12 +5324,18 @@ document.addEventListener("click", e => {
 
 document.addEventListener("keydown", e => {
   if ((e.key === "Enter" || e.key === " ") && e.target?.dataset?.homeSymbol) {
-    e.preventDefault(); switchSymbol(e.target.dataset.homeSymbol);
+    e.preventDefault(); switchSymbol(e.target.dataset.homeSymbol); return;
+  }
+  if ((e.key === "Enter" || e.key === " ") && e.target?.classList?.contains("coin-card") && e.target.dataset.symbol) {
+    e.preventDefault(); switchSymbol(e.target.dataset.symbol);
   }
 });
 
 document.getElementById("chk-vol").addEventListener("change", e => state.volumeSeries.applyOptions({ visible: e.target.checked }));
 document.getElementById("chk-ox-markers").addEventListener("change", () => renderChartData(state.candleData, false));
+const keyLevelVisibilityToggle = document.getElementById("chk-key-levels");
+syncKeyLevelVisibilityUI();
+keyLevelVisibilityToggle?.addEventListener("change", e => setKeyLevelsVisible(e.target.checked));
 
 window.addEventListener("DOMContentLoaded", () => {
   const unlockAudioFromGesture = async () => {
@@ -5002,11 +5355,14 @@ window.addEventListener("DOMContentLoaded", () => {
   if (fullscreenBtn && window.matchMedia("(max-width: 900px)").matches) fullscreenBtn.textContent = "展開圖表";
   initSettings();
   OXControlPanel.init();
+  OXFeaturePack.init();
   initChart();
   applyTheme(getSavedThemeMode());
   switchAppView("radar");
-  loadSymbolCandles(true);
-  refreshMarketTickers();
+  if (state.activeMarket === "crypto") {
+    loadSymbolCandles(true);
+    refreshMarketTickers();
+  }
   renderBenchmarkBar();
   renderMarketStrength();
   renderOxLive();
