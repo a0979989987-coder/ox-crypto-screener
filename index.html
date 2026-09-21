@@ -2484,6 +2484,183 @@
       .market-unavailable-card{min-height:260px;margin:5px 0 20px;padding:20px 15px;gap:12px}.market-unavailable-icon{width:45px;height:45px;border-radius:13px}.market-unavailable-card h2{font-size:17px}.market-unavailable-card p{font-size:8px}
     }
 
+
+
+    /* ===== v3.4 refinement: mobile star rail + direction filter + BTC home primary chart ===== */
+    .watch-tab-mobile { display:none; }
+    .scanner-direction-tabs {
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:5px;
+      padding:6px 14px 8px;
+      border-bottom:1px solid var(--line);
+      background:#0a111b;
+    }
+    .direction-btn {
+      min-height:28px;
+      border:1px solid #25374d;
+      border-radius:7px;
+      background:#0e1724;
+      color:var(--muted);
+      font-size:10px;
+      font-weight:800;
+      letter-spacing:.02em;
+      cursor:pointer;
+    }
+    .direction-btn:hover { color:var(--ink); border-color:#3b506c; }
+    .direction-btn.active { color:var(--gold); border-color:#8d6828; background:#f7bd5210; box-shadow:inset 0 0 0 1px #f7bd5219; }
+
+    .watch-star { position:relative; }
+    .watch-star > span { position:relative; z-index:2; }
+    .coin-rank { color:var(--muted); font-size:12px; flex:0 0 auto; }
+
+    .v34-home-market-layout {
+      display:grid;
+      grid-template-columns:minmax(0,2.15fr) minmax(250px,.85fr);
+      gap:10px;
+      align-items:stretch;
+    }
+    .v34-home-btc-primary { overflow:hidden; min-width:0; }
+    .v34-home-btc-head {
+      min-height:74px;
+      padding:12px 14px 9px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+      border-bottom:1px solid var(--line);
+      background:linear-gradient(180deg,#0f1927,#0b1420);
+    }
+    .v34-home-btc-identity { min-width:0; }
+    .v34-home-btc-kicker { display:block; color:var(--muted); font-size:9px; font-weight:850; letter-spacing:.08em; text-transform:uppercase; }
+    .v34-home-btc-price-line { display:flex; align-items:baseline; gap:9px; margin-top:4px; min-width:0; }
+    .v34-home-btc-price-line strong { font-size:25px; line-height:1; font-variant-numeric:tabular-nums; white-space:nowrap; }
+    .v34-home-btc-price-line span { font-size:11px; font-weight:850; white-space:nowrap; }
+    .v34-home-btc-facts { display:flex; align-items:center; justify-content:flex-end; gap:12px; min-width:0; }
+    .v34-home-btc-facts > span { min-width:74px; }
+    .v34-home-btc-facts small { display:block; color:var(--muted); font-size:7px; margin-bottom:2px; }
+    .v34-home-btc-facts b { display:block; color:var(--ink); font-size:9px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .v34-home-open-radar { border:1px solid #7d602a; border-radius:8px; background:#f7bd520d; color:var(--gold); padding:7px 9px; font-size:8px; font-weight:850; white-space:nowrap; }
+    .v34-home-main-toolbar { min-height:34px; padding:5px 10px; display:flex; align-items:center; gap:5px; border-bottom:1px solid var(--line); background:#0a121d; }
+    .v34-home-mini-tf { height:24px; min-width:38px; border:1px solid #2a3b52; border-radius:6px; background:#0f1825; color:var(--muted); font-size:8px; font-weight:850; }
+    .v34-home-mini-tf.active { border-color:#9a7229; color:var(--gold); background:#f7bd5210; }
+    .v34-home-chart-source { margin-left:auto; color:var(--muted); font-size:7px; }
+    .v34-home-main-chart { width:100%; height:310px; background:#09111c; }
+    .v34-home-btc-footer { padding:7px 11px 9px; color:var(--muted); font-size:8px; border-top:1px solid var(--line); }
+    .v34-home-btc-footer .v33-meter { margin-top:6px; }
+    .v34-home-side-stack { display:grid; grid-template-columns:1fr; grid-template-rows:repeat(4,minmax(0,1fr)); gap:7px; min-width:0; }
+    .v34-home-side-card { min-height:0; display:flex; flex-direction:column; justify-content:center; }
+    .v34-home-snapshot-row { display:grid; grid-template-columns:repeat(3,1fr); gap:4px; margin-top:7px; color:var(--muted); font-size:7px; }
+    .v34-home-snapshot-row span { padding:4px 5px; border:1px solid #24354a; border-radius:6px; background:#0a121d; text-align:center; }
+    .v34-home-snapshot-row b { color:var(--ink); margin-left:2px; }
+
+    body.theme-light .scanner-direction-tabs { background:#f7f9fc; border-color:#cbd7e4; }
+    body.theme-light .direction-btn { background:#eef3f8; color:#52647b; border-color:#c6d3e1; }
+    body.theme-light .direction-btn.active { background:#fff4d8; color:#a86600; border-color:#bd8122; }
+    body.theme-light .v34-home-btc-head { background:linear-gradient(180deg,#ffffff,#f7f9fc); }
+    body.theme-light .v34-home-main-toolbar { background:#f7f9fc; }
+    body.theme-light .v34-home-main-chart { background:#ffffff; }
+    body.theme-light .v34-home-mini-tf { background:#eef3f8; color:#52647b; border-color:#c6d3e1; }
+    body.theme-light .v34-home-mini-tf.active { background:#fff4d8; color:#a86600; border-color:#bd8122; }
+    body.theme-light .v34-home-snapshot-row span { background:#f6f9fc; border-color:#d5dee8; }
+
+    @media (max-width:720px) {
+      /* Phase 1: the visual star is smaller while the pseudo-element keeps a forgiving hit area. */
+      .scanner-tabs { grid-template-columns:repeat(5,minmax(0,1fr)) !important; gap:1px !important; padding:4px 3px 3px !important; }
+      .watch-tab-desktop { display:none; }
+      .watch-tab-mobile { display:inline; }
+      .scanner-direction-tabs { padding:3px 4px 5px; gap:3px; }
+      .direction-btn { min-height:25px; font-size:7px; border-radius:5px; }
+
+      .coin-top {
+        display:grid !important;
+        grid-template-columns:minmax(0,1fr) 52px !important;
+        align-items:center !important;
+        gap:2px !important;
+      }
+      .coin-title {
+        min-width:0 !important;
+        max-width:100% !important;
+        overflow:hidden !important;
+        flex-wrap:nowrap !important;
+      }
+      .coin-rank, .coin-title > span:first-child { font-size:7px !important; flex:0 0 auto !important; }
+      .coin-symbol-mobile {
+        display:block !important;
+        min-width:0 !important;
+        max-width:calc(100% - 18px) !important;
+        overflow:hidden !important;
+        text-overflow:ellipsis !important;
+        white-space:nowrap !important;
+        font-size:9px !important;
+      }
+      .coin-top-right {
+        width:52px !important;
+        min-width:52px !important;
+        display:grid !important;
+        grid-template-columns:30px 20px !important;
+        align-items:center !important;
+        justify-content:end !important;
+        gap:2px !important;
+      }
+      .coin-ox {
+        width:30px !important;
+        max-width:30px !important;
+        text-align:right !important;
+        font-size:7px !important;
+        line-height:1 !important;
+        overflow:hidden !important;
+        white-space:nowrap !important;
+      }
+      .watch-star {
+        width:20px !important;
+        height:20px !important;
+        min-width:20px !important;
+        flex-basis:20px !important;
+        padding:0 !important;
+        border-radius:6px !important;
+        font-size:11px !important;
+        line-height:1 !important;
+        touch-action:manipulation;
+      }
+      .watch-star::after { content:""; position:absolute; inset:-7px; }
+      .watch-star > span { font-size:11px; line-height:1; }
+
+      .watch-card-main { grid-template-columns:minmax(0,1fr) 22px !important; gap:3px !important; }
+      .watch-card-copy { min-width:0; }
+      .watch-coin-title { max-width:100%; overflow:hidden; flex-wrap:nowrap; }
+      .watch-symbol { min-width:0; max-width:44px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+      .watch-coin-title .badge { display:none; }
+
+      /* Phase 3/4: BTC remains the primary visual on mobile; auxiliary data becomes a compact 2x2 grid. */
+      .v34-home-market-layout { grid-template-columns:1fr; gap:6px; }
+      .v34-home-btc-head { min-height:58px; padding:8px 9px 6px; gap:7px; align-items:flex-start; }
+      .v34-home-btc-price-line { gap:6px; margin-top:3px; }
+      .v34-home-btc-price-line strong { font-size:18px; }
+      .v34-home-btc-price-line span { font-size:8px; }
+      .v34-home-btc-kicker { font-size:6px; }
+      .v34-home-btc-facts { gap:6px; flex-wrap:wrap; max-width:54%; }
+      .v34-home-btc-facts > span { min-width:54px; max-width:84px; }
+      .v34-home-btc-facts small { font-size:5.5px; }
+      .v34-home-btc-facts b { font-size:6.5px; }
+      .v34-home-open-radar { padding:5px 6px; font-size:6px; border-radius:6px; }
+      .v34-home-main-toolbar { min-height:29px; padding:4px 6px; gap:3px; }
+      .v34-home-mini-tf { height:21px; min-width:31px; font-size:6px; }
+      .v34-home-chart-source { font-size:5.5px; }
+      .v34-home-main-chart { height:225px; }
+      .v34-home-btc-footer { padding:5px 7px 6px; font-size:6px; }
+      .v34-home-side-stack { grid-template-columns:repeat(2,minmax(0,1fr)); grid-template-rows:auto; gap:5px; }
+      .v34-home-side-card { padding:8px !important; min-height:82px; }
+      .v34-home-snapshot-row { gap:2px; margin-top:4px; font-size:5.5px; }
+      .v34-home-snapshot-row span { padding:3px 2px; }
+    }
+
+    @media (min-width:721px) and (max-width:980px) {
+      .v34-home-market-layout { grid-template-columns:minmax(0,1.6fr) minmax(220px,.9fr); }
+      .v34-home-main-chart { height:275px; }
+      .v34-home-btc-facts { gap:7px; }
+    }
+
 </style>
 </head>
 <body>
@@ -2681,35 +2858,58 @@
         </div>
       </section>
 
-      <section class="v33-section">
-        <div class="v33-section-head"><div><h2>市場總覽</h2><p>BTC、ETH 與整體市場環境</p></div><span class="v33-section-tag">LIVE</span></div>
-        <div class="v33-market-grid">
-          <article class="v33-card v33-market-card v34-btc-mini-card" data-home-symbol="BTCUSDT" role="button" tabindex="0">
-            <div class="v33-market-card-top"><span class="v33-market-name">BTC</span><span class="v33-market-badge">市場基準</span></div>
-            <div class="v33-market-value"><strong id="home-btc-price">—</strong><span id="home-btc-change">—</span></div>
-            <div class="v34-home-mini-toolbar" aria-label="BTC 首頁小型 K 線週期">
+      <section class="v33-section v34-home-market-section">
+        <div class="v33-section-head"><div><h2>BTC 市場主圖</h2><p>Crypto 首頁主視覺 · 與雷達共用 Bitget K 線資料來源</p></div><span class="v33-section-tag">LIVE</span></div>
+        <div class="v34-home-market-layout">
+          <article class="v33-card v34-home-btc-primary">
+            <div class="v34-home-btc-head">
+              <div class="v34-home-btc-identity">
+                <span class="v34-home-btc-kicker">BTC / BTCUSDT</span>
+                <div class="v34-home-btc-price-line"><strong id="home-btc-price">—</strong><span id="home-btc-change">—</span></div>
+              </div>
+              <div class="v34-home-btc-facts">
+                <span><small>24H 成交量</small><b id="home-btc-volume">—</b></span>
+                <span><small>市場狀態</small><b id="home-btc-market-state">資料整理中</b></span>
+                <button class="v34-home-open-radar" type="button" data-home-symbol="BTCUSDT">打開雷達 ↗</button>
+              </div>
+            </div>
+            <div class="v34-home-main-toolbar" aria-label="BTC 首頁主圖週期">
               <button class="v34-home-mini-tf active" type="button" data-home-mini-tf="1H">1H</button>
               <button class="v34-home-mini-tf" type="button" data-home-mini-tf="4H">4H</button>
               <button class="v34-home-mini-tf" type="button" data-home-mini-tf="1D">1D</button>
+              <button class="v34-home-mini-tf" type="button" data-home-mini-tf="1W">1W</button>
+              <span class="v34-home-chart-source">Bitget USDT 永續</span>
             </div>
-            <div id="home-btc-mini-chart" class="v34-home-mini-chart" aria-label="BTC 簡易 K 線"></div>
-            <div class="v33-market-note" id="home-btc-note">等待行情資料</div><div class="v33-meter"><i id="home-btc-meter"></i></div>
+            <div id="home-btc-mini-chart" class="v34-home-main-chart" aria-label="BTC 首頁大型 K 線"></div>
+            <div class="v34-home-btc-footer">
+              <span id="home-btc-note">等待行情資料</span>
+              <div class="v33-meter"><i id="home-btc-meter"></i></div>
+            </div>
           </article>
-          <article class="v33-card v33-market-card" data-home-symbol="ETHUSDT" role="button" tabindex="0">
-            <div class="v33-market-card-top"><span class="v33-market-name">ETH</span><span class="v33-market-badge">主流基準</span></div>
-            <div class="v33-market-value"><strong id="home-eth-price">—</strong><span id="home-eth-change">—</span></div>
-            <div class="v33-market-note" id="home-eth-note">等待行情資料</div><div class="v33-meter"><i id="home-eth-meter"></i></div>
-          </article>
-          <article class="v33-card v33-market-card">
-            <div class="v33-market-card-top"><span class="v33-market-name">BTC 強度</span><span class="v33-market-badge">0–100</span></div>
-            <div class="v33-market-value"><strong id="home-btc-strength">—</strong><span id="home-btc-strength-label">等待</span></div>
-            <div class="v33-market-note" id="home-btc-strength-note">結構 / 資金 / 動能 / Trigger</div><div class="v33-meter"><i id="home-btc-strength-meter"></i></div>
-          </article>
-          <article class="v33-card v33-market-card">
-            <div class="v33-market-card-top"><span class="v33-market-name">小幣強度</span><span class="v33-market-badge">市場廣度</span></div>
-            <div class="v33-market-value"><strong id="home-alt-strength">—</strong><span id="home-alt-strength-label">等待</span></div>
-            <div class="v33-market-note" id="home-alt-note">等待全市場輪巡</div><div class="v33-meter"><i id="home-alt-meter"></i></div>
-          </article>
+
+          <div class="v34-home-side-stack">
+            <article class="v33-card v33-market-card v34-home-side-card" data-home-symbol="ETHUSDT" role="button" tabindex="0">
+              <div class="v33-market-card-top"><span class="v33-market-name">ETH</span><span class="v33-market-badge">主流基準</span></div>
+              <div class="v33-market-value"><strong id="home-eth-price">—</strong><span id="home-eth-change">—</span></div>
+              <div class="v33-market-note" id="home-eth-note">等待行情資料</div><div class="v33-meter"><i id="home-eth-meter"></i></div>
+            </article>
+            <article class="v33-card v33-market-card v34-home-side-card">
+              <div class="v33-market-card-top"><span class="v33-market-name">BTC 強度</span><span class="v33-market-badge">0–100</span></div>
+              <div class="v33-market-value"><strong id="home-btc-strength">—</strong><span id="home-btc-strength-label">等待</span></div>
+              <div class="v33-market-note" id="home-btc-strength-note">結構 / 資金 / 動能 / Trigger</div><div class="v33-meter"><i id="home-btc-strength-meter"></i></div>
+            </article>
+            <article class="v33-card v33-market-card v34-home-side-card">
+              <div class="v33-market-card-top"><span class="v33-market-name">小幣強度</span><span class="v33-market-badge">市場廣度</span></div>
+              <div class="v33-market-value"><strong id="home-alt-strength">—</strong><span id="home-alt-strength-label">等待</span></div>
+              <div class="v33-market-note" id="home-alt-note">等待全市場輪巡</div><div class="v33-meter"><i id="home-alt-meter"></i></div>
+            </article>
+            <article class="v33-card v33-market-card v34-home-side-card v34-home-market-snapshot">
+              <div class="v33-market-card-top"><span class="v33-market-name">市場摘要</span><span class="v33-market-badge">OX</span></div>
+              <div class="v33-market-value"><strong id="home-side-market-score">—</strong><span>Market Score</span></div>
+              <div class="v33-market-note" id="home-side-market-state">資料整理中</div>
+              <div class="v34-home-snapshot-row"><span>T1 <b id="home-side-t1">0</b></span><span>T2 <b id="home-side-t2">0</b></span><span>🔥 <b id="home-side-surge">0</b></span></div>
+            </article>
+          </div>
         </div>
       </section>
 
@@ -2857,12 +3057,17 @@
         <span class="pill" id="pool-count">掃描中…</span>
       </div>
 
-      <div class="scanner-tabs" role="tablist">
+      <div class="scanner-tabs" role="tablist" aria-label="雷達分級">
         <button class="tab-btn active" data-tab="t1">T1 <span class="tab-badge" id="badge-t1">0</span></button>
         <button class="tab-btn" data-tab="t2">T2 <span class="tab-badge" id="badge-t2">0</span></button>
         <button class="tab-btn" data-tab="t3">T3 <span class="tab-badge" id="badge-t3">0</span></button>
         <button class="tab-btn" data-tab="surge">🔥 <span class="tab-badge" id="badge-surge">0</span></button>
-        <button class="tab-btn" data-tab="watch">⭐觀察 <span class="tab-badge" id="badge-watch">0</span></button>
+        <button class="tab-btn" data-tab="watch"><span class="watch-tab-desktop">⭐觀察</span><span class="watch-tab-mobile">⭐</span> <span class="tab-badge" id="badge-watch">0</span></button>
+      </div>
+      <div class="scanner-direction-tabs" role="tablist" aria-label="多空方向篩選">
+        <button class="direction-btn active" type="button" data-direction="all">全部</button>
+        <button class="direction-btn" type="button" data-direction="long">LONG</button>
+        <button class="direction-btn" type="button" data-direction="short">SHORT</button>
       </div>
 
       <div id="screener-list" class="scanner-body">
@@ -3135,6 +3340,7 @@ const state = {
   symbol: "BTCUSDT",
   period: "1D",
   currentTab: "t1",
+  directionFilter: "all",
   activeView: "radar",
   activeMarket: "crypto",
   
@@ -3172,6 +3378,47 @@ try {
   state.keyLevelsVisible = localStorage.getItem("ox-chart-key-levels-visible") !== "0";
 } catch (e) {
   state.keyLevelsVisible = true;
+}
+
+try {
+  const savedTier = localStorage.getItem("ox-scanner-tier-filter");
+  const savedDirection = localStorage.getItem("ox-scanner-direction-filter");
+  if (["t1","t2","t3","surge","watch"].includes(savedTier)) state.currentTab = savedTier;
+  if (["all","long","short"].includes(savedDirection)) state.directionFilter = savedDirection;
+} catch (e) {}
+
+function syncScannerFilterUI() {
+  document.querySelectorAll(".tab-btn[data-tab]").forEach(btn => btn.classList.toggle("active", btn.dataset.tab === state.currentTab));
+  document.querySelectorAll(".direction-btn[data-direction]").forEach(btn => btn.classList.toggle("active", btn.dataset.direction === state.directionFilter));
+}
+
+function persistScannerFilters() {
+  try {
+    localStorage.setItem("ox-scanner-tier-filter", state.currentTab);
+    localStorage.setItem("ox-scanner-direction-filter", state.directionFilter);
+  } catch (e) {}
+  document.dispatchEvent(new CustomEvent("ox:filterchange", { detail: { tier: state.currentTab, direction: state.directionFilter } }));
+}
+
+function setScannerTierFilter(tab) {
+  if (!["t1","t2","t3","surge","watch"].includes(tab)) return;
+  state.currentTab = tab;
+  persistScannerFilters();
+  syncScannerFilterUI();
+  renderCurrentTab();
+}
+
+function setScannerDirectionFilter(direction) {
+  if (!["all","long","short"].includes(direction)) return;
+  state.directionFilter = direction;
+  persistScannerFilters();
+  syncScannerFilterUI();
+  renderCurrentTab();
+}
+
+function passesDirectionFilter(side) {
+  if (state.directionFilter === "all") return true;
+  return String(side || "").toLowerCase() === state.directionFilter;
 }
 
 const periods = {
@@ -3619,13 +3866,21 @@ function renderHomeOverview() {
     el.className = ticker ? (num(ticker.change24h) >= 0 ? "positive" : "negative") : "";
   };
 
-  setText("home-market-state", homeMarketState(strength));
+  const marketStateText = homeMarketState(strength);
+  setText("home-market-state", marketStateText);
   setText("home-market-score", marketScore);
   setText("home-t1-count", (state.tierMap.t1 || []).length);
   setText("home-t2-count", (state.tierMap.t2 || []).length);
   setText("home-surge-count", (state.tierMap.surge || []).length);
+  setText("home-side-market-state", marketStateText);
+  setText("home-side-market-score", marketScore);
+  setText("home-side-t1", (state.tierMap.t1 || []).length);
+  setText("home-side-t2", (state.tierMap.t2 || []).length);
+  setText("home-side-surge", (state.tierMap.surge || []).length);
 
   setText("home-btc-price", btc ? fmtPrice(btc.lastPr) : "—"); setChange("home-btc-change", btc);
+  setText("home-btc-volume", btc ? `${fmtUsd(btc.usdtVolume)} USDT` : "—");
+  setText("home-btc-market-state", marketStateText);
   setText("home-btc-note", `${homeStructureText(btcA, btc)}${btcA ? ` · OX ${btcA.oxScore}` : ""}`);
   setWidth("home-btc-meter", btcA?.oxScore ?? btcStrength);
 
@@ -4347,13 +4602,19 @@ function renderCurrentTab() {
   const container = document.getElementById("screener-list");
   const tab = state.currentTab;
   if (!container) return;
+  syncScannerFilterUI();
 
   if (tab === "watch") {
-    const saved = getWatchlistRecords();
-    document.getElementById("pool-count").textContent = `${saved.length} 檔收藏`;
+    const savedAll = getWatchlistRecords();
+    const saved = savedAll.filter(rec => {
+      const analyzed = state.analyzedCache.get(rec.symbol);
+      return passesDirectionFilter(analyzed?.side || rec.side || "—");
+    });
+    document.getElementById("pool-count").textContent = state.directionFilter === "all" ? `${saved.length} 檔收藏` : `${saved.length}/${savedAll.length} 檔收藏`;
     syncWatchBadge();
     if (!saved.length) {
-      container.innerHTML = `<div style="padding:30px 16px;text-align:center;color:var(--muted)"><b>還沒有收藏標的</b><p style="font-size:11px">在 T1 / T2 / T3 點 ☆ 即可加入 ⭐觀察。</p></div>`;
+      const dir = state.directionFilter === "all" ? "" : ` ${state.directionFilter.toUpperCase()}`;
+      container.innerHTML = `<div style="padding:30px 16px;text-align:center;color:var(--muted)"><b>${savedAll.length ? `觀察列表目前沒有${dir} 標的` : "還沒有收藏標的"}</b><p style="font-size:11px">在 T1 / T2 / T3 點 ☆ 即可加入 ⭐觀察。</p></div>`;
       return;
     }
     container.innerHTML = saved.map((rec, idx) => {
@@ -4366,26 +4627,28 @@ function renderCurrentTab() {
       const change = ticker ? ticker.change24h : (c.change24h ?? rec.change24h);
       return `<div class="coin-card watch-list-card ${rec.symbol === state.symbol ? 'selected' : ''}" data-symbol="${rec.symbol}" role="button" tabindex="0">
         <div class="watch-card-main">
-          <div>
-            <div class="coin-title"><span style="color:var(--muted);font-size:12px">#${idx+1}</span><span>${rec.symbol}</span><span class="badge badge-${side === 'SHORT' ? 'short' : 'long'}">${side}</span><span class="badge badge-${['t1','t2','t3'].includes(tier)?tier:'t3'}">${tier.toUpperCase()}</span></div>
+          <div class="watch-card-copy">
+            <div class="coin-title watch-coin-title"><span class="coin-rank">#${idx+1}</span><span class="watch-symbol" title="${rec.symbol}">${rec.symbol.replace(/USDT$/, "")}</span><span class="badge badge-${side === 'SHORT' ? 'short' : 'long'}">${side}</span><span class="badge badge-${['t1','t2','t3'].includes(tier)?tier:'t3'}">${tier.toUpperCase()}</span></div>
             <div class="watch-metrics">
               <span class="watch-metric"><label>最新價格</label><strong>${fmtPrice(price)}</strong></span>
               <span class="watch-metric"><label>24H 漲跌</label><strong class="${num(change)>=0?'positive':'negative'}">${fmtPct(change)}</strong></span>
               <span class="watch-metric"><label>OX 分數</label><strong style="color:var(--gold)">${c.oxScore ?? rec.oxScore ?? '—'}</strong></span>
             </div>
           </div>
-          <button class="watch-star is-starred" type="button" data-watch-symbol="${rec.symbol}" aria-label="移除 ${rec.symbol} 收藏">★</button>
+          <button class="watch-star is-starred" type="button" data-watch-symbol="${rec.symbol}" aria-label="移除 ${rec.symbol} 收藏"><span aria-hidden="true">★</span></button>
         </div>
       </div>`;
     }).join('');
     return;
   }
 
-  const list = state.tierMap[tab] || [];
-  document.getElementById("pool-count").textContent = `${list.length} 檔標的`;
+  const sourceList = state.tierMap[tab] || [];
+  const list = sourceList.filter(c => passesDirectionFilter(c.side));
+  document.getElementById("pool-count").textContent = state.directionFilter === "all" ? `${list.length} 檔標的` : `${list.length}/${sourceList.length} 檔標的`;
   syncWatchBadge();
   if (!list.length) {
-    container.innerHTML = `<div style="padding:30px 16px;text-align:center;color:var(--muted)"><b>目前仍在輪巡分析</b><p style="font-size:11px">結果會逐步出現。</p></div>`;
+    const dir = state.directionFilter === "all" ? "" : ` ${state.directionFilter.toUpperCase()}`;
+    container.innerHTML = `<div style="padding:30px 16px;text-align:center;color:var(--muted)"><b>${sourceList.length ? `目前沒有${dir} 標的` : "目前仍在輪巡分析"}</b><p style="font-size:11px">${sourceList.length ? "切換全部 / LONG / SHORT 可查看其他方向。" : "結果會逐步出現。"}</p></div>`;
     return;
   }
 
@@ -4398,13 +4661,13 @@ function renderCurrentTab() {
     return `<div class="coin-card ${c.symbol === state.symbol ? 'selected' : ''}" data-symbol="${c.symbol}" role="button" tabindex="0">
       <div class="coin-top">
         <span class="coin-title">
-          <span style="color:var(--muted);font-size:12px">#${idx + 1}</span>
-          <span class="coin-symbol-full">${c.symbol}</span><span class="coin-symbol-mobile">${c.symbol.replace(/USDT$/, "")}</span>
+          <span class="coin-rank">#${idx + 1}</span>
+          <span class="coin-symbol-full">${c.symbol}</span><span class="coin-symbol-mobile" title="${c.symbol.replace(/USDT$/, "")}">${c.symbol.replace(/USDT$/, "")}</span>
           <span class="badge badge-${c.side === 'SHORT' ? 'short' : 'long'}">${c.side}</span>
           <span class="badge badge-${displayTier}">${displayTier.toUpperCase()}</span>
           ${c.isSurge ? '<span class="badge badge-surge">🔥</span>' : ''}
         </span>
-        <span class="coin-top-right"><span class="coin-ox">OX ${c.oxScore}</span>${allowStar ? `<button class="watch-star ${starred?'is-starred':''}" type="button" data-watch-symbol="${c.symbol}" aria-label="${starred?'移除':'加入'} ${c.symbol} 收藏">${starred?'★':'☆'}</button>` : ''}</span>
+        <span class="coin-top-right"><span class="coin-ox">OX ${c.oxScore}</span>${allowStar ? `<button class="watch-star ${starred?'is-starred':''}" type="button" data-watch-symbol="${c.symbol}" aria-label="${starred?'移除':'加入'} ${c.symbol} 收藏"><span aria-hidden="true">${starred?'★':'☆'}</span></button>` : ''}</span>
       </div>
       <div class="coin-mid">
         <span class="meta desktop-coin-meta">${status} · Fit ${fit ?? '—'} · 24H Vol ${fmtUsd(c.quoteVol)} USDT</span>
@@ -5010,6 +5273,11 @@ const AccountStore = (() => {
       emailSetting: localStorage.getItem("ox-setting-email") || "",
       phoneSetting: localStorage.getItem("ox-setting-phone") || "",
       frequency: localStorage.getItem("ox-setting-frequency") || "1h",
+      filters: {
+        tier: localStorage.getItem("ox-scanner-tier-filter") || state.currentTab || "t1",
+        direction: localStorage.getItem("ox-scanner-direction-filter") || state.directionFilter || "all"
+      },
+      market: localStorage.getItem("ox-active-market") || state.activeMarket || "crypto",
       levelAlerts: Object.fromEntries(Object.keys(localStorage).filter(k => k.startsWith("ox-level-alert:")).map(k => [k, localStorage.getItem(k)]))
     };
   };
@@ -5023,6 +5291,9 @@ const AccountStore = (() => {
     if (prefs.emailSetting !== undefined) localStorage.setItem("ox-setting-email", prefs.emailSetting);
     if (prefs.phoneSetting !== undefined) localStorage.setItem("ox-setting-phone", prefs.phoneSetting);
     if (prefs.frequency) localStorage.setItem("ox-setting-frequency", prefs.frequency);
+    if (prefs.filters?.tier && ["t1","t2","t3","surge","watch"].includes(prefs.filters.tier)) { state.currentTab = prefs.filters.tier; localStorage.setItem("ox-scanner-tier-filter", prefs.filters.tier); }
+    if (prefs.filters?.direction && ["all","long","short"].includes(prefs.filters.direction)) { state.directionFilter = prefs.filters.direction; localStorage.setItem("ox-scanner-direction-filter", prefs.filters.direction); }
+    if (prefs.market && ["crypto","us","tw"].includes(prefs.market)) localStorage.setItem("ox-active-market", prefs.market);
     Object.keys(localStorage).filter(k => k.startsWith("ox-level-alert:")).forEach(k => localStorage.removeItem(k));
     Object.entries(prefs.levelAlerts || {}).forEach(([k,v]) => { if (k.startsWith("ox-level-alert:") && v !== null) localStorage.setItem(k, String(v)); });
 
@@ -5034,6 +5305,8 @@ const AccountStore = (() => {
     const phone = document.getElementById("setting-phone"); if (phone) phone.value = localStorage.getItem("ox-setting-phone") || "";
     const freq = document.getElementById("setting-frequency"); if (freq) freq.value = localStorage.getItem("ox-setting-frequency") || "1h";
     document.querySelectorAll("[data-setting-key]").forEach(input => { const v=localStorage.getItem(`ox-setting-${input.dataset.settingKey}`); if(v!==null) input.checked = v === "1"; });
+    syncScannerFilterUI();
+    if (prefs.market && typeof MarketController !== "undefined") MarketController.setMarket(prefs.market,{toast:false,kick:false});
     syncNotificationPermissionUI(); syncWatchBadge(); renderCurrentTab();
   };
   const capturePrefs = () => {
@@ -5070,11 +5343,13 @@ const MarketController = (() => {
   const labels={crypto:"加密貨幣",us:"美股",tw:"台股"};
   const setMarket = (market,{toast=true,kick=true}={}) => {
     if(!labels[market]) return; state.activeMarket=market; localStorage.setItem("ox-active-market",market); document.body.dataset.market=market;
+    document.dispatchEvent(new CustomEvent("ox:marketchange",{detail:{market}}));
     document.querySelectorAll("[data-market-choice]").forEach(b=>b.classList.toggle("active",b.dataset.marketChoice===market));
     const st=document.getElementById("ox-market-status-text"); if(st) st.textContent = market==="crypto" ? "Crypto 已接資料；US / TW 先完成切換架構，不混入加密資料。" : `${labels[market]}架構已啟用 · 資料源尚未接入`;
     syncPlaceholder(); renderOxLive();
     if (market === "crypto" && kick) { refreshMarketTickers(); if(state.activeView==="radar") loadSymbolCandles(true); if(state.activeView==="home") HomeMiniChart.ensureAndLoad(true); }
     if(toast) showMarketToast(`已切換至${labels[market]}`);
+    try { AccountStore.capturePrefs(); } catch (e) {}
   };
   const syncPlaceholder = () => {
     const unsupported = state.activeMarket !== "crypto" && ["home","strength","radar"].includes(state.activeView);
@@ -5089,24 +5364,57 @@ const MarketController = (() => {
 
 function showMarketToast(msg){ let el=document.getElementById("market-switch-toast"); if(!el){ el=document.createElement("div"); el.id="market-switch-toast"; el.className="market-switch-toast"; document.body.appendChild(el); } el.textContent=msg; el.classList.add("show"); clearTimeout(showMarketToast._t); showMarketToast._t=setTimeout(()=>el.classList.remove("show"),1500); }
 
-const HomeMiniChart = (()=>{
+const HomeChartVariant = (()=>{
   let chart=null, series=null, period="1H", loading=false, ro=null;
   const theme=()=>document.body.classList.contains("theme-light");
+  const chartColors=()=> theme() ? {
+    bg:"#ffffff", text:"#596b80", grid:"#e5ebf2", border:"#c4d0dc"
+  } : { bg:"#09111c", text:"#8092aa", grid:"#172438", border:"#223147" };
   const ensure=()=>{
     const el=document.getElementById("home-btc-mini-chart"); if(!el||chart) return !!chart;
-    chart=LightweightCharts.createChart(el,{width:el.clientWidth||220,height:el.clientHeight||78,layout:{background:{type:"solid",color:theme()?"#ffffff":"#09111c"},textColor:theme()?"#5d7086":"#8092aa"},grid:{vertLines:{visible:false},horzLines:{visible:false}},rightPriceScale:{visible:false},timeScale:{visible:false,borderVisible:false,rightOffset:4},crosshair:{mode:0},handleScroll:{mouseWheel:false,pressedMouseMove:false,horzTouchDrag:false,vertTouchDrag:false},handleScale:{axisPressedMouseMove:false,mouseWheel:false,pinch:false}});
-    series=chart.addCandlestickSeries({upColor:"#38c99b",downColor:"#ee617c",borderVisible:false,wickUpColor:"#38c99b",wickDownColor:"#ee617c",priceLineVisible:false,lastValueVisible:false});
-    ro=new ResizeObserver(()=>{ if(el.clientWidth&&el.clientHeight) chart.applyOptions({width:el.clientWidth,height:el.clientHeight}); }); ro.observe(el); return true;
+    const c=chartColors();
+    chart=LightweightCharts.createChart(el,{
+      width:el.clientWidth||640,height:el.clientHeight||300,
+      layout:{background:{type:"solid",color:c.bg},textColor:c.text},
+      grid:{vertLines:{color:c.grid},horzLines:{color:c.grid}},
+      rightPriceScale:{visible:true,borderColor:c.border,scaleMargins:{top:.08,bottom:.12}},
+      timeScale:{visible:true,borderVisible:true,borderColor:c.border,timeVisible:true,secondsVisible:false,rightOffset:8,fixRightEdge:false},
+      crosshair:{mode:LightweightCharts.CrosshairMode.Normal},
+      handleScroll:{mouseWheel:true,pressedMouseMove:true,horzTouchDrag:true,vertTouchDrag:false},
+      handleScale:{axisPressedMouseMove:true,mouseWheel:true,pinch:true}
+    });
+    series=chart.addCandlestickSeries({upColor:"#38c99b",downColor:"#ee617c",borderVisible:false,wickUpColor:"#38c99b",wickDownColor:"#ee617c",priceLineVisible:true,lastValueVisible:true});
+    ro=new ResizeObserver(()=>{ if(el.clientWidth&&el.clientHeight) chart.applyOptions({width:el.clientWidth,height:el.clientHeight}); });
+    ro.observe(el); return true;
   };
-  const applyThemeMini=()=>{ if(!chart) return; chart.applyOptions({layout:{background:{type:"solid",color:theme()?"#ffffff":"#09111c"},textColor:theme()?"#5d7086":"#8092aa"}}); };
-  const load=async(force=false)=>{ if(state.activeMarket!=="crypto"||loading||!ensure()) return; loading=true; try{ const data=await BitgetAPI.fetchCandles("BTCUSDT",period,80); if(data.length){ series.setData(data); chart.timeScale().fitContent(); chart.timeScale().applyOptions({rightOffset:4}); } }catch(e){}finally{loading=false;} };
-  const setPeriod=p=>{ if(!["1H","4H","1D"].includes(p)) return; period=p; document.querySelectorAll("[data-home-mini-tf]").forEach(b=>b.classList.toggle("active",b.dataset.homeMiniTf===p)); load(true); };
-  document.addEventListener("ox:themechange",applyThemeMini);
-  return {ensureAndLoad:load,setPeriod,applyTheme:applyThemeMini};
+  const applyThemeHome=()=>{
+    if(!chart) return; const c=chartColors();
+    chart.applyOptions({layout:{background:{type:"solid",color:c.bg},textColor:c.text},grid:{vertLines:{color:c.grid},horzLines:{color:c.grid}},rightPriceScale:{borderColor:c.border},timeScale:{borderColor:c.border}});
+  };
+  const load=async(force=false)=>{
+    if(state.activeMarket!=="crypto"||loading||!ensure()) return; loading=true;
+    try{
+      const data=await BitgetAPI.fetchCandles("BTCUSDT",period,160);
+      if(data.length){
+        series.setData(data);
+        chart.timeScale().fitContent();
+        chart.timeScale().applyOptions({rightOffset:8});
+        requestAnimationFrame(()=>{ try{ chart.timeScale().scrollToPosition(8,false); }catch(e){} });
+      }
+    }catch(e){}finally{loading=false;}
+  };
+  const setPeriod=p=>{
+    if(!["1H","4H","1D","1W"].includes(p)) return;
+    period=p;
+    document.querySelectorAll("[data-home-mini-tf]").forEach(b=>b.classList.toggle("active",b.dataset.homeMiniTf===p));
+    load(true);
+  };
+  document.addEventListener("ox:themechange",applyThemeHome);
+  return {ensureAndLoad:load,setPeriod,applyTheme:applyThemeHome};
 })();
+const HomeMiniChart = HomeChartVariant;
 
 const OXFeaturePack = (()=>{
-  let lastRadarTap=0;
   const init=()=>{
     updateAccountUI(); syncWatchBadge(); MarketController.init();
     const sound=document.getElementById("ox-control-sound-toggle"); if(sound){ sound.checked=localStorage.getItem("ox-alert-sound-enabled")!=="0"; sound.addEventListener("change",()=>{localStorage.setItem("ox-alert-sound-enabled",sound.checked?"1":"0"); AccountStore.capturePrefs();}); }
@@ -5119,8 +5427,22 @@ const OXFeaturePack = (()=>{
     document.getElementById("ox-control-test-notification")?.addEventListener("click",async()=>{ await primeAlertAudio(true); let p=notificationPlatformInfo().permission; if(p==="default")p=await maybeRequestNotificationPermission({interactive:true}); const soundOk=await playAlertTone("high"); const notifyOk=p==="granted"?await sendBrowserNotification("OX 測試通知",{body:"OX 通知與鈴聲測試已執行。",icon:"ox-logo.png",tag:"ox-control-test"},{bypassMaster:true}):false; showToast(`${notifyOk?"通知✓":"通知×"} · ${soundOk?"鈴聲✓":"鈴聲×"}`); syncNotificationPermissionUI(); });
     document.addEventListener("change",e=>{ if(e.target.matches("#chk-key-levels,[data-setting-key],#ox-control-notify-toggle,#setting-email,#setting-phone,#setting-frequency")) setTimeout(AccountStore.capturePrefs,0); });
     document.addEventListener("click",e=>{ if(e.target.closest("[data-theme-choice],[data-control-theme]")) setTimeout(AccountStore.capturePrefs,0); });
+    document.addEventListener("ox:filterchange",()=>setTimeout(AccountStore.capturePrefs,0));
     document.querySelectorAll("[data-home-mini-tf]").forEach(b=>b.addEventListener("click",e=>{e.preventDefault();e.stopPropagation();HomeMiniChart.setPeriod(b.dataset.homeMiniTf);}));
-    const radar=document.querySelector(".dock-radar"); if(radar){ radar.addEventListener("dblclick",e=>{e.preventDefault();e.stopPropagation();MarketController.cycle();}); radar.addEventListener("pointerup",e=>{ if(e.pointerType!=="touch")return; const now=Date.now(); if(now-lastRadarTap<330){e.preventDefault();MarketController.cycle();lastRadarTap=0;}else lastRadarTap=now; }); }
+    const radar=document.querySelector(".dock-radar");
+    if(radar){
+      let radarClickTimer=null, radarClickCount=0;
+      radar.addEventListener("click",e=>{
+        e.preventDefault(); e.stopPropagation();
+        radarClickCount += 1;
+        if(radarClickCount===1){
+          radarClickTimer=setTimeout(()=>{ radarClickCount=0; switchAppView("radar"); },260);
+        }else{
+          clearTimeout(radarClickTimer); radarClickCount=0; MarketController.cycle();
+        }
+      },true);
+      radar.addEventListener("dblclick",e=>{e.preventDefault();e.stopPropagation();},true);
+    }
     if(state.activeView==="home") setTimeout(()=>HomeMiniChart.ensureAndLoad(true),80);
     setInterval(()=>{ if(state.activeView==="home"&&state.activeMarket==="crypto") HomeMiniChart.ensureAndLoad(false); },60000);
   };
@@ -5286,9 +5608,13 @@ document.addEventListener("click", e => {
 
   const tabBtn = e.target.closest(".tab-btn");
   if (tabBtn && tabBtn.dataset.tab) {
-    state.currentTab = tabBtn.dataset.tab;
-    document.querySelectorAll(".tab-btn").forEach(b => b.classList.toggle("active", b === tabBtn));
-    renderCurrentTab();
+    setScannerTierFilter(tabBtn.dataset.tab);
+    return;
+  }
+
+  const directionBtn = e.target.closest(".direction-btn");
+  if (directionBtn && directionBtn.dataset.direction) {
+    setScannerDirectionFilter(directionBtn.dataset.direction);
     return;
   }
 
@@ -5356,6 +5682,7 @@ window.addEventListener("DOMContentLoaded", () => {
   initSettings();
   OXControlPanel.init();
   OXFeaturePack.init();
+  syncScannerFilterUI();
   initChart();
   applyTheme(getSavedThemeMode());
   switchAppView("radar");
