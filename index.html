@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="color-scheme" content="dark light">
   <meta name="description" content="OX Market Command Center - 市場總覽、強弱、雷達篩選、K 線與提醒工作區。">
-  <title>OX 幣種篩選器 v3.4｜Market Command Center</title>
+  <title>OX 幣種篩選器 v3.6｜Market Command Center</title>
   <script src="https://unpkg.com/lightweight-charts@4.2.3/dist/lightweight-charts.standalone.production.js"></script>
   <style>
     :root {
@@ -1190,7 +1190,7 @@
 
   
 
-    /* ===== OX v3.4 Market Command Center + refined 5-tab dock ===== */
+    /* ===== OX v3.6 Market Command Center + refined 5-tab dock ===== */
     .brand .brand-logo{
       display:block!important;width:34px;height:34px;object-fit:contain;flex:0 0 auto;
       filter:invert(1);mix-blend-mode:screen;opacity:.94;
@@ -1292,7 +1292,7 @@
     }
 
   
-    /* ===== v3.4 compact floating bottom dock — match approved reference ===== */
+    /* ===== v3.6 compact floating bottom dock — match approved reference ===== */
     .app-dock {
       grid-template-columns: repeat(5, minmax(0,1fr)) !important;
       width: min(620px, calc(100vw - 20px)) !important;
@@ -1423,7 +1423,7 @@
 
   
 
-    /* ===== OX v3.4 final compact floating dock =====
+    /* ===== OX v3.6 final compact floating dock =====
        Approved proportions: slimmer dock, slightly larger radar orb, exact OX hexagram logo.
        UI-only override; no scanner / OX Engine logic is changed here. */
     .app-dock {
@@ -1576,7 +1576,7 @@
     }
 
 
-    /* ===== v3.4 refinement: OX LIVE vertical centering + complete light/system theme ===== */
+    /* ===== v3.6 refinement: OX LIVE vertical centering + complete light/system theme ===== */
     .ox-live-window {
       height: 100%;
       display: flex;
@@ -1739,7 +1739,7 @@
 
   
 
-    /* ===== v3.4 refinement 2: T1 TOP10 LIVE + complete light theme ===== */
+    /* ===== v3.6 refinement 2: T1 TOP10 LIVE + complete light theme ===== */
     .brand-logo-svg {
       display:block;
       width:34px;
@@ -1986,7 +1986,7 @@
 
   
 
-    /* ===== v3.4 refinement 3: light-theme readability / contrast ===== */
+    /* ===== v3.6 refinement 3: light-theme readability / contrast ===== */
     body.theme-light {
       --ink:#0f172a;
       --muted:#506278;
@@ -2232,7 +2232,7 @@
     }
 
 
-    /* ===== OX v3.4 · Right Control Center (isolated module UI) ===== */
+    /* ===== OX v3.6 · Right Control Center (isolated module UI) ===== */
     .ox-menu-btn {
       width: 38px; height: 36px; flex: 0 0 38px; padding: 0;
       display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
@@ -2384,7 +2384,7 @@
 
   
 
-    /* ===== v3.4 refinement: compact header / chart future-space labels / notification health ===== */
+    /* ===== v3.6 refinement: compact header / chart future-space labels / notification health ===== */
     .nav { height: 58px; }
     .brand { line-height: 1; }
     .chart-key-labels {
@@ -2429,7 +2429,7 @@
 
   
 
-    /* ===== v3.4 feature pack: watchlist / local account / market switch / home BTC mini chart ===== */
+    /* ===== v3.6 feature pack: watchlist / local account / market switch / home BTC mini chart ===== */
     .coin-card { position: relative; cursor: pointer; }
     .coin-top-right { display:flex; align-items:center; gap:7px; }
     .watch-star { width:27px; height:27px; display:grid; place-items:center; flex:0 0 27px; border:1px solid #34485f; border-radius:8px; background:#0b1420; color:#7f91a8; font-size:16px; line-height:1; cursor:pointer; transition:.15s ease; }
@@ -2486,7 +2486,7 @@
 
 
 
-    /* ===== v3.4 refinement: mobile star rail + direction filter + BTC home primary chart ===== */
+    /* ===== v3.6 refinement: mobile star rail + direction filter + BTC home primary chart ===== */
     .watch-tab-mobile { display:none; }
     .scanner-direction-tabs {
       display:grid;
@@ -2663,7 +2663,7 @@
 
 
 
-    /* ===== v3.4 refinement: compact LONG/SHORT toggle + mobile chart readability ===== */
+    /* ===== v3.6 refinement: compact LONG/SHORT toggle + mobile chart readability ===== */
     .scanner-head-actions {
       margin-left:auto;
       display:flex;
@@ -3268,12 +3268,109 @@ body.theme-light .dock-radar-orb{background:radial-gradient(circle at 50% 30%,#F
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important;scroll-behavior:auto !important}
 }
+
+
+/* ===== v3.6: mobile scanner clarity + liquidation market module ===== */
+.coin-mobile-bottom { display:none; }
+.sr-only { position:absolute!important; width:1px!important; height:1px!important; padding:0!important; margin:-1px!important; overflow:hidden!important; clip:rect(0,0,0,0)!important; white-space:nowrap!important; border:0!important; }
+
+.ox-liquidation-section { position:relative; }
+.ox-liquidation-head { align-items:flex-end; }
+.ox-liquidation-filters { display:flex; align-items:center; gap:7px; }
+.ox-liquidation-filters select {
+  min-width:78px; height:31px; padding:0 28px 0 10px; border-radius:8px;
+  border:1px solid rgba(109,142,181,.28); color:var(--ink); background:#0b1521;
+  font-size:9px; font-weight:800; outline:none;
+}
+.ox-liquidation-filters select:focus { border-color:rgba(247,189,82,.72); box-shadow:0 0 0 2px rgba(247,189,82,.08); }
+.ox-liquidation-card { overflow:hidden; padding:0!important; }
+.ox-liquidation-status { min-height:34px; display:flex; align-items:center; padding:8px 12px; color:var(--muted); font-size:9px; border-bottom:1px solid rgba(102,136,177,.13); }
+.ox-liquidation-table-head,.ox-liquidation-row {
+  display:grid; grid-template-columns:minmax(105px,1.15fr) repeat(4,minmax(90px,1fr)) minmax(125px,1.25fr);
+  gap:8px; align-items:center; padding:9px 12px;
+}
+.ox-liquidation-table-head { color:#71869f; font-size:8px; font-weight:800; letter-spacing:.03em; background:rgba(5,12,20,.32); border-bottom:1px solid rgba(102,136,177,.14); }
+.ox-liquidation-row { min-height:47px; border-bottom:1px solid rgba(102,136,177,.10); color:#dce7f4; font-size:9px; transition:background .18s ease; }
+.ox-liquidation-row:last-child { border-bottom:0; }
+.ox-liquidation-row:hover { background:rgba(83,118,158,.07); }
+.ox-liq-exchange { display:flex; align-items:center; gap:8px; min-width:0; }
+.ox-liq-exchange i { width:7px; height:7px; flex:0 0 7px; border-radius:50%; background:var(--gold); box-shadow:0 0 9px rgba(247,189,82,.24); }
+.ox-liq-exchange b { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.ox-liq-num { font-variant-numeric:tabular-nums; text-align:right; white-space:nowrap; }
+.ox-liq-long { color:var(--green); }
+.ox-liq-short { color:var(--red); }
+.ox-liq-ratio { display:flex; justify-content:flex-end; align-items:center; gap:5px; white-space:nowrap; font-size:8px; }
+.ox-liq-ratio b { font-size:9px; }
+.ox-liquidation-mobile { display:none; }
+.ox-liquidation-empty { padding:20px 16px; text-align:center; color:var(--muted); }
+.ox-liquidation-empty b { display:block; color:var(--ink); font-size:11px; }
+.ox-liquidation-empty p { max-width:660px; margin:6px auto 9px; font-size:8.5px; line-height:1.55; }
+.ox-liquidation-empty code { display:inline-block; padding:5px 8px; border:1px solid rgba(113,145,181,.22); border-radius:6px; background:rgba(4,10,18,.36); color:#94a7bd; font-size:8px; }
+.ox-liq-mobile-card { padding:10px 11px; border-bottom:1px solid rgba(102,136,177,.12); }
+.ox-liq-mobile-card:last-child { border-bottom:0; }
+.ox-liq-mobile-top { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.ox-liq-mobile-top b { font-size:10px; letter-spacing:.02em; }
+.ox-liq-mobile-top span { color:var(--muted); font-size:8px; }
+.ox-liq-mobile-total { margin-top:4px; font-size:17px; font-weight:900; font-variant-numeric:tabular-nums; }
+.ox-liq-mobile-split { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:5px; color:var(--muted); font-size:8px; }
+.ox-liq-mobile-split b { font-variant-numeric:tabular-nums; }
+.ox-liq-bar { display:flex; height:5px; margin-top:8px; overflow:hidden; border-radius:999px; background:#162235; }
+.ox-liq-bar .long { background:linear-gradient(90deg,#2cab83,var(--green)); }
+.ox-liq-bar .short { background:linear-gradient(90deg,#d84966,var(--red)); }
+.ox-liq-mobile-foot { margin-top:5px; font-size:8px; color:var(--muted); text-align:right; }
+.ox-liq-mobile-foot strong.long { color:var(--green); }
+.ox-liq-mobile-foot strong.short { color:var(--red); }
+
+body.theme-light .ox-liquidation-filters select { color:#24364d; background:#fff; border-color:#c9d6e3; }
+body.theme-light .ox-liquidation-status { color:#61758d; border-bottom-color:#dbe4ed; }
+body.theme-light .ox-liquidation-table-head { color:#66798f; background:#f7fafc; border-bottom-color:#dbe4ed; }
+body.theme-light .ox-liquidation-row { color:#23364d; border-bottom-color:#e1e7ee; }
+body.theme-light .ox-liquidation-row:hover { background:#f5f8fb; }
+body.theme-light .ox-liquidation-empty { color:#687b91; }
+body.theme-light .ox-liquidation-empty b { color:#1f3148; }
+body.theme-light .ox-liquidation-empty code { background:#f7fafc; color:#52677f; border-color:#d4dee8; }
+body.theme-light .ox-liq-mobile-card { border-bottom-color:#dde5ed; }
+body.theme-light .ox-liq-bar { background:#e7edf3; }
+
+@media(max-width:720px) {
+  /* Mobile scanner: symbol first, fixed OX score at right, star moves to lower-left. */
+  .coin-card { position:relative!important; padding:8px 6px 8px!important; min-height:78px!important; }
+  .coin-top { display:grid!important; grid-template-columns:minmax(0,1fr) 38px!important; align-items:center!important; gap:3px!important; }
+  .coin-title { min-width:0!important; max-width:100%!important; overflow:hidden!important; flex-wrap:nowrap!important; }
+  .coin-rank,.coin-title>span:first-child { flex:0 0 auto!important; font-size:7px!important; }
+  .coin-symbol-mobile { display:block!important; min-width:0!important; max-width:100%!important; overflow:hidden!important; text-overflow:ellipsis!important; white-space:nowrap!important; font-size:9px!important; }
+  .coin-top-right { width:38px!important; min-width:38px!important; display:block!important; position:static!important; }
+  .coin-ox { display:block!important; width:38px!important; max-width:38px!important; text-align:right!important; font-size:7px!important; line-height:1!important; overflow:hidden!important; white-space:nowrap!important; }
+  .watch-star-desktop { display:none!important; }
+  .coin-mid { display:block!important; margin:5px 0 0!important; }
+  .desktop-coin-change { display:none!important; }
+  .mobile-coin-volume { display:block!important; max-width:100%!important; font-size:7.2px!important; white-space:nowrap!important; overflow:hidden!important; text-overflow:ellipsis!important; }
+  .coin-mobile-bottom { display:flex!important; align-items:center!important; justify-content:space-between!important; min-height:23px; margin-top:4px; padding-right:1px; }
+  .watch-star-mobile { display:grid!important; position:relative!important; width:19px!important; height:19px!important; min-width:19px!important; padding:0!important; border-radius:5px!important; font-size:10px!important; line-height:1!important; }
+  .watch-star-mobile::after { content:""; position:absolute; inset:-8px; }
+  .coin-mobile-bottom .coin-change { margin:0!important; font-size:9px!important; line-height:1!important; text-align:right; }
+
+  .ox-liquidation-head { align-items:flex-end!important; gap:7px!important; }
+  .ox-liquidation-head h2 { font-size:13px!important; }
+  .ox-liquidation-head p { font-size:7px!important; }
+  .ox-liquidation-filters { gap:4px; }
+  .ox-liquidation-filters select { min-width:58px; height:26px; padding:0 20px 0 7px; border-radius:6px; font-size:7px; }
+  .ox-liquidation-status { min-height:30px; padding:7px 9px; font-size:7px; }
+  .ox-liquidation-desktop { display:none!important; }
+  .ox-liquidation-mobile[hidden] { display:none!important; }
+  .ox-liquidation-mobile:not([hidden]) { display:block!important; }
+  .ox-liquidation-empty { padding:15px 10px; }
+  .ox-liquidation-empty b { font-size:9px; }
+  .ox-liquidation-empty p { font-size:7px; }
+  .ox-liquidation-empty code { max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:6.5px; }
+}
+
 </style>
 
 
 <style id="ox-liquid-glass-design-system">
 /* =========================================================
-   OX v3.4 — Liquid Glass Material System
+   OX v3.6 — Liquid Glass Material System
    Apple Liquid Glass inspired + OX Black Gold financial UI.
    UI only: no market / OX Engine / scanner / alert logic here.
    ========================================================= */
@@ -3681,6 +3778,68 @@ body.theme-light .glass-button,body.theme-light .btn-act,body.theme-light .btn-t
 }
 </style>
 
+
+<style id="ox-strength-liquidation-upgrade">
+/* --- Radar logo: inline SVG, always visible in preview and GitHub Pages --- */
+.dock-radar-logo{
+  display:block!important;width:24px!important;height:24px!important;color:var(--ox-gold,var(--gold))!important;
+  filter:none!important;opacity:1!important;position:relative!important;z-index:6!important;
+}
+.dock-radar-logo rect{fill:currentColor!important;}
+@media(max-width:720px){.dock-radar-logo{width:22px!important;height:22px!important;}}
+
+/* --- BTC vs Alt relative-strength panel --- */
+.strength-compare-panel{
+  margin:12px 0 14px;padding:16px 18px;border-radius:18px;overflow:hidden;
+  background:
+    radial-gradient(55% 110% at 4% 20%,rgba(245,191,85,.10),transparent 70%),
+    radial-gradient(55% 120% at 98% 24%,rgba(54,211,153,.08),transparent 72%),
+    linear-gradient(140deg,rgba(255,255,255,.055),rgba(60,112,170,.018) 54%,rgba(2,8,15,.15)),
+    rgba(7,17,29,.47)!important;
+}
+.strength-compare-top{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;}
+.strength-compare-top h2{margin:2px 0 3px;font-size:17px;letter-spacing:.01em;}
+.strength-compare-top p{margin:0;color:var(--muted);font-size:10px;}
+.strength-compare-leader{flex:0 0 auto;padding:6px 10px;border-radius:999px;font-size:9px;font-weight:900;color:#dce8f5;border:1px solid rgba(150,185,220,.17);background:rgba(100,142,188,.07);}
+.strength-compare-leader[data-leader="btc"]{color:var(--gold);border-color:rgba(245,191,85,.28);background:rgba(245,191,85,.09);}
+.strength-compare-leader[data-leader="alt"]{color:var(--green);border-color:rgba(54,211,153,.26);background:rgba(54,211,153,.08);}
+.strength-compare-body{display:grid;grid-template-columns:118px minmax(0,1fr) 118px;gap:18px;align-items:center;margin-top:16px;}
+.strength-compare-side{display:flex;flex-direction:column;gap:1px;}
+.strength-compare-side.alt{text-align:right;align-items:flex-end;}
+.strength-compare-side small{color:var(--muted);font-size:9px;font-weight:900;letter-spacing:.14em;}
+.strength-compare-side strong{font-size:34px;line-height:1;font-weight:950;font-variant-numeric:tabular-nums;}
+.strength-compare-side.btc strong{color:var(--gold);}.strength-compare-side.alt strong{color:var(--green);}
+.strength-compare-side span{font-size:8px;color:var(--muted);}
+.strength-compare-center{min-width:0;}
+.strength-compare-scale{position:relative;height:10px;border-radius:999px;background:rgba(117,146,181,.10);overflow:hidden;box-shadow:inset 0 1px 2px rgba(0,0,0,.35);}
+.strength-compare-scale i{position:absolute;top:0;bottom:0;transition:width .3s ease;}
+.strength-compare-scale i.btc{left:0;background:linear-gradient(90deg,#95691f,var(--gold));opacity:.92;clip-path:inset(0 50% 0 0);}
+.strength-compare-scale i.alt{right:0;background:linear-gradient(270deg,#1f8f72,var(--green));opacity:.88;clip-path:inset(0 0 0 50%);}
+.strength-compare-scale .mid{position:absolute;left:50%;top:-3px;bottom:-3px;width:1px;background:rgba(231,239,248,.48);z-index:3;}
+.strength-compare-gap{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:7px;color:var(--muted);font-size:8px;}
+.strength-compare-gap strong{font-size:11px;color:var(--ink);}.strength-compare-gap strong.btc-lead{color:var(--gold);}.strength-compare-gap strong.alt-lead{color:var(--green);}
+.strength-compare-note{margin-top:12px;padding-top:10px;border-top:1px solid rgba(136,171,207,.10);font-size:9px;color:var(--muted);}
+
+/* Liquidation belongs to Strength / Market Pulse, not Home. */
+#strength-liquidations{margin-top:14px;}
+#strength-liquidations .ox-liquidation-card{border-radius:16px;}
+#strength-liquidations .v33-section-head{margin-bottom:8px;}
+
+body.theme-light .strength-compare-panel{background:radial-gradient(55% 110% at 4% 20%,rgba(245,191,85,.10),transparent 70%),radial-gradient(55% 120% at 98% 24%,rgba(54,211,153,.07),transparent 72%),linear-gradient(140deg,rgba(255,255,255,.70),rgba(213,228,244,.10)),rgba(248,251,254,.58)!important;}
+body.theme-light .strength-compare-top p,body.theme-light .strength-compare-note,body.theme-light .strength-compare-side span,body.theme-light .strength-compare-side small{color:#62778e!important;}
+body.theme-light .strength-compare-scale{background:#dbe5ef;}
+body.theme-light .strength-compare-scale .mid{background:#6d8195;}
+
+@media(max-width:720px){
+  .strength-compare-panel{padding:12px;border-radius:15px;margin:8px 0 10px;backdrop-filter:blur(10px) saturate(132%)!important;-webkit-backdrop-filter:blur(10px) saturate(132%)!important;}
+  .strength-compare-top{gap:8px}.strength-compare-top h2{font-size:14px}.strength-compare-top p{font-size:8px;line-height:1.45}.strength-compare-leader{font-size:8px;padding:5px 8px;}
+  .strength-compare-body{grid-template-columns:70px minmax(0,1fr) 70px;gap:8px;margin-top:12px;}
+  .strength-compare-side strong{font-size:25px}.strength-compare-side span{font-size:7px}.strength-compare-side small{font-size:7px}
+  .strength-compare-note{font-size:8px;margin-top:9px;padding-top:8px;}
+  #strength-liquidations{margin-top:10px;}
+}
+</style>
+
 </head>
 <body>
 
@@ -3716,14 +3875,14 @@ body.theme-light .glass-button,body.theme-light .btn-act,body.theme-light .btn-t
   </div>
 </div>
 
-<!-- ===== OX CONTROL：右側控制中心（v3.4 isolated UI module） ===== -->
+<!-- ===== OX CONTROL：右側控制中心（v3.6 isolated UI module） ===== -->
 <div class="ox-control-overlay" id="ox-control-overlay" aria-hidden="true">
   <aside class="ox-control-panel" id="ox-control-panel" role="dialog" aria-modal="true" aria-labelledby="ox-control-heading">
     <div class="ox-control-panel-head">
       <div class="ox-control-title">
         <div class="ox-control-kicker">SYSTEM CENTER</div>
         <h2 id="ox-control-heading">OX CONTROL</h2>
-        <div class="ox-control-system-state"><i></i><span>v3.4 · SYSTEM ONLINE</span></div>
+        <div class="ox-control-system-state"><i></i><span>v3.6 · SYSTEM ONLINE</span></div>
       </div>
       <button class="ox-control-close" id="ox-control-close" type="button" aria-label="關閉控制中心">×</button>
     </div>
@@ -3743,7 +3902,7 @@ body.theme-light .glass-button,body.theme-light .btn-act,body.theme-light .btn-t
         <div class="ox-control-group">
           <div class="ox-control-row">
             <span class="ox-control-icon"><svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 9 9 7 7 0 0 1-9-9Z"/></svg></span>
-            <span class="ox-control-copy"><b>主題切換</b><small>直接使用目前 v3.4 黑 / 白 / 隨系統邏輯。</small></span>
+            <span class="ox-control-copy"><b>主題切換</b><small>直接使用目前 v3.6 黑 / 白 / 隨系統邏輯。</small></span>
             <span class="ox-control-side">
               <span class="ox-theme-segment" aria-label="主題切換">
                 <button type="button" data-control-theme="dark">深色</button>
@@ -3806,9 +3965,9 @@ body.theme-light .glass-button,body.theme-light .btn-act,body.theme-light .btn-t
           <button class="ox-control-row" id="ox-control-about-toggle" type="button" aria-expanded="false">
             <span class="ox-control-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.2"/></svg></span>
             <span class="ox-control-copy"><b>關於 / 版本</b><small>OX Crypto Screener · Stable</small></span>
-            <span class="ox-control-side"><b style="color:var(--gold)">v3.4</b><span class="ox-control-arrow">›</span></span>
+            <span class="ox-control-side"><b style="color:var(--gold)">v3.6</b><span class="ox-control-arrow">›</span></span>
           </button>
-          <div class="ox-control-changelog" id="ox-control-changelog">v3.4 穩定版 · 右側控制中心加入。Changelog 介面已預留，後續可在這裡維護版本紀錄。</div>
+          <div class="ox-control-changelog" id="ox-control-changelog">v3.6 穩定版 · 右側控制中心加入。Changelog 介面已預留，後續可在這裡維護版本紀錄。</div>
         </div>
 
         <p class="ox-control-note"><strong>帳號第一版：</strong>目前使用本機加密雜湊＋LocalStorage，能保持登入與綁定偏好，但不是雲端帳號，無法跨裝置同步。Email / SMS / 背景推送與意見回饋寄信仍需要後端。</p>
@@ -4136,6 +4295,31 @@ body.theme-light .glass-button,body.theme-light .btn-act,body.theme-light .btn-t
         <p>只看兩件事：BTC 現在強不強，以及小幣現在好不好做。儀表刻度保留 0、50、100，但實際分數會依市場條件在 0–100 間連續變化。</p>
       </div>
 
+
+      <section class="strength-compare-panel glass-strong" aria-labelledby="strength-compare-title">
+        <div class="strength-compare-top">
+          <div>
+            <div class="page-kicker">OX Relative Strength</div>
+            <h2 id="strength-compare-title">BTC vs 小幣相對強弱</h2>
+            <p>直接比較目前 BTC 與全市場小幣環境，不是買賣訊號。</p>
+          </div>
+          <span class="strength-compare-leader" id="strength-compare-leader">等待資料</span>
+        </div>
+        <div class="strength-compare-body">
+          <div class="strength-compare-side btc"><small>BTC</small><strong id="strength-compare-btc">50</strong><span>BTC Strength</span></div>
+          <div class="strength-compare-center">
+            <div class="strength-compare-scale" aria-label="BTC 與小幣相對強弱">
+              <i class="alt" id="strength-compare-alt-bar"></i>
+              <i class="btc" id="strength-compare-btc-bar"></i>
+              <b class="mid"></b>
+            </div>
+            <div class="strength-compare-gap"><span>差距</span><strong id="strength-compare-gap">0</strong></div>
+          </div>
+          <div class="strength-compare-side alt"><small>ALT</small><strong id="strength-compare-alt">50</strong><span>Alt Strength</span></div>
+        </div>
+        <div class="strength-compare-note" id="strength-compare-note">正在整理 BTC 與小幣相對環境。</div>
+      </section>
+
       <div class="strength-grid">
         <article class="strength-card">
           <div class="strength-head">
@@ -4165,6 +4349,34 @@ body.theme-light .glass-button,body.theme-light .btn-act,body.theme-light .btn-t
           <div class="strength-note" id="alt-strength-note">等待全市場輪巡累積足夠樣本。</div>
         </article>
       </div>
+
+
+
+      <section class="v33-section ox-liquidation-section" id="strength-liquidations" aria-labelledby="liquidation-title">
+        <div class="v33-section-head ox-liquidation-head">
+          <div>
+            <h2 id="liquidation-title">24H 交易所爆倉</h2>
+            <p>市場強制平倉分布 · Long / Short 代表被強制平倉的部位方向</p>
+          </div>
+          <div class="ox-liquidation-filters" aria-label="爆倉資料篩選">
+            <label><span class="sr-only">幣種</span><select id="liquidation-symbol"><option value="ALL">全部</option><option value="BTC">BTC</option><option value="ETH">ETH</option><option value="SOL">SOL</option><option value="XRP">XRP</option></select></label>
+            <label><span class="sr-only">時間</span><select id="liquidation-interval"><option value="4h">4H</option><option value="12h">12H</option><option value="24h" selected>24H</option></select></label>
+          </div>
+        </div>
+        <article class="v33-card ox-liquidation-card">
+          <div class="ox-liquidation-status" id="liquidation-status" role="status" aria-live="polite">正在檢查 24H 爆倉資料來源…</div>
+          <div class="ox-liquidation-desktop" id="liquidation-desktop" hidden>
+            <div class="ox-liquidation-table-head"><span>交易所</span><span>爆倉金額</span><span>多單爆倉</span><span>空單爆倉</span><span>佔比</span><span>比例</span></div>
+            <div id="liquidation-table-body"></div>
+          </div>
+          <div class="ox-liquidation-mobile" id="liquidation-mobile" hidden></div>
+          <div class="ox-liquidation-empty" id="liquidation-empty" hidden>
+            <b>Cloudflare Worker 尚未連接</b>
+            <p>爆倉 UI 與 Data Adapter 已完成。GitHub Pages 不保存 CoinGlass API Secret；部署 OX Cloudflare Worker 並設定 COINGLASS_API_KEY 後，只要填入 Worker endpoint 即可啟用真實資料。</p>
+            <code>/api/liquidations?symbol=BTC&amp;interval=4h</code>
+          </div>
+        </article>
+      </section>
 
       <div class="strength-explain">
         <strong style="color:var(--ink)">怎麼看：</strong>
@@ -4297,7 +4509,16 @@ body.theme-light .glass-button,body.theme-light .btn-act,body.theme-light .btn-t
   </button>
   <button class="dock-btn dock-radar active" type="button" data-view-target="radar" aria-label="雷達">
     <span class="dock-radar-orb glass-orb" aria-hidden="true">
-      <img class="dock-radar-logo" src="ox-logo.png" alt="OX Radar Logo">
+      <svg class="dock-radar-logo" viewBox="0 0 450 439" aria-label="OX Radar Logo" role="img" focusable="false">
+        <g fill="currentColor">
+          <rect x="0" y="0" width="202" height="43"/><rect x="247" y="0" width="203" height="43"/>
+          <rect x="0" y="80" width="202" height="42"/><rect x="247" y="80" width="202" height="42"/>
+          <rect x="0" y="159" width="202" height="42"/><rect x="247" y="159" width="202" height="42"/>
+          <rect x="0" y="238" width="449" height="42"/>
+          <rect x="0" y="317" width="202" height="42"/><rect x="248" y="317" width="202" height="42"/>
+          <rect x="0" y="396" width="202" height="43"/><rect x="247" y="396" width="203" height="43"/>
+        </g>
+      </svg>
     </span><span class="dock-radar-label">雷達</span>
   </button>
   <button class="dock-btn" type="button" data-view-target="media" aria-label="媒體">
@@ -4348,6 +4569,8 @@ const state = {
   
   tickers: [],
   contracts: new Map(),
+  instrumentCatalog: new Map(),
+  assetClassCounts: { crypto: 0, stock: 0, etf: 0, commodity: 0, index: 0, other: 0 },
   btcTicker: null,
   ethTicker: null,
   
@@ -4810,6 +5033,30 @@ function renderMarketStrength() {
       altNote.textContent = `目前已分析 ${data.sampleSize} 檔，樣本還不夠，等待全市場輪巡。`;
     }
   }
+
+  const btcCompare = document.getElementById("strength-compare-btc");
+  const altCompare = document.getElementById("strength-compare-alt");
+  const gapEl = document.getElementById("strength-compare-gap");
+  const leaderEl = document.getElementById("strength-compare-leader");
+  const noteEl = document.getElementById("strength-compare-note");
+  const btcBar = document.getElementById("strength-compare-btc-bar");
+  const altBar = document.getElementById("strength-compare-alt-bar");
+  const btcScore = btcS.display;
+  const altScore = altS.display;
+  const gap = Math.round(btcScore - altScore);
+  if (btcCompare) btcCompare.textContent = btcScore;
+  if (altCompare) altCompare.textContent = altScore;
+  if (gapEl) { gapEl.textContent = `${gap > 0 ? "+" : ""}${gap}`; gapEl.className = gap > 0 ? "btc-lead" : gap < 0 ? "alt-lead" : ""; }
+  if (btcBar) btcBar.style.width = `${clamp(btcScore)}%`;
+  if (altBar) altBar.style.width = `${clamp(altScore)}%`;
+  let leader = "市場均衡", leaderClass = "balanced";
+  if (gap >= 5) { leader = "BTC 主導"; leaderClass = "btc"; }
+  else if (gap <= -5) { leader = "小幣主導"; leaderClass = "alt"; }
+  if (leaderEl) { leaderEl.textContent = leader; leaderEl.dataset.leader = leaderClass; }
+  if (noteEl) {
+    const sample = data.sampleSize ? ` · 小幣樣本 ${data.sampleSize}` : "";
+    noteEl.textContent = `${leader} · BTC ${btcScore} / 小幣 ${altScore}${sample}`;
+  }
 }
 
 function resizeChartToContainer() {
@@ -4838,7 +5085,7 @@ function switchAppView(view) {
   state.activeView = view;
   document.querySelectorAll('[data-app-view]').forEach(el => el.classList.toggle('active', el.dataset.appView === view));
   document.querySelectorAll('[data-view-target]').forEach(btn => btn.classList.toggle('active', btn.dataset.viewTarget === view));
-  if (view === 'strength') renderMarketStrength();
+  if (view === 'strength') { renderMarketStrength(); setTimeout(() => LiquidationModule?.refresh?.(), 40); }
   if (view === 'home') { renderHomeOverview(); setTimeout(() => HomeMiniChart.ensureAndLoad(false), 60); }
   if (view === 'radar') setTimeout(resizeChartToContainer, 80);
   MarketController.syncPlaceholder();
@@ -5102,6 +5349,81 @@ if (systemThemeQuery.addEventListener) systemThemeQuery.addEventListener("change
 else if (systemThemeQuery.addListener) systemThemeQuery.addListener(onSystemThemeChange);
 
 
+
+/* ===== Asset Classification: Crypto radar must be crypto-only before OX analysis ===== */
+const ASSET_CLASS = Object.freeze({
+  CRYPTO: "crypto",
+  STOCK: "stock",
+  ETF: "etf",
+  COMMODITY: "commodity",
+  INDEX: "index",
+  OTHER: "other"
+});
+
+// Centralized fallback only. Official Bitget instrument metadata is preferred whenever available.
+const NON_CRYPTO_UNDERLYINGS = Object.freeze({
+  stock: new Set([
+    "AAPL","TSLA","NVDA","META","MSFT","INTC","COIN","PLTR","NFLX","BABA","AMZN","GOOG","GOOGL","AMD","MSTR","HOOD","MARA","RIOT","SMCI","AVGO","ORCL","CRM","MU","TSM","QCOM","ARM","RDDT","UBER","NIO","JD","PDD","SHOP","PYPL","DIS","BA","JPM","GS","BAC","WMT","COST","KO","MCD","SBUX","XOM","CVX","LLY","UNH","JNJ"
+  ]),
+  etf: new Set([
+    "SPY","QQQ","IWM","DIA","SOXL","SOXS","TQQQ","SQQQ","ARKK","GLD","SLV","USO","BITO","IBIT","ETHA"
+  ]),
+  commodity: new Set([
+    "XAU","XAG","XPT","XPD","GOLD","SILVER","WTI","BRENT","USOIL","UKOIL","NATGAS","NG","COPPER"
+  ]),
+  index: new Set([
+    "SPX","SP500","NDX","NASDAQ","NAS100","DJI","DOW","VIX","DXY","US100","US30","US500","HK50","GER40","JPN225"
+  ])
+});
+
+// Asset-backed crypto tokens remain crypto contracts even if their economics reference metals.
+const CRYPTO_TOKEN_EXCEPTIONS = new Set(["PAXG","XAUT","DGX"]);
+
+function normalizeUnderlyingSymbol(contract = {}) {
+  const raw = String(contract.baseCoin || contract.baseAsset || contract.underlying || contract.symbol || "").toUpperCase().trim();
+  return raw.replace(/USDT$|USDC$/i, "").replace(/[^A-Z0-9._-]/g, "");
+}
+
+function classifyInstrument(contract = {}) {
+  const base = normalizeUnderlyingSymbol(contract);
+  if (CRYPTO_TOKEN_EXCEPTIONS.has(base)) return ASSET_CLASS.CRYPTO;
+
+  // Bitget v3 instrument metadata exposes crypto / metal / stock / commodity symbol types.
+  const type = String(contract.assetSymbolType || contract.instrumentSymbolType || contract.v3SymbolType || contract.symbolTypeV3 || "").toLowerCase();
+  if (type === "crypto") return ASSET_CLASS.CRYPTO;
+  if (type === "stock") return NON_CRYPTO_UNDERLYINGS.etf.has(base) ? ASSET_CLASS.ETF : ASSET_CLASS.STOCK;
+  if (type === "metal" || type === "commodity") return ASSET_CLASS.COMMODITY;
+  if (type === "index") return ASSET_CLASS.INDEX;
+  if (type === "etf") return ASSET_CLASS.ETF;
+
+  // Future-proof metadata hints if Bitget extends the schema.
+  const metadataHint = [contract.assetClass, contract.assetType, contract.underlyingType, contract.category, contract.instrumentType]
+    .filter(Boolean).join(" ").toLowerCase();
+  if (/\betf\b/.test(metadataHint)) return ASSET_CLASS.ETF;
+  if (/\b(index|indices)\b/.test(metadataHint)) return ASSET_CLASS.INDEX;
+  if (/\b(stock|equity|share)\b/.test(metadataHint)) return ASSET_CLASS.STOCK;
+  if (/\b(metal|commodity)\b/.test(metadataHint)) return ASSET_CLASS.COMMODITY;
+  if (/\bcrypto(currency)?\b/.test(metadataHint)) return ASSET_CLASS.CRYPTO;
+
+  for (const cls of [ASSET_CLASS.STOCK, ASSET_CLASS.ETF, ASSET_CLASS.COMMODITY, ASSET_CLASS.INDEX]) {
+    if (NON_CRYPTO_UNDERLYINGS[cls]?.has(base)) return cls;
+  }
+
+  // v2 contract endpoint is crypto-heavy and does not expose a reliable asset class for every listing.
+  // If v3 metadata is unavailable, default to crypto after centralized non-crypto fallbacks above.
+  return ASSET_CLASS.CRYPTO;
+}
+
+function isCryptoInstrument(contract) {
+  return classifyInstrument(contract) === ASSET_CLASS.CRYPTO;
+}
+
+function isCryptoSymbolAllowed(symbol) {
+  const known = state.instrumentCatalog?.get(symbol) || state.contracts?.get(symbol);
+  if (known) return isCryptoInstrument(known);
+  return isCryptoInstrument({ symbol, baseCoin: String(symbol || "").replace(/USDT$|USDC$/i, "") });
+}
+
 const BitgetAPI = {
   async fetchTickers() {
     const res = await fetch(`${CONFIG.apiBase}/tickers?productType=${CONFIG.productType}`, { cache: "no-store" });
@@ -5115,6 +5437,17 @@ const BitgetAPI = {
     const json = await res.json();
     if (json.code !== "00000" || !Array.isArray(json.data)) return [];
     return json.data.filter(x => x.symbolStatus === "normal" && x.symbolType === "perpetual" && x.quoteCoin === "USDT");
+  },
+
+  async fetchInstrumentMetadata() {
+    try {
+      const res = await fetch(`https://api.bitget.com/api/v3/market/instruments?category=${CONFIG.productType}`, { cache: "no-store" });
+      const json = await res.json();
+      if (json.code !== "00000" || !Array.isArray(json.data)) return [];
+      return json.data;
+    } catch (e) {
+      return [];
+    }
   },
 
   async fetchCandles(symbol, granularity, limit = 100, endTime = null) {
@@ -5438,14 +5771,42 @@ async function refreshMarketTickers() {
   try {
     const rawTickers = await BitgetAPI.fetchTickers();
     if (!state.contracts.size) {
-      const contractList = await BitgetAPI.fetchContracts();
-      contractList.forEach(c => state.contracts.set(c.symbol, c));
+      const [contractList, instrumentMetadata] = await Promise.all([
+        BitgetAPI.fetchContracts(),
+        BitgetAPI.fetchInstrumentMetadata()
+      ]);
+      const metaBySymbol = new Map((instrumentMetadata || []).map(m => [m.symbol, m]));
+      state.instrumentCatalog.clear();
+      state.contracts.clear();
+      state.assetClassCounts = { crypto: 0, stock: 0, etf: 0, commodity: 0, index: 0, other: 0 };
+
+      contractList.forEach(c => {
+        const meta = metaBySymbol.get(c.symbol) || {};
+        const merged = {
+          ...c,
+          assetSymbolType: meta.symbolType || "",
+          isRwa: meta.isRwa ?? c.isRwa,
+          assetClass: undefined
+        };
+        const assetClass = classifyInstrument(merged);
+        const tagged = { ...merged, assetClass };
+        state.instrumentCatalog.set(tagged.symbol, tagged);
+        state.assetClassCounts[assetClass] = (state.assetClassCounts[assetClass] || 0) + 1;
+        if (assetClass === ASSET_CLASS.CRYPTO) state.contracts.set(tagged.symbol, tagged);
+      });
     }
 
     state.tickers = rawTickers.filter(t => 
       state.contracts.has(t.symbol) && 
+      isCryptoSymbolAllowed(t.symbol) &&
       [t.lastPr, t.change24h, t.usdtVolume].every(v => Number.isFinite(num(v)))
     );
+
+    // Purge any stale non-crypto records before rebuilding ranking / scanner state.
+    for (const symbol of Array.from(state.analyzedCache.keys())) {
+      if (!isCryptoSymbolAllowed(symbol)) state.analyzedCache.delete(symbol);
+    }
+    state.scanQueue = state.scanQueue.filter(isCryptoSymbolAllowed);
 
     state.btcTicker = state.tickers.find(t => t.symbol === "BTCUSDT") || null;
     state.ethTicker = state.tickers.find(t => t.symbol === "ETHUSDT") || null;
@@ -5639,7 +6000,7 @@ function renderCurrentTab() {
   syncScannerFilterUI();
 
   if (tab === "watch") {
-    const savedAll = getWatchlistRecords();
+    const savedAll = getWatchlistRecords().filter(rec => state.activeMarket !== "crypto" || isCryptoSymbolAllowed(rec.symbol));
     const saved = savedAll.filter(rec => {
       const analyzed = state.analyzedCache.get(rec.symbol);
       return passesDirectionFilter(analyzed?.side || rec.side || "—");
@@ -5704,11 +6065,15 @@ function renderCurrentTab() {
           <span class="badge badge-${displayTier}">${displayTier.toUpperCase()}</span>
           ${c.isSurge ? '<span class="badge badge-surge">🔥</span>' : ''}
         </span>
-        <span class="coin-top-right"><span class="coin-ox">OX ${c.oxScore}</span>${allowStar ? `<button class="watch-star ${starred?'is-starred':''}" type="button" data-watch-symbol="${c.symbol}" aria-label="${starred?'移除':'加入'} ${c.symbol} 收藏"><span aria-hidden="true">${starred?'★':'☆'}</span></button>` : ''}</span>
+        <span class="coin-top-right"><span class="coin-ox">OX ${c.oxScore}</span>${allowStar ? `<button class="watch-star watch-star-desktop ${starred?'is-starred':''}" type="button" data-watch-symbol="${c.symbol}" aria-label="${starred?'移除':'加入'} ${c.symbol} 收藏"><span aria-hidden="true">${starred?'★':'☆'}</span></button>` : ''}</span>
       </div>
       <div class="coin-mid">
         <span class="meta desktop-coin-meta">${status} · Fit ${fit ?? '—'} · 24H Vol ${fmtUsd(c.quoteVol)} USDT</span>
         <span class="mobile-coin-volume">24H 成交量 ${fmtUsd(c.quoteVol)} USDT</span>
+        <span class="coin-change desktop-coin-change ${c.change24h >= 0 ? 'positive' : 'negative'}" style="font-weight:700">${fmtPct(c.change24h)}</span>
+      </div>
+      <div class="coin-mobile-bottom">
+        ${allowStar ? `<button class="watch-star watch-star-mobile ${starred?'is-starred':''}" type="button" data-watch-symbol="${c.symbol}" aria-label="${starred?'移除':'加入'} ${c.symbol} 收藏"><span aria-hidden="true">${starred?'★':'☆'}</span></button>` : '<span></span>'}
         <span class="coin-change ${c.change24h >= 0 ? 'positive' : 'negative'}" style="font-weight:700">${fmtPct(c.change24h)}</span>
       </div>
       <div class="coin-reason"><div class="setup-head">${c.setupName}</div><div>• ${c.reasons.join('</div><div>• ')}</div></div>
@@ -6280,7 +6645,7 @@ function switchSymbol(symbol) {
 
 
 
-/* ===== v3.4 feature pack: watchlist / local account / market architecture / home BTC mini chart ===== */
+/* ===== v3.6 feature pack: watchlist / local account / market architecture / home BTC mini chart ===== */
 const OX_GUEST_PREFS_KEY = "ox-guest-prefs-v1";
 const OX_USERS_KEY = "ox-local-users-v1";
 const OX_SESSION_KEY = "ox-local-session-v1";
@@ -6635,6 +7000,181 @@ const OXControlPanel = (() => {
   return { init, open, close, syncTheme, syncDataStatus };
 })();
 
+
+/* ===== OX secure API config =====
+   After deploying the included Cloudflare Worker, paste ONLY its public endpoint here.
+   Never put COINGLASS_API_KEY in this file. */
+window.OX_CONFIG = Object.assign({
+  liquidationEndpoint: ""
+}, window.OX_CONFIG || {});
+
+/* ===== Exchange Liquidation module: safe proxy adapter, no third-party secret in frontend ===== */
+const LiquidationService = (() => {
+  const toNum = value => {
+    if (typeof value === "number") return Number.isFinite(value) ? value : 0;
+    const n = Number(String(value ?? "").replace(/[$,%\s,]/g, ""));
+    return Number.isFinite(n) ? n : 0;
+  };
+  const pick = (obj, keys) => {
+    for (const key of keys) if (obj && obj[key] != null && obj[key] !== "") return toNum(obj[key]);
+    return 0;
+  };
+  const endpoint = () => String(window.OX_LIQUIDATION_PROXY_ENDPOINT || window.OX_CONFIG?.liquidationEndpoint || "").trim();
+
+  function extractRows(payload) {
+    if (Array.isArray(payload)) return payload;
+    if (Array.isArray(payload?.data)) return payload.data;
+    if (Array.isArray(payload?.data?.exchanges)) return payload.data.exchanges;
+    if (Array.isArray(payload?.exchanges)) return payload.exchanges;
+    if (Array.isArray(payload?.rows)) return payload.rows;
+    return [];
+  }
+
+  function normalize(payload) {
+    const rawRows = extractRows(payload);
+    const baseRows = rawRows.map(row => {
+      const long = pick(row, ["long", "longLiquidation", "longLiquidationUsd", "longAmount", "longUsd"]);
+      const short = pick(row, ["short", "shortLiquidation", "shortLiquidationUsd", "shortAmount", "shortUsd"]);
+      const explicitTotal = pick(row, ["total", "liquidation", "liquidationUsd", "totalLiquidation", "totalAmount", "amount"]);
+      const total = explicitTotal > 0 ? explicitTotal : long + short;
+      return {
+        exchange: String(row.exchange || row.exchangeName || row.name || row.venue || "Unknown"),
+        total,
+        long,
+        short
+      };
+    }).filter(r => r.exchange && r.total > 0);
+
+    const payloadTotal = pick(payload, ["totalMarketLiquidation", "marketTotal", "totalLiquidation", "total"])
+      || pick(payload?.data, ["totalMarketLiquidation", "marketTotal", "totalLiquidation", "total"]);
+    const totalMarket = payloadTotal > 0 ? payloadTotal : baseRows.reduce((sum, r) => sum + r.total, 0);
+
+    return baseRows.map(r => {
+      const directionalTotal = r.long + r.short || r.total;
+      const longRatio = directionalTotal > 0 ? r.long / directionalTotal * 100 : 0;
+      const shortRatio = directionalTotal > 0 ? r.short / directionalTotal * 100 : 0;
+      return {
+        ...r,
+        marketShare: totalMarket > 0 ? r.total / totalMarket * 100 : 0,
+        longRatio,
+        shortRatio
+      };
+    }).sort((a,b) => b.total - a.total);
+  }
+
+  async function fetchSnapshot({ symbol = "ALL", interval = "4h" } = {}) {
+    const proxy = endpoint();
+    if (!proxy) return { configured: false, rows: [], symbol, interval };
+    const url = new URL(proxy, window.location.href);
+    url.searchParams.set("symbol", symbol);
+    url.searchParams.set("interval", interval);
+    const res = await fetch(url.toString(), { cache: "no-store", headers: { "Accept": "application/json" } });
+    if (!res.ok) throw new Error(`Liquidation proxy HTTP ${res.status}`);
+    const payload = await res.json();
+    return { configured: true, rows: normalize(payload), symbol, interval };
+  }
+
+  return { fetchSnapshot, normalize };
+})();
+
+const LiquidationModule = (() => {
+  const state = { symbol: "ALL", interval: "24h", loading: false };
+  const q = id => document.getElementById(id);
+  const fmtMoney = value => {
+    const n = Number(value) || 0;
+    if (Math.abs(n) >= 1e9) return `$${(n/1e9).toFixed(2)}B`;
+    if (Math.abs(n) >= 1e6) return `$${(n/1e6).toFixed(2)}M`;
+    if (Math.abs(n) >= 1e3) return `$${(n/1e3).toFixed(2)}K`;
+    return `$${n.toFixed(0)}`;
+  };
+  const pct = value => `${(Number(value) || 0).toFixed(2)}%`;
+  const dominant = row => row.shortRatio >= row.longRatio
+    ? { key: "short", value: row.shortRatio, label: "空單爆倉" }
+    : { key: "long", value: row.longRatio, label: "多單爆倉" };
+
+  function setVisibility(mode) {
+    const desktop = q("liquidation-desktop");
+    const mobile = q("liquidation-mobile");
+    const empty = q("liquidation-empty");
+    if (desktop) desktop.hidden = mode !== "data";
+    if (mobile) mobile.hidden = mode !== "data";
+    if (empty) empty.hidden = mode !== "empty";
+  }
+
+  function render(rows) {
+    const body = q("liquidation-table-body");
+    const mobile = q("liquidation-mobile");
+    if (!rows.length) {
+      setVisibility("empty");
+      const status = q("liquidation-status");
+      if (status) status.textContent = "目前沒有可顯示的爆倉資料。";
+      return;
+    }
+    setVisibility("data");
+    if (body) body.innerHTML = rows.map(row => {
+      const d = dominant(row);
+      return `<div class="ox-liquidation-row">
+        <span class="ox-liq-exchange"><i></i><b>${row.exchange}</b></span>
+        <span class="ox-liq-num"><b>${fmtMoney(row.total)}</b></span>
+        <span class="ox-liq-num ox-liq-long">${fmtMoney(row.long)}</span>
+        <span class="ox-liq-num ox-liq-short">${fmtMoney(row.short)}</span>
+        <span class="ox-liq-num">${pct(row.marketShare)}</span>
+        <span class="ox-liq-ratio"><b class="ox-liq-${d.key}">${pct(d.value)}</b>${d.label}</span>
+      </div>`;
+    }).join("");
+    if (mobile) mobile.innerHTML = rows.map(row => {
+      const d = dominant(row);
+      const longW = Math.max(0, Math.min(100, row.longRatio));
+      const shortW = Math.max(0, Math.min(100, row.shortRatio));
+      return `<div class="ox-liq-mobile-card">
+        <div class="ox-liq-mobile-top"><b>${row.exchange.toUpperCase()}</b><span>${pct(row.marketShare)}</span></div>
+        <div class="ox-liq-mobile-total">${fmtMoney(row.total)}</div>
+        <div class="ox-liq-mobile-split"><span>多單 <b class="ox-liq-long">${fmtMoney(row.long)}</b></span><span>空單 <b class="ox-liq-short">${fmtMoney(row.short)}</b></span></div>
+        <div class="ox-liq-bar" aria-label="多空爆倉比例"><i class="long" style="width:${longW}%"></i><i class="short" style="width:${shortW}%"></i></div>
+        <div class="ox-liq-mobile-foot"><strong class="${d.key}">${pct(d.value)}</strong> ${d.label}</div>
+      </div>`;
+    }).join("");
+    const status = q("liquidation-status");
+    if (status) status.textContent = `${state.symbol === "ALL" ? "全市場" : state.symbol} · ${state.interval.toUpperCase()} · ${rows.length} 間交易所`;
+  }
+
+  async function refresh() {
+    if (state.loading) return;
+    const title = q("liquidation-title");
+    if (title) title.textContent = `${state.interval.toUpperCase()} 交易所爆倉`;
+    state.loading = true;
+    const status = q("liquidation-status");
+    if (status) status.textContent = "爆倉資料更新中…";
+    try {
+      const result = await LiquidationService.fetchSnapshot(state);
+      if (!result.configured) {
+        setVisibility("empty");
+        if (status) status.textContent = `${state.symbol === "ALL" ? "全部幣種" : state.symbol} · ${state.interval.toUpperCase()} · 等待安全 Proxy`;
+        return;
+      }
+      render(result.rows);
+    } catch (error) {
+      setVisibility("empty");
+      if (status) status.textContent = `爆倉資料暫時無法取得：${error.message}`;
+    } finally {
+      state.loading = false;
+    }
+  }
+
+  function init() {
+    const symbol = q("liquidation-symbol");
+    const interval = q("liquidation-interval");
+    if (!symbol || !interval) return;
+    symbol.value = state.symbol;
+    interval.value = state.interval;
+    symbol.addEventListener("change", () => { state.symbol = symbol.value; refresh(); });
+    interval.addEventListener("change", () => { state.interval = interval.value; refresh(); });
+    refresh();
+  }
+
+  return { init, refresh };
+})();
+
 document.addEventListener("click", e => {
   const star = e.target.closest("[data-watch-symbol]");
   if (star?.dataset.watchSymbol) { e.preventDefault(); e.stopPropagation(); toggleWatchSymbol(star.dataset.watchSymbol); return; }
@@ -6734,6 +7274,7 @@ window.addEventListener("DOMContentLoaded", () => {
   initSettings();
   OXControlPanel.init();
   OXFeaturePack.init();
+  LiquidationModule.init();
   syncScannerFilterUI();
   const oxMarkerToggle = document.getElementById("chk-ox-markers");
   if (oxMarkerToggle) oxMarkerToggle.checked = false;
