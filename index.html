@@ -10300,9 +10300,14 @@ document.addEventListener("keydown", e => {
 @media(max-width:720px){
   #view-home .v33-home-hero{margin-top:6px!important;}
   #view-home .btc-premium-visual,
-  #view-home .btc-premium-visual-refined{right:7px!important;top:6px!important;}
-  #view-home .btc-premium-emblem{width:74px!important;height:74px!important;}
-  #view-home .btc-emblem-mark{font-size:39px!important;}
+  #view-home .btc-premium-visual-refined{
+    width:clamp(78px,22vw,92px)!important;min-width:0!important;max-width:none!important;
+    height:clamp(78px,22vw,92px)!important;inset:8px 12px auto auto!important;
+    transform:none!important;
+  }
+  #view-home .btc-premium-emblem{width:100%!important;height:100%!important;inset:0!important;}
+  #view-home .btc-emblem-mark{font-size:clamp(43px,12vw,51px)!important;transform:none!important;}
+  #view-home .btc-visual-context,#view-home .btc-visual-ledger{display:none!important;}
 }
 
 /* 3) Radar screener: kill the remaining internal horizontal scroll instead of letting it leak */
