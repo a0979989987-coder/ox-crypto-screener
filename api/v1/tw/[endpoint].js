@@ -1,3 +1,8 @@
+import {
+  getOfficialTWMarketPulse
+} from "./providers/official.js";
+
+
 /*
  * OX v4.0 Modular
  * Taiwan Market Backend Gateway
@@ -11,15 +16,21 @@
  *
  * - Provide the server-side TW API gateway.
  * - Apply CORS.
+ * - Connect official Taiwan market data.
  * - Keep API credentials on the server.
  * - Define the stable OX TW backend contract.
  * - Never return fake Taiwan market data.
  *
  *
- * Future upstream providers:
+ * Current upstream providers:
  *
  * TWSE
- * TPEX
+ * TPEx
+ *
+ *
+ * Future upstream providers:
+ *
+ * TAIFEX
  * FinMind
  * Fugle
  * Broker APIs
@@ -191,10 +202,8 @@ function applyCors(
 
 
   /*
-   * Direct backend requests
-   * such as browser address-bar /
-   * server-to-server requests
-   * do not always send Origin.
+   * Direct browser / server requests
+   * may not send Origin.
    */
   if (
     !origin
@@ -308,12 +317,6 @@ async function handleHealth(
   res
 ) {
 
-  /*
-   * Backend gateway itself is ready.
-   *
-   * Real upstream TW market providers
-   * will be connected in later steps.
-   */
   return ok(
     res,
     {
@@ -322,32 +325,40 @@ async function handleHealth(
         "ox-tw-market-data",
 
       status:
-        "gateway-ready",
+        "ready",
 
       market:
         "tw",
 
       provider:
-        "pending",
+        "official-tw",
 
       upstreamConfigured:
-        false,
+        true,
 
-      endpoints:
+      sources:
         Object.freeze([
+          "TWSE",
+          "TPEx"
+        ]),
 
-          "market-pulse",
+      implementedEndpoints:
+        Object.freeze([
+          "health",
+          "market-pulse"
+        ]),
+
+      pendingEndpoints:
+        Object.freeze([
           "breadth",
           "money-flow",
           "themes",
           "radar",
           "indicators",
-
           "quote",
           "quotes",
           "candles",
           "search"
-
         ]),
 
       timestamp:
@@ -369,6 +380,48 @@ async function handleHealth(
 
 
 /* ========================================================================== */
+/* Market Pulse                                                               */
+/* ========================================================================== */
+
+async function handleMarketPulse(
+  req,
+  res
+) {
+
+  const data =
+    await getOfficialTWMarketPulse();
+
+
+  /*
+   * Current TWSE / TPEx sources are
+   * official latest-available market data.
+   *
+   * They are NOT treated as licensed
+   * streaming real-time quotes.
+   */
+  setShortCache(
+    res,
+    60
+  );
+
+
+  return ok(
+    res,
+    data,
+    {
+
+      provider:
+        "official-tw",
+
+      realtime:
+        false
+
+    }
+  );
+}
+
+
+/* ========================================================================== */
 /* Not implemented                                                           */
 /* ========================================================================== */
 
@@ -378,11 +431,8 @@ function handleNotImplemented(
 ) {
 
   /*
-   * Very important:
-   *
-   * OX must NEVER manufacture
-   * fake Taiwan market data just
-   * to make the UI look populated.
+   * OX never manufactures
+   * fake market data.
    */
   return fail(
     res,
@@ -491,9 +541,9 @@ export default async function handler(
 
       case "market-pulse":
 
-        return handleNotImplemented(
-          res,
-          "TW market pulse"
+        return await handleMarketPulse(
+          req,
+          res
         );
 
 
@@ -608,8 +658,8 @@ export default async function handler(
      *
      * API keys
      * stack traces
-     * provider credentials
-     * server internals
+     * credentials
+     * backend internals
      */
 
     console.error(
@@ -628,6 +678,37 @@ export default async function handler(
 
       }
     );
+
+
+    const errorCode =
+      String(
+        error?.code ||
+        ""
+      );
+
+
+    /*
+     * Official Taiwan upstream failure.
+     */
+    if (
+      errorCode.startsWith(
+        "TW_"
+      ) ||
+      errorCode.startsWith(
+        "TWSE_"
+      ) ||
+      errorCode.startsWith(
+        "TPEX_"
+      )
+    ) {
+
+      return fail(
+        res,
+        502,
+        "TW_DATA_UPSTREAM_ERROR",
+        "Unable to retrieve Taiwan official market data."
+      );
+    }
 
 
     return fail(
