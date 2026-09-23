@@ -2,31 +2,35 @@
   "use strict";
 
   /*
-   * OX Market Quick Switch
+   * OX Market Quick Switch v2
    *
-   * 單擊 Radar：
-   * → 正常進入 Radar
+   * Desktop:
+   * - Click Radar -> Radar
+   * - Hold Radar -> Quick Switch
+   * - Drag -> Select market
    *
-   * 長按 Radar：
-   * → 開啟橫向市場快捷列
-   * → 保持按住往上滑
-   * → 左右滑動選市場
-   * → 放開切換
+   * Mobile:
+   * - Tap Radar -> Radar
+   * - Triple tap -> Previous market
+   * - Hold 420ms -> Quick Switch
+   * - Keep finger down
+   * - Swipe upward
+   * - Move left/right
+   * - Release -> Switch market
    *
-   * 快速三擊 Radar：
-   * → 回到上一個市場
-   *
-   * 這個模組不自己處理市場內容。
-   * 真正的切換仍交給既有的：
-   * window.OXMarketController.setMarket()
+   * Also:
+   * - Prevent accidental page zoom on mobile
+   * - Prevent horizontal page drift
    */
 
   const CFG = {
     hold: 420,
-    moveCancel: 20,
+    moveCancel: 24,
     tripleWindow: 650,
     gap: 16,
-    hitSlop: 16,
+    hitSlopTop: 36,
+    hitSlopBottom: 62,
+    armDistance: 24,
     closeMs: 170
   };
 
@@ -51,7 +55,7 @@
 
   const IDS =
     MARKETS.map(
-      market => market.id
+      item => item.id
     );
 
   const MENU_ID =
@@ -69,26 +73,36 @@
   let holdTimer = null;
   let closeTimer = null;
 
-  let pointerId = null;
+  let holding = false;
+  let moved = false;
+  let selected = null;
+  let selectionArmed = false;
 
   let startX = 0;
   let startY = 0;
 
-  let moved = false;
-  let holding = false;
-
-  let selected = null;
-
   let taps = [];
 
-  const valid = id =>
-    IDS.includes(id);
+  /*
+   * Desktop Pointer
+   */
+  let pointerId = null;
 
-  /* --------------------------------------------------------- */
-  /* Market state                                              */
-  /* --------------------------------------------------------- */
+  /*
+   * Mobile Touch
+   */
+  let touchId = null;
+  let touchActive = false;
 
-  const currentMarket = () => {
+  const valid =
+    id =>
+      IDS.includes(id);
+
+  /* =========================================================
+     MARKET STATE
+     ========================================================= */
+
+  function currentMarket() {
     const bodyMarket =
       document.body
         ?.dataset
@@ -112,47 +126,107 @@
     }
 
     return "crypto";
-  };
+  }
 
   let current =
     currentMarket();
 
   let previous =
     (() => {
-      const stored =
+      const saved =
         sessionStorage.getItem(
           PREV_KEY
         );
 
       if (
-        valid(stored) &&
-        stored !== current
+        valid(saved) &&
+        saved !== current
       ) {
-        return stored;
+        return saved;
       }
 
       return null;
     })();
 
-  /* --------------------------------------------------------- */
-  /* Small haptic feedback                                     */
-  /* --------------------------------------------------------- */
+  /* =========================================================
+     MOBILE PAGE STABILITY
+     ========================================================= */
 
-  function haptic(
-    ms = 8
-  ) {
+  function lockMobileViewport() {
+    /*
+     * Update viewport without requiring another index.html edit.
+     */
+    const viewport =
+      document.querySelector(
+        'meta[name="viewport"]'
+      );
+
+    if (viewport) {
+      viewport.setAttribute(
+        "content",
+        [
+          "width=device-width",
+          "initial-scale=1",
+          "maximum-scale=1",
+          "user-scalable=no",
+          "viewport-fit=cover"
+        ].join(",")
+      );
+    }
+
+    /*
+     * iOS Safari pinch gesture protection.
+     */
+    const stopGesture =
+      event => {
+        event.preventDefault();
+      };
+
+    document.addEventListener(
+      "gesturestart",
+      stopGesture,
+      {
+        passive: false
+      }
+    );
+
+    document.addEventListener(
+      "gesturechange",
+      stopGesture,
+      {
+        passive: false
+      }
+    );
+
+    document.addEventListener(
+      "gestureend",
+      stopGesture,
+      {
+        passive: false
+      }
+    );
+  }
+
+  /* =========================================================
+     HAPTIC
+     ========================================================= */
+
+  function haptic(ms = 8) {
     try {
       navigator.vibrate?.(
         ms
       );
     } catch {
-      // 不支援震動就忽略
+      /*
+       * iPhone Safari normally ignores navigator.vibrate.
+       * That's fine.
+       */
     }
   }
 
-  /* --------------------------------------------------------- */
-  /* Styles                                                    */
-  /* --------------------------------------------------------- */
+  /* =========================================================
+     STYLES
+     ========================================================= */
 
   function addStyles() {
     if (
@@ -173,6 +247,37 @@
 
     style.textContent = `
 
+/* =========================================================
+   MOBILE PAGE LOCK
+   ========================================================= */
+
+@media (max-width: 720px) {
+
+  html,
+  body {
+    width: 100% !important;
+    max-width: 100% !important;
+
+    overflow-x: hidden !important;
+
+    overscroll-behavior-x:
+      none !important;
+
+    -webkit-text-size-adjust:
+      100% !important;
+  }
+
+  body {
+    position: relative;
+  }
+
+}
+
+
+/* =========================================================
+   QUICK SWITCH
+   ========================================================= */
+
 #${MENU_ID} {
 
   position: fixed;
@@ -186,32 +291,39 @@
   width:
     min(
       352px,
-      calc(100vw - 24px)
+      calc(100vw - 20px)
     );
 
   padding: 6px;
 
-  box-sizing: border-box;
+  box-sizing:
+    border-box;
 
   border:
     1px solid
-    rgba(177, 204, 230, .18);
+    rgba(
+      177,
+      204,
+      230,
+      .18
+    );
 
-  border-radius: 20px;
+  border-radius:
+    20px;
 
   background:
     linear-gradient(
       180deg,
-      rgba(25, 39, 57, .90),
-      rgba(8, 18, 30, .94)
+      rgba(25,39,57,.92),
+      rgba(8,18,30,.96)
     );
 
   box-shadow:
     0 18px 50px
-    rgba(0, 0, 0, .42),
+    rgba(0,0,0,.42),
 
     inset 0 1px 0
-    rgba(255, 255, 255, .08);
+    rgba(255,255,255,.08);
 
   backdrop-filter:
     blur(24px)
@@ -229,7 +341,14 @@
 
   user-select: none;
 
-  -webkit-user-select: none;
+  -webkit-user-select:
+    none;
+
+  -webkit-touch-callout:
+    none;
+
+  touch-action:
+    none;
 
   transform:
     translateX(-50%)
@@ -249,15 +368,12 @@
     cubic-bezier(.2,.85,.2,1),
 
     visibility
-    0s
-    linear
+    0s linear
     220ms;
 }
 
 
-/*
- * 底部小箭頭
- */
+/* Arrow */
 
 #${MENU_ID}::after {
 
@@ -274,15 +390,15 @@
   height: 13px;
 
   background:
-    rgba(9, 19, 31, .94);
+    rgba(9,19,31,.96);
 
   border-right:
     1px solid
-    rgba(177, 204, 230, .16);
+    rgba(177,204,230,.16);
 
   border-bottom:
     1px solid
-    rgba(177, 204, 230, .16);
+    rgba(177,204,230,.16);
 
   border-radius:
     0 0 3px 0;
@@ -293,9 +409,7 @@
 }
 
 
-/*
- * 顯示
- */
+/* Open */
 
 #${MENU_ID}.is-open {
 
@@ -319,14 +433,11 @@
     220ms
     cubic-bezier(.2,.85,.2,1),
 
-    visibility
-    0s;
+    visibility 0s;
 }
 
 
-/*
- * 收起動畫
- */
+/* Closing */
 
 #${MENU_ID}.is-closing {
 
@@ -341,9 +452,9 @@
 }
 
 
-/*
- * 四個市場橫向排列
- */
+/* =========================================================
+   HORIZONTAL MARKET GRID
+   ========================================================= */
 
 #${MENU_ID}
 .ox-mqs-grid {
@@ -357,23 +468,22 @@
   grid-template-columns:
     repeat(
       4,
-      minmax(0, 1fr)
+      minmax(0,1fr)
     );
 
   gap: 4px;
 }
 
 
-/*
- * 單一市場
- */
+/* Individual Market */
 
 #${MENU_ID}
 .ox-mqs-item {
 
   appearance: none;
 
-  -webkit-appearance: none;
+  -webkit-appearance:
+    none;
 
   height: 48px;
 
@@ -383,7 +493,8 @@
     0 7px;
 
   border:
-    1px solid transparent;
+    1px solid
+    transparent;
 
   border-radius:
     15px;
@@ -407,8 +518,16 @@
   font-weight:
     760;
 
-  cursor:
-    pointer;
+  cursor: pointer;
+
+  touch-action:
+    none;
+
+  user-select:
+    none;
+
+  -webkit-user-select:
+    none;
 
   transition:
     transform
@@ -441,13 +560,12 @@
 
   height: 100%;
 
-  white-space: nowrap;
+  white-space:
+    nowrap;
 }
 
 
-/*
- * 市場狀態點
- */
+/* Dot */
 
 #${MENU_ID}
 .ox-mqs-dot {
@@ -482,9 +600,7 @@
 }
 
 
-/*
- * 目前所在市場
- */
+/* Current market */
 
 #${MENU_ID}
 .ox-mqs-item.is-current {
@@ -517,9 +633,7 @@
 }
 
 
-/*
- * 手指目前滑到的市場
- */
+/* Hovered / finger selected */
 
 #${MENU_ID}
 .ox-mqs-item.is-selected {
@@ -530,8 +644,8 @@
   background:
     linear-gradient(
       180deg,
-      rgba(244, 192, 86, .17),
-      rgba(244, 192, 86, .075)
+      rgba(244,192,86,.18),
+      rgba(244,192,86,.08)
     );
 
   border-color:
@@ -539,7 +653,7 @@
       244,
       192,
       86,
-      .30
+      .32
     );
 
   box-shadow:
@@ -577,9 +691,9 @@
 }
 
 
-/*
- * Radar 手勢區
- */
+/* =========================================================
+   RADAR GESTURE AREA
+   ========================================================= */
 
 .dock-radar {
 
@@ -587,38 +701,31 @@
     none !important;
 
   -webkit-touch-callout:
-    none;
+    none !important;
 
   user-select:
-    none;
+    none !important;
 
   -webkit-user-select:
-    none;
+    none !important;
 }
 
-
-/*
- * Radar 本身的動畫
- */
 
 .dock-radar
 .dock-radar-orb {
 
   transition:
-
     transform
     170ms
     cubic-bezier(.2,.8,.2,1),
 
     box-shadow
-    170ms
-    ease !important;
+    170ms ease
+    !important;
 }
 
 
-/*
- * 正在長按
- */
+/* Pressing */
 
 .dock-radar.ox-mqs-pressing
 .dock-radar-orb {
@@ -630,9 +737,7 @@
 }
 
 
-/*
- * 選單打開
- */
+/* Open radar glow */
 
 body.ox-mqs-open
 .dock-radar
@@ -644,85 +749,58 @@ body.ox-mqs-open
     !important;
 
   box-shadow:
-
     0 0 0 1px
-    rgba(
-      247,
-      189,
-      82,
-      .38
-    ),
+    rgba(247,189,82,.38),
 
     0 0 26px
-    rgba(
-      247,
-      189,
-      82,
-      .52
-    ),
+    rgba(247,189,82,.52),
 
     inset
     0 1px 8px
-    rgba(
-      255,
-      255,
-      255,
-      .05
-    )
+    rgba(255,255,255,.05)
     !important;
 }
 
 
 /*
- * Light Theme
+ * During market selection,
+ * lock page scrolling.
  */
+
+body.ox-mqs-dragging {
+
+  overflow:
+    hidden !important;
+
+  overscroll-behavior:
+    none !important;
+}
+
+
+/* =========================================================
+   LIGHT
+   ========================================================= */
 
 body.theme-light
 #${MENU_ID} {
 
   border-color:
-    rgba(
-      87,
-      111,
-      139,
-      .16
-    );
+    rgba(87,111,139,.16);
 
   background:
     linear-gradient(
       180deg,
-      rgba(
-        255,
-        255,
-        255,
-        .91
-      ),
-      rgba(
-        239,
-        245,
-        251,
-        .94
-      )
+      rgba(255,255,255,.93),
+      rgba(239,245,251,.96)
     );
 
   box-shadow:
-
     0 18px 45px
-    rgba(
-      36,
-      57,
-      81,
-      .18
-    ),
+    rgba(36,57,81,.18),
 
     inset
     0 1px 0
-    rgba(
-      255,
-      255,
-      255,
-      .90
-    );
+    rgba(255,255,255,.90);
 }
 
 
@@ -730,20 +808,10 @@ body.theme-light
 #${MENU_ID}::after {
 
   background:
-    rgba(
-      240,
-      246,
-      251,
-      .96
-    );
+    rgba(240,246,251,.96);
 
   border-color:
-    rgba(
-      87,
-      111,
-      139,
-      .13
-    );
+    rgba(87,111,139,.13);
 }
 
 
@@ -752,12 +820,7 @@ body.theme-light
 .ox-mqs-item {
 
   color:
-    rgba(
-      45,
-      66,
-      91,
-      .68
-    );
+    rgba(45,66,91,.68);
 }
 
 
@@ -781,68 +844,45 @@ body.theme-light
   background:
     linear-gradient(
       180deg,
-      rgba(
-        217,
-        165,
-        62,
-        .16
-      ),
-      rgba(
-        217,
-        165,
-        62,
-        .07
-      )
+      rgba(217,165,62,.17),
+      rgba(217,165,62,.07)
     );
 
   border-color:
-    rgba(
-      185,
-      132,
-      43,
-      .25
-    );
+    rgba(185,132,43,.25);
 }
 
 
-/*
- * Mobile
- */
+/* =========================================================
+   MOBILE
+   ========================================================= */
 
-@media
-(max-width:430px) {
+@media (max-width:430px) {
 
   #${MENU_ID} {
 
     width:
-      calc(
-        100vw - 20px
-      );
+      calc(100vw - 18px);
 
-    padding:
-      5px;
+    padding: 5px;
 
     border-radius:
       19px;
   }
 
-
   #${MENU_ID}
   .ox-mqs-grid {
 
-    gap:
-      3px;
+    gap: 3px;
   }
-
 
   #${MENU_ID}
   .ox-mqs-item {
 
-    height:
-      46px;
+    height: 48px;
 
     padding:
-      0 5px;
+      0 4px;
 
     border-radius:
       14px;
@@ -854,8 +894,7 @@ body.theme-light
 }
 
 
-@media
-(max-width:365px) {
+@media (max-width:365px) {
 
   #${MENU_ID}
   .ox-mqs-item {
@@ -867,9 +906,9 @@ body.theme-light
 }
 
 
-/*
- * Reduced Motion
- */
+/* =========================================================
+   REDUCED MOTION
+   ========================================================= */
 
 @media
 (prefers-reduced-motion:reduce) {
@@ -898,9 +937,9 @@ body.theme-light
     );
   }
 
-  /* --------------------------------------------------------- */
-  /* Build menu                                                */
-  /* --------------------------------------------------------- */
+  /* =========================================================
+     BUILD MENU
+     ========================================================= */
 
   function buildMenu() {
     if (menu) {
@@ -923,36 +962,28 @@ body.theme-light
     menu.innerHTML = `
       <div class="ox-mqs-grid">
 
-        ${MARKETS
-          .map(
-            market => `
-
-              <button
-                class="ox-mqs-item"
-                type="button"
-                data-market="${market.id}"
-                aria-label="切換至${market.label}"
-              >
+        ${MARKETS.map(
+          market => `
+            <button
+              class="ox-mqs-item"
+              type="button"
+              data-market="${market.id}"
+              aria-label="切換至${market.label}"
+            >
+              <span class="ox-mqs-inner">
 
                 <span
-                  class="ox-mqs-inner"
-                >
+                  class="ox-mqs-dot"
+                ></span>
 
-                  <span
-                    class="ox-mqs-dot"
-                  ></span>
-
-                  <span>
-                    ${market.label}
-                  </span>
-
+                <span>
+                  ${market.label}
                 </span>
 
-              </button>
-
-            `
-          )
-          .join("")}
+              </span>
+            </button>
+          `
+        ).join("")}
 
       </div>
     `;
@@ -961,6 +992,9 @@ body.theme-light
       menu
     );
 
+    /*
+     * Direct click fallback.
+     */
     menu
       .querySelectorAll(
         ".ox-mqs-item"
@@ -973,7 +1007,6 @@ body.theme-light
             event => {
 
               event.preventDefault();
-
               event.stopPropagation();
 
               switchMarket(
@@ -990,9 +1023,9 @@ body.theme-light
     syncMenu();
   }
 
-  /* --------------------------------------------------------- */
-  /* Position                                                  */
-  /* --------------------------------------------------------- */
+  /* =========================================================
+     MENU POSITION
+     ========================================================= */
 
   function positionMenu() {
     if (
@@ -1005,6 +1038,20 @@ body.theme-light
     const rect =
       radar.getBoundingClientRect();
 
+    const viewportHeight =
+      window.visualViewport
+        ?.height ||
+      window.innerHeight;
+
+    const viewportTop =
+      window.visualViewport
+        ?.offsetTop ||
+      0;
+
+    const radarTop =
+      rect.top -
+      viewportTop;
+
     menu.style.left =
       `${
         rect.left +
@@ -1016,16 +1063,16 @@ body.theme-light
         Math.max(
           10,
 
-          innerHeight -
-          rect.top +
+          viewportHeight -
+          radarTop +
           CFG.gap
         )
       }px`;
   }
 
-  /* --------------------------------------------------------- */
-  /* Current market UI                                         */
-  /* --------------------------------------------------------- */
+  /* =========================================================
+     SYNC CURRENT MARKET
+     ========================================================= */
 
   function syncMenu() {
     current =
@@ -1038,36 +1085,29 @@ body.theme-light
       .forEach(
         button => {
 
-          button
-            .classList
-            .toggle(
-              "is-current",
+          button.classList.toggle(
+            "is-current",
 
-              button
-                .dataset
-                .market ===
-                current
-            );
+            button.dataset.market ===
+              current
+          );
 
         }
       );
   }
 
-  /* --------------------------------------------------------- */
-  /* Hover / slide selection                                   */
-  /* --------------------------------------------------------- */
+  /* =========================================================
+     SELECTED MARKET
+     ========================================================= */
 
-  function setSelected(
-    id
-  ) {
+  function setSelected(id) {
     const next =
       valid(id)
         ? id
         : null;
 
     if (
-      selected ===
-      next
+      next === selected
     ) {
       return;
     }
@@ -1082,39 +1122,34 @@ body.theme-light
       .forEach(
         button => {
 
-          button
-            .classList
-            .toggle(
-              "is-selected",
+          button.classList.toggle(
+            "is-selected",
 
-              button
-                .dataset
-                .market ===
-                selected
-            );
+            button.dataset.market ===
+              selected
+          );
 
         }
       );
 
     if (selected) {
-      haptic();
+      haptic(8);
     }
   }
 
-  /* --------------------------------------------------------- */
-  /* Figure out which market finger is over                    */
-  /* --------------------------------------------------------- */
+  /* =========================================================
+     MARKET HIT TEST
+     ========================================================= */
 
   function marketAt(
     x,
     y
   ) {
     if (
-      !menu
-        ?.classList
-        .contains(
-          "is-open"
-        )
+      !menu ||
+      !menu.classList.contains(
+        "is-open"
+      )
     ) {
       return null;
     }
@@ -1122,30 +1157,33 @@ body.theme-light
     const rect =
       menu.getBoundingClientRect();
 
+    /*
+     * Mobile gets a larger vertical hit area,
+     * so finger doesn't need pixel-perfect contact.
+     */
+    const top =
+      rect.top -
+      CFG.hitSlopTop;
+
+    const bottom =
+      rect.bottom +
+      CFG.hitSlopBottom;
+
     if (
-      y <
-        rect.top -
-        CFG.hitSlop ||
-
-      y >
-        rect.bottom +
-        CFG.hitSlop ||
-
-      x <
-        rect.left ||
-
-      x >
-        rect.right
+      y < top ||
+      y > bottom ||
+      x < rect.left ||
+      x > rect.right
     ) {
       return null;
     }
 
-    const relative =
+    const relativeX =
       Math.max(
         0,
 
         Math.min(
-          rect.width - .001,
+          rect.width - 0.001,
 
           x -
           rect.left
@@ -1154,8 +1192,10 @@ body.theme-light
 
     const index =
       Math.floor(
-        relative /
-        rect.width *
+        (
+          relativeX /
+          rect.width
+        ) *
         MARKETS.length
       );
 
@@ -1173,9 +1213,9 @@ body.theme-light
     );
   }
 
-  /* --------------------------------------------------------- */
-  /* Open                                                      */
-  /* --------------------------------------------------------- */
+  /* =========================================================
+     OPEN
+     ========================================================= */
 
   function openMenu() {
     clearTimeout(
@@ -1190,6 +1230,9 @@ body.theme-light
       null
     );
 
+    selectionArmed =
+      false;
+
     positionMenu();
 
     holding =
@@ -1199,7 +1242,7 @@ body.theme-light
       [];
 
     radar
-      .classList
+      ?.classList
       .remove(
         "ox-mqs-pressing"
       );
@@ -1207,7 +1250,8 @@ body.theme-light
     document.body
       .classList
       .add(
-        "ox-mqs-open"
+        "ox-mqs-open",
+        "ox-mqs-dragging"
       );
 
     menu
@@ -1223,24 +1267,20 @@ body.theme-light
 
     requestAnimationFrame(
       () => {
-
         menu
           .classList
           .add(
             "is-open"
           );
-
       }
     );
 
-    haptic(
-      12
-    );
+    haptic(12);
   }
 
-  /* --------------------------------------------------------- */
-  /* Close                                                     */
-  /* --------------------------------------------------------- */
+  /* =========================================================
+     CLOSE
+     ========================================================= */
 
   function closeMenu(
     immediate = false
@@ -1259,6 +1299,9 @@ body.theme-light
     holding =
       false;
 
+    selectionArmed =
+      false;
+
     setSelected(
       null
     );
@@ -1272,7 +1315,8 @@ body.theme-light
     document.body
       .classList
       .remove(
-        "ox-mqs-open"
+        "ox-mqs-open",
+        "ox-mqs-dragging"
       );
 
     if (!menu) {
@@ -1281,12 +1325,10 @@ body.theme-light
 
     if (immediate) {
 
-      menu
-        .classList
-        .remove(
-          "is-open",
-          "is-closing"
-        );
+      menu.classList.remove(
+        "is-open",
+        "is-closing"
+      );
 
       menu.setAttribute(
         "aria-hidden",
@@ -1316,26 +1358,22 @@ body.theme-light
     closeTimer =
       setTimeout(
         () => {
-
           menu
             ?.classList
             .remove(
               "is-closing"
             );
-
         },
 
         CFG.closeMs
       );
   }
 
-  /* --------------------------------------------------------- */
-  /* Existing MarketController                                 */
-  /* --------------------------------------------------------- */
+  /* =========================================================
+     MARKET CONTROLLER
+     ========================================================= */
 
-  function switchMarket(
-    id
-  ) {
+  function switchMarket(id) {
     if (
       !valid(id)
     ) {
@@ -1350,52 +1388,47 @@ body.theme-light
     }
 
     const controller =
-      window
-        .OXMarketController;
+      window.OXMarketController;
 
     if (
       !controller
         ?.setMarket
     ) {
-
       console.warn(
-        "[OX Quick Switch] OXMarketController.setMarket unavailable"
+        "[OX Quick Switch] OXMarketController unavailable."
       );
 
       return false;
     }
 
-    controller
-      .setMarket(
-        id
-      );
+    controller.setMarket(
+      id
+    );
 
     return true;
   }
 
-  /* --------------------------------------------------------- */
-  /* Normal Radar click                                        */
-  /* --------------------------------------------------------- */
+  /* =========================================================
+     RADAR NORMAL CLICK
+     ========================================================= */
 
   function openRadar() {
     if (
       typeof
-      window
-        .switchAppView ===
+      window.switchAppView ===
       "function"
     ) {
 
-      window
-        .switchAppView(
-          "radar"
-        );
+      window.switchAppView(
+        "radar"
+      );
 
     }
   }
 
-  /* --------------------------------------------------------- */
-  /* Triple tap                                                */
-  /* --------------------------------------------------------- */
+  /* =========================================================
+     TRIPLE TAP
+     ========================================================= */
 
   function goPrevious() {
     const now =
@@ -1426,9 +1459,8 @@ body.theme-light
 
     taps =
       taps.filter(
-        timestamp =>
-          now -
-          timestamp <=
+        time =>
+          now - time <=
           CFG.tripleWindow
       );
 
@@ -1437,25 +1469,23 @@ body.theme-light
     );
 
     /*
-     * 單擊正常進 Radar
+     * One tap keeps normal Radar behavior.
      */
     openRadar();
 
     /*
-     * 三擊返回上一市場
+     * Three fast taps return to previous market.
      */
     if (
       taps.length >= 3 &&
-
       now -
-      taps[
-        taps.length - 3
-      ] <=
-      CFG.tripleWindow
+        taps[
+          taps.length - 3
+        ] <=
+        CFG.tripleWindow
     ) {
 
-      taps =
-        [];
+      taps = [];
 
       haptic(
         16
@@ -1465,93 +1495,28 @@ body.theme-light
     }
   }
 
-  /* --------------------------------------------------------- */
-  /* Pointer capture                                           */
-  /* --------------------------------------------------------- */
+  /* =========================================================
+     COMMON GESTURE
+     ========================================================= */
 
-  function releaseCapture() {
-    if (
-      pointerId !== null &&
-
-      radar
-        ?.hasPointerCapture
-        ?.(pointerId)
-    ) {
-
-      try {
-
-        radar
-          .releasePointerCapture(
-            pointerId
-          );
-
-      } catch {
-        // ignore
-      }
-    }
-
-    pointerId =
-      null;
-  }
-
-  /* --------------------------------------------------------- */
-  /* Pointer Down                                              */
-  /* --------------------------------------------------------- */
-
-  function onDown(
-    event
+  function beginGesture(
+    x,
+    y
   ) {
-    if (
-      pointerId !==
-      null
-    ) {
-      return;
-    }
+    startX = x;
+    startY = y;
 
-    if (
-      event.pointerType ===
-        "mouse" &&
+    moved = false;
+    holding = false;
 
-      event.button !==
-        0
-    ) {
-      return;
-    }
-
-    event
-      .preventDefault();
-
-    pointerId =
-      event.pointerId;
-
-    startX =
-      event.clientX;
-
-    startY =
-      event.clientY;
-
-    moved =
-      false;
-
-    holding =
+    selectionArmed =
       false;
 
     selected =
       null;
 
-    try {
-
-      radar
-        .setPointerCapture(
-          event.pointerId
-        );
-
-    } catch {
-      // ignore
-    }
-
     radar
-      .classList
+      ?.classList
       .add(
         "ox-mqs-pressing"
       );
@@ -1563,62 +1528,47 @@ body.theme-light
     holdTimer =
       setTimeout(
         openMenu,
-
         CFG.hold
       );
   }
 
-  /* --------------------------------------------------------- */
-  /* Pointer Move                                              */
-  /* --------------------------------------------------------- */
-
-  function onMove(
+  function moveGesture(
+    x,
+    y,
     event
   ) {
-    if (
-      event.pointerId !==
-      pointerId
-    ) {
-      return;
-    }
+    const dx =
+      x - startX;
+
+    const dy =
+      y - startY;
 
     const distance =
       Math.hypot(
-
-        event.clientX -
-        startX,
-
-        event.clientY -
-        startY
+        dx,
+        dy
       );
 
     /*
-     * 長按還沒成立以前
-     * 如果移動太多
-     * 就取消長按
+     * Before long press activates:
+     * too much movement means user wanted normal scroll.
      */
-
-    if (
-      !holding
-    ) {
+    if (!holding) {
 
       if (
         distance >
         CFG.moveCancel
       ) {
-
-        moved =
-          true;
+        moved = true;
 
         clearTimeout(
           holdTimer
         );
 
-        holdTimer =
-          null;
+        holdTimer = null;
 
         radar
-          .classList
+          ?.classList
           .remove(
             "ox-mqs-pressing"
           );
@@ -1628,45 +1578,99 @@ body.theme-light
     }
 
     /*
-     * 長按選單已經打開
+     * Once Quick Switch is open,
+     * browser must NOT scroll the page.
      */
-
-    event
-      .preventDefault();
-
-    setSelected(
-      marketAt(
-        event.clientX,
-        event.clientY
-      )
-    );
-  }
-
-  /* --------------------------------------------------------- */
-  /* Pointer Up                                                */
-  /* --------------------------------------------------------- */
-
-  function onUp(
-    event
-  ) {
     if (
-      event.pointerId !==
-      pointerId
+      event?.cancelable
+    ) {
+      event.preventDefault();
+    }
+
+    /*
+     * User must move upward a little before
+     * selection becomes armed.
+     *
+     * Prevents:
+     * hold -> release
+     * accidentally selecting a market.
+     */
+    if (
+      !selectionArmed
+    ) {
+
+      const rect =
+        menu
+          ?.getBoundingClientRect();
+
+      if (
+        startY - y >=
+          CFG.armDistance ||
+
+        (
+          rect &&
+          y <=
+            rect.bottom +
+            16
+        )
+      ) {
+
+        selectionArmed =
+          true;
+
+      }
+
+    }
+
+    if (
+      !selectionArmed
     ) {
       return;
     }
 
-    event
-      .preventDefault();
+    setSelected(
+      marketAt(
+        x,
+        y
+      )
+    );
+  }
 
+  function finishGesture(
+    x,
+    y
+  ) {
     const wasHolding =
       holding;
 
-    const choice =
-      selected;
-
     const wasMoved =
       moved;
+
+    /*
+     * Get final position one more time.
+     * Important for Safari where final touchmove
+     * can occasionally be skipped.
+     */
+    if (
+      wasHolding &&
+      selectionArmed
+    ) {
+
+      const finalChoice =
+        marketAt(
+          x,
+          y
+        );
+
+      if (finalChoice) {
+        selected =
+          finalChoice;
+      }
+
+    }
+
+    const choice =
+      selected;
 
     clearTimeout(
       holdTimer
@@ -1675,40 +1679,27 @@ body.theme-light
     holdTimer =
       null;
 
-    releaseCapture();
-
     radar
-      .classList
+      ?.classList
       .remove(
         "ox-mqs-pressing"
       );
 
-    /*
-     * 長按模式
-     */
-
-    if (
-      wasHolding
-    ) {
+    if (wasHolding) {
 
       if (
+        selectionArmed &&
         choice
       ) {
-
         switchMarket(
           choice
         );
-
       }
 
       closeMenu();
 
       return;
     }
-
-    /*
-     * 普通點擊
-     */
 
     closeMenu(
       true
@@ -1717,17 +1708,276 @@ body.theme-light
     if (
       !wasMoved
     ) {
-
       shortTap();
-
     }
   }
 
-  /* --------------------------------------------------------- */
-  /* Cancel                                                    */
-  /* --------------------------------------------------------- */
+  /* =========================================================
+     MOBILE TOUCH
+     ========================================================= */
 
-  function cancel() {
+  function findTouch(
+    list,
+    id
+  ) {
+    if (!list) {
+      return null;
+    }
+
+    for (
+      let i = 0;
+      i < list.length;
+      i += 1
+    ) {
+
+      if (
+        list[i].identifier ===
+        id
+      ) {
+        return list[i];
+      }
+
+    }
+
+    return null;
+  }
+
+  function onTouchStart(
+    event
+  ) {
+    if (
+      touchActive ||
+      event.touches.length !== 1
+    ) {
+      return;
+    }
+
+    const touch =
+      event.changedTouches[0];
+
+    if (!touch) {
+      return;
+    }
+
+    touchActive =
+      true;
+
+    touchId =
+      touch.identifier;
+
+    beginGesture(
+      touch.clientX,
+      touch.clientY
+    );
+  }
+
+  function onTouchMove(
+    event
+  ) {
+    if (
+      !touchActive
+    ) {
+      return;
+    }
+
+    const touch =
+      findTouch(
+        event.touches,
+        touchId
+      );
+
+    if (!touch) {
+      return;
+    }
+
+    moveGesture(
+      touch.clientX,
+      touch.clientY,
+      event
+    );
+  }
+
+  function onTouchEnd(
+    event
+  ) {
+    if (
+      !touchActive
+    ) {
+      return;
+    }
+
+    const touch =
+      findTouch(
+        event.changedTouches,
+        touchId
+      );
+
+    if (!touch) {
+      return;
+    }
+
+    /*
+     * Prevent Safari synthetic click / zoom.
+     */
+    if (
+      event.cancelable
+    ) {
+      event.preventDefault();
+    }
+
+    touchActive =
+      false;
+
+    touchId =
+      null;
+
+    finishGesture(
+      touch.clientX,
+      touch.clientY
+    );
+  }
+
+  function onTouchCancel() {
+    if (
+      !touchActive
+    ) {
+      return;
+    }
+
+    touchActive =
+      false;
+
+    touchId =
+      null;
+
+    cancelGesture();
+  }
+
+  /* =========================================================
+     DESKTOP POINTER
+     ========================================================= */
+
+  function releasePointer() {
+    if (
+      pointerId !== null &&
+      radar
+        ?.hasPointerCapture
+        ?.(pointerId)
+    ) {
+
+      try {
+        radar.releasePointerCapture(
+          pointerId
+        );
+      } catch {
+        /*
+         * Ignore.
+         */
+      }
+
+    }
+
+    pointerId =
+      null;
+  }
+
+  function onPointerDown(
+    event
+  ) {
+    /*
+     * Touch is handled separately.
+     */
+    if (
+      event.pointerType ===
+      "touch"
+    ) {
+      return;
+    }
+
+    if (
+      pointerId !== null
+    ) {
+      return;
+    }
+
+    if (
+      event.pointerType ===
+        "mouse" &&
+      event.button !==
+        0
+    ) {
+      return;
+    }
+
+    pointerId =
+      event.pointerId;
+
+    try {
+      radar.setPointerCapture(
+        pointerId
+      );
+    } catch {
+      /*
+       * Ignore.
+       */
+    }
+
+    beginGesture(
+      event.clientX,
+      event.clientY
+    );
+  }
+
+  function onPointerMove(
+    event
+  ) {
+    if (
+      event.pointerType ===
+        "touch" ||
+      event.pointerId !==
+        pointerId
+    ) {
+      return;
+    }
+
+    moveGesture(
+      event.clientX,
+      event.clientY,
+      event
+    );
+  }
+
+  function onPointerUp(
+    event
+  ) {
+    if (
+      event.pointerType ===
+        "touch" ||
+      event.pointerId !==
+        pointerId
+    ) {
+      return;
+    }
+
+    const x =
+      event.clientX;
+
+    const y =
+      event.clientY;
+
+    releasePointer();
+
+    finishGesture(
+      x,
+      y
+    );
+  }
+
+  /* =========================================================
+     CANCEL
+     ========================================================= */
+
+  function cancelGesture() {
     clearTimeout(
       holdTimer
     );
@@ -1735,14 +1985,20 @@ body.theme-light
     holdTimer =
       null;
 
-    releaseCapture();
+    releasePointer();
+
+    radar
+      ?.classList
+      .remove(
+        "ox-mqs-pressing"
+      );
 
     closeMenu();
   }
 
-  /* --------------------------------------------------------- */
-  /* Bind                                                      */
-  /* --------------------------------------------------------- */
+  /* =========================================================
+     BIND
+     ========================================================= */
 
   function bind() {
     radar =
@@ -1750,211 +2006,234 @@ body.theme-light
         ".app-dock .dock-radar[data-view-target='radar']"
       );
 
-    if (
-      !radar
-    ) {
+    if (!radar) {
       return false;
     }
 
     if (
-      radar
-        .dataset
+      radar.dataset
         .oxQuickSwitch ===
-      "1"
+      "2"
     ) {
       return true;
     }
 
-    radar
-      .dataset
+    radar.dataset
       .oxQuickSwitch =
-      "1";
+      "2";
 
     addStyles();
 
     buildMenu();
 
-    /*
-     * Touch / mouse
-     */
-
-    radar
-      .addEventListener(
-        "pointerdown",
-        onDown,
-        {
-          passive: false
-        }
-      );
-
-    radar
-      .addEventListener(
-        "pointermove",
-        onMove,
-        {
-          passive: false
-        }
-      );
-
-    radar
-      .addEventListener(
-        "pointerup",
-        onUp,
-        {
-          passive: false
-        }
-      );
-
-    radar
-      .addEventListener(
-        "pointercancel",
-        cancel,
-        {
-          passive: false
-        }
-      );
+    lockMobileViewport();
 
     /*
-     * 防止手機長按跳出系統選單
-     */
-
-    radar
-      .addEventListener(
-        "contextmenu",
-        event =>
-          event
-            .preventDefault()
-      );
-
-    /*
-     * Radar 現在由 PointerUp
-     * 統一處理點擊
+     * =======================================================
+     * MOBILE
      *
-     * 避免既有 click handler
-     * 又執行第二次
-     */
-
-    radar
-      .addEventListener(
-        "click",
-
-        event => {
-
-          event
-            .preventDefault();
-
-          event
-            .stopImmediatePropagation();
-
-        },
-
-        true
-      );
-
-    /*
-     * Keyboard fallback
-     */
-
-    radar
-      .addEventListener(
-        "keydown",
-
-        event => {
-
-          if (
-            event.key ===
-              "Enter" ||
-
-            event.key ===
-              " "
-          ) {
-
-            event
-              .preventDefault();
-
-            openRadar();
-
-          }
-
-          else if (
-            event.key ===
-            "ArrowUp"
-          ) {
-
-            event
-              .preventDefault();
-
-            openMenu();
-
-          }
-
-          else if (
-            event.key ===
-            "Escape"
-          ) {
-
-            closeMenu();
-
-          }
-
-        }
-      );
-
-    /*
-     * 監聽整個網站的市場切換
+     * Important:
+     * touchmove / touchend are on DOCUMENT,
+     * not Radar.
      *
-     * 不管是快捷選單
-     * 還是其他市場切換按鈕
-     * 都會記住上一個市場
+     * So finger can leave Radar and keep moving upward.
+     * =======================================================
      */
 
-    document
-      .addEventListener(
-        "ox:marketchange",
+    radar.addEventListener(
+      "touchstart",
+      onTouchStart,
+      {
+        passive: true
+      }
+    );
 
-        event => {
+    document.addEventListener(
+      "touchmove",
+      onTouchMove,
+      {
+        passive: false,
+        capture: true
+      }
+    );
 
-          const next =
-            event
-              .detail
-              ?.market;
+    document.addEventListener(
+      "touchend",
+      onTouchEnd,
+      {
+        passive: false,
+        capture: true
+      }
+    );
 
-          if (
-            !valid(next)
-          ) {
-            return;
-          }
-
-          if (
-            next !==
-            current
-          ) {
-
-            previous =
-              current;
-
-            sessionStorage
-              .setItem(
-                PREV_KEY,
-                previous
-              );
-
-            current =
-              next;
-          }
-
-          syncMenu();
-
-        }
-      );
+    document.addEventListener(
+      "touchcancel",
+      onTouchCancel,
+      {
+        passive: false,
+        capture: true
+      }
+    );
 
     /*
-     * 裝置尺寸改變
+     * =======================================================
+     * DESKTOP
+     * =======================================================
      */
 
-    addEventListener(
-      "resize",
+    radar.addEventListener(
+      "pointerdown",
+      onPointerDown,
+      {
+        passive: false
+      }
+    );
 
+    radar.addEventListener(
+      "pointermove",
+      onPointerMove,
+      {
+        passive: false
+      }
+    );
+
+    radar.addEventListener(
+      "pointerup",
+      onPointerUp,
+      {
+        passive: false
+      }
+    );
+
+    radar.addEventListener(
+      "pointercancel",
+      event => {
+
+        if (
+          event.pointerType !==
+          "touch"
+        ) {
+          cancelGesture();
+        }
+
+      },
+      {
+        passive: false
+      }
+    );
+
+    /*
+     * Disable native context menu.
+     */
+    radar.addEventListener(
+      "contextmenu",
+      event => {
+        event.preventDefault();
+      }
+    );
+
+    /*
+     * Suppress synthetic browser click.
+     * Our own gesture system handles Radar click.
+     */
+    radar.addEventListener(
+      "click",
+      event => {
+
+        event.preventDefault();
+
+        event.stopImmediatePropagation();
+
+      },
+      true
+    );
+
+    /*
+     * Keyboard
+     */
+    radar.addEventListener(
+      "keydown",
+      event => {
+
+        if (
+          event.key === "Enter" ||
+          event.key === " "
+        ) {
+
+          event.preventDefault();
+
+          openRadar();
+
+        }
+
+        else if (
+          event.key ===
+          "ArrowUp"
+        ) {
+
+          event.preventDefault();
+
+          openMenu();
+
+        }
+
+        else if (
+          event.key ===
+          "Escape"
+        ) {
+
+          closeMenu();
+
+        }
+
+      }
+    );
+
+    /*
+     * =======================================================
+     * TRACK ALL MARKET CHANGES
+     * =======================================================
+     */
+
+    document.addEventListener(
+      "ox:marketchange",
+      event => {
+
+        const next =
+          event.detail
+            ?.market;
+
+        if (
+          !valid(next)
+        ) {
+          return;
+        }
+
+        if (
+          next !== current
+        ) {
+
+          previous =
+            current;
+
+          sessionStorage.setItem(
+            PREV_KEY,
+            previous
+          );
+
+          current =
+            next;
+
+        }
+
+        syncMenu();
+      }
+    );
+
+    /*
+     * Reposition menu when viewport changes.
+     */
+    const reposition =
       () => {
 
         if (
@@ -1964,45 +2243,59 @@ body.theme-light
               "is-open"
             )
         ) {
-
           positionMenu();
-
         }
 
-      },
+      };
 
+    window.addEventListener(
+      "resize",
+      reposition,
       {
         passive: true
       }
     );
 
-    /*
-     * 切去其他 App / 分頁
-     */
-
-    document
-      .addEventListener(
-        "visibilitychange",
-
-        () => {
-
-          if (
-            document.hidden
-          ) {
-
-            cancel();
-
-          }
-
+    window.visualViewport
+      ?.addEventListener(
+        "resize",
+        reposition,
+        {
+          passive: true
         }
       );
+
+    window.visualViewport
+      ?.addEventListener(
+        "scroll",
+        reposition,
+        {
+          passive: true
+        }
+      );
+
+    /*
+     * Close if app/tab becomes inactive.
+     */
+    document.addEventListener(
+      "visibilitychange",
+      () => {
+
+        if (
+          document.hidden
+        ) {
+          cancelGesture();
+        }
+
+      }
+    );
 
     return true;
   }
 
-  /* --------------------------------------------------------- */
-  /* Init                                                      */
-  /* --------------------------------------------------------- */
+  /* =========================================================
+     INIT
+     ========================================================= */
 
   function init() {
     if (
@@ -2011,79 +2304,58 @@ body.theme-light
       return;
     }
 
-    /*
-     * 如果 Dock 比這支 JS 晚出現
-     * 最多重新找 20 次
-     */
-
-    let tries =
-      0;
+    let tries = 0;
 
     const timer =
       setInterval(
         () => {
 
-          tries +=
-            1;
+          tries += 1;
 
           if (
             bind() ||
             tries >= 20
           ) {
-
             clearInterval(
               timer
             );
-
           }
 
         },
-
         150
       );
   }
 
-  /* --------------------------------------------------------- */
-  /* Debug API                                                 */
-  /* --------------------------------------------------------- */
+  /* =========================================================
+     DEBUG API
+     ========================================================= */
 
-  window
-    .OXMarketQuickSwitch =
+  window.OXMarketQuickSwitch =
     Object.freeze({
-
-      open:
-        openMenu,
-
-      close:
-        closeMenu,
-
+      open: openMenu,
+      close: closeMenu,
       switchMarket,
-
-      current:
-        currentMarket,
-
+      current: currentMarket,
       previous:
         () => previous
-
     });
 
-  /* --------------------------------------------------------- */
-  /* Boot                                                      */
-  /* --------------------------------------------------------- */
+  /* =========================================================
+     BOOT
+     ========================================================= */
 
   if (
     document.readyState ===
     "loading"
   ) {
 
-    document
-      .addEventListener(
-        "DOMContentLoaded",
-        init,
-        {
-          once: true
-        }
-      );
+    document.addEventListener(
+      "DOMContentLoaded",
+      init,
+      {
+        once: true
+      }
+    );
 
   } else {
 
