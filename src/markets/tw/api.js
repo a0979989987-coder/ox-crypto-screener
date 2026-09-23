@@ -73,7 +73,8 @@ const DEFAULT_TIMEOUT_MS =
  * honestly unconfigured.
  */
 const DEFAULT_API_BASE =
-  "";
+  "https://ox-crypto-screener.vercel.app/api";
+
 
 
 /*
