@@ -1,0 +1,12 @@
+{
+  "name": "ox-market-command-center",
+  "private": true,
+  "version": "4.0.0-rc.2",
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/*.test.mjs",
+    "check": "node scripts/check-build.mjs",
+    "test:e2e": "node scripts/e2e-check.cjs",
+    "verify:extraction": "node scripts/verify-extraction.mjs"
+  }
+}
