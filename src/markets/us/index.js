@@ -17,84 +17,235 @@ import { renderUSRadar } from "./radar.js";
  * - Receive activation from the market router.
  * - Start / stop the US market engine.
  * - Keep the active US view in sync with market state.
+ * - Restore the shared market host when leaving US.
  *
  * This file does NOT:
- * - call Twelve Data directly
+ * - call a market data provider directly
  * - store API secrets
- * - change Crypto / TW / Forex
- * - own the visual design
+ * - modify Crypto / TW / Forex logic
  */
 
 let activeView = "radar";
+
 let isActive = false;
+
 let requestController = null;
+
+const SHARED_HOST_ID =
+  "market-unavailable-card";
+
+
+/* -------------------------------------------------------------------------- */
+/* Shared market host                                                        */
+/* -------------------------------------------------------------------------- */
+
+/*
+ * US Home / Strength / Radar temporarily use the existing
+ * #market-unavailable-card as their rendering host.
+ *
+ * Some US views completely replace its innerHTML.
+ *
+ * When leaving US we MUST restore the original shell,
+ * otherwise the legacy MarketController cannot find:
+ *
+ * #market-unavailable-title
+ * #market-unavailable-copy
+ *
+ * This was the cause of market switching becoming stuck
+ * after visiting US Radar.
+ */
+function restoreSharedMarketHost() {
+  if (
+    typeof document ===
+    "undefined"
+  ) {
+    return;
+  }
+
+  const root =
+    document.getElementById(
+      SHARED_HOST_ID
+    );
+
+  if (!root) {
+    return;
+  }
+
+  /*
+   * Remove view-specific decoration.
+   */
+  root.classList.remove(
+    "us-radar-root"
+  );
+
+  /*
+   * Restore the original shared placeholder structure.
+   *
+   * MarketController.syncPlaceholder()
+   * will immediately replace the title/copy
+   * with the correct target market text.
+   */
+  root.innerHTML = `
+    <div
+      class="market-unavailable-icon"
+    >
+      OX
+    </div>
+
+    <div>
+      <div
+        class="page-kicker"
+      >
+        MARKET ARCHITECTURE READY
+      </div>
+
+      <h2
+        id="market-unavailable-title"
+      >
+        市場
+      </h2>
+
+      <p
+        id="market-unavailable-copy"
+      >
+        市場切換中。
+      </p>
+    </div>
+  `;
+
+  /*
+   * Hide first.
+   *
+   * The destination market's own
+   * syncPlaceholder() call decides
+   * whether it should become visible.
+   */
+  root.hidden =
+    true;
+}
+
+
+/* -------------------------------------------------------------------------- */
+/* View cleanup                                                              */
+/* -------------------------------------------------------------------------- */
+
+function prepareSharedHostForView(
+  view
+) {
+  if (
+    typeof document ===
+    "undefined"
+  ) {
+    return;
+  }
+
+  const root =
+    document.getElementById(
+      SHARED_HOST_ID
+    );
+
+  if (!root) {
+    return;
+  }
+
+  /*
+   * Radar adds a root class with its own layout.
+   * Do not let that class leak into Home / Strength.
+   */
+  if (
+    view !== "radar"
+  ) {
+    root.classList.remove(
+      "us-radar-root"
+    );
+  }
+}
+
 
 /* -------------------------------------------------------------------------- */
 /* Renderers                                                                  */
 /* -------------------------------------------------------------------------- */
 
-const renderers = Object.freeze({
-  home: renderUSHome,
-  strength: renderUSStrength,
-  radar: renderUSRadar
-});
+const renderers =
+  Object.freeze({
+    home:
+      renderUSHome,
 
-function isValidView(view) {
-  return Object.prototype.hasOwnProperty.call(
-    renderers,
-    view
-  );
+    strength:
+      renderUSStrength,
+
+    radar:
+      renderUSRadar
+  });
+
+
+function isValidView(
+  view
+) {
+  return Object.prototype
+    .hasOwnProperty
+    .call(
+      renderers,
+      view
+    );
 }
 
+
 function render(
-  state = createUSMarketState()
+  state =
+    createUSMarketState()
 ) {
   const renderer =
-    renderers[activeView];
+    renderers[
+      activeView
+    ];
 
   if (
-    typeof renderer !== "function"
+    typeof renderer !==
+    "function"
   ) {
     return null;
   }
 
-  /*
-   * The state is passed into the renderer.
-   *
-   * At the moment the existing US renderers
-   * still show placeholders.
-   *
-   * In later steps they will read this state
-   * and display real SPY / QQQ / IWM data.
-   */
-  return renderer(state);
+  prepareSharedHostForView(
+    activeView
+  );
+
+  return renderer(
+    state
+  );
 }
 
+
 /* -------------------------------------------------------------------------- */
-/* Request lifecycle                                                          */
+/* Request lifecycle                                                         */
 /* -------------------------------------------------------------------------- */
 
 function cancelRequest() {
-  if (!requestController) {
+  if (
+    !requestController
+  ) {
     return;
   }
 
   try {
     requestController.abort();
   } catch {
-    // Nothing else should fail because cancellation failed.
+    /*
+     * Cancellation failure must never
+     * block market switching.
+     */
   }
 
-  requestController = null;
+  requestController =
+    null;
 }
+
 
 async function loadMarketData({
   force = false
 } = {}) {
-  /*
-   * Cancel an older request before starting
-   * a fresh activation request.
-   */
+
   cancelRequest();
 
   const controller =
@@ -103,11 +254,6 @@ async function loadMarketData({
   requestController =
     controller;
 
-  /*
-   * refreshUSMarketState() immediately
-   * moves the engine state to "loading"
-   * before the network request finishes.
-   */
   const pending =
     refreshUSMarketState({
       signal:
@@ -117,7 +263,7 @@ async function loadMarketData({
     });
 
   /*
-   * Render the loading state immediately.
+   * Show current / loading state immediately.
    */
   if (isActive) {
     render(
@@ -129,28 +275,31 @@ async function loadMarketData({
     await pending;
 
   /*
-   * Only the currently active US module
-   * is allowed to update its UI.
-   *
-   * If the user switched to another market
-   * while the request was running,
-   * we do not render stale US content.
+   * Never let an old US request repaint
+   * after the user has already switched
+   * to another market.
    */
   if (
     isActive &&
-    requestController === controller
+    requestController ===
+      controller
   ) {
-    render(state);
+    render(
+      state
+    );
   }
 
   if (
-    requestController === controller
+    requestController ===
+    controller
   ) {
-    requestController = null;
+    requestController =
+      null;
   }
 
   return state;
 }
+
 
 /* -------------------------------------------------------------------------- */
 /* US module                                                                  */
@@ -158,91 +307,117 @@ async function loadMarketData({
 
 export const usModule =
   Object.freeze({
+
     id:
       US_MODULE_CONFIG.id,
 
     label:
       US_MODULE_CONFIG.label,
 
-    /*
-     * Keep the existing module contract.
-     * Config status will be changed only
-     * when the US real-data migration is
-     * fully ready.
-     */
     status:
       US_MODULE_CONFIG.status,
 
+
     /*
-     * Called by marketRouter when the user
-     * switches into US Market.
+     * Enter US Market
      */
     async activate({
-      view = activeView
+      view =
+        activeView
     } = {}) {
-      isActive = true;
+
+      isActive =
+        true;
 
       if (
-        isValidView(view)
+        isValidView(
+          view
+        )
       ) {
-        activeView = view;
+        activeView =
+          view;
       }
 
+      prepareSharedHostForView(
+        activeView
+      );
+
       /*
-       * Render the current state first.
-       * Usually this is idle or the most
-       * recently cached state.
+       * Render cached/current state first.
        */
       render();
 
       /*
-       * Then fetch fresh US market data.
+       * Then request fresh data.
        */
       return loadMarketData();
     },
 
+
     /*
-     * Called when switching away from US.
+     * Leave US Market
+     *
+     * IMPORTANT:
+     * This runs synchronously before
+     * the next market finishes activating.
+     *
+     * Restore the shared DOM immediately
+     * so Crypto / TW / Forex can safely
+     * continue their own UI flow.
      */
     deactivate() {
-      isActive = false;
+
+      isActive =
+        false;
 
       cancelRequest();
+
+      restoreSharedMarketHost();
     },
 
+
     /*
-     * Called when Home / Strength / Radar
-     * changes while US Market is active.
+     * Home / Strength / Radar switch
+     * while still inside US Market.
      */
-    view(view) {
+    view(
+      view
+    ) {
+
       if (
-        isValidView(view)
+        isValidView(
+          view
+        )
       ) {
-        activeView = view;
+        activeView =
+          view;
       }
 
-      if (isActive) {
-        return render();
+      if (!isActive) {
+        return null;
       }
 
-      return null;
+      prepareSharedHostForView(
+        activeView
+      );
+
+      return render();
     },
 
+
     /*
-     * Preserve the old synchronous refresh
-     * contract for compatibility.
-     *
-     * This returns the latest engine state.
+     * Existing synchronous state contract.
      */
     refresh() {
       return createUSMarketState();
     },
 
+
     /*
-     * Explicit network refresh for future
-     * refresh buttons / timers.
+     * Explicit fresh network request.
      */
     reload() {
+
       if (!isActive) {
         return Promise.resolve(
           createUSMarketState()
@@ -253,4 +428,5 @@ export const usModule =
         force: true
       });
     }
+
   });
