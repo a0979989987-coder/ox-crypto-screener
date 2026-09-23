@@ -23,6 +23,12 @@ import {
 } from "./providers/radar.js";
 
 
+import {
+  getOfficialTWQuote,
+  getOfficialTWQuotes
+} from "./providers/quotes.js";
+
+
 /*
  * OX v4.0 Modular
  * Taiwan Market Backend Gateway
@@ -55,6 +61,8 @@ import {
  * - Money Flow
  * - Themes / Industry Rotation
  * - Stock Radar
+ * - Quote
+ * - Quotes
  *
  *
  * Future upstream providers:
@@ -423,14 +431,14 @@ async function handleHealth(
           "breadth",
           "money-flow",
           "themes",
-          "radar"
+          "radar",
+          "quote",
+          "quotes"
         ]),
 
       pendingEndpoints:
         Object.freeze([
           "indicators",
-          "quote",
-          "quotes",
           "candles",
           "search"
         ]),
@@ -925,6 +933,126 @@ async function handleRadar(
 
 
 /* ========================================================================== */
+/* Quote                                                                      */
+/* ========================================================================== */
+
+async function handleQuote(
+  req,
+  res
+) {
+
+  const symbol =
+    stringParam(
+      req.query
+        .symbol
+    );
+
+
+  if (
+    !symbol
+  ) {
+
+    return fail(
+      res,
+      400,
+      "TW_QUOTE_SYMBOL_REQUIRED",
+      "Taiwan stock symbol is required."
+    );
+  }
+
+
+  const data =
+    await getOfficialTWQuote(
+      symbol
+    );
+
+
+  setShortCache(
+    res,
+    60
+  );
+
+
+  return ok(
+    res,
+    data,
+    {
+
+      provider:
+        "official-tw",
+
+      realtime:
+        false,
+
+      snapshot:
+        "daily"
+
+    }
+  );
+}
+
+
+/* ========================================================================== */
+/* Quotes                                                                     */
+/* ========================================================================== */
+
+async function handleQuotes(
+  req,
+  res
+) {
+
+  const symbols =
+    stringParam(
+      req.query
+        .symbols
+    );
+
+
+  if (
+    !symbols
+  ) {
+
+    return fail(
+      res,
+      400,
+      "TW_QUOTES_SYMBOLS_REQUIRED",
+      "At least one Taiwan stock symbol is required."
+    );
+  }
+
+
+  const data =
+    await getOfficialTWQuotes(
+      symbols
+    );
+
+
+  setShortCache(
+    res,
+    60
+  );
+
+
+  return ok(
+    res,
+    data,
+    {
+
+      provider:
+        "official-tw",
+
+      realtime:
+        false,
+
+      snapshot:
+        "daily"
+
+    }
+  );
+}
+
+
+/* ========================================================================== */
 /* Not implemented                                                           */
 /* ========================================================================== */
 
@@ -1058,27 +1186,27 @@ export default async function handler(
         );
 
 
-      case "indicators":
-
-        return handleNotImplemented(
-          res,
-          "TW indicators"
-        );
-
-
       case "quote":
 
-        return handleNotImplemented(
-          res,
-          "TW quote"
+        return await handleQuote(
+          req,
+          res
         );
 
 
       case "quotes":
 
+        return await handleQuotes(
+          req,
+          res
+        );
+
+
+      case "indicators":
+
         return handleNotImplemented(
           res,
-          "TW quotes"
+          "TW indicators"
         );
 
 
@@ -1141,6 +1269,51 @@ export default async function handler(
       );
 
 
+    /*
+     * Input errors.
+     */
+    if (
+      errorCode ===
+        "TW_QUOTE_SYMBOL_REQUIRED" ||
+      errorCode ===
+        "TW_QUOTES_SYMBOLS_REQUIRED" ||
+      errorCode ===
+        "TW_QUOTE_INVALID_SYMBOL" ||
+      errorCode ===
+        "TW_QUOTES_TOO_MANY_SYMBOLS"
+    ) {
+
+      return fail(
+        res,
+        400,
+        errorCode,
+        error?.message ||
+        "Invalid Taiwan stock symbol request."
+      );
+    }
+
+
+    /*
+     * Symbol not found.
+     */
+    if (
+      errorCode ===
+        "TW_QUOTE_NOT_FOUND"
+    ) {
+
+      return fail(
+        res,
+        404,
+        errorCode,
+        error?.message ||
+        "Taiwan stock was not found."
+      );
+    }
+
+
+    /*
+     * Official Taiwan upstream failure.
+     */
     if (
       errorCode.startsWith(
         "TW_"
