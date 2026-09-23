@@ -3,6 +3,11 @@ import {
 } from "./providers/official.js";
 
 
+import {
+  getOfficialTWBreadth
+} from "./providers/breadth.js";
+
+
 /*
  * OX v4.0 Modular
  * Taiwan Market Backend Gateway
@@ -26,6 +31,12 @@ import {
  *
  * TWSE
  * TPEx
+ *
+ *
+ * Current implemented data:
+ *
+ * - Market Pulse
+ * - Market Breadth
  *
  *
  * Future upstream providers:
@@ -208,6 +219,7 @@ function applyCors(
   if (
     !origin
   ) {
+
     return true;
   }
 
@@ -345,12 +357,12 @@ async function handleHealth(
       implementedEndpoints:
         Object.freeze([
           "health",
-          "market-pulse"
+          "market-pulse",
+          "breadth"
         ]),
 
       pendingEndpoints:
         Object.freeze([
-          "breadth",
           "money-flow",
           "themes",
           "radar",
@@ -392,13 +404,6 @@ async function handleMarketPulse(
     await getOfficialTWMarketPulse();
 
 
-  /*
-   * Current TWSE / TPEx sources are
-   * official latest-available market data.
-   *
-   * They are NOT treated as licensed
-   * streaming real-time quotes.
-   */
   setShortCache(
     res,
     60
@@ -412,6 +417,163 @@ async function handleMarketPulse(
 
       provider:
         "official-tw",
+
+      realtime:
+        false
+
+    }
+  );
+}
+
+
+/* ========================================================================== */
+/* Market Breadth                                                             */
+/* ========================================================================== */
+
+async function handleBreadth(
+  req,
+  res
+) {
+
+  const requestedMarket =
+    stringParam(
+      req.query
+        .market,
+      "ALL"
+    )
+      .toUpperCase();
+
+
+  const data =
+    await getOfficialTWBreadth();
+
+
+  setShortCache(
+    res,
+    60
+  );
+
+
+  /*
+   * The provider returns:
+   *
+   * data.breadth
+   * data.markets.TWSE
+   * data.markets.TPEX
+   *
+   * The frontend TW Engine currently
+   * consumes data.breadth automatically.
+   */
+  if (
+    requestedMarket ===
+      "TWSE" ||
+    requestedMarket ===
+      "TPEX"
+  ) {
+
+    const marketData =
+      data
+        ?.markets
+        ?.[requestedMarket] ||
+      null;
+
+
+    if (
+      !marketData
+    ) {
+
+      return fail(
+        res,
+        503,
+        "TW_BREADTH_MARKET_UNAVAILABLE",
+        `${requestedMarket} breadth data is currently unavailable.`
+      );
+    }
+
+
+    return ok(
+      res,
+      {
+
+        breadth: {
+
+          advancers:
+            marketData
+              .advancers ??
+            null,
+
+          decliners:
+            marketData
+              .decliners ??
+            null,
+
+          unchanged:
+            marketData
+              .unchanged ??
+            null,
+
+          limitUp:
+            marketData
+              .limitUp ??
+            null,
+
+          limitDown:
+            marketData
+              .limitDown ??
+            null,
+
+          newHigh20:
+            null,
+
+          newLow20:
+            null,
+
+          surgeCount:
+            null,
+
+          turnoverTwd:
+            null
+
+        },
+
+        market:
+          marketData,
+
+        updatedAt:
+          data
+            .updatedAt,
+
+        meta:
+          data
+            .meta
+
+      },
+      {
+
+        provider:
+          "official-tw",
+
+        market:
+          requestedMarket,
+
+        realtime:
+          false
+
+      }
+    );
+  }
+
+
+  return ok(
+    res,
+    data,
+    {
+
+      provider:
+        "official-tw",
+
+      market:
+        "ALL",
 
       realtime:
         false
@@ -549,9 +711,9 @@ export default async function handler(
 
       case "breadth":
 
-        return handleNotImplemented(
-          res,
-          "TW market breadth"
+        return await handleBreadth(
+          req,
+          res
         );
 
 
