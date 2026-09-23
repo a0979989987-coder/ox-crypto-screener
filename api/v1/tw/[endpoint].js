@@ -39,6 +39,11 @@ import {
 } from "./providers/candles.js";
 
 
+import {
+  getOfficialTWIndicators
+} from "./providers/indicators.js";
+
+
 /*
  * OX v4.0 Modular
  * Taiwan Market Backend Gateway
@@ -59,10 +64,6 @@ import {
  * - Quotes
  * - Search
  * - Candles
- *
- *
- * Pending:
- *
  * - Indicators
  *
  *
@@ -496,13 +497,12 @@ async function handleHealth(
           "quote",
           "quotes",
           "search",
-          "candles"
+          "candles",
+          "indicators"
         ]),
 
       pendingEndpoints:
-        Object.freeze([
-          "indicators"
-        ]),
+        Object.freeze([]),
 
       timestamp:
         new Date()
@@ -1326,10 +1326,6 @@ async function handleCandles(
     );
 
 
-  /*
-   * Historical daily data does not
-   * need ultra-short cache.
-   */
   setShortCache(
     res,
     300
@@ -1359,19 +1355,73 @@ async function handleCandles(
 
 
 /* ========================================================================== */
-/* Not implemented                                                           */
+/* Indicators                                                                 */
 /* ========================================================================== */
 
-function handleNotImplemented(
-  res,
-  feature
+async function handleIndicators(
+  req,
+  res
 ) {
 
-  return fail(
+  const symbol =
+    stringParam(
+      req.query
+        .symbol
+    );
+
+
+  /*
+   * Frontend sends ids as a comma-separated
+   * query string, but the provider also
+   * accepts arrays.
+   */
+  const ids =
+    req.query
+      .ids ||
+    [];
+
+
+  const data =
+    await getOfficialTWIndicators(
+      {
+
+        symbol:
+          symbol ||
+          null,
+
+        ids
+
+      }
+    );
+
+
+  setShortCache(
     res,
-    501,
-    "TW_DATA_NOT_IMPLEMENTED",
-    `${feature} real-data integration has not been connected yet.`
+    symbol
+      ? 120
+      : 60
+  );
+
+
+  return ok(
+    res,
+    data,
+    {
+
+      provider:
+        "official-tw",
+
+      methodology:
+        "official-data-derived-indicators-v1",
+
+      realtime:
+        false,
+
+      symbol:
+        symbol ||
+        null
+
+    }
   );
 }
 
@@ -1526,9 +1576,9 @@ export default async function handler(
 
       case "indicators":
 
-        return handleNotImplemented(
-          res,
-          "TW indicators"
+        return await handleIndicators(
+          req,
+          res
         );
 
 
