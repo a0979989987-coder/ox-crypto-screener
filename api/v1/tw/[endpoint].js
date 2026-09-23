@@ -34,6 +34,11 @@ import {
 } from "./providers/search.js";
 
 
+import {
+  getOfficialTWCandles
+} from "./providers/candles.js";
+
+
 /*
  * OX v4.0 Modular
  * Taiwan Market Backend Gateway
@@ -53,11 +58,11 @@ import {
  * - Quote
  * - Quotes
  * - Search
+ * - Candles
  *
  *
  * Pending:
  *
- * - Candles
  * - Indicators
  *
  *
@@ -357,6 +362,75 @@ function numberParam(
 }
 
 
+function booleanParam(
+  value,
+  fallback =
+    false
+) {
+
+  const raw =
+    Array.isArray(
+      value
+    )
+      ? value[0]
+      : value;
+
+
+  if (
+    raw ===
+      undefined ||
+    raw ===
+      null ||
+    raw ===
+      ""
+  ) {
+
+    return fallback;
+  }
+
+
+  const normalized =
+    String(
+      raw
+    )
+      .trim()
+      .toLowerCase();
+
+
+  if (
+    [
+      "true",
+      "1",
+      "yes",
+      "on"
+    ].includes(
+      normalized
+    )
+  ) {
+
+    return true;
+  }
+
+
+  if (
+    [
+      "false",
+      "0",
+      "no",
+      "off"
+    ].includes(
+      normalized
+    )
+  ) {
+
+    return false;
+  }
+
+
+  return fallback;
+}
+
+
 /* ========================================================================== */
 /* Cache                                                                      */
 /* ========================================================================== */
@@ -421,12 +495,12 @@ async function handleHealth(
           "radar",
           "quote",
           "quotes",
-          "search"
+          "search",
+          "candles"
         ]),
 
       pendingEndpoints:
         Object.freeze([
-          "candles",
           "indicators"
         ]),
 
@@ -1079,9 +1153,6 @@ async function handleSearch(
     );
 
 
-  /*
-   * Empty search is not an error.
-   */
   if (
     !query
   ) {
@@ -1141,6 +1212,146 @@ async function handleSearch(
       query,
 
       limit
+
+    }
+  );
+}
+
+
+/* ========================================================================== */
+/* Candles                                                                    */
+/* ========================================================================== */
+
+async function handleCandles(
+  req,
+  res
+) {
+
+  const symbol =
+    stringParam(
+      req.query
+        .symbol
+    );
+
+
+  if (
+    !symbol
+  ) {
+
+    return fail(
+      res,
+      400,
+      "TW_CANDLES_SYMBOL_REQUIRED",
+      "Taiwan stock symbol is required."
+    );
+  }
+
+
+  const interval =
+    stringParam(
+      req.query
+        .interval,
+      "1D"
+    );
+
+
+  const range =
+    stringParam(
+      req.query
+        .range,
+      "6M"
+    );
+
+
+  const from =
+    stringParam(
+      req.query
+        .from
+    );
+
+
+  const to =
+    stringParam(
+      req.query
+        .to
+    );
+
+
+  const limit =
+    req.query
+      .limit !==
+      undefined
+      ? numberParam(
+          req.query
+            .limit,
+          null,
+          {
+            min:
+              1,
+
+            max:
+              1000
+          }
+        )
+      : null;
+
+
+  const adjusted =
+    booleanParam(
+      req.query
+        .adjusted,
+      true
+    );
+
+
+  const data =
+    await getOfficialTWCandles(
+      symbol,
+      {
+        interval,
+        range,
+
+        from:
+          from ||
+          null,
+
+        to:
+          to ||
+          null,
+
+        limit,
+
+        adjusted
+      }
+    );
+
+
+  /*
+   * Historical daily data does not
+   * need ultra-short cache.
+   */
+  setShortCache(
+    res,
+    300
+  );
+
+
+  return ok(
+    res,
+    data,
+    {
+
+      provider:
+        "official-tw",
+
+      historical:
+        true,
+
+      realtime:
+        false,
+
+      interval:
+        "1D"
 
     }
   );
@@ -1307,9 +1518,9 @@ export default async function handler(
 
       case "candles":
 
-        return handleNotImplemented(
-          res,
-          "TW candles"
+        return await handleCandles(
+          req,
+          res
         );
 
 
@@ -1375,7 +1586,17 @@ export default async function handler(
       errorCode ===
         "TW_QUOTE_INVALID_SYMBOL" ||
       errorCode ===
-        "TW_QUOTES_TOO_MANY_SYMBOLS"
+        "TW_QUOTES_TOO_MANY_SYMBOLS" ||
+      errorCode ===
+        "TW_CANDLES_SYMBOL_REQUIRED" ||
+      errorCode ===
+        "TW_CANDLES_INVALID_SYMBOL" ||
+      errorCode ===
+        "TW_CANDLES_INTERVAL_NOT_SUPPORTED" ||
+      errorCode ===
+        "TW_CANDLES_INVALID_RANGE" ||
+      errorCode ===
+        "TW_CANDLES_RANGE_TOO_LARGE"
     ) {
 
       return fail(
@@ -1383,17 +1604,19 @@ export default async function handler(
         400,
         errorCode,
         error?.message ||
-        "Invalid Taiwan stock request."
+        "Invalid Taiwan market request."
       );
     }
 
 
     /*
-     * Symbol not found.
+     * Symbol / candle data not found.
      */
     if (
       errorCode ===
-        "TW_QUOTE_NOT_FOUND"
+        "TW_QUOTE_NOT_FOUND" ||
+      errorCode ===
+        "TW_CANDLES_NOT_FOUND"
     ) {
 
       return fail(
@@ -1401,7 +1624,7 @@ export default async function handler(
         404,
         errorCode,
         error?.message ||
-        "Taiwan stock was not found."
+        "Taiwan market data was not found."
       );
     }
 
