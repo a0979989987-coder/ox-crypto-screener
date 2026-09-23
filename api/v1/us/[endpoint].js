@@ -1,724 +1,931 @@
-import { US_MODULE_CONFIG } from "./config.js";
+const TWELVE_DATA_BASE_URL = "https://api.twelvedata.com";
 
-/*
- * OX v4.0 Modular
- * US Market Data Provider
- *
- * Responsibility:
- * - Browser-side US market data client only.
- * - Talks to an OX-owned server-side proxy.
- * - NEVER stores or sends upstream API secrets from the frontend.
- *
- * Backend contract:
- *   {API_BASE}/v1/us/health
- *   {API_BASE}/v1/us/quote
- *   {API_BASE}/v1/us/quotes
- *   {API_BASE}/v1/us/candles
- *   {API_BASE}/v1/us/market-pulse
- *   {API_BASE}/v1/us/breadth
- *   {API_BASE}/v1/us/sectors
- *   {API_BASE}/v1/us/radar
- *   {API_BASE}/v1/us/search
- *
- * API base can be supplied by:
- * 1. usProvider.configure({ apiBase })
- * 2. globalThis.OX_US_DATA_API_BASE
- * 3. <meta name="ox-us-data-api-base" content="https://...">
- * 4. localStorage["ox-us-data-api-base"]
- *
- * IMPORTANT:
- * API_BASE is only the public proxy URL.
- * Never place provider API keys/tokens/secrets here.
- */
+const DEFAULT_TIMEOUT_MS = 10000;
 
-const CONTRACT_VERSION = "1";
-const API_PREFIX = `/v${CONTRACT_VERSION}/us`;
-const DEFAULT_TIMEOUT_MS = 12000;
-
-const STORAGE_KEY = "ox-us-data-api-base";
-const META_NAME = "ox-us-data-api-base";
-const GLOBAL_KEY = "OX_US_DATA_API_BASE";
-
-let runtimeApiBase = "";
+const DEFAULT_ALLOWED_ORIGINS = [
+  "https://a0979989987-coder.github.io",
+  "http://localhost:3000",
+  "http://localhost:5173",
+  "http://127.0.0.1:3000",
+  "http://127.0.0.1:5173"
+];
 
 /* -------------------------------------------------------------------------- */
-/* Error                                                                      */
+/* Helpers                                                                    */
 /* -------------------------------------------------------------------------- */
 
-export class USDataProviderError extends Error {
-  constructor(message, {
-    code = "US_DATA_ERROR",
-    status = 0,
-    details = null,
-    cause = null
-  } = {}) {
-    super(message);
+function json(res, status, body) {
+  res.status(status);
+  res.setHeader("Content-Type", "application/json; charset=utf-8");
 
-    this.name = "USDataProviderError";
-    this.code = code;
-    this.status = status;
-    this.details = details;
+  return res.end(JSON.stringify(body));
+}
 
-    if (cause) {
-      this.cause = cause;
+function ok(res, data, meta = undefined) {
+  return json(res, 200, {
+    ok: true,
+    data,
+    ...(meta ? { meta } : {})
+  });
+}
+
+function fail(
+  res,
+  status,
+  code,
+  message,
+  details = undefined
+) {
+  return json(res, status, {
+    ok: false,
+    error: {
+      code,
+      message,
+      ...(details ? { details } : {})
     }
-  }
+  });
 }
 
-/* -------------------------------------------------------------------------- */
-/* API base                                                                   */
-/* -------------------------------------------------------------------------- */
+function getAllowedOrigins() {
+  const extra = String(
+    process.env.OX_ALLOWED_ORIGINS || ""
+  )
+    .split(",")
+    .map(value => value.trim())
+    .filter(Boolean);
 
-function normalizeApiBase(value) {
-  if (typeof value !== "string") return "";
-
-  const trimmed = value.trim().replace(/\/+$/, "");
-
-  if (!trimmed) return "";
-
-  let parsed;
-
-  try {
-    parsed = new URL(trimmed);
-  } catch {
-    throw new USDataProviderError(
-      "US market data API base must be an absolute URL.",
-      { code: "US_DATA_INVALID_API_BASE" }
-    );
-  }
-
-  if (!["http:", "https:"].includes(parsed.protocol)) {
-    throw new USDataProviderError(
-      "US market data API base must use HTTP or HTTPS.",
-      { code: "US_DATA_INVALID_API_BASE" }
-    );
-  }
-
-  /*
-   * GitHub Pages runs on HTTPS.
-   * Do not allow an insecure remote API that browsers would block as mixed content.
-   */
-  if (
-    typeof location !== "undefined" &&
-    location.protocol === "https:" &&
-    parsed.protocol !== "https:" &&
-    !["localhost", "127.0.0.1"].includes(parsed.hostname)
-  ) {
-    throw new USDataProviderError(
-      "US market data API must use HTTPS when OX is running over HTTPS.",
-      { code: "US_DATA_INSECURE_API_BASE" }
-    );
-  }
-
-  return trimmed;
-}
-
-function readGlobalApiBase() {
-  try {
-    const value = globalThis?.[GLOBAL_KEY];
-    return typeof value === "string" ? value : "";
-  } catch {
-    return "";
-  }
-}
-
-function readMetaApiBase() {
-  if (typeof document === "undefined") return "";
-
-  try {
-    return (
-      document
-        .querySelector(`meta[name="${META_NAME}"]`)
-        ?.getAttribute("content") || ""
-    );
-  } catch {
-    return "";
-  }
-}
-
-function readStoredApiBase() {
-  if (typeof localStorage === "undefined") return "";
-
-  try {
-    return localStorage.getItem(STORAGE_KEY) || "";
-  } catch {
-    return "";
-  }
-}
-
-export function getUSApiBase() {
-  const candidate =
-    runtimeApiBase ||
-    readGlobalApiBase() ||
-    readMetaApiBase() ||
-    readStoredApiBase();
-
-  return normalizeApiBase(candidate);
-}
-
-/* -------------------------------------------------------------------------- */
-/* Validation                                                                 */
-/* -------------------------------------------------------------------------- */
-
-function normalizeSymbol(value) {
-  const symbol = String(value || "")
-    .trim()
-    .toUpperCase();
-
-  if (!symbol) {
-    throw new USDataProviderError(
-      "A US market symbol is required.",
-      { code: "US_DATA_SYMBOL_REQUIRED" }
-    );
-  }
-
-  if (symbol.length > 32) {
-    throw new USDataProviderError(
-      `Invalid US market symbol: ${symbol}`,
-      { code: "US_DATA_INVALID_SYMBOL" }
-    );
-  }
-
-  /*
-   * Block characters that could accidentally alter a query string.
-   * US symbols such as BRK.B, BRK-B and ^VIX remain valid.
-   */
-  if (/[\s,?&#=]/.test(symbol)) {
-    throw new USDataProviderError(
-      `Invalid US market symbol: ${symbol}`,
-      { code: "US_DATA_INVALID_SYMBOL" }
-    );
-  }
-
-  return symbol;
-}
-
-function normalizeSymbols(values) {
-  const source = Array.isArray(values) ? values : [values];
-
-  const symbols = [
-    ...new Set(
-      source
-        .filter(value => value !== null && value !== undefined && value !== "")
-        .map(normalizeSymbol)
-    )
+  return [
+    ...new Set([
+      ...DEFAULT_ALLOWED_ORIGINS,
+      ...extra
+    ])
   ];
-
-  if (!symbols.length) {
-    throw new USDataProviderError(
-      "At least one US market symbol is required.",
-      { code: "US_DATA_SYMBOLS_REQUIRED" }
-    );
-  }
-
-  return symbols;
 }
 
-function normalizeLimit(value, fallback, max = 500) {
-  const parsed = Number(value);
+function applyCors(req, res) {
+  const origin = req.headers.origin;
 
-  if (!Number.isFinite(parsed)) return fallback;
-
-  return Math.max(1, Math.min(max, Math.floor(parsed)));
-}
-
-/* -------------------------------------------------------------------------- */
-/* URL                                                                        */
-/* -------------------------------------------------------------------------- */
-
-function toQueryValue(value) {
-  if (value instanceof Date) {
-    return value.toISOString();
+  if (!origin) {
+    return true;
   }
 
-  if (Array.isArray(value)) {
-    return value.join(",");
+  const allowed = getAllowedOrigins();
+
+  if (!allowed.includes(origin)) {
+    return false;
   }
 
-  if (typeof value === "boolean") {
-    return value ? "true" : "false";
-  }
-
-  return String(value);
-}
-
-function buildURL(endpoint, params = {}) {
-  const base = getUSApiBase();
-
-  if (!base) {
-    throw new USDataProviderError(
-      "US market data backend has not been configured yet.",
-      { code: "US_DATA_API_UNCONFIGURED" }
-    );
-  }
-
-  const cleanEndpoint = String(endpoint || "")
-    .replace(/^\/+/, "")
-    .replace(/\/+$/, "");
-
-  const url = new URL(
-    `${base}${API_PREFIX}/${cleanEndpoint}`
+  res.setHeader(
+    "Access-Control-Allow-Origin",
+    origin
   );
 
-  Object.entries(params).forEach(([key, value]) => {
-    if (
-      value === undefined ||
-      value === null ||
-      value === ""
-    ) {
-      return;
-    }
+  res.setHeader(
+    "Vary",
+    "Origin"
+  );
 
-    url.searchParams.set(key, toQueryValue(value));
-  });
+  res.setHeader(
+    "Access-Control-Allow-Methods",
+    "GET, OPTIONS"
+  );
 
-  return url;
+  res.setHeader(
+    "Access-Control-Allow-Headers",
+    "Content-Type"
+  );
+
+  return true;
 }
 
-/* -------------------------------------------------------------------------- */
-/* Response                                                                   */
-/* -------------------------------------------------------------------------- */
+function getApiKey() {
+  return String(
+    process.env.TWELVE_DATA_API_KEY || ""
+  ).trim();
+}
 
-async function parseResponse(response) {
-  const text = await response.text();
-
-  if (!text) return null;
-
-  try {
-    return JSON.parse(text);
-  } catch {
-    throw new USDataProviderError(
-      "US market data backend returned invalid JSON.",
-      {
-        code: "US_DATA_INVALID_RESPONSE",
-        status: response.status
-      }
-    );
+function stringParam(value, fallback = "") {
+  if (Array.isArray(value)) {
+    return String(value[0] || fallback).trim();
   }
+
+  return String(
+    value === undefined || value === null
+      ? fallback
+      : value
+  ).trim();
 }
 
-function extractErrorMessage(payload, fallback) {
-  if (!payload || typeof payload !== "object") {
+function numberParam(
+  value,
+  fallback,
+  min,
+  max
+) {
+  const parsed = Number(value);
+
+  if (!Number.isFinite(parsed)) {
     return fallback;
   }
 
-  if (typeof payload.message === "string") {
-    return payload.message;
+  return Math.max(
+    min,
+    Math.min(max, Math.floor(parsed))
+  );
+}
+
+function booleanParam(value, fallback = false) {
+  if (value === undefined || value === null) {
+    return fallback;
   }
 
-  if (typeof payload.error === "string") {
-    return payload.error;
+  const normalized = String(value)
+    .trim()
+    .toLowerCase();
+
+  if (
+    normalized === "true" ||
+    normalized === "1" ||
+    normalized === "yes"
+  ) {
+    return true;
   }
 
   if (
-    payload.error &&
-    typeof payload.error.message === "string"
+    normalized === "false" ||
+    normalized === "0" ||
+    normalized === "no"
   ) {
-    return payload.error.message;
+    return false;
   }
 
   return fallback;
 }
 
-function unwrapPayload(payload) {
-  /*
-   * Preferred backend contract:
-   *
-   * {
-   *   ok: true,
-   *   data: ...
-   * }
-   *
-   * Direct JSON is also supported so the provider stays loosely coupled.
-   */
+function normalizeSymbol(value) {
+  const symbol = stringParam(value)
+    .toUpperCase();
 
-  if (
-    payload &&
-    typeof payload === "object" &&
-    payload.ok === false
-  ) {
-    throw new USDataProviderError(
-      extractErrorMessage(
-        payload,
-        "US market data request failed."
-      ),
-      {
-        code:
-          payload?.error?.code ||
-          payload?.code ||
-          "US_DATA_BACKEND_ERROR",
-        details: payload
-      }
-    );
+  if (!symbol) {
+    throw new Error("SYMBOL_REQUIRED");
   }
 
   if (
-    payload &&
-    typeof payload === "object" &&
-    Object.prototype.hasOwnProperty.call(payload, "data")
+    symbol.length > 32 ||
+    /[\s,?&#=]/.test(symbol)
   ) {
-    return payload.data;
+    throw new Error("INVALID_SYMBOL");
   }
 
-  return payload;
+  return symbol;
+}
+
+function normalizeSymbols(value) {
+  const symbols = String(value || "")
+    .split(",")
+    .map(symbol => symbol.trim())
+    .filter(Boolean)
+    .map(normalizeSymbol);
+
+  return [...new Set(symbols)];
 }
 
 /* -------------------------------------------------------------------------- */
-/* Request                                                                    */
+/* Twelve Data                                                                */
 /* -------------------------------------------------------------------------- */
 
-async function request(endpoint, {
+async function twelveDataRequest(
+  pathname,
   params = {},
-  signal = null,
-  timeoutMs = DEFAULT_TIMEOUT_MS
-} = {}) {
-  if (typeof fetch !== "function") {
-    throw new USDataProviderError(
-      "Fetch API is not available in this environment.",
-      { code: "US_DATA_FETCH_UNAVAILABLE" }
+  {
+    timeoutMs = DEFAULT_TIMEOUT_MS
+  } = {}
+) {
+  const apiKey = getApiKey();
+
+  if (!apiKey) {
+    const error = new Error(
+      "TWELVE_DATA_API_KEY is not configured."
     );
+
+    error.code = "API_KEY_MISSING";
+
+    throw error;
   }
 
-  const url = buildURL(endpoint, params);
-  const controller = new AbortController();
+  const url = new URL(
+    pathname,
+    TWELVE_DATA_BASE_URL
+  );
 
-  let timedOut = false;
+  Object.entries(params).forEach(
+    ([key, value]) => {
+      if (
+        value === undefined ||
+        value === null ||
+        value === ""
+      ) {
+        return;
+      }
 
-  const onExternalAbort = () => {
-    controller.abort();
-  };
-
-  if (signal) {
-    if (signal.aborted) {
-      controller.abort();
-    } else {
-      signal.addEventListener(
-        "abort",
-        onExternalAbort,
-        { once: true }
+      url.searchParams.set(
+        key,
+        String(value)
       );
     }
-  }
+  );
 
-  const timer = setTimeout(() => {
-    timedOut = true;
-    controller.abort();
-  }, Math.max(1000, Number(timeoutMs) || DEFAULT_TIMEOUT_MS));
+  const controller =
+    new AbortController();
+
+  const timer = setTimeout(
+    () => controller.abort(),
+    timeoutMs
+  );
 
   try {
-    const response = await fetch(url.toString(), {
-      method: "GET",
-      mode: "cors",
-      credentials: "omit",
-      cache: "no-store",
-      headers: {
-        Accept: "application/json"
-      },
-      signal: controller.signal
-    });
+    const response = await fetch(
+      url.toString(),
+      {
+        method: "GET",
 
-    const payload = await parseResponse(response);
+        headers: {
+          Accept: "application/json",
 
-    if (!response.ok) {
-      throw new USDataProviderError(
-        extractErrorMessage(
-          payload,
-          `US market data request failed with HTTP ${response.status}.`
-        ),
-        {
-          code: "US_DATA_HTTP_ERROR",
-          status: response.status,
-          details: payload
-        }
-      );
+          /*
+           * IMPORTANT:
+           *
+           * API Key stays on the server.
+           * It is NEVER returned to the browser.
+           */
+          Authorization:
+            `apikey ${apiKey}`
+        },
+
+        signal: controller.signal
+      }
+    );
+
+    const text =
+      await response.text();
+
+    let payload = null;
+
+    if (text) {
+      try {
+        payload = JSON.parse(text);
+      } catch {
+        const error = new Error(
+          "Twelve Data returned invalid JSON."
+        );
+
+        error.code =
+          "UPSTREAM_INVALID_JSON";
+
+        throw error;
+      }
     }
 
-    return unwrapPayload(payload);
-  } catch (error) {
-    if (error instanceof USDataProviderError) {
+    /*
+     * Twelve Data may return API errors
+     * inside a JSON payload.
+     */
+    if (
+      !response.ok ||
+      payload?.status === "error"
+    ) {
+      const error = new Error(
+        payload?.message ||
+        `Twelve Data HTTP ${response.status}`
+      );
+
+      error.code =
+        payload?.code ||
+        "UPSTREAM_ERROR";
+
+      error.status =
+        response.status;
+
+      error.details =
+        payload;
+
       throw error;
     }
 
-    if (timedOut) {
-      throw new USDataProviderError(
-        "US market data request timed out.",
-        {
-          code: "US_DATA_TIMEOUT",
-          cause: error
-        }
-      );
+    return payload;
+  } catch (error) {
+    if (
+      error?.name === "AbortError"
+    ) {
+      const timeoutError =
+        new Error(
+          "Twelve Data request timed out."
+        );
+
+      timeoutError.code =
+        "UPSTREAM_TIMEOUT";
+
+      throw timeoutError;
     }
 
-    if (signal?.aborted) {
-      throw new USDataProviderError(
-        "US market data request was cancelled.",
-        {
-          code: "US_DATA_ABORTED",
-          cause: error
-        }
-      );
-    }
-
-    throw new USDataProviderError(
-      "Unable to reach the US market data backend.",
-      {
-        code: "US_DATA_NETWORK_ERROR",
-        cause: error
-      }
-    );
+    throw error;
   } finally {
     clearTimeout(timer);
+  }
+}
 
-    if (signal) {
-      signal.removeEventListener(
-        "abort",
-        onExternalAbort
+/* -------------------------------------------------------------------------- */
+/* Cache                                                                      */
+/* -------------------------------------------------------------------------- */
+
+function setShortCache(res, seconds = 10) {
+  res.setHeader(
+    "Cache-Control",
+    `public, s-maxage=${seconds}, stale-while-revalidate=${Math.max(
+      10,
+      seconds * 2
+    )}`
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/* Quote                                                                      */
+/* -------------------------------------------------------------------------- */
+
+async function handleQuote(req, res) {
+  const symbol =
+    normalizeSymbol(
+      req.query.symbol
+    );
+
+  const data =
+    await twelveDataRequest(
+      "/quote",
+      {
+        symbol
+      }
+    );
+
+  setShortCache(res, 5);
+
+  return ok(res, data, {
+    provider: "twelve-data"
+  });
+}
+
+/* -------------------------------------------------------------------------- */
+/* Quotes                                                                     */
+/* -------------------------------------------------------------------------- */
+
+async function handleQuotes(req, res) {
+  const symbols =
+    normalizeSymbols(
+      req.query.symbols
+    );
+
+  if (!symbols.length) {
+    return fail(
+      res,
+      400,
+      "SYMBOLS_REQUIRED",
+      "At least one symbol is required."
+    );
+  }
+
+  if (symbols.length > 20) {
+    return fail(
+      res,
+      400,
+      "TOO_MANY_SYMBOLS",
+      "A maximum of 20 symbols can be requested at once."
+    );
+  }
+
+  const data =
+    await twelveDataRequest(
+      "/quote",
+      {
+        symbol: symbols.join(",")
+      }
+    );
+
+  setShortCache(res, 5);
+
+  return ok(res, data, {
+    provider: "twelve-data"
+  });
+}
+
+/* -------------------------------------------------------------------------- */
+/* Candles                                                                    */
+/* -------------------------------------------------------------------------- */
+
+function mapInterval(interval) {
+  const value =
+    String(interval || "1D")
+      .trim();
+
+  const map = {
+    "1m": "1min",
+    "5m": "5min",
+    "15m": "15min",
+    "30m": "30min",
+
+    "1H": "1h",
+    "1h": "1h",
+
+    "2H": "2h",
+    "2h": "2h",
+
+    "4H": "4h",
+    "4h": "4h",
+
+    "1D": "1day",
+    "1d": "1day",
+    "1day": "1day",
+
+    "1W": "1week",
+    "1w": "1week",
+    "1week": "1week"
+  };
+
+  return map[value] || "1day";
+}
+
+function outputSizeFromRange(
+  range,
+  interval
+) {
+  const normalizedRange =
+    String(range || "3M")
+      .toUpperCase();
+
+  const normalizedInterval =
+    mapInterval(interval);
+
+  /*
+   * These values are not trading signals.
+   * They only decide how many candles
+   * the backend requests.
+   */
+  const daily = {
+    "5D": 10,
+    "1M": 35,
+    "3M": 100,
+    "6M": 190,
+    "YTD": 300,
+    "1Y": 380,
+    "2Y": 760,
+    "5Y": 1400,
+    "MAX": 5000
+  };
+
+  if (
+    normalizedInterval === "1day" ||
+    normalizedInterval === "1week"
+  ) {
+    return daily[normalizedRange] || 100;
+  }
+
+  const intraday = {
+    "1D": 500,
+    "5D": 1000,
+    "1M": 1500,
+    "3M": 2500,
+    "6M": 3500
+  };
+
+  return intraday[normalizedRange] || 500;
+}
+
+async function handleCandles(req, res) {
+  const symbol =
+    normalizeSymbol(
+      req.query.symbol
+    );
+
+  const interval =
+    mapInterval(
+      req.query.interval
+    );
+
+  const range =
+    stringParam(
+      req.query.range,
+      "3M"
+    );
+
+  const requestedLimit =
+    req.query.limit
+      ? numberParam(
+          req.query.limit,
+          100,
+          1,
+          5000
+        )
+      : null;
+
+  const outputsize =
+    requestedLimit ||
+    outputSizeFromRange(
+      range,
+      interval
+    );
+
+  const from =
+    stringParam(
+      req.query.from
+    );
+
+  const to =
+    stringParam(
+      req.query.to
+    );
+
+  const extendedHours =
+    booleanParam(
+      req.query.extendedHours,
+      false
+    );
+
+  const params = {
+    symbol,
+    interval,
+    outputsize,
+    format: "JSON",
+    timezone:
+      "America/New_York"
+  };
+
+  if (from) {
+    params.start_date = from;
+  }
+
+  if (to) {
+    params.end_date = to;
+  }
+
+  /*
+   * Twelve Data documents prepost for
+   * supported US-equity plans.
+   *
+   * We only send it when OX explicitly
+   * requests extended-hours data.
+   */
+  if (extendedHours) {
+    params.prepost = "true";
+  }
+
+  const data =
+    await twelveDataRequest(
+      "/time_series",
+      params
+    );
+
+  setShortCache(
+    res,
+    interval === "1day"
+      ? 60
+      : 10
+  );
+
+  return ok(res, data, {
+    provider: "twelve-data",
+    interval
+  });
+}
+
+/* -------------------------------------------------------------------------- */
+/* Symbol search                                                              */
+/* -------------------------------------------------------------------------- */
+
+async function handleSearch(req, res) {
+  const query =
+    stringParam(req.query.q);
+
+  if (!query) {
+    return ok(res, []);
+  }
+
+  const limit =
+    numberParam(
+      req.query.limit,
+      12,
+      1,
+      50
+    );
+
+  const data =
+    await twelveDataRequest(
+      "/symbol_search",
+      {
+        symbol: query,
+        outputsize: limit
+      }
+    );
+
+  const rows =
+    Array.isArray(data?.data)
+      ? data.data
+      : [];
+
+  /*
+   * OX US market should not suddenly
+   * mix foreign listings into US search.
+   */
+  const usOnly =
+    rows.filter(item => {
+      const country =
+        String(
+          item?.country || ""
+        ).toLowerCase();
+
+      return (
+        !country ||
+        country === "united states" ||
+        country === "usa" ||
+        country === "us"
+      );
+    });
+
+  setShortCache(res, 300);
+
+  return ok(res, usOnly, {
+    provider: "twelve-data"
+  });
+}
+
+/* -------------------------------------------------------------------------- */
+/* Market Pulse                                                               */
+/* -------------------------------------------------------------------------- */
+
+async function handleMarketPulse(
+  req,
+  res
+) {
+  /*
+   * These are the four benchmarks already
+   * planned for OX US Market:
+   *
+   * SPY = broad US large-cap market
+   * QQQ = Nasdaq / growth-heavy market
+   * IWM = US small caps
+   * VIX = volatility index
+   */
+
+  const symbols = [
+    "SPY",
+    "QQQ",
+    "IWM",
+    "VIX"
+  ];
+
+  const data =
+    await twelveDataRequest(
+      "/quote",
+      {
+        symbol: symbols.join(",")
+      }
+    );
+
+  setShortCache(res, 5);
+
+  return ok(res, {
+    benchmarks: data
+  }, {
+    provider: "twelve-data"
+  });
+}
+
+/* -------------------------------------------------------------------------- */
+/* Health                                                                     */
+/* -------------------------------------------------------------------------- */
+
+async function handleHealth(req, res) {
+  const configured =
+    Boolean(getApiKey());
+
+  return ok(res, {
+    service:
+      "ox-us-market-data",
+
+    status:
+      configured
+        ? "ready"
+        : "missing-api-key",
+
+    provider:
+      "twelve-data",
+
+    apiKeyConfigured:
+      configured,
+
+    timestamp:
+      new Date().toISOString()
+  });
+}
+
+/* -------------------------------------------------------------------------- */
+/* Not implemented yet                                                        */
+/* -------------------------------------------------------------------------- */
+
+function handleNotImplemented(
+  res,
+  feature
+) {
+  /*
+   * IMPORTANT:
+   *
+   * We deliberately do NOT manufacture
+   * fake market breadth / sector / radar
+   * data.
+   *
+   * Those will be wired to real data
+   * in later steps.
+   */
+
+  return fail(
+    res,
+    501,
+    "US_DATA_NOT_IMPLEMENTED",
+    `${feature} real-data integration has not been connected yet.`
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/* Main handler                                                               */
+/* -------------------------------------------------------------------------- */
+
+export default async function handler(
+  req,
+  res
+) {
+  if (!applyCors(req, res)) {
+    return fail(
+      res,
+      403,
+      "ORIGIN_NOT_ALLOWED",
+      "This origin is not allowed to access the OX US market API."
+    );
+  }
+
+  if (req.method === "OPTIONS") {
+    res.status(204);
+    return res.end();
+  }
+
+  if (req.method !== "GET") {
+    return fail(
+      res,
+      405,
+      "METHOD_NOT_ALLOWED",
+      "Only GET requests are supported."
+    );
+  }
+
+  const endpoint =
+    stringParam(
+      req.query.endpoint
+    ).toLowerCase();
+
+  try {
+    switch (endpoint) {
+      case "health":
+        return await handleHealth(
+          req,
+          res
+        );
+
+      case "quote":
+        return await handleQuote(
+          req,
+          res
+        );
+
+      case "quotes":
+        return await handleQuotes(
+          req,
+          res
+        );
+
+      case "candles":
+        return await handleCandles(
+          req,
+          res
+        );
+
+      case "search":
+        return await handleSearch(
+          req,
+          res
+        );
+
+      case "market-pulse":
+        return await handleMarketPulse(
+          req,
+          res
+        );
+
+      case "breadth":
+        return handleNotImplemented(
+          res,
+          "US market breadth"
+        );
+
+      case "sectors":
+        return handleNotImplemented(
+          res,
+          "US sector strength"
+        );
+
+      case "radar":
+        return handleNotImplemented(
+          res,
+          "US radar"
+        );
+
+      default:
+        return fail(
+          res,
+          404,
+          "ENDPOINT_NOT_FOUND",
+          `Unknown US market endpoint: ${endpoint || "(empty)"}`
+        );
+    }
+  } catch (error) {
+    if (
+      error?.message ===
+      "SYMBOL_REQUIRED"
+    ) {
+      return fail(
+        res,
+        400,
+        "SYMBOL_REQUIRED",
+        "A symbol is required."
       );
     }
-  }
-}
 
-/* -------------------------------------------------------------------------- */
-/* Provider methods                                                           */
-/* -------------------------------------------------------------------------- */
+    if (
+      error?.message ===
+      "INVALID_SYMBOL"
+    ) {
+      return fail(
+        res,
+        400,
+        "INVALID_SYMBOL",
+        "The supplied symbol is invalid."
+      );
+    }
 
-function configure({
-  apiBase = "",
-  persist = false
-} = {}) {
-  runtimeApiBase = normalizeApiBase(apiBase);
+    if (
+      error?.code ===
+      "API_KEY_MISSING"
+    ) {
+      return fail(
+        res,
+        503,
+        "US_DATA_API_KEY_MISSING",
+        "The server-side Twelve Data API key has not been configured."
+      );
+    }
 
-  if (persist && typeof localStorage !== "undefined") {
-    try {
-      if (runtimeApiBase) {
-        localStorage.setItem(
-          STORAGE_KEY,
-          runtimeApiBase
-        );
-      } else {
-        localStorage.removeItem(STORAGE_KEY);
+    if (
+      error?.code ===
+      "UPSTREAM_TIMEOUT"
+    ) {
+      return fail(
+        res,
+        504,
+        "US_DATA_UPSTREAM_TIMEOUT",
+        "The US market data provider timed out."
+      );
+    }
+
+    /*
+     * Do not leak API credentials,
+     * stack traces or server internals
+     * to the browser.
+     */
+    console.error(
+      "[OX US API]",
+      {
+        endpoint,
+        code:
+          error?.code ||
+          "UNKNOWN",
+
+        message:
+          error?.message ||
+          "Unknown error"
       }
-    } catch {
-      // Storage failure must not break market data.
-    }
-  }
+    );
 
-  return Object.freeze({
-    apiBase: runtimeApiBase,
-    available: Boolean(runtimeApiBase)
-  });
-}
-
-function clearConfiguration({
-  clearStored = false
-} = {}) {
-  runtimeApiBase = "";
-
-  if (clearStored && typeof localStorage !== "undefined") {
-    try {
-      localStorage.removeItem(STORAGE_KEY);
-    } catch {
-      // Ignore storage errors.
-    }
+    return fail(
+      res,
+      502,
+      "US_DATA_UPSTREAM_ERROR",
+      error?.message ||
+      "Unable to retrieve US market data."
+    );
   }
 }
-
-function health(options = {}) {
-  return request("health", options);
-}
-
-function getQuote(symbol, options = {}) {
-  return request("quote", {
-    ...options,
-    params: {
-      ...options.params,
-      symbol: normalizeSymbol(symbol)
-    }
-  });
-}
-
-function getQuotes(symbols, options = {}) {
-  return request("quotes", {
-    ...options,
-    params: {
-      ...options.params,
-      symbols: normalizeSymbols(symbols)
-    }
-  });
-}
-
-function getCandles(symbol, {
-  interval = "1D",
-  range = "3M",
-  from = null,
-  to = null,
-  limit = null,
-  adjusted = true,
-  extendedHours = false,
-  signal = null,
-  timeoutMs = DEFAULT_TIMEOUT_MS
-} = {}) {
-  return request("candles", {
-    signal,
-    timeoutMs,
-    params: {
-      symbol: normalizeSymbol(symbol),
-      interval,
-      range,
-      from,
-      to,
-      limit,
-      adjusted,
-      extendedHours
-    }
-  });
-}
-
-function getMarketPulse({
-  signal = null,
-  timeoutMs = DEFAULT_TIMEOUT_MS
-} = {}) {
-  return request("market-pulse", {
-    signal,
-    timeoutMs
-  });
-}
-
-function getBreadth({
-  universe = "us",
-  exchange = null,
-  signal = null,
-  timeoutMs = DEFAULT_TIMEOUT_MS
-} = {}) {
-  return request("breadth", {
-    signal,
-    timeoutMs,
-    params: {
-      universe,
-      exchange
-    }
-  });
-}
-
-function getSectors({
-  benchmark = "SPY",
-  signal = null,
-  timeoutMs = DEFAULT_TIMEOUT_MS
-} = {}) {
-  return request("sectors", {
-    signal,
-    timeoutMs,
-    params: {
-      benchmark: normalizeSymbol(benchmark)
-    }
-  });
-}
-
-function getRadar({
-  universe = "sp500",
-  limit = 100,
-  direction = "all",
-  sort = "score",
-  session = "regular",
-  signal = null,
-  timeoutMs = DEFAULT_TIMEOUT_MS
-} = {}) {
-  return request("radar", {
-    signal,
-    timeoutMs,
-    params: {
-      universe,
-      limit: normalizeLimit(limit, 100, 500),
-      direction,
-      sort,
-      session
-    }
-  });
-}
-
-function searchSymbols(query, {
-  limit = 12,
-  signal = null,
-  timeoutMs = DEFAULT_TIMEOUT_MS
-} = {}) {
-  const q = String(query || "").trim();
-
-  if (!q) {
-    return Promise.resolve([]);
-  }
-
-  return request("search", {
-    signal,
-    timeoutMs,
-    params: {
-      q,
-      limit: normalizeLimit(limit, 12, 50)
-    }
-  });
-}
-
-/* -------------------------------------------------------------------------- */
-/* Public provider                                                            */
-/* -------------------------------------------------------------------------- */
-
-export const usProvider = Object.freeze({
-  /*
-   * Keep this tied to existing US_MODULE_CONFIG so the current market module
-   * contract and router remain untouched.
-   */
-  id: US_MODULE_CONFIG.provider,
-
-  market: "us",
-  contract: "ox-us-market-data-v1",
-  contractVersion: CONTRACT_VERSION,
-
-  transport: "server-proxy",
-
-  /*
-   * The upstream provider may require a secret,
-   * but that secret belongs ONLY on the server-side proxy.
-   */
-  secretRequired: true,
-  frontendSecretAllowed: false,
-  requiresServerProxy: true,
-
-  get available() {
-    try {
-      return Boolean(getUSApiBase());
-    } catch {
-      return false;
-    }
-  },
-
-  get apiBase() {
-    return getUSApiBase();
-  },
-
-  configure,
-  clearConfiguration,
-
-  health,
-
-  getQuote,
-  quote: getQuote,
-
-  getQuotes,
-  quotes: getQuotes,
-
-  getCandles,
-  candles: getCandles,
-
-  getMarketPulse,
-  marketPulse: getMarketPulse,
-
-  getBreadth,
-  breadth: getBreadth,
-
-  getSectors,
-  sectors: getSectors,
-
-  getRadar,
-  radar: getRadar,
-
-  search: searchSymbols
-});
