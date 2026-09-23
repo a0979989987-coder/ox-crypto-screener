@@ -6,6 +6,7 @@
  * - Calculate benchmark strength from real US market data.
  * - Use the existing US Market State only.
  * - Render SPY / QQQ / IWM strength.
+ * - Keep desktop and mobile layouts responsive.
  *
  * IMPORTANT:
  * This is BENCHMARK strength.
@@ -37,6 +38,432 @@ const BENCHMARK_CONFIG =
       weight: 0.20
     }
   });
+
+/* -------------------------------------------------------------------------- */
+/* Responsive styles                                                          */
+/* -------------------------------------------------------------------------- */
+
+const STRENGTH_STYLE = `
+<style>
+  #market-unavailable-card .us-strength-shell {
+    width: min(820px, 100%);
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
+  #market-unavailable-card .us-strength-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+    width: 100%;
+    min-width: 0;
+  }
+
+  #market-unavailable-card .us-strength-head-copy {
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+
+  #market-unavailable-card .us-strength-score-card {
+    flex: 0 0 auto;
+    width: 108px;
+    min-width: 108px;
+    padding: 16px 14px;
+    border-radius: 18px;
+    text-align: center;
+    box-sizing: border-box;
+  }
+
+  #market-unavailable-card .us-strength-total {
+    display: block;
+    font-size: 34px;
+    line-height: 1;
+    font-weight: 900;
+  }
+
+  #market-unavailable-card .us-strength-total-label {
+    display: block;
+    margin-top: 7px;
+    font-size: 11px;
+    font-weight: 800;
+  }
+
+  #market-unavailable-card .us-strength-list {
+    margin-top: 20px;
+    width: 100%;
+    min-width: 0;
+  }
+
+  #market-unavailable-card .us-strength-row {
+    display: grid;
+    grid-template-columns:
+      minmax(135px, 1fr)
+      minmax(250px, 1.7fr)
+      80px;
+    gap: 18px;
+    align-items: center;
+    width: 100%;
+    min-width: 0;
+    padding: 18px 0;
+    border-bottom:
+      1px solid rgba(130,150,175,.15);
+    box-sizing: border-box;
+  }
+
+  #market-unavailable-card .us-strength-identity,
+  #market-unavailable-card .us-strength-main {
+    min-width: 0;
+  }
+
+  #market-unavailable-card .us-strength-symbol-line {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    min-width: 0;
+  }
+
+  #market-unavailable-card .us-strength-symbol {
+    flex: 0 0 auto;
+    font-size: 20px;
+    line-height: 1.1;
+    font-weight: 900;
+    letter-spacing: .03em;
+  }
+
+  #market-unavailable-card .us-strength-name {
+    min-width: 0;
+    font-size: 10px;
+    opacity: .55;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  #market-unavailable-card .us-strength-role {
+    margin-top: 5px;
+    font-size: 11px;
+    opacity: .62;
+  }
+
+  #market-unavailable-card .us-strength-track {
+    width: 100%;
+    height: 8px;
+    border-radius: 999px;
+    background: rgba(130,150,175,.16);
+    overflow: hidden;
+  }
+
+  #market-unavailable-card .us-strength-track > i {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+  }
+
+  #market-unavailable-card .us-strength-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    margin-top: 9px;
+    font-size: 10px;
+    opacity: .72;
+  }
+
+  #market-unavailable-card .us-strength-stats span {
+    white-space: nowrap;
+  }
+
+  #market-unavailable-card .us-strength-stats b {
+    font-weight: 800;
+  }
+
+  #market-unavailable-card .us-strength-row-score {
+    text-align: right;
+  }
+
+  #market-unavailable-card .us-strength-row-score strong {
+    display: block;
+    font-size: 26px;
+    line-height: 1;
+    font-weight: 900;
+  }
+
+  #market-unavailable-card .us-strength-row-score small {
+    display: block;
+    margin-top: 6px;
+    font-size: 10px;
+    font-weight: 800;
+  }
+
+  #market-unavailable-card .us-strength-note {
+    margin-top: 18px;
+    padding: 13px 15px;
+    border-radius: 14px;
+    background: rgba(120,145,175,.07);
+    border:
+      1px solid rgba(120,145,175,.12);
+    font-size: 10px;
+    line-height: 1.7;
+    opacity: .7;
+    box-sizing: border-box;
+  }
+
+  /*
+   * Tablet
+   */
+  @media (max-width: 900px) {
+    #market-unavailable-card .us-strength-row {
+      grid-template-columns:
+        minmax(120px, .9fr)
+        minmax(190px, 1.5fr)
+        68px;
+      gap: 14px;
+    }
+
+    #market-unavailable-card .us-strength-stats {
+      gap: 7px 12px;
+    }
+  }
+
+  /*
+   * Mobile
+   *
+   * The existing placeholder card is a horizontal
+   * icon + content layout. On phones that steals
+   * too much width, so Strength becomes a single
+   * full-width column.
+   */
+  @media (max-width: 720px) {
+    #market-unavailable-card {
+      display: block !important;
+      width: 100% !important;
+      min-width: 0 !important;
+      padding: 22px 18px 24px !important;
+      box-sizing: border-box !important;
+      overflow: hidden !important;
+    }
+
+    #market-unavailable-card > .market-unavailable-icon {
+      display: none !important;
+    }
+
+    #market-unavailable-card .us-strength-shell {
+      width: 100% !important;
+      max-width: 100% !important;
+      min-width: 0 !important;
+    }
+
+    #market-unavailable-card .us-strength-head {
+      gap: 12px;
+    }
+
+    #market-unavailable-card .us-strength-head-copy {
+      padding-top: 3px;
+    }
+
+    #market-unavailable-card .us-strength-head h2 {
+      font-size: 24px !important;
+      line-height: 1.15 !important;
+    }
+
+    #market-unavailable-card .us-strength-head p {
+      margin-top: 7px !important;
+      font-size: 10px !important;
+      line-height: 1.45 !important;
+    }
+
+    #market-unavailable-card .us-strength-score-card {
+      width: 90px;
+      min-width: 90px;
+      padding: 13px 9px;
+      border-radius: 16px;
+    }
+
+    #market-unavailable-card .us-strength-total {
+      font-size: 31px;
+    }
+
+    #market-unavailable-card .us-strength-total-label {
+      margin-top: 6px;
+      font-size: 10px;
+    }
+
+    #market-unavailable-card .us-strength-list {
+      margin-top: 18px;
+    }
+
+    /*
+     * Key mobile change:
+     *
+     * Desktop:
+     * identity | bar/stats | score
+     *
+     * Mobile:
+     * identity + score
+     * full-width bar
+     * full-width stats
+     */
+    #market-unavailable-card .us-strength-row {
+      grid-template-columns:
+        minmax(0, 1fr)
+        auto;
+      grid-template-areas:
+        "identity score"
+        "main main";
+      gap: 12px 10px;
+      padding: 17px 0;
+      align-items: start;
+    }
+
+    #market-unavailable-card .us-strength-identity {
+      grid-area: identity;
+    }
+
+    #market-unavailable-card .us-strength-main {
+      grid-area: main;
+      width: 100%;
+      min-width: 0;
+    }
+
+    #market-unavailable-card .us-strength-row-score {
+      grid-area: score;
+      min-width: 54px;
+      padding-top: 1px;
+    }
+
+    #market-unavailable-card .us-strength-symbol {
+      font-size: 23px;
+    }
+
+    #market-unavailable-card .us-strength-name {
+      font-size: 10px;
+      max-width: 145px;
+    }
+
+    #market-unavailable-card .us-strength-role {
+      font-size: 11px;
+    }
+
+    #market-unavailable-card .us-strength-track {
+      height: 9px;
+    }
+
+    #market-unavailable-card .us-strength-stats {
+      display: grid;
+      grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+      gap: 7px;
+      width: 100%;
+      margin-top: 10px;
+    }
+
+    #market-unavailable-card .us-strength-stats span {
+      min-width: 0;
+      padding: 8px 7px;
+      border-radius: 9px;
+      text-align: center;
+      white-space: normal;
+      line-height: 1.35;
+      background:
+        rgba(120,145,175,.06);
+      box-sizing: border-box;
+    }
+
+    #market-unavailable-card .us-strength-stats b {
+      display: block;
+      margin-top: 2px;
+    }
+
+    #market-unavailable-card .us-strength-row-score strong {
+      font-size: 25px;
+    }
+
+    #market-unavailable-card .us-strength-row-score small {
+      font-size: 9px;
+    }
+
+    #market-unavailable-card .us-strength-note {
+      margin-top: 16px;
+      padding: 12px;
+      font-size: 9px;
+      line-height: 1.65;
+    }
+  }
+
+  /*
+   * 414 / 430 phones
+   */
+  @media (max-width: 430px) {
+    #market-unavailable-card {
+      padding:
+        20px 15px 22px !important;
+    }
+
+    #market-unavailable-card .us-strength-score-card {
+      width: 84px;
+      min-width: 84px;
+    }
+
+    #market-unavailable-card .us-strength-name {
+      max-width: 125px;
+    }
+  }
+
+  /*
+   * 375 / 390 phones
+   */
+  @media (max-width: 390px) {
+    #market-unavailable-card {
+      padding:
+        18px 13px 21px !important;
+    }
+
+    #market-unavailable-card .us-strength-head {
+      gap: 8px;
+    }
+
+    #market-unavailable-card .us-strength-score-card {
+      width: 78px;
+      min-width: 78px;
+      padding:
+        12px 7px;
+    }
+
+    #market-unavailable-card .us-strength-total {
+      font-size: 28px;
+    }
+
+    #market-unavailable-card .us-strength-name {
+      max-width: 105px;
+    }
+
+    #market-unavailable-card .us-strength-stats {
+      gap: 5px;
+    }
+
+    #market-unavailable-card .us-strength-stats span {
+      padding:
+        7px 4px;
+      font-size: 9px;
+    }
+  }
+
+  @media (max-width: 375px) {
+    #market-unavailable-card .us-strength-head p {
+      font-size: 9px !important;
+    }
+
+    #market-unavailable-card .us-strength-symbol {
+      font-size: 21px;
+    }
+
+    #market-unavailable-card .us-strength-name {
+      max-width: 95px;
+      font-size: 9px;
+    }
+  }
+</style>
+`;
 
 /* -------------------------------------------------------------------------- */
 /* Helpers                                                                    */
@@ -195,6 +622,33 @@ function volumeRatio(
   return volume / average;
 }
 
+function strengthLabel(score) {
+  const value =
+    finiteNumber(score);
+
+  if (value === null) {
+    return "無資料";
+  }
+
+  if (value >= 80) {
+    return "強勢";
+  }
+
+  if (value >= 65) {
+    return "偏強";
+  }
+
+  if (value >= 45) {
+    return "中性";
+  }
+
+  if (value >= 30) {
+    return "偏弱";
+  }
+
+  return "弱勢";
+}
+
 function calculateBenchmarkStrength(
   benchmark
 ) {
@@ -233,24 +687,10 @@ function calculateBenchmarkStrength(
     );
 
   /*
-   * OX benchmark strength model:
+   * Same OX strength model as before.
    *
-   * 50 = neutral
-   *
-   * Daily change:
-   * biggest weight because it represents
-   * the benchmark's session direction.
-   *
-   * Intraday open -> last:
-   * confirms whether strength continued
-   * during the session.
-   *
-   * Volume:
-   * small confirmation adjustment only.
-   *
-   * This is deliberately simple and
-   * explainable. It is not an investment
-   * recommendation.
+   * We are NOT changing the calculation
+   * in this responsive update.
    */
 
   const dayComponent =
@@ -270,12 +710,6 @@ function calculateBenchmarkStrength(
   let volumeComponent = 0;
 
   if (volRatio !== null) {
-    /*
-     * High volume strengthens the current
-     * direction slightly.
-     *
-     * It does NOT decide direction itself.
-     */
     const volumeIntensity =
       clamp(
         (volRatio - 1) * 8,
@@ -321,33 +755,6 @@ function calculateBenchmarkStrength(
         score
       )
   });
-}
-
-function strengthLabel(score) {
-  const value =
-    finiteNumber(score);
-
-  if (value === null) {
-    return "無資料";
-  }
-
-  if (value >= 80) {
-    return "強勢";
-  }
-
-  if (value >= 65) {
-    return "偏強";
-  }
-
-  if (value >= 45) {
-    return "中性";
-  }
-
-  if (value >= 30) {
-    return "偏弱";
-  }
-
-  return "弱勢";
 }
 
 function calculateMarketStrength(
@@ -467,35 +874,36 @@ function renderBenchmarkRow(
   ) {
     return `
       <div
-        style="
-          display:grid;
-          grid-template-columns:
-            minmax(110px,1fr)
-            minmax(90px,.8fr)
-            72px;
-          gap:14px;
-          align-items:center;
-          padding:16px 0;
-          border-bottom:
-            1px solid rgba(130,150,175,.15);
-        "
+        class="us-strength-row"
+        data-us-strength-symbol="${escapeHTML(
+          symbol
+        )}"
       >
-        <div>
-          <b
-            style="
-              font-size:18px;
-              letter-spacing:.03em;
-            "
+        <div
+          class="us-strength-identity"
+        >
+          <div
+            class="us-strength-symbol-line"
           >
-            ${escapeHTML(symbol)}
-          </b>
+            <b
+              class="us-strength-symbol"
+            >
+              ${escapeHTML(
+                symbol
+              )}
+            </b>
+
+            <small
+              class="us-strength-name"
+            >
+              ${escapeHTML(
+                config.label
+              )}
+            </small>
+          </div>
 
           <div
-            style="
-              margin-top:3px;
-              font-size:11px;
-              opacity:.62;
-            "
+            class="us-strength-role"
           >
             ${escapeHTML(
               config.role
@@ -504,22 +912,37 @@ function renderBenchmarkRow(
         </div>
 
         <div
-          style="
-            font-size:12px;
-            opacity:.55;
-          "
+          class="us-strength-main"
         >
-          DATA UNAVAILABLE
+          <div
+            style="
+              font-size:11px;
+              opacity:.55;
+            "
+          >
+            DATA UNAVAILABLE
+          </div>
         </div>
 
-        <strong
-          style="
-            text-align:right;
-            color:#8290a3;
-          "
+        <div
+          class="us-strength-row-score"
         >
-          —
-        </strong>
+          <strong
+            style="
+              color:#8290a3;
+            "
+          >
+            —
+          </strong>
+
+          <small
+            style="
+              color:#8290a3;
+            "
+          >
+            無資料
+          </small>
+        </div>
       </div>
     `;
   }
@@ -531,41 +954,27 @@ function renderBenchmarkRow(
 
   return `
     <div
-      style="
-        display:grid;
-        grid-template-columns:
-          minmax(110px,1fr)
-          minmax(160px,1.6fr)
-          74px;
-        gap:14px;
-        align-items:center;
-        padding:16px 0;
-        border-bottom:
-          1px solid rgba(130,150,175,.15);
-      "
+      class="us-strength-row"
+      data-us-strength-symbol="${escapeHTML(
+        symbol
+      )}"
     >
-      <div>
+      <div
+        class="us-strength-identity"
+      >
         <div
-          style="
-            display:flex;
-            align-items:baseline;
-            gap:8px;
-          "
+          class="us-strength-symbol-line"
         >
           <b
-            style="
-              font-size:19px;
-              letter-spacing:.03em;
-            "
+            class="us-strength-symbol"
           >
-            ${escapeHTML(symbol)}
+            ${escapeHTML(
+              symbol
+            )}
           </b>
 
           <small
-            style="
-              opacity:.55;
-              font-size:10px;
-            "
+            class="us-strength-name"
           >
             ${escapeHTML(
               config.label
@@ -574,11 +983,7 @@ function renderBenchmarkRow(
         </div>
 
         <div
-          style="
-            margin-top:4px;
-            font-size:11px;
-            opacity:.62;
-          "
+          class="us-strength-role"
         >
           ${escapeHTML(
             config.role
@@ -586,38 +991,24 @@ function renderBenchmarkRow(
         </div>
       </div>
 
-      <div>
+      <div
+        class="us-strength-main"
+      >
         <div
-          style="
-            height:8px;
-            border-radius:999px;
-            background:
-              rgba(130,150,175,.16);
-            overflow:hidden;
-          "
+          class="us-strength-track"
         >
           <i
             style="
-              display:block;
               width:${clamp(
                 result.score
               )}%;
-              height:100%;
-              border-radius:999px;
               background:${color};
             "
           ></i>
         </div>
 
         <div
-          style="
-            display:flex;
-            flex-wrap:wrap;
-            gap:8px 14px;
-            margin-top:8px;
-            font-size:10px;
-            opacity:.68;
-          "
+          class="us-strength-stats"
         >
           <span>
             日漲跌
@@ -649,16 +1040,11 @@ function renderBenchmarkRow(
       </div>
 
       <div
-        style="
-          text-align:right;
-        "
+        class="us-strength-row-score"
       >
         <strong
           style="
-            display:block;
             color:${color};
-            font-size:24px;
-            line-height:1;
           "
         >
           ${Math.round(
@@ -668,10 +1054,7 @@ function renderBenchmarkRow(
 
         <small
           style="
-            display:block;
-            margin-top:5px;
             color:${color};
-            font-size:10px;
           "
         >
           ${escapeHTML(
@@ -693,13 +1076,17 @@ function renderLoading(
   root.hidden = false;
 
   root.innerHTML = `
+    ${STRENGTH_STYLE}
+
     <div
       class="market-unavailable-icon"
     >
       US
     </div>
 
-    <div>
+    <div
+      class="us-strength-shell"
+    >
       <div class="page-kicker">
         US BENCHMARK STRENGTH
       </div>
@@ -709,8 +1096,9 @@ function renderLoading(
       </h2>
 
       <p>
-        正在整理 SPY / QQQ /
-        IWM 真實行情…
+        正在整理
+        SPY / QQQ / IWM
+        真實行情…
       </p>
     </div>
   `;
@@ -727,13 +1115,17 @@ function renderError(
   root.hidden = false;
 
   root.innerHTML = `
+    ${STRENGTH_STYLE}
+
     <div
       class="market-unavailable-icon"
     >
       US
     </div>
 
-    <div>
+    <div
+      class="us-strength-shell"
+    >
       <div class="page-kicker">
         US STRENGTH · DATA ERROR
       </div>
@@ -798,6 +1190,8 @@ function renderReady(
   root.hidden = false;
 
   root.innerHTML = `
+    ${STRENGTH_STYLE}
+
     <div
       class="market-unavailable-icon"
     >
@@ -805,25 +1199,18 @@ function renderReady(
     </div>
 
     <div
-      style="
-        width:min(760px,100%);
-        min-width:0;
-      "
+      class="us-strength-shell"
     >
       <div class="page-kicker">
         US BENCHMARK STRENGTH · REAL DATA
       </div>
 
       <div
-        style="
-          display:flex;
-          align-items:flex-start;
-          justify-content:space-between;
-          gap:18px;
-          margin-top:4px;
-        "
+        class="us-strength-head"
       >
-        <div>
+        <div
+          class="us-strength-head-copy"
+        >
           <h2
             style="
               margin:0;
@@ -838,28 +1225,25 @@ function renderReady(
               opacity:.66;
             "
           >
-            SPY 45% · QQQ 35% ·
+            SPY 45%
+            ·
+            QQQ 35%
+            ·
             IWM 20%
           </p>
         </div>
 
         <div
+          class="us-strength-score-card"
           style="
-            flex:0 0 auto;
-            min-width:92px;
-            padding:12px 14px;
-            border-radius:16px;
-            text-align:center;
             background:${marketBg};
             border:
               1px solid ${marketColor}55;
           "
         >
           <strong
+            class="us-strength-total"
             style="
-              display:block;
-              font-size:30px;
-              line-height:1;
               color:${marketColor};
             "
           >
@@ -869,11 +1253,9 @@ function renderReady(
           </strong>
 
           <small
+            class="us-strength-total-label"
             style="
-              display:block;
-              margin-top:6px;
               color:${marketColor};
-              font-weight:700;
             "
           >
             ${escapeHTML(
@@ -884,9 +1266,7 @@ function renderReady(
       </div>
 
       <div
-        style="
-          margin-top:18px;
-        "
+        class="us-strength-list"
       >
         ${renderBenchmarkRow(
           "SPY",
@@ -908,19 +1288,7 @@ function renderReady(
       </div>
 
       <div
-        style="
-          margin-top:16px;
-          padding:12px 14px;
-          border-radius:13px;
-          background:
-            rgba(120,145,175,.07);
-          border:
-            1px solid
-            rgba(120,145,175,.12);
-          font-size:10px;
-          line-height:1.65;
-          opacity:.68;
-        "
+        class="us-strength-note"
       >
         <b>
           OX 說明：
@@ -928,11 +1296,12 @@ function renderReady(
 
         目前強度衡量的是
         SPY / QQQ / IWM
-        三個美股基準的方向、開盤後表現與成交量確認。
+        三個美股基準的方向、
+        開盤後表現與成交量確認。
 
         這不是全市場
         Advance / Decline
-        廣度，也不會用不存在的資料補值。
+        廣度，也不會使用不存在的資料補值。
       </div>
     </div>
   `;
@@ -951,6 +1320,7 @@ export function renderUSStrength(
   if (!isUSMarket()) {
     return {
       view: "strength",
+
       status:
         state?.status ||
         "inactive"
@@ -963,6 +1333,7 @@ export function renderUSStrength(
   if (!root) {
     return {
       view: "strength",
+
       status:
         "missing-root"
     };
