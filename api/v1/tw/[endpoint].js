@@ -29,6 +29,11 @@ import {
 } from "./providers/quotes.js";
 
 
+import {
+  searchOfficialTWSymbols
+} from "./providers/search.js";
+
+
 /*
  * OX v4.0 Modular
  * Taiwan Market Backend Gateway
@@ -38,47 +43,29 @@ import {
  * /api/v1/tw/:endpoint
  *
  *
- * Current responsibility:
- *
- * - Provide the server-side TW API gateway.
- * - Apply CORS.
- * - Connect official Taiwan market data.
- * - Keep API credentials on the server.
- * - Define the stable OX TW backend contract.
- * - Never return fake Taiwan market data.
- *
- *
- * Current upstream providers:
- *
- * TWSE
- * TPEx
- *
- *
  * Current implemented data:
  *
  * - Market Pulse
  * - Market Breadth
  * - Money Flow
- * - Themes / Industry Rotation
- * - Stock Radar
+ * - Themes
+ * - Radar
  * - Quote
  * - Quotes
+ * - Search
  *
  *
- * Future upstream providers:
+ * Pending:
  *
- * TAIFEX
- * FinMind
- * Fugle
- * Broker APIs
+ * - Candles
+ * - Indicators
  *
  *
  * IMPORTANT:
  *
- * The browser only talks to this backend.
- *
- * Provider API keys must NEVER be
- * returned to GitHub Pages.
+ * - Browser only talks to this backend.
+ * - Never expose provider secrets.
+ * - Never manufacture unavailable data.
  */
 
 
@@ -433,14 +420,14 @@ async function handleHealth(
           "themes",
           "radar",
           "quote",
-          "quotes"
+          "quotes",
+          "search"
         ]),
 
       pendingEndpoints:
         Object.freeze([
-          "indicators",
           "candles",
-          "search"
+          "indicators"
         ]),
 
       timestamp:
@@ -1053,6 +1040,114 @@ async function handleQuotes(
 
 
 /* ========================================================================== */
+/* Search                                                                     */
+/* ========================================================================== */
+
+async function handleSearch(
+  req,
+  res
+) {
+
+  const query =
+    stringParam(
+      req.query
+        .q
+    );
+
+
+  const market =
+    stringParam(
+      req.query
+        .market,
+      "ALL"
+    )
+      .toUpperCase();
+
+
+  const limit =
+    numberParam(
+      req.query
+        .limit,
+      20,
+      {
+        min:
+          1,
+
+        max:
+          100
+      }
+    );
+
+
+  /*
+   * Empty search is not an error.
+   */
+  if (
+    !query
+  ) {
+
+    setShortCache(
+      res,
+      60
+    );
+
+
+    return ok(
+      res,
+      [],
+      {
+
+        provider:
+          "official-tw",
+
+        market,
+
+        limit
+
+      }
+    );
+  }
+
+
+  const data =
+    await searchOfficialTWSymbols(
+      query,
+      {
+        market,
+        limit
+      }
+    );
+
+
+  setShortCache(
+    res,
+    120
+  );
+
+
+  return ok(
+    res,
+    data,
+    {
+
+      provider:
+        "official-tw",
+
+      realtime:
+        false,
+
+      market,
+
+      query,
+
+      limit
+
+    }
+  );
+}
+
+
+/* ========================================================================== */
 /* Not implemented                                                           */
 /* ========================================================================== */
 
@@ -1202,11 +1297,11 @@ export default async function handler(
         );
 
 
-      case "indicators":
+      case "search":
 
-        return handleNotImplemented(
-          res,
-          "TW indicators"
+        return await handleSearch(
+          req,
+          res
         );
 
 
@@ -1218,11 +1313,11 @@ export default async function handler(
         );
 
 
-      case "search":
+      case "indicators":
 
         return handleNotImplemented(
           res,
-          "TW symbol search"
+          "TW indicators"
         );
 
 
@@ -1270,7 +1365,7 @@ export default async function handler(
 
 
     /*
-     * Input errors.
+     * Invalid input.
      */
     if (
       errorCode ===
@@ -1288,7 +1383,7 @@ export default async function handler(
         400,
         errorCode,
         error?.message ||
-        "Invalid Taiwan stock symbol request."
+        "Invalid Taiwan stock request."
       );
     }
 
