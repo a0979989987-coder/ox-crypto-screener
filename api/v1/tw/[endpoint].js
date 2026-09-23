@@ -13,6 +13,11 @@ import {
 } from "./providers/money-flow.js";
 
 
+import {
+  getOfficialTWThemes
+} from "./providers/themes.js";
+
+
 /*
  * OX v4.0 Modular
  * Taiwan Market Backend Gateway
@@ -43,6 +48,7 @@ import {
  * - Market Pulse
  * - Market Breadth
  * - Money Flow
+ * - Themes / Industry Rotation
  *
  *
  * Future upstream providers:
@@ -306,6 +312,54 @@ function stringParam(
 }
 
 
+function numberParam(
+  value,
+  fallback,
+  {
+    min =
+      1,
+
+    max =
+      100
+  } = {}
+) {
+
+  const raw =
+    Array.isArray(
+      value
+    )
+      ? value[0]
+      : value;
+
+
+  const parsed =
+    Number(
+      raw
+    );
+
+
+  if (
+    !Number.isFinite(
+      parsed
+    )
+  ) {
+
+    return fallback;
+  }
+
+
+  return Math.max(
+    min,
+    Math.min(
+      max,
+      Math.floor(
+        parsed
+      )
+    )
+  );
+}
+
+
 /* ========================================================================== */
 /* Cache                                                                      */
 /* ========================================================================== */
@@ -365,12 +419,12 @@ async function handleHealth(
           "health",
           "market-pulse",
           "breadth",
-          "money-flow"
+          "money-flow",
+          "themes"
         ]),
 
       pendingEndpoints:
         Object.freeze([
-          "themes",
           "radar",
           "indicators",
           "quote",
@@ -607,13 +661,6 @@ async function handleMoneyFlow(
   );
 
 
-  /*
-   * Allow:
-   *
-   * ?market=ALL
-   * ?market=TWSE
-   * ?market=TPEX
-   */
   if (
     requestedMarket ===
       "TWSE" ||
@@ -703,12 +750,6 @@ async function handleMoneyFlow(
   }
 
 
-  /*
-   * ALL market:
-   *
-   * Provider itself protects against
-   * mixing different TWSE / TPEx dates.
-   */
   return ok(
     res,
     data,
@@ -722,6 +763,65 @@ async function handleMoneyFlow(
 
       realtime:
         false
+
+    }
+  );
+}
+
+
+/* ========================================================================== */
+/* Themes                                                                     */
+/* ========================================================================== */
+
+async function handleThemes(
+  req,
+  res
+) {
+
+  const limit =
+    numberParam(
+      req.query
+        .limit,
+      30,
+      {
+        min:
+          1,
+
+        max:
+          100
+      }
+    );
+
+
+  const data =
+    await getOfficialTWThemes(
+      {
+        limit
+      }
+    );
+
+
+  setShortCache(
+    res,
+    120
+  );
+
+
+  return ok(
+    res,
+    data,
+    {
+
+      provider:
+        "official-tw",
+
+      methodology:
+        "official-industry-constituent-average",
+
+      realtime:
+        false,
+
+      limit
 
     }
   );
@@ -785,7 +885,7 @@ export default async function handler(
 
   if (
     req.method ===
-    "OPTIONS"
+      "OPTIONS"
   ) {
 
     res.status(
@@ -872,9 +972,9 @@ export default async function handler(
 
       case "themes":
 
-        return handleNotImplemented(
-          res,
-          "TW theme flow"
+        return await handleThemes(
+          req,
+          res
         );
 
 
