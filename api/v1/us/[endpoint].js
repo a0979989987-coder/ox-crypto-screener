@@ -4,38 +4,36 @@ import { US_MODULE_CONFIG } from "./config.js";
  * OX v4.0 Modular
  * US Market Data Provider
  *
- * Browser-side US market data client.
+ * Responsibility:
+ * - Browser-side US market data client only.
+ * - Talks to an OX-owned server-side proxy.
+ * - NEVER stores or sends upstream API secrets from the frontend.
  *
- * Data flow:
+ * Backend contract:
+ *   {API_BASE}/v1/us/health
+ *   {API_BASE}/v1/us/quote
+ *   {API_BASE}/v1/us/quotes
+ *   {API_BASE}/v1/us/candles
+ *   {API_BASE}/v1/us/market-pulse
+ *   {API_BASE}/v1/us/breadth
+ *   {API_BASE}/v1/us/sectors
+ *   {API_BASE}/v1/us/radar
+ *   {API_BASE}/v1/us/search
  *
- * GitHub Pages
- *      ↓
- * this provider
- *      ↓
- * OX Vercel Backend
- *      ↓
- * Twelve Data
+ * API base can be supplied by:
+ * 1. usProvider.configure({ apiBase })
+ * 2. globalThis.OX_US_DATA_API_BASE
+ * 3. <meta name="ox-us-data-api-base" content="https://...">
+ * 4. localStorage["ox-us-data-api-base"]
  *
  * IMPORTANT:
- * Twelve Data API secrets NEVER belong in this file.
+ * API_BASE is only the public proxy URL.
+ * Never place provider API keys/tokens/secrets here.
  */
 
 const CONTRACT_VERSION = "1";
 const API_PREFIX = `/v${CONTRACT_VERSION}/us`;
-
 const DEFAULT_TIMEOUT_MS = 12000;
-
-/*
- * Stable Vercel Production Domain.
- *
- * This is PUBLIC information.
- * It is NOT an API secret.
- *
- * Backend secrets remain stored only inside
- * Vercel Environment Variables.
- */
-const DEFAULT_API_BASE =
-  "https://ox-crypto-screener.vercel.app/api";
 
 const STORAGE_KEY = "ox-us-data-api-base";
 const META_NAME = "ox-us-data-api-base";
@@ -48,15 +46,12 @@ let runtimeApiBase = "";
 /* -------------------------------------------------------------------------- */
 
 export class USDataProviderError extends Error {
-  constructor(
-    message,
-    {
-      code = "US_DATA_ERROR",
-      status = 0,
-      details = null,
-      cause = null
-    } = {}
-  ) {
+  constructor(message, {
+    code = "US_DATA_ERROR",
+    status = 0,
+    details = null,
+    cause = null
+  } = {}) {
     super(message);
 
     this.name = "USDataProviderError";
@@ -75,17 +70,11 @@ export class USDataProviderError extends Error {
 /* -------------------------------------------------------------------------- */
 
 function normalizeApiBase(value) {
-  if (typeof value !== "string") {
-    return "";
-  }
+  if (typeof value !== "string") return "";
 
-  const trimmed = value
-    .trim()
-    .replace(/\/+$/, "");
+  const trimmed = value.trim().replace(/\/+$/, "");
 
-  if (!trimmed) {
-    return "";
-  }
+  if (!trimmed) return "";
 
   let parsed;
 
@@ -94,43 +83,30 @@ function normalizeApiBase(value) {
   } catch {
     throw new USDataProviderError(
       "US market data API base must be an absolute URL.",
-      {
-        code: "US_DATA_INVALID_API_BASE"
-      }
+      { code: "US_DATA_INVALID_API_BASE" }
     );
   }
 
-  if (
-    !["http:", "https:"].includes(
-      parsed.protocol
-    )
-  ) {
+  if (!["http:", "https:"].includes(parsed.protocol)) {
     throw new USDataProviderError(
       "US market data API base must use HTTP or HTTPS.",
-      {
-        code: "US_DATA_INVALID_API_BASE"
-      }
+      { code: "US_DATA_INVALID_API_BASE" }
     );
   }
 
   /*
-   * GitHub Pages runs over HTTPS.
-   * Prevent mixed-content errors.
+   * GitHub Pages runs on HTTPS.
+   * Do not allow an insecure remote API that browsers would block as mixed content.
    */
   if (
     typeof location !== "undefined" &&
     location.protocol === "https:" &&
     parsed.protocol !== "https:" &&
-    ![
-      "localhost",
-      "127.0.0.1"
-    ].includes(parsed.hostname)
+    !["localhost", "127.0.0.1"].includes(parsed.hostname)
   ) {
     throw new USDataProviderError(
       "US market data API must use HTTPS when OX is running over HTTPS.",
-      {
-        code: "US_DATA_INSECURE_API_BASE"
-      }
+      { code: "US_DATA_INSECURE_API_BASE" }
     );
   }
 
@@ -139,32 +115,21 @@ function normalizeApiBase(value) {
 
 function readGlobalApiBase() {
   try {
-    const value =
-      globalThis?.[GLOBAL_KEY];
-
-    return typeof value === "string"
-      ? value
-      : "";
+    const value = globalThis?.[GLOBAL_KEY];
+    return typeof value === "string" ? value : "";
   } catch {
     return "";
   }
 }
 
 function readMetaApiBase() {
-  if (
-    typeof document === "undefined"
-  ) {
-    return "";
-  }
+  if (typeof document === "undefined") return "";
 
   try {
     return (
       document
-        .querySelector(
-          `meta[name="${META_NAME}"]`
-        )
-        ?.getAttribute("content") ||
-      ""
+        .querySelector(`meta[name="${META_NAME}"]`)
+        ?.getAttribute("content") || ""
     );
   } catch {
     return "";
@@ -172,48 +137,23 @@ function readMetaApiBase() {
 }
 
 function readStoredApiBase() {
-  if (
-    typeof localStorage ===
-    "undefined"
-  ) {
-    return "";
-  }
+  if (typeof localStorage === "undefined") return "";
 
   try {
-    return (
-      localStorage.getItem(
-        STORAGE_KEY
-      ) || ""
-    );
+    return localStorage.getItem(STORAGE_KEY) || "";
   } catch {
     return "";
   }
 }
 
 export function getUSApiBase() {
-  /*
-   * Priority:
-   *
-   * 1. runtime override
-   * 2. global override
-   * 3. HTML meta override
-   * 4. localStorage override
-   * 5. production backend
-   *
-   * This keeps development flexible while
-   * giving production a working default.
-   */
-
   const candidate =
     runtimeApiBase ||
     readGlobalApiBase() ||
     readMetaApiBase() ||
-    readStoredApiBase() ||
-    DEFAULT_API_BASE;
+    readStoredApiBase();
 
-  return normalizeApiBase(
-    candidate
-  );
+  return normalizeApiBase(candidate);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -221,43 +161,32 @@ export function getUSApiBase() {
 /* -------------------------------------------------------------------------- */
 
 function normalizeSymbol(value) {
-  const symbol = String(
-    value || ""
-  )
+  const symbol = String(value || "")
     .trim()
     .toUpperCase();
 
   if (!symbol) {
     throw new USDataProviderError(
       "A US market symbol is required.",
-      {
-        code:
-          "US_DATA_SYMBOL_REQUIRED"
-      }
+      { code: "US_DATA_SYMBOL_REQUIRED" }
     );
   }
 
   if (symbol.length > 32) {
     throw new USDataProviderError(
       `Invalid US market symbol: ${symbol}`,
-      {
-        code:
-          "US_DATA_INVALID_SYMBOL"
-      }
+      { code: "US_DATA_INVALID_SYMBOL" }
     );
   }
 
   /*
-   * Symbols such as BRK.B, BRK-B and ^VIX
-   * remain valid.
+   * Block characters that could accidentally alter a query string.
+   * US symbols such as BRK.B, BRK-B and ^VIX remain valid.
    */
   if (/[\s,?&#=]/.test(symbol)) {
     throw new USDataProviderError(
       `Invalid US market symbol: ${symbol}`,
-      {
-        code:
-          "US_DATA_INVALID_SYMBOL"
-      }
+      { code: "US_DATA_INVALID_SYMBOL" }
     );
   }
 
@@ -265,20 +194,12 @@ function normalizeSymbol(value) {
 }
 
 function normalizeSymbols(values) {
-  const source =
-    Array.isArray(values)
-      ? values
-      : [values];
+  const source = Array.isArray(values) ? values : [values];
 
   const symbols = [
     ...new Set(
       source
-        .filter(
-          value =>
-            value !== null &&
-            value !== undefined &&
-            value !== ""
-        )
+        .filter(value => value !== null && value !== undefined && value !== "")
         .map(normalizeSymbol)
     )
   ];
@@ -286,35 +207,19 @@ function normalizeSymbols(values) {
   if (!symbols.length) {
     throw new USDataProviderError(
       "At least one US market symbol is required.",
-      {
-        code:
-          "US_DATA_SYMBOLS_REQUIRED"
-      }
+      { code: "US_DATA_SYMBOLS_REQUIRED" }
     );
   }
 
   return symbols;
 }
 
-function normalizeLimit(
-  value,
-  fallback,
-  max = 500
-) {
-  const parsed =
-    Number(value);
+function normalizeLimit(value, fallback, max = 500) {
+  const parsed = Number(value);
 
-  if (!Number.isFinite(parsed)) {
-    return fallback;
-  }
+  if (!Number.isFinite(parsed)) return fallback;
 
-  return Math.max(
-    1,
-    Math.min(
-      max,
-      Math.floor(parsed)
-    )
-  );
+  return Math.max(1, Math.min(max, Math.floor(parsed)));
 }
 
 /* -------------------------------------------------------------------------- */
@@ -331,56 +236,41 @@ function toQueryValue(value) {
   }
 
   if (typeof value === "boolean") {
-    return value
-      ? "true"
-      : "false";
+    return value ? "true" : "false";
   }
 
   return String(value);
 }
 
-function buildURL(
-  endpoint,
-  params = {}
-) {
-  const base =
-    getUSApiBase();
+function buildURL(endpoint, params = {}) {
+  const base = getUSApiBase();
 
   if (!base) {
     throw new USDataProviderError(
       "US market data backend has not been configured yet.",
-      {
-        code:
-          "US_DATA_API_UNCONFIGURED"
-      }
+      { code: "US_DATA_API_UNCONFIGURED" }
     );
   }
 
-  const cleanEndpoint =
-    String(endpoint || "")
-      .replace(/^\/+/, "")
-      .replace(/\/+$/, "");
+  const cleanEndpoint = String(endpoint || "")
+    .replace(/^\/+/, "")
+    .replace(/\/+$/, "");
 
   const url = new URL(
     `${base}${API_PREFIX}/${cleanEndpoint}`
   );
 
-  Object.entries(params).forEach(
-    ([key, value]) => {
-      if (
-        value === undefined ||
-        value === null ||
-        value === ""
-      ) {
-        return;
-      }
-
-      url.searchParams.set(
-        key,
-        toQueryValue(value)
-      );
+  Object.entries(params).forEach(([key, value]) => {
+    if (
+      value === undefined ||
+      value === null ||
+      value === ""
+    ) {
+      return;
     }
-  );
+
+    url.searchParams.set(key, toQueryValue(value));
+  });
 
   return url;
 }
@@ -389,15 +279,10 @@ function buildURL(
 /* Response                                                                   */
 /* -------------------------------------------------------------------------- */
 
-async function parseResponse(
-  response
-) {
-  const text =
-    await response.text();
+async function parseResponse(response) {
+  const text = await response.text();
 
-  if (!text) {
-    return null;
-  }
+  if (!text) return null;
 
   try {
     return JSON.parse(text);
@@ -405,45 +290,29 @@ async function parseResponse(
     throw new USDataProviderError(
       "US market data backend returned invalid JSON.",
       {
-        code:
-          "US_DATA_INVALID_RESPONSE",
-
-        status:
-          response.status
+        code: "US_DATA_INVALID_RESPONSE",
+        status: response.status
       }
     );
   }
 }
 
-function extractErrorMessage(
-  payload,
-  fallback
-) {
-  if (
-    !payload ||
-    typeof payload !== "object"
-  ) {
+function extractErrorMessage(payload, fallback) {
+  if (!payload || typeof payload !== "object") {
     return fallback;
   }
 
-  if (
-    typeof payload.message ===
-    "string"
-  ) {
+  if (typeof payload.message === "string") {
     return payload.message;
   }
 
-  if (
-    typeof payload.error ===
-    "string"
-  ) {
+  if (typeof payload.error === "string") {
     return payload.error;
   }
 
   if (
     payload.error &&
-    typeof payload.error.message ===
-      "string"
+    typeof payload.error.message === "string"
   ) {
     return payload.error.message;
   }
@@ -452,6 +321,17 @@ function extractErrorMessage(
 }
 
 function unwrapPayload(payload) {
+  /*
+   * Preferred backend contract:
+   *
+   * {
+   *   ok: true,
+   *   data: ...
+   * }
+   *
+   * Direct JSON is also supported so the provider stays loosely coupled.
+   */
+
   if (
     payload &&
     typeof payload === "object" &&
@@ -467,9 +347,7 @@ function unwrapPayload(payload) {
           payload?.error?.code ||
           payload?.code ||
           "US_DATA_BACKEND_ERROR",
-
-        details:
-          payload
+        details: payload
       }
     );
   }
@@ -477,10 +355,7 @@ function unwrapPayload(payload) {
   if (
     payload &&
     typeof payload === "object" &&
-    Object.prototype.hasOwnProperty.call(
-      payload,
-      "data"
-    )
+    Object.prototype.hasOwnProperty.call(payload, "data")
   ) {
     return payload.data;
   }
@@ -492,35 +367,20 @@ function unwrapPayload(payload) {
 /* Request                                                                    */
 /* -------------------------------------------------------------------------- */
 
-async function request(
-  endpoint,
-  {
-    params = {},
-    signal = null,
-    timeoutMs =
-      DEFAULT_TIMEOUT_MS
-  } = {}
-) {
-  if (
-    typeof fetch !== "function"
-  ) {
+async function request(endpoint, {
+  params = {},
+  signal = null,
+  timeoutMs = DEFAULT_TIMEOUT_MS
+} = {}) {
+  if (typeof fetch !== "function") {
     throw new USDataProviderError(
       "Fetch API is not available in this environment.",
-      {
-        code:
-          "US_DATA_FETCH_UNAVAILABLE"
-      }
+      { code: "US_DATA_FETCH_UNAVAILABLE" }
     );
   }
 
-  const url =
-    buildURL(
-      endpoint,
-      params
-    );
-
-  const controller =
-    new AbortController();
+  const url = buildURL(endpoint, params);
+  const controller = new AbortController();
 
   let timedOut = false;
 
@@ -535,52 +395,29 @@ async function request(
       signal.addEventListener(
         "abort",
         onExternalAbort,
-        {
-          once: true
-        }
+        { once: true }
       );
     }
   }
 
-  const timer =
-    setTimeout(() => {
-      timedOut = true;
-      controller.abort();
-    }, Math.max(
-      1000,
-      Number(timeoutMs) ||
-        DEFAULT_TIMEOUT_MS
-    ));
+  const timer = setTimeout(() => {
+    timedOut = true;
+    controller.abort();
+  }, Math.max(1000, Number(timeoutMs) || DEFAULT_TIMEOUT_MS));
 
   try {
-    const response =
-      await fetch(
-        url.toString(),
-        {
-          method: "GET",
+    const response = await fetch(url.toString(), {
+      method: "GET",
+      mode: "cors",
+      credentials: "omit",
+      cache: "no-store",
+      headers: {
+        Accept: "application/json"
+      },
+      signal: controller.signal
+    });
 
-          mode: "cors",
-
-          credentials:
-            "omit",
-
-          cache:
-            "no-store",
-
-          headers: {
-            Accept:
-              "application/json"
-          },
-
-          signal:
-            controller.signal
-        }
-      );
-
-    const payload =
-      await parseResponse(
-        response
-      );
+    const payload = await parseResponse(response);
 
     if (!response.ok) {
       throw new USDataProviderError(
@@ -589,26 +426,16 @@ async function request(
           `US market data request failed with HTTP ${response.status}.`
         ),
         {
-          code:
-            "US_DATA_HTTP_ERROR",
-
-          status:
-            response.status,
-
-          details:
-            payload
+          code: "US_DATA_HTTP_ERROR",
+          status: response.status,
+          details: payload
         }
       );
     }
 
-    return unwrapPayload(
-      payload
-    );
+    return unwrapPayload(payload);
   } catch (error) {
-    if (
-      error instanceof
-      USDataProviderError
-    ) {
+    if (error instanceof USDataProviderError) {
       throw error;
     }
 
@@ -616,11 +443,8 @@ async function request(
       throw new USDataProviderError(
         "US market data request timed out.",
         {
-          code:
-            "US_DATA_TIMEOUT",
-
-          cause:
-            error
+          code: "US_DATA_TIMEOUT",
+          cause: error
         }
       );
     }
@@ -629,11 +453,8 @@ async function request(
       throw new USDataProviderError(
         "US market data request was cancelled.",
         {
-          code:
-            "US_DATA_ABORTED",
-
-          cause:
-            error
+          code: "US_DATA_ABORTED",
+          cause: error
         }
       );
     }
@@ -641,11 +462,8 @@ async function request(
     throw new USDataProviderError(
       "Unable to reach the US market data backend.",
       {
-        code:
-          "US_DATA_NETWORK_ERROR",
-
-        cause:
-          error
+        code: "US_DATA_NETWORK_ERROR",
+        cause: error
       }
     );
   } finally {
@@ -668,16 +486,9 @@ function configure({
   apiBase = "",
   persist = false
 } = {}) {
-  runtimeApiBase =
-    normalizeApiBase(
-      apiBase
-    );
+  runtimeApiBase = normalizeApiBase(apiBase);
 
-  if (
-    persist &&
-    typeof localStorage !==
-      "undefined"
-  ) {
+  if (persist && typeof localStorage !== "undefined") {
     try {
       if (runtimeApiBase) {
         localStorage.setItem(
@@ -685,26 +496,16 @@ function configure({
           runtimeApiBase
         );
       } else {
-        localStorage.removeItem(
-          STORAGE_KEY
-        );
+        localStorage.removeItem(STORAGE_KEY);
       }
     } catch {
-      /*
-       * Storage failure must not
-       * break market data.
-       */
+      // Storage failure must not break market data.
     }
   }
 
   return Object.freeze({
-    apiBase:
-      getUSApiBase(),
-
-    available:
-      Boolean(
-        getUSApiBase()
-      )
+    apiBase: runtimeApiBase,
+    available: Boolean(runtimeApiBase)
   });
 }
 
@@ -713,197 +514,105 @@ function clearConfiguration({
 } = {}) {
   runtimeApiBase = "";
 
-  if (
-    clearStored &&
-    typeof localStorage !==
-      "undefined"
-  ) {
+  if (clearStored && typeof localStorage !== "undefined") {
     try {
-      localStorage.removeItem(
-        STORAGE_KEY
-      );
+      localStorage.removeItem(STORAGE_KEY);
     } catch {
-      /*
-       * Ignore storage errors.
-       */
+      // Ignore storage errors.
     }
   }
 }
 
-/* -------------------------------------------------------------------------- */
-/* Health                                                                     */
-/* -------------------------------------------------------------------------- */
-
-function health(
-  options = {}
-) {
-  return request(
-    "health",
-    options
-  );
+function health(options = {}) {
+  return request("health", options);
 }
 
-/* -------------------------------------------------------------------------- */
-/* Quotes                                                                     */
-/* -------------------------------------------------------------------------- */
-
-function getQuote(
-  symbol,
-  options = {}
-) {
-  return request(
-    "quote",
-    {
-      ...options,
-
-      params: {
-        ...options.params,
-
-        symbol:
-          normalizeSymbol(
-            symbol
-          )
-      }
+function getQuote(symbol, options = {}) {
+  return request("quote", {
+    ...options,
+    params: {
+      ...options.params,
+      symbol: normalizeSymbol(symbol)
     }
-  );
+  });
 }
 
-function getQuotes(
-  symbols,
-  options = {}
-) {
-  return request(
-    "quotes",
-    {
-      ...options,
-
-      params: {
-        ...options.params,
-
-        symbols:
-          normalizeSymbols(
-            symbols
-          )
-      }
+function getQuotes(symbols, options = {}) {
+  return request("quotes", {
+    ...options,
+    params: {
+      ...options.params,
+      symbols: normalizeSymbols(symbols)
     }
-  );
+  });
 }
 
-/* -------------------------------------------------------------------------- */
-/* Candles                                                                    */
-/* -------------------------------------------------------------------------- */
-
-function getCandles(
-  symbol,
-  {
-    interval = "1D",
-    range = "3M",
-    from = null,
-    to = null,
-    limit = null,
-    adjusted = true,
-    extendedHours = false,
-    signal = null,
-    timeoutMs =
-      DEFAULT_TIMEOUT_MS
-  } = {}
-) {
-  return request(
-    "candles",
-    {
-      signal,
-      timeoutMs,
-
-      params: {
-        symbol:
-          normalizeSymbol(
-            symbol
-          ),
-
-        interval,
-        range,
-        from,
-        to,
-        limit,
-        adjusted,
-        extendedHours
-      }
+function getCandles(symbol, {
+  interval = "1D",
+  range = "3M",
+  from = null,
+  to = null,
+  limit = null,
+  adjusted = true,
+  extendedHours = false,
+  signal = null,
+  timeoutMs = DEFAULT_TIMEOUT_MS
+} = {}) {
+  return request("candles", {
+    signal,
+    timeoutMs,
+    params: {
+      symbol: normalizeSymbol(symbol),
+      interval,
+      range,
+      from,
+      to,
+      limit,
+      adjusted,
+      extendedHours
     }
-  );
+  });
 }
-
-/* -------------------------------------------------------------------------- */
-/* Market Pulse                                                               */
-/* -------------------------------------------------------------------------- */
 
 function getMarketPulse({
   signal = null,
-  timeoutMs =
-    DEFAULT_TIMEOUT_MS
+  timeoutMs = DEFAULT_TIMEOUT_MS
 } = {}) {
-  return request(
-    "market-pulse",
-    {
-      signal,
-      timeoutMs
-    }
-  );
+  return request("market-pulse", {
+    signal,
+    timeoutMs
+  });
 }
-
-/* -------------------------------------------------------------------------- */
-/* Breadth                                                                    */
-/* -------------------------------------------------------------------------- */
 
 function getBreadth({
   universe = "us",
   exchange = null,
   signal = null,
-  timeoutMs =
-    DEFAULT_TIMEOUT_MS
+  timeoutMs = DEFAULT_TIMEOUT_MS
 } = {}) {
-  return request(
-    "breadth",
-    {
-      signal,
-      timeoutMs,
-
-      params: {
-        universe,
-        exchange
-      }
+  return request("breadth", {
+    signal,
+    timeoutMs,
+    params: {
+      universe,
+      exchange
     }
-  );
+  });
 }
-
-/* -------------------------------------------------------------------------- */
-/* Sectors                                                                    */
-/* -------------------------------------------------------------------------- */
 
 function getSectors({
   benchmark = "SPY",
   signal = null,
-  timeoutMs =
-    DEFAULT_TIMEOUT_MS
+  timeoutMs = DEFAULT_TIMEOUT_MS
 } = {}) {
-  return request(
-    "sectors",
-    {
-      signal,
-      timeoutMs,
-
-      params: {
-        benchmark:
-          normalizeSymbol(
-            benchmark
-          )
-      }
+  return request("sectors", {
+    signal,
+    timeoutMs,
+    params: {
+      benchmark: normalizeSymbol(benchmark)
     }
-  );
+  });
 }
-
-/* -------------------------------------------------------------------------- */
-/* Radar                                                                      */
-/* -------------------------------------------------------------------------- */
 
 function getRadar({
   universe = "sp500",
@@ -912,160 +621,104 @@ function getRadar({
   sort = "score",
   session = "regular",
   signal = null,
-  timeoutMs =
-    DEFAULT_TIMEOUT_MS
+  timeoutMs = DEFAULT_TIMEOUT_MS
 } = {}) {
-  return request(
-    "radar",
-    {
-      signal,
-      timeoutMs,
-
-      params: {
-        universe,
-
-        limit:
-          normalizeLimit(
-            limit,
-            100,
-            500
-          ),
-
-        direction,
-        sort,
-        session
-      }
+  return request("radar", {
+    signal,
+    timeoutMs,
+    params: {
+      universe,
+      limit: normalizeLimit(limit, 100, 500),
+      direction,
+      sort,
+      session
     }
-  );
+  });
 }
 
-/* -------------------------------------------------------------------------- */
-/* Search                                                                     */
-/* -------------------------------------------------------------------------- */
-
-function searchSymbols(
-  query,
-  {
-    limit = 12,
-    signal = null,
-    timeoutMs =
-      DEFAULT_TIMEOUT_MS
-  } = {}
-) {
-  const q =
-    String(query || "")
-      .trim();
+function searchSymbols(query, {
+  limit = 12,
+  signal = null,
+  timeoutMs = DEFAULT_TIMEOUT_MS
+} = {}) {
+  const q = String(query || "").trim();
 
   if (!q) {
     return Promise.resolve([]);
   }
 
-  return request(
-    "search",
-    {
-      signal,
-      timeoutMs,
-
-      params: {
-        q,
-
-        limit:
-          normalizeLimit(
-            limit,
-            12,
-            50
-          )
-      }
+  return request("search", {
+    signal,
+    timeoutMs,
+    params: {
+      q,
+      limit: normalizeLimit(limit, 12, 50)
     }
-  );
+  });
 }
 
 /* -------------------------------------------------------------------------- */
 /* Public provider                                                            */
 /* -------------------------------------------------------------------------- */
 
-export const usProvider =
-  Object.freeze({
-    /*
-     * Existing market-module contract
-     * stays intact.
-     */
-    id:
-      US_MODULE_CONFIG.provider,
+export const usProvider = Object.freeze({
+  /*
+   * Keep this tied to existing US_MODULE_CONFIG so the current market module
+   * contract and router remain untouched.
+   */
+  id: US_MODULE_CONFIG.provider,
 
-    market:
-      "us",
+  market: "us",
+  contract: "ox-us-market-data-v1",
+  contractVersion: CONTRACT_VERSION,
 
-    contract:
-      "ox-us-market-data-v1",
+  transport: "server-proxy",
 
-    contractVersion:
-      CONTRACT_VERSION,
+  /*
+   * The upstream provider may require a secret,
+   * but that secret belongs ONLY on the server-side proxy.
+   */
+  secretRequired: true,
+  frontendSecretAllowed: false,
+  requiresServerProxy: true,
 
-    transport:
-      "server-proxy",
+  get available() {
+    try {
+      return Boolean(getUSApiBase());
+    } catch {
+      return false;
+    }
+  },
 
-    /*
-     * Twelve Data requires a secret,
-     * but that secret exists ONLY
-     * inside Vercel.
-     */
-    secretRequired:
-      true,
+  get apiBase() {
+    return getUSApiBase();
+  },
 
-    frontendSecretAllowed:
-      false,
+  configure,
+  clearConfiguration,
 
-    requiresServerProxy:
-      true,
+  health,
 
-    get available() {
-      try {
-        return Boolean(
-          getUSApiBase()
-        );
-      } catch {
-        return false;
-      }
-    },
+  getQuote,
+  quote: getQuote,
 
-    get apiBase() {
-      return getUSApiBase();
-    },
+  getQuotes,
+  quotes: getQuotes,
 
-    configure,
-    clearConfiguration,
+  getCandles,
+  candles: getCandles,
 
-    health,
+  getMarketPulse,
+  marketPulse: getMarketPulse,
 
-    getQuote,
-    quote:
-      getQuote,
+  getBreadth,
+  breadth: getBreadth,
 
-    getQuotes,
-    quotes:
-      getQuotes,
+  getSectors,
+  sectors: getSectors,
 
-    getCandles,
-    candles:
-      getCandles,
+  getRadar,
+  radar: getRadar,
 
-    getMarketPulse,
-    marketPulse:
-      getMarketPulse,
-
-    getBreadth,
-    breadth:
-      getBreadth,
-
-    getSectors,
-    sectors:
-      getSectors,
-
-    getRadar,
-    radar:
-      getRadar,
-
-    search:
-      searchSymbols
-  });
+  search: searchSymbols
+});
