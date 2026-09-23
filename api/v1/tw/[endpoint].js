@@ -18,6 +18,11 @@ import {
 } from "./providers/themes.js";
 
 
+import {
+  getOfficialTWRadar
+} from "./providers/radar.js";
+
+
 /*
  * OX v4.0 Modular
  * Taiwan Market Backend Gateway
@@ -49,6 +54,7 @@ import {
  * - Market Breadth
  * - Money Flow
  * - Themes / Industry Rotation
+ * - Stock Radar
  *
  *
  * Future upstream providers:
@@ -224,10 +230,6 @@ function applyCors(
       .origin;
 
 
-  /*
-   * Direct browser / server requests
-   * may not send Origin.
-   */
   if (
     !origin
   ) {
@@ -420,12 +422,12 @@ async function handleHealth(
           "market-pulse",
           "breadth",
           "money-flow",
-          "themes"
+          "themes",
+          "radar"
         ]),
 
       pendingEndpoints:
         Object.freeze([
-          "radar",
           "indicators",
           "quote",
           "quotes",
@@ -829,6 +831,100 @@ async function handleThemes(
 
 
 /* ========================================================================== */
+/* Radar                                                                      */
+/* ========================================================================== */
+
+async function handleRadar(
+  req,
+  res
+) {
+
+  const market =
+    stringParam(
+      req.query
+        .market,
+      "ALL"
+    )
+      .toUpperCase();
+
+
+  const tier =
+    stringParam(
+      req.query
+        .tier,
+      "ALL"
+    )
+      .toUpperCase();
+
+
+  const sort =
+    stringParam(
+      req.query
+        .sort,
+      "oxScore"
+    );
+
+
+  const limit =
+    numberParam(
+      req.query
+        .limit,
+      500,
+      {
+        min:
+          1,
+
+        max:
+          2000
+      }
+    );
+
+
+  const data =
+    await getOfficialTWRadar(
+      {
+        market,
+        tier,
+        sort,
+        limit
+      }
+    );
+
+
+  setShortCache(
+    res,
+    60
+  );
+
+
+  return ok(
+    res,
+    data,
+    {
+
+      provider:
+        "official-tw",
+
+      methodology:
+        "daily-relative-strength-activity-v1",
+
+      realtime:
+        false,
+
+      market,
+
+      tier,
+
+      sort,
+
+      limit
+
+    }
+  );
+}
+
+
+/* ========================================================================== */
 /* Not implemented                                                           */
 /* ========================================================================== */
 
@@ -837,10 +933,6 @@ function handleNotImplemented(
   feature
 ) {
 
-  /*
-   * OX never manufactures
-   * fake market data.
-   */
   return fail(
     res,
     501,
@@ -859,10 +951,6 @@ export default async function handler(
   res
 ) {
 
-  /* ------------------------------------------------------------------------ */
-  /* CORS                                                                     */
-  /* ------------------------------------------------------------------------ */
-
   if (
     !applyCors(
       req,
@@ -879,10 +967,6 @@ export default async function handler(
   }
 
 
-  /* ------------------------------------------------------------------------ */
-  /* OPTIONS                                                                  */
-  /* ------------------------------------------------------------------------ */
-
   if (
     req.method ===
       "OPTIONS"
@@ -896,10 +980,6 @@ export default async function handler(
     return res.end();
   }
 
-
-  /* ------------------------------------------------------------------------ */
-  /* GET only                                                                 */
-  /* ------------------------------------------------------------------------ */
 
   if (
     req.method !==
@@ -930,10 +1010,6 @@ export default async function handler(
     ) {
 
 
-      /* ==================================================================== */
-      /* System                                                               */
-      /* ==================================================================== */
-
       case "health":
 
         return await handleHealth(
@@ -941,10 +1017,6 @@ export default async function handler(
           res
         );
 
-
-      /* ==================================================================== */
-      /* Home                                                                 */
-      /* ==================================================================== */
 
       case "market-pulse":
 
@@ -978,21 +1050,13 @@ export default async function handler(
         );
 
 
-      /* ==================================================================== */
-      /* Radar                                                                */
-      /* ==================================================================== */
-
       case "radar":
 
-        return handleNotImplemented(
-          res,
-          "TW radar"
+        return await handleRadar(
+          req,
+          res
         );
 
-
-      /* ==================================================================== */
-      /* Indicators                                                           */
-      /* ==================================================================== */
 
       case "indicators":
 
@@ -1001,10 +1065,6 @@ export default async function handler(
           "TW indicators"
         );
 
-
-      /* ==================================================================== */
-      /* Stock data                                                           */
-      /* ==================================================================== */
 
       case "quote":
 
@@ -1038,10 +1098,6 @@ export default async function handler(
         );
 
 
-      /* ==================================================================== */
-      /* Unknown                                                              */
-      /* ==================================================================== */
-
       default:
 
         return fail(
@@ -1059,15 +1115,6 @@ export default async function handler(
   } catch (
     error
   ) {
-
-    /*
-     * Never leak:
-     *
-     * API keys
-     * stack traces
-     * credentials
-     * backend internals
-     */
 
     console.error(
       "[OX TW API]",
@@ -1094,9 +1141,6 @@ export default async function handler(
       );
 
 
-    /*
-     * Official Taiwan upstream failure.
-     */
     if (
       errorCode.startsWith(
         "TW_"
