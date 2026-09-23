@@ -8,6 +8,11 @@ import {
 } from "./providers/breadth.js";
 
 
+import {
+  getOfficialTWMoneyFlow
+} from "./providers/money-flow.js";
+
+
 /*
  * OX v4.0 Modular
  * Taiwan Market Backend Gateway
@@ -37,6 +42,7 @@ import {
  *
  * - Market Pulse
  * - Market Breadth
+ * - Money Flow
  *
  *
  * Future upstream providers:
@@ -358,12 +364,12 @@ async function handleHealth(
         Object.freeze([
           "health",
           "market-pulse",
-          "breadth"
+          "breadth",
+          "money-flow"
         ]),
 
       pendingEndpoints:
         Object.freeze([
-          "money-flow",
           "themes",
           "radar",
           "indicators",
@@ -454,16 +460,6 @@ async function handleBreadth(
   );
 
 
-  /*
-   * The provider returns:
-   *
-   * data.breadth
-   * data.markets.TWSE
-   * data.markets.TPEX
-   *
-   * The frontend TW Engine currently
-   * consumes data.breadth automatically.
-   */
   if (
     requestedMarket ===
       "TWSE" ||
@@ -584,6 +580,155 @@ async function handleBreadth(
 
 
 /* ========================================================================== */
+/* Money Flow                                                                 */
+/* ========================================================================== */
+
+async function handleMoneyFlow(
+  req,
+  res
+) {
+
+  const requestedMarket =
+    stringParam(
+      req.query
+        .market,
+      "ALL"
+    )
+      .toUpperCase();
+
+
+  const data =
+    await getOfficialTWMoneyFlow();
+
+
+  setShortCache(
+    res,
+    60
+  );
+
+
+  /*
+   * Allow:
+   *
+   * ?market=ALL
+   * ?market=TWSE
+   * ?market=TPEX
+   */
+  if (
+    requestedMarket ===
+      "TWSE" ||
+    requestedMarket ===
+      "TPEX"
+  ) {
+
+    const marketData =
+      data
+        ?.markets
+        ?.[requestedMarket] ||
+      null;
+
+
+    if (
+      !marketData
+    ) {
+
+      return fail(
+        res,
+        503,
+        "TW_MONEY_FLOW_MARKET_UNAVAILABLE",
+        `${requestedMarket} money flow data is currently unavailable.`
+      );
+    }
+
+
+    return ok(
+      res,
+      {
+
+        moneyFlow: {
+
+          foreignNetTwd:
+            marketData
+              .foreignNetTwd ??
+            null,
+
+          trustNetTwd:
+            marketData
+              .trustNetTwd ??
+            null,
+
+          dealerNetTwd:
+            marketData
+              .dealerNetTwd ??
+            null,
+
+          marginChangeTwd:
+            null,
+
+          bigOrderBias:
+            ""
+
+        },
+
+        market:
+          marketData,
+
+        dataDate:
+          marketData
+            .dataDate ??
+          null,
+
+        updatedAt:
+          data
+            .updatedAt,
+
+        meta:
+          data
+            .meta
+
+      },
+      {
+
+        provider:
+          "official-tw",
+
+        market:
+          requestedMarket,
+
+        realtime:
+          false
+
+      }
+    );
+  }
+
+
+  /*
+   * ALL market:
+   *
+   * Provider itself protects against
+   * mixing different TWSE / TPEx dates.
+   */
+  return ok(
+    res,
+    data,
+    {
+
+      provider:
+        "official-tw",
+
+      market:
+        "ALL",
+
+      realtime:
+        false
+
+    }
+  );
+}
+
+
+/* ========================================================================== */
 /* Not implemented                                                           */
 /* ========================================================================== */
 
@@ -658,7 +803,7 @@ export default async function handler(
 
   if (
     req.method !==
-    "GET"
+      "GET"
   ) {
 
     return fail(
@@ -719,9 +864,9 @@ export default async function handler(
 
       case "money-flow":
 
-        return handleNotImplemented(
-          res,
-          "TW money flow"
+        return await handleMoneyFlow(
+          req,
+          res
         );
 
 
