@@ -49,6 +49,14 @@ function renderLoading(message = "正在讀取外匯市場資料…") {
 function renderError(error) {
   const message = String(error?.message || "請稍後再試");
   document.dispatchEvent(new CustomEvent("ox:forex:error", { detail: { error: message } }));
+  if (analysis) {
+    render();
+    const banner = document.createElement("div");
+    banner.className = "fx-stale-banner";
+    banner.textContent = `更新失敗，保留 ${analysis.updatedAt} 的每日參考資料：${message}`;
+    root.querySelector(".fx-module-head")?.after(banner);
+    return;
+  }
   ensureRoot().innerHTML = `<article class="fx-panel fx-state fx-error"><b>FOREX DATA UNAVAILABLE</b><h2>外匯資料目前無法取得</h2><p>${escapeHtml(message)}</p><button type="button" data-fx-retry>重新載入</button></article>`;
   root.querySelector("[data-fx-retry]")?.addEventListener("click", () => refresh(true));
 }
@@ -84,7 +92,7 @@ function syncView() {
 async function refresh(force = false) {
   if (loading || (analysis && !force)) return;
   loading = true;
-  renderLoading();
+  if (!analysis) renderLoading();
   try {
     analysis = analyzeForexHistory(await fetchForexHistory());
     document.dispatchEvent(new CustomEvent("ox:forex:update", { detail: { timestamp: analysis.updatedAt, provider: analysis.provider } }));

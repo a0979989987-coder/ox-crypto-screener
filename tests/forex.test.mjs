@@ -39,6 +39,7 @@ test("forex model keeps trading fields and independent radar", () => {
   assert.deepEqual(Object.keys(pair).filter(key => ["symbol", "baseCurrency", "quoteCurrency", "price", "changePct", "high", "low", "volume", "spread", "session", "timestamp", "candles"].includes(key)).length, 12);
   assert.equal(pair.volume, null);
   assert.equal(pair.spread, null);
+  assert.ok(pair.averageDailyMovePct > 0);
   assert.ok(pair.candles.length > 1 && result.radar.length === 11);
   assert.ok(result.radar.every(item => ["LONG", "SHORT"].includes(item.direction) && Number.isFinite(item.score)));
 });
@@ -46,6 +47,8 @@ test("forex model keeps trading fields and independent radar", () => {
 test("forex sessions distinguish overlap and closed market", () => {
   assert.equal(getForexSession(new Date("2026-09-22T13:00:00Z")).id, "OVERLAP");
   assert.equal(getForexSession(new Date("2026-09-26T10:00:00Z")).id, "CLOSED");
+  assert.equal(getForexSession(new Date("2026-01-20T13:00:00Z")).id, "OVERLAP");
+  assert.equal(getForexSession(new Date("2026-07-21T12:00:00Z")).id, "OVERLAP");
 });
 
 test("provider adapter normalizes official v2 rows without a secret", () => {

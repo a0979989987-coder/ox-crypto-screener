@@ -1331,14 +1331,21 @@ function fieldIndex(
   names
 ) {
 
+  // Official TWSE / TPEx headings may contain padding or HTML line breaks.
+  // Compare their visible labels, never their untrimmed transport strings.
+  const normalizedFields =
+    fields.map(field =>
+      stripHTML(field).replace(/\s+/g, "")
+    );
+
   for (
     const name
     of names
   ) {
 
     const index =
-      fields.indexOf(
-        name
+      normalizedFields.indexOf(
+        name.replace(/\s+/g, "")
       );
 
 
@@ -1738,22 +1745,8 @@ function findTPEXStockTable(
 
 
       return (
-        (
-          fields.includes(
-            "代號"
-          ) ||
-          fields.includes(
-            "證券代號"
-          )
-        ) &&
-        (
-          fields.includes(
-            "收盤"
-          ) ||
-          fields.includes(
-            "收盤價"
-          )
-        )
+        fieldIndex(fields, ["代號", "證券代號"]) >= 0 &&
+        fieldIndex(fields, ["收盤", "收盤價"]) >= 0
       );
 
     }
@@ -2096,16 +2089,13 @@ function normalizeTPEXAAData(
             ),
 
           volume:
-            numberValue(
-              row[7]
-            ),
+            row.length > 8
+              ? numberValue(row[8])
+              : null,
 
           turnoverTwd:
-            row.length >
-              8
-              ? numberValue(
-                  row[8]
-                )
+            row.length > 9
+              ? numberValue(row[9])
               : null,
 
           dataDate:

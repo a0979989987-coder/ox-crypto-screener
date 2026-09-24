@@ -6,7 +6,7 @@ const { chromium } = require("playwright");
 const root = join(__dirname, "..");
 const html = readFileSync(join(root, "index.html"), "utf8");
 const expectedCss = [...html.matchAll(/<link rel="stylesheet" href="([^"]+)">/g)].map(match => match[1]);
-const classifiedCss = expectedCss.filter(path => path !== "src/styles/markets/forex.css");
+const classifiedCss = expectedCss.filter(path => !["src/styles/markets/forex.css", "src/styles/markets/us.css"].includes(path));
 const mime = { ".html": "text/html", ".js": "text/javascript", ".css": "text/css", ".png": "image/png" };
 
 function assert(condition, message) {
@@ -306,7 +306,7 @@ async function mobileRegression(browser) {
   await selectView(page, "radar");
   assert(await page.locator("#view-radar").isVisible(), "Mobile Radar is not visible");
   const chartRect = await page.locator("#chart").boundingBox();
-  assert(chartRect && chartRect.width > 250 && chartRect.height > 200, "Mobile chart layout is invalid");
+  assert(chartRect && chartRect.width > 250 && chartRect.height > 200, `Mobile chart layout is invalid: ${JSON.stringify(chartRect)}`);
   await page.click("#btn-chart-fullscreen");
   await page.waitForFunction(() => document.body.classList.contains("chart-focus"));
   assert(await page.locator("body").evaluate(el => el.classList.contains("chart-focus")), "Mobile chart fullscreen did not open");
@@ -362,7 +362,8 @@ async function mobileRegression(browser) {
 
 (async () => {
   await new Promise(resolve => server.listen(4173, "127.0.0.1", resolve));
-  const browser = await chromium.launch({ headless: true });
+  const browser = await chromium.launch({ headless: true })
+    .catch(() => chromium.launch({ channel: "chrome", headless: true }));
   try {
     const desktop = await desktopRegression(browser);
     const mobile = await mobileRegression(browser);

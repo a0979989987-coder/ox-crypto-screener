@@ -1,4 +1,5 @@
 .fx-module{margin:14px 0 110px;color:var(--ink)}
+.fx-stale-banner{margin:10px 0;padding:12px 14px;border:1px solid rgba(239,187,86,.38);border-radius:12px;color:var(--gold);font-size:12px;line-height:1.5}
 .fx-module[hidden],.fx-module [hidden]{display:none!important}
 .fx-module-head{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;margin:16px 0;padding:18px 20px;border:1px solid rgba(111,150,194,.18);border-radius:18px;background:linear-gradient(135deg,rgba(14,29,47,.88),rgba(8,17,29,.82));box-shadow:0 18px 42px rgba(0,0,0,.18)}
 .fx-module-head span,.fx-panel small{font-size:9px;letter-spacing:.16em;color:var(--gold);font-weight:850}.fx-module-head h1{margin:3px 0 2px;font-size:24px}.fx-module-head p{margin:0;color:var(--muted);font-size:10px}.fx-module-head label{font-size:9px;color:var(--muted)}

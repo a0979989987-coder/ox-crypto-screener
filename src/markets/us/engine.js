@@ -33,6 +33,8 @@ let currentState = Object.freeze({
 });
 
 let activeRequest = null;
+let activeSignal = null;
+let latestRequestId = 0;
 
 /* -------------------------------------------------------------------------- */
 /* Helpers                                                                    */
@@ -462,7 +464,8 @@ export async function refreshUSMarketState({
    */
   if (
     activeRequest &&
-    !force
+    !force &&
+    !activeSignal?.aborted
   ) {
     return activeRequest;
   }
@@ -481,12 +484,15 @@ export async function refreshUSMarketState({
 
   emitState(currentState);
 
+  const requestId = ++latestRequestId;
+  activeSignal = signal;
   activeRequest =
     usProvider
       .getMarketPulse({
         signal
       })
       .then(payload => {
+        if (signal?.aborted || requestId !== latestRequestId) return currentState;
         const data =
           analyzeUSMarketPulse(
             payload
@@ -512,6 +518,7 @@ export async function refreshUSMarketState({
         return readyState;
       })
       .catch(error => {
+        if (signal?.aborted || requestId !== latestRequestId) return currentState;
         const errorState =
           setState({
             status: "error",
@@ -546,7 +553,10 @@ export async function refreshUSMarketState({
         return errorState;
       })
       .finally(() => {
-        activeRequest = null;
+        if (requestId === latestRequestId) {
+          activeRequest = null;
+          activeSignal = null;
+        }
       });
 
   return activeRequest;

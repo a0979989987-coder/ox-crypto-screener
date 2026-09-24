@@ -26,5 +26,5 @@ export const FOREX_MODULE_CONFIG = Object.freeze({
   provider: "ecb",
   defaultPair: "EURUSD",
   historyDays: 120,
-  refreshMs: 5 * 60 * 1000
+  refreshMs: 30 * 60 * 1000
 });

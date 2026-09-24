@@ -28,16 +28,16 @@ export function renderForexHome(container, analysis, selectedPair) {
           <path class="fx-area" d="${path} L720,190 L0,190 Z"/>
           <path class="fx-line" d="${path}"/>
         </svg>
-        <div class="fx-chart-foot"><span>20 日低 ${formatRate(pair.low20, pair.id)}</span><span>區間位置 ${pair.position.toFixed(0)}%</span><span>20 日高 ${formatRate(pair.high20, pair.id)}</span></div>
+        <div class="fx-chart-foot"><span>20 日收盤低 ${formatRate(pair.low20, pair.id)}</span><span>區間位置 ${pair.position.toFixed(0)}%</span><span>20 日收盤高 ${formatRate(pair.high20, pair.id)}</span></div>
       </article>
       <article class="fx-panel fx-session-panel">
         <small>FOREX MARKET PULSE</small><h3>${analysis.session.label}</h3>
         <div class="fx-session-state ${analysis.session.activity}">${analysis.session.id} · ${analysis.session.activity}</div>
         <div class="fx-leader"><span>最強</span><b>${analysis.strongest.code}</b><em>${analysis.strongest.score.toFixed(0)}</em></div>
         <div class="fx-leader weak"><span>最弱</span><b>${analysis.weakest.code}</b><em>${analysis.weakest.score.toFixed(0)}</em></div>
-        <p>Daily ECB reference rates；活動/流動性依時段推估，不提供真實成交量或 spread。</p>
+        <p>近 14 個交易日平均每日收盤變動 ${pair.averageDailyMovePct?.toFixed(2) ?? "—"}%。每日 ECB 參考匯率；時段為觀察窗口，沒有即時報價、真實成交量或 spread。</p>
       </article>
     </div>
     <div class="fx-pulse-row">${["EURUSD", "GBPUSD", "USDJPY"].map(id => { const item = analysis.pairs.find(pair => pair.id === id); return `<div><small>${id}</small><b>${formatRate(item.price, id)}</b><em class="${item.changePct >= 0 ? "positive" : "negative"}">${formatPercent(item.changePct)}</em></div>`; }).join("")}</div>
-    <div class="fx-opportunity"><small>TOP RADAR OPPORTUNITY</small><b>${analysis.radar[0].id} · ${analysis.radar[0].direction}</b><span>Score ${analysis.radar[0].score.toFixed(0)} · ${analysis.radar[0].trend} · ${analysis.radar[0].liquidity}</span></div>`;
+    <div class="fx-opportunity"><small>STRONG vs WEAK · 技術觀察</small><b>${analysis.radar[0].id} · ${analysis.radar[0].direction === "LONG" ? "基礎貨幣較強" : "報價貨幣較強"}</b><span>強弱差 ${analysis.radar[0].relativeStrength.toFixed(0)} · 依每日收盤變動與時段計算，非交易指令</span></div>`;
 }

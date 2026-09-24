@@ -40,6 +40,9 @@ function escapeHTML(value) {
 }
 
 function finiteNumber(value) {
+  if (value === null || value === undefined || value === "") {
+    return null;
+  }
   const number =
     Number(value);
 
@@ -157,6 +160,23 @@ function sessionLabel(session) {
     default:
       return "UNKNOWN";
   }
+}
+
+export function deriveUSRiskRegime(benchmarks = {}) {
+  const changes = ["SPY", "QQQ", "IWM"].map(symbol => {
+    const quote = benchmarks[symbol];
+    return quote?.available ? finiteNumber(quote.changePct) : null;
+  });
+  if (changes.some(value => value === null)) {
+    return { label: "資料不足", tone: "unknown", positive: null };
+  }
+  const positive = changes.filter(value => value > 0).length;
+  const negative = changes.filter(value => value < 0).length;
+  return {
+    label: positive === 3 ? "風險偏好升溫" : negative === 3 ? "風險偏好降溫" : "方向分歧",
+    tone: positive === 3 ? "positive" : negative === 3 ? "negative" : "neutral",
+    positive
+  };
 }
 
 /* -------------------------------------------------------------------------- */
@@ -440,13 +460,12 @@ function renderReady(
   const vix =
     benchmarks.VIX;
 
+  const regime =
+    deriveUSRiskRegime(benchmarks);
+
   root.hidden = false;
 
   root.innerHTML = `
-    <div class="market-unavailable-icon">
-      US
-    </div>
-
     <div class="us-market-home-content">
       <div class="page-kicker">
         US MARKET PULSE · REAL DATA
@@ -457,7 +476,7 @@ function renderReady(
       </h2>
 
       <p id="market-unavailable-copy">
-        SPY / QQQ / IWM 真實市場行情
+        SPY / QQQ / IWM ETF 行情
         ·
         ${sessionLabel(
           data.session
@@ -485,6 +504,24 @@ function renderReady(
         ${renderBenchmark(
           vix
         )}
+      </div>
+
+      <div class="us-market-insights">
+        <article class="us-market-insight">
+          <div class="page-kicker">RISK REGIME · ETF PROXY</div>
+          <h3 class="${regime.tone}">${regime.label}</h3>
+          <p>${regime.positive === null ? "核心 ETF 尚未全部取得有效報價。" : `SPY、QQQ、IWM 中 ${regime.positive} / 3 上漲；三者同漲視為升溫、同跌視為降溫，其餘為分歧。`}</p>
+        </article>
+        <article class="us-market-insight">
+          <div class="page-kicker">MARKET BREADTH</div>
+          <h3>全市場廣度待接</h3>
+          <p>目前僅有 ETF 報價，不能推算上漲家數、新高家數或均線以上家數。</p>
+        </article>
+        <article class="us-market-insight">
+          <div class="page-kicker">SECTOR ROTATION</div>
+          <h3>類股輪動待接</h3>
+          <p>現有資料方案每分鐘限額不足以同時取得 11 檔類股 ETF；不顯示不完整排名。</p>
+        </article>
       </div>
 
       <div class="us-market-home-footer">

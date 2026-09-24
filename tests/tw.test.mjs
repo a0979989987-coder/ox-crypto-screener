@@ -3,9 +3,10 @@ import assert from "node:assert/strict";
 import { twModule } from "../src/markets/tw/index.js";
 import { twProvider } from "../src/markets/tw/api.js";
 
-test("TW standard module preserves the existing backend-required placeholder", () => {
+test("TW module uses the configured official-data backend", () => {
   assert.equal(twModule.id, "tw");
-  assert.equal(twModule.status, "placeholder");
-  assert.equal(twProvider.available, false);
+  assert.equal(twModule.status, "connected");
+  assert.equal(twProvider.available, true);
+  assert.match(twProvider.apiBase, /^https:\/\//);
   assert.equal(twModule.refresh().data, null);
 });
