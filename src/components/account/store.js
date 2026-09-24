@@ -113,7 +113,7 @@ const MarketController = (() => {
     if(!labels[market]) return; state.activeMarket=market; localStorage.setItem("ox-active-market",market); document.body.dataset.market=market;
     document.dispatchEvent(new CustomEvent("ox:marketchange",{detail:{market}}));
     document.querySelectorAll("[data-market-choice]").forEach(b=>b.classList.toggle("active",b.dataset.marketChoice===market));
-    const st=document.getElementById("ox-market-status-text"); if(st) st.textContent = market==="crypto" ? "Crypto 已接資料；Forex 使用獨立標準模組。" : market==="forex" ? "Forex 標準模組已啟用 · ECB reference rates" : `${labels[market]}架構已啟用 · 資料源尚未接入`;
+    const st=document.getElementById("ox-market-status-text"); if(st) st.textContent = market==="crypto" ? "加密市場行情已連線" : market==="forex" ? "外匯每日參考匯率 · 非即時" : market==="tw" ? "台股官方收盤資料已連線" : "美股 ETF 行情已連線 · 廣度與類股待接";
     syncPlaceholder(); renderOxLive();
     if (market === "crypto" && kick) { refreshMarketTickers(); if(state.activeView==="radar") loadSymbolCandles(true); if(state.activeView==="home") HomeMiniChart.ensureAndLoad(true); }
     if(toast) showMarketToast(`已切換至${labels[market]}`);
@@ -125,7 +125,7 @@ const MarketController = (() => {
     const unsupported = ["us","tw"].includes(state.activeMarket) && marketView;
     document.body.classList.toggle("market-data-unavailable", unsupported);
     document.querySelectorAll("[data-app-view]").forEach(v => { if(["home","strength","radar"].includes(v.dataset.appView)) v.style.display = nonCrypto ? "none" : ""; });
-    const card=document.getElementById("market-unavailable-card"); if(card) { card.hidden=!unsupported; if(unsupported){ const name=labels[state.activeMarket]; document.getElementById("market-unavailable-title").textContent=`${name}市場`; document.getElementById("market-unavailable-copy").textContent=`${name}的市場切換架構已完成；資料源尚未接入，因此目前不會顯示或混入 Crypto 資料。`; } }
+    const card=document.getElementById("market-unavailable-card"); if(card) { card.hidden=!unsupported; if(unsupported){ const name=labels[state.activeMarket]; const title=card.querySelector("#market-unavailable-title"), copy=card.querySelector("#market-unavailable-copy"); if(title) title.textContent=`${name}市場`; if(copy) copy.textContent=`正在讀取${name}市場資料…`; } }
   };
   const cycle = () => { const order=["crypto","us","tw","forex"]; const i=order.indexOf(state.activeMarket); setMarket(order[(i+1)%order.length]); };
   const init=()=>{ const saved=localStorage.getItem("ox-active-market"); state.activeMarket=["crypto","us","tw","forex"].includes(saved)?saved:"crypto"; setMarket(state.activeMarket,{toast:false,kick:false}); };

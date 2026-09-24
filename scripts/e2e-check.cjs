@@ -145,6 +145,7 @@ async function preparePage(context, viewport) {
   await page.route("https://api.bitget.com/**", route => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(bitgetBody(new URL(route.request().url()))) }));
   await page.route("https://fapi.binance.com/**", route => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ symbol: "BTCUSDT", lastPrice: "63250", priceChangePercent: "1.2", quoteVolume: "900000000", volume: "12000" }) }));
   await page.route("https://api.bybit.com/**", route => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ retCode: 0, result: { list: [{ lastPrice: "63250", price24hPcnt: ".012", turnover24h: "900000000", volume24h: "12000" }] } }) }));
+  await page.route("https://ox-crypto-screener.vercel.app/api/v1/us/**", route => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ ok: true, data: { benchmarks: Object.fromEntries(["SPY", "QQQ", "IWM"].map((symbol, index) => [symbol, { symbol, name: symbol, close: String(500 - index * 80), percent_change: String(index ? -1 : 1), open: "490", high: "510", low: "480", volume: "15000000", is_market_open: false }]).concat([["VIX", { status: "error", message: "Unavailable" }]])) } }) }));
   return { page, audit };
 }
 
@@ -230,6 +231,11 @@ async function desktopRegression(browser) {
 
   await selectMarket(page, "us");
   assert(await page.locator("#market-unavailable-card").isVisible(), "US market placeholder did not display");
+  await page.click("#ox-control-close");
+  await selectView(page, "home");
+  await page.waitForSelector(".us-market-pulse-grid .us-market-pulse-item");
+  assert(await page.locator(".us-market-pulse-item").count() === 4, "US Home did not render benchmark cards after leaving Radar");
+  await selectView(page, "radar");
   await selectMarket(page, "tw");
   assert(await page.locator("#market-unavailable-card").isVisible(), "TW market placeholder did not display");
   await selectMarket(page, "crypto");
@@ -328,6 +334,12 @@ async function mobileRegression(browser) {
   assert(!(await page.locator("body").evaluate(el => el.classList.contains("theme-light"))), "Mobile dark theme did not apply");
   await page.click('[data-market-choice="us"]');
   assert(await page.locator("#market-unavailable-card").isVisible(), "Mobile market switch to US failed");
+  await page.click("#ox-control-close");
+  await selectView(page, "home");
+  await page.waitForSelector(".us-market-pulse-grid .us-market-pulse-item");
+  assert(await page.locator(".us-market-pulse-item").count() === 4, "Mobile US Home failed after Radar switch");
+  await selectView(page, "radar");
+  await openControl(page);
   await page.click('[data-market-choice="tw"]');
   assert(await page.locator("#market-unavailable-card").isVisible(), "Mobile market switch to TW failed");
   await selectMarket(page, "crypto");

@@ -485,6 +485,8 @@ function renderReady(
         Twelve Data via OX Backend
       </p>
 
+      ${state.status === "loading" ? '<p class="us-market-state-note">正在更新；下方保留前一次行情。</p>' : state.status === "error" ? `<p class="us-market-state-note is-error">更新失敗，顯示前一次行情：${escapeHTML(state.error?.message || "資料源暫時不可用")}</p>` : ""}
+
       <div class="us-market-pulse-grid">
         ${renderBenchmark(
           spy,
@@ -592,21 +594,21 @@ export function renderUSHome(
   if (
     !state ||
     state.status === "idle" ||
-    state.status === "loading"
+    (state.status === "loading" && !state.data)
   ) {
     renderLoading(
       root,
       state || {}
     );
   } else if (
-    state.status === "error"
+    state.status === "error" && !state.data
   ) {
     renderError(
       root,
       state
     );
   } else if (
-    state.status === "ready"
+    ["ready", "loading", "error"].includes(state.status)
   ) {
     renderReady(
       root,

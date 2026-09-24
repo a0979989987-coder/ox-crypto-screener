@@ -2109,10 +2109,9 @@ function renderShell(
           </h2>
 
           <p>
-            強勢股、相對強弱、成交量與
-            OX Score 的美股掃描介面。
-            UI 已與資料供應商分離；
-            股票池接入後直接顯示真實資料。
+            目前顯示 SPY、QQQ、IWM 的真實 ETF 基準。
+            個股股票池、RS、成交量篩選與 OX Score
+            尚無資料來源，接入前不產生假排名。
           </p>
 
         </div>
@@ -2191,8 +2190,9 @@ function renderShell(
             value="${escapeHTML(
               searchQuery
             )}"
-            placeholder="搜尋股票代號 / 公司 / 產業"
+            placeholder="${hasRadarData ? "搜尋股票代號 / 公司 / 產業" : "個股雷達資料待接"}"
             data-us-radar-search
+            ${hasRadarData ? "" : "disabled"}
             autocomplete="off"
             spellcheck="false"
           >

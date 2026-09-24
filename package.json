@@ -9,5 +9,8 @@
     "check": "node scripts/check-build.mjs",
     "test:e2e": "node scripts/e2e-check.cjs",
     "verify:extraction": "node scripts/verify-extraction.mjs"
+  },
+  "devDependencies": {
+    "playwright": "^1.63.0"
   }
 }

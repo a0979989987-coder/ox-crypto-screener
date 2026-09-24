@@ -15,7 +15,12 @@ export function createMarketRouter() {
     async activate(id, context = {}) {
       const next = modules.get(id);
       if (!next) return false;
-      if (active && active !== next) await active.deactivate?.(context);
+      if (active && active !== next) {
+        const cleanup = active.deactivate?.(context);
+        // Keep synchronous market switches synchronous so an immediate
+        // view tap is delivered to the newly selected market.
+        if (cleanup && typeof cleanup.then === "function") await cleanup;
+      }
       active = next;
       await next.activate?.(context);
       return true;

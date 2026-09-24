@@ -10,6 +10,8 @@ body[data-market="us"] #market-unavailable-card[hidden] { display: none; }
 .us-market-home-content { width: 100%; min-width: 0; }
 .us-market-home-content h2 { margin: 5px 0 4px; font-size: clamp(24px, 3vw, 36px); }
 .us-market-home-content > p { margin: 0 0 18px; color: var(--muted); font-size: 13px; line-height: 1.55; }
+.us-market-home-content > .us-market-state-note { margin: -5px 0 14px; padding: 9px 12px; border: 1px solid var(--line); border-radius: 10px; font-size: 12px; }
+.us-market-state-note.is-error { color: var(--red); }
 .us-market-pulse-grid { display: grid; grid-template-columns: minmax(0,1.5fr) repeat(3,minmax(0,1fr)); gap: 10px; }
 .us-market-pulse-item, .us-market-insight { min-width: 0; padding: 17px; border: 1px solid var(--line); border-radius: 17px; background: rgba(20,34,52,.62); }
 .us-market-pulse-primary { border-color: rgba(239,187,86,.36); background: rgba(239,187,86,.065); }

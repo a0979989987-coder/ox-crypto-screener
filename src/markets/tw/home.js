@@ -409,7 +409,9 @@ function formatUpdatedAt(
 
 
 function sessionLabel(
-  value
+  value,
+  hasDailyPulse = false,
+  status = "loading"
 ) {
 
   switch (
@@ -417,16 +419,16 @@ function sessionLabel(
   ) {
 
     case "PRE_OPEN":
-      return "PRE-OPEN";
+      return "開盤前";
 
     case "REGULAR":
-      return "REGULAR";
+      return "盤中";
 
     case "CLOSED":
-      return "CLOSED";
+      return "已收盤";
 
     default:
-      return "DATA PENDING";
+      return hasDailyPulse ? "官方日收盤資料" : status === "partial" ? "部分官方日資料" : "資料載入中";
   }
 }
 
@@ -646,6 +648,28 @@ function ensureStyles() {
       box-shadow:
         0 0 12px
         rgba(50,196,141,.75);
+    }
+
+    .tw-home-refresh {
+      min-height: 44px;
+      padding: 0 15px;
+      border: 1px solid var(--tw-border);
+      border-radius: 12px;
+      background: var(--tw-soft);
+      color: var(--ink);
+      font-size: 12px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .tw-home-refresh:disabled { opacity: .55; cursor: wait; }
+    .tw-home-notice {
+      padding: 12px 14px;
+      border: 1px solid rgba(239,187,86,.32);
+      border-radius: 12px;
+      color: var(--ink);
+      background: rgba(239,187,86,.07);
+      font-size: 12px;
+      line-height: 1.5;
     }
 
 
@@ -1414,6 +1438,12 @@ function normalizeData(
       data.updatedAt ||
       null,
 
+    dataDate:
+      pulse.TAIEX?.timestamp ||
+      pulse.TPEX?.timestamp ||
+      data.radar?.[0]?.updatedAt ||
+      null,
+
     pulse: {
 
       TAIEX:
@@ -2042,6 +2072,11 @@ export function renderTWHome(
       data
     );
 
+  const sourceNames = { pulse: "大盤行情", breadth: "漲跌家數", moneyFlow: "資金流向", themes: "題材", radar: "雷達", indicators: "指標" };
+  const failedSources = Object.entries(state?.data?.meta?.sourceErrors || {})
+    .filter(([, error]) => Boolean(error))
+    .map(([key]) => sourceNames[key] || key);
+
 
   root.hidden =
     false;
@@ -2111,9 +2146,15 @@ export function renderTWHome(
             }"
           >
             ${sessionLabel(
-              data.session
+              data.session,
+              Boolean(data.pulse.TAIEX?.price || data.pulse.TPEX?.price),
+              state?.status
             )}
           </span>
+
+          ${state?.status === "partial" ? '<span class="tw-home-chip">部分資料</span>' : state?.status === "error" ? '<span class="tw-home-chip">載入失敗</span>' : ""}
+
+          ${data.dataDate ? `<span class="tw-home-chip">資料日 ${escapeHTML(data.dataDate)}</span>` : ""}
 
           <span
             class="tw-home-chip"
@@ -2129,6 +2170,8 @@ export function renderTWHome(
             }
           </span>
 
+          <button class="tw-home-refresh" type="button" data-tw-refresh ${state?.status === "loading" ? "disabled" : ""}>更新</button>
+
           <span
             class="tw-home-chip"
           >
@@ -2142,6 +2185,8 @@ export function renderTWHome(
         </div>
 
       </header>
+
+      ${failedSources.length ? `<div class="tw-home-notice" role="status">部分來源暫時無法取得：${escapeHTML(failedSources.join("、"))}。其餘區塊保留可用資料。</div>` : state?.status === "error" ? '<div class="tw-home-notice" role="status">台股資料暫時無法取得，請按更新重試。</div>' : ""}
 
 
       <!-- ============================================================ -->
@@ -2919,6 +2964,10 @@ export function renderTWHome(
 
       }
     );
+
+  root.querySelector("[data-tw-refresh]")?.addEventListener("click", () => {
+    window.OXModules?.router?.get("tw")?.reload?.();
+  });
 
 
   return {

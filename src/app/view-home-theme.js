@@ -182,8 +182,11 @@ function renderOxLive() {
   const el = document.getElementById("ox-live-text");
   if (!el) return;
   if (state.activeMarket && state.activeMarket !== "crypto") {
-    const name = state.activeMarket === "us" ? "美股" : "台股";
-    el.textContent = `${name}市場架構已切換 · 資料源尚未接入 · 不會混用 Crypto 資料`;
+    el.textContent = ({
+      us: "美股 ETF 行情已接入 · 個股雷達資料待接",
+      tw: "台股官方日資料已接入 · 非即時",
+      forex: "外匯 ECB 每日參考匯率 · 非即時"
+    })[state.activeMarket] || "市場資料切換中";
     el.title = el.textContent;
     return;
   }
