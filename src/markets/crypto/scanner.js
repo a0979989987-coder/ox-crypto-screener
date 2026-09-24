@@ -173,7 +173,7 @@ async function runScanQueueLoop() {
 }
 
 function rebuildTierLists() {
-  const tierLimit = 30;
+  const tierLimit = 10;
   const allAnalyzed = Array.from(state.analyzedCache.values())
     .filter(c => !benchmarkSymbols.has(c.symbol));
 

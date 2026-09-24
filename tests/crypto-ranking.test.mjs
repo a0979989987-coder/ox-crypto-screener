@@ -19,7 +19,7 @@ function rank(rows) {
   return state.tierMapBySide.long;
 }
 
-test("Crypto radar keeps up to 30 real symbols in each T tier without repeats", () => {
+test("Crypto radar keeps up to 10 real symbols in each T tier, 30 total, without repeats", () => {
   const rows = ["t1", "t2", "t3"].flatMap((tier, tierIndex) =>
     Array.from({ length: 35 }, (_, index) => ({
       symbol: `COIN${tierIndex}${String(index).padStart(2, "0")}USDT`,
@@ -31,15 +31,15 @@ test("Crypto radar keeps up to 30 real symbols in each T tier without repeats", 
   );
   const result = rank(rows);
   for (const tier of ["t1", "t2", "t3"]) {
-    assert.equal(result[tier].length, 30);
+    assert.equal(result[tier].length, 10);
     assert.ok(result[tier].every(row => row.tier === tier));
   }
   const symbols = ["t1", "t2", "t3"].flatMap(tier => result[tier].map(row => row.symbol));
-  assert.equal(new Set(symbols).size, 90);
+  assert.equal(new Set(symbols).size, 30);
   assert.ok(result.t1[0].t1Fit > result.t1.at(-1).t1Fit);
 });
 
-test("Crypto radar shows only available symbols when fewer than 30 exist", () => {
+test("Crypto radar shows only available symbols when fewer than 10 exist", () => {
   const result = rank([{ symbol: "SOLUSDT", side: "LONG", tier: "t1", oxScore: 80, t1Fit: 80 }]);
   assert.equal(result.t1.length, 1);
   assert.equal(result.t2.length, 0);

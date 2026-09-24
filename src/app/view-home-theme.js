@@ -199,9 +199,9 @@ function renderOxLive() {
       const symbol = String(c.symbol || "").replace(/USDT$/, "") || "—";
       return `#${idx + 1} ${symbol} OX ${c.oxScore ?? "—"} ${fmtPct(c.change24h)}`;
     }).join("　·　");
-    parts.push(`⚡ T1 精選快訊 · 完整 T1/T2/T3 榜各最多 30 檔　${t1Text}`);
+    parts.push(`⚡ T1 精選快訊 · T1/T2/T3 各最多 10 檔、合計最多 30 檔　${t1Text}`);
   } else {
-    parts.push("⚡ 完整 T1/T2/T3 榜各最多 30 檔 · 輪巡整理中");
+    parts.push("⚡ T1/T2/T3 各最多 10 檔、合計最多 30 檔 · 輪巡整理中");
   }
 
   const surge = (state.tierMap.surge || [])[0];
