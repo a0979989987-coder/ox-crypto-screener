@@ -1,3 +1,5 @@
+import { bindTWLookup, renderTWLookup } from "./lookup.js";
+
 /*
  * OX v4.0 Modular
  * Taiwan Stock Radar
@@ -3280,6 +3282,8 @@ export function renderTWRadar(
 
       </header>
 
+      ${renderTWLookup()}
+
 
       <!-- ============================================================ -->
       <!-- SUMMARY                                                      -->
@@ -4466,6 +4470,8 @@ export function renderTWRadar(
       }
     );
 
+
+  bindTWLookup(root);
 
   refresh();
 

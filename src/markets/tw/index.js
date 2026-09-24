@@ -18,6 +18,7 @@ import {
 import {
   renderTWRadar
 } from "./radar.js";
+import { cancelTWLookup } from "./lookup.js";
 
 
 /*
@@ -581,6 +582,7 @@ export const twModule =
 
 
       cancelRequest();
+      cancelTWLookup();
 
 
       restoreSharedMarketHost();
@@ -609,6 +611,8 @@ export const twModule =
     view(
       view
     ) {
+
+      if (view !== "radar") cancelTWLookup();
 
       if (
         isValidView(

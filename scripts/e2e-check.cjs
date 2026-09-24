@@ -145,7 +145,14 @@ async function preparePage(context, viewport) {
   await page.route("https://api.bitget.com/**", route => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(bitgetBody(new URL(route.request().url()))) }));
   await page.route("https://fapi.binance.com/**", route => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ symbol: "BTCUSDT", lastPrice: "63250", priceChangePercent: "1.2", quoteVolume: "900000000", volume: "12000" }) }));
   await page.route("https://api.bybit.com/**", route => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ retCode: 0, result: { list: [{ lastPrice: "63250", price24hPcnt: ".012", turnover24h: "900000000", volume24h: "12000" }] } }) }));
-  await page.route("https://ox-crypto-screener.vercel.app/api/v1/tw/**", route => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ ok: true, data: {} }) }));
+  await page.route("https://ox-crypto-screener.vercel.app/api/v1/tw/**", route => {
+    const url = new URL(route.request().url());
+    const symbol = url.searchParams.get("symbol") || "2330";
+    const data = url.pathname.endsWith("/quote")
+      ? { symbol, name: symbol === "2330" ? "台積電" : "測試個股", market: symbol === "6488" ? "TPEX" : "TWSE", price: 123.5, changePct: 1.25, volume: 10000, turnoverTwd: 1235000, dataDate: "2026-09-23" }
+      : {};
+    return route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ ok: true, data }) });
+  });
   await page.route("https://ox-crypto-screener.vercel.app/api/v1/us/**", route => {
     const url = new URL(route.request().url());
     const data = url.pathname.endsWith("/quote")
@@ -255,6 +262,10 @@ async function desktopRegression(browser) {
   await selectView(page, "radar");
   await selectMarket(page, "tw");
   assert(await page.locator("#market-unavailable-card").isVisible(), "TW market placeholder did not display");
+  await page.click("#ox-control-close");
+  await page.click('[data-tw-quick="2330"]');
+  await page.waitForFunction(() => document.querySelector(".tw-lookup-result strong")?.textContent.includes("2330"));
+  assert((await page.locator(".tw-lookup-result").innerText()).includes("NT$123.5"), "TW direct quote lookup did not show official-shaped data");
   await selectMarket(page, "crypto");
   assert(await page.locator("#view-radar").isVisible(), "Crypto market did not restore");
   await selectMarket(page, "forex");
@@ -367,6 +378,11 @@ async function mobileRegression(browser) {
   await openControl(page);
   await page.click('[data-market-choice="tw"]');
   assert(await page.locator("#market-unavailable-card").isVisible(), "Mobile market switch to TW failed");
+  await page.click("#ox-control-close");
+  await page.click('[data-tw-quick="6488"]');
+  await page.waitForFunction(() => document.querySelector(".tw-lookup-result strong")?.textContent.includes("6488"));
+  assert((await page.locator(".tw-lookup-result").innerText()).includes("上櫃"), "Mobile TW OTC quote lookup failed");
+  assert(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth) <= 2, "Mobile TW quote lookup caused horizontal overflow");
   await selectMarket(page, "crypto");
   assert(await page.locator("#view-radar").isVisible(), "Mobile market switch back to Crypto failed");
   await selectMarket(page, "forex");
