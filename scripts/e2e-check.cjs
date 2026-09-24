@@ -312,7 +312,15 @@ async function mobileRegression(browser) {
   await selectView(page, "radar");
   assert(await page.locator("#view-radar").isVisible(), "Mobile Radar is not visible");
   const chartRect = await page.locator("#chart").boundingBox();
-  assert(chartRect && chartRect.width > 250 && chartRect.height > 200, `Mobile chart layout is invalid: ${JSON.stringify(chartRect)}`);
+  assert(chartRect && chartRect.width > 245 && chartRect.height > 200, `Mobile chart layout is invalid: ${JSON.stringify(chartRect)}`);
+  const railRect = await page.locator("#view-radar .workspace > aside").boundingBox();
+  assert(railRect && Math.abs(railRect.y - chartRect.y) < 450 && railRect.x >= chartRect.x + chartRect.width - 2,
+    `Mobile chart and ranked coins are not side by side: ${JSON.stringify({ chartRect, railRect })}`);
+  const mobileCoin = page.locator("#view-radar .coin-card").nth(1);
+  const mobileSymbol = await mobileCoin.getAttribute("data-symbol");
+  await mobileCoin.click();
+  await page.waitForFunction(symbol => document.querySelector("#ticker-pair")?.textContent.includes(symbol), mobileSymbol);
+  assert(await page.locator("#view-radar .workspace > aside").isVisible(), "Ranking disappeared after selecting a coin");
   await page.click("#btn-chart-fullscreen");
   await page.waitForFunction(() => document.body.classList.contains("chart-focus"));
   assert(await page.locator("body").evaluate(el => el.classList.contains("chart-focus")), "Mobile chart fullscreen did not open");

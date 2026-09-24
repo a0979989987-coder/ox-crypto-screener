@@ -180,10 +180,10 @@
       }
       .top-summary .metric-card small { display:none; }
 
-      /* Stack the chart and screener at phone widths. */
-      .workspace {
-        grid-template-columns:minmax(0,1fr);
-        gap:12px;
+      /* Keep the Crypto chart and ranked symbols visible together on phones. */
+      body[data-market="crypto"] #view-radar .workspace {
+        grid-template-columns:minmax(0,70%) minmax(0,30%);
+        gap:5px;
         align-items:stretch;
       }
       .panel { border-radius:9px; }
@@ -367,7 +367,7 @@
     }
 
     @media (max-width: 390px) {
-      .workspace { grid-template-columns:minmax(0,1fr); }
+      body[data-market="crypto"] #view-radar .workspace { grid-template-columns:minmax(0,69%) minmax(0,31%); }
       .coin-symbol-mobile { font-size:10px; }
       .coin-card { padding-left:5px; padding-right:5px; }
       button.benchmark-card { min-width:70px; padding-left:5px; padding-right:5px; }

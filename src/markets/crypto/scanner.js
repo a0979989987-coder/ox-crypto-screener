@@ -173,28 +173,29 @@ async function runScanQueueLoop() {
 }
 
 function rebuildTierLists() {
+  const tierLimit = 30;
   const allAnalyzed = Array.from(state.analyzedCache.values())
     .filter(c => !benchmarkSymbols.has(c.symbol));
 
   const pickRanked = (pool, fitKey, formalTier, taken = new Set()) => {
     const formal = pool
-      .filter(c => c.tier === formalTier)
+      .filter(c => c.tier === formalTier && !taken.has(c.symbol))
       .sort((a, b) => ((b[fitKey] || 0) - (a[fitKey] || 0)) || (num(b.oxScore) - num(a.oxScore)));
     const result = [];
     for (const c of formal) {
-      if (result.length >= 10) break;
+      if (result.length >= tierLimit) break;
       result.push({ ...c, displayTier: formalTier, rankStatus: formalTier === "t1" ? "CONFIRMED" : formalTier === "t2" ? "READY" : "EARLY" });
     }
     const used = new Set(result.map(x => x.symbol));
     const fallback = pool
-      .filter(c => !used.has(c.symbol))
-      .map(c => ({ c, adjusted: (c[fitKey] || 0) - (taken.has(c.symbol) ? 12 : 0) }))
+      .filter(c => !used.has(c.symbol) && !taken.has(c.symbol))
+      .map(c => ({ c, adjusted: c[fitKey] || 0 }))
       .sort((a, b) => (b.adjusted - a.adjusted) || (num(b.c.oxScore) - num(a.c.oxScore)));
     for (const row of fallback) {
-      if (result.length >= 10) break;
+      if (result.length >= tierLimit) break;
       result.push({ ...row.c, displayTier: formalTier, rankStatus: "WATCH" });
     }
-    return result.slice(0, 10);
+    return result;
   };
 
   const buildTierSet = pool => {
