@@ -7,7 +7,7 @@ import {
 
 import { renderUSHome } from "./home.js";
 import { renderUSStrength } from "./strength.js";
-import { renderUSRadar } from "./radar.js";
+import { renderUSRadar, cancelUSQuoteLookup } from "./radar.js";
 
 /*
  * OX v4.0 Modular
@@ -300,6 +300,12 @@ async function loadMarketData({
   return state;
 }
 
+if (typeof document !== "undefined") {
+  document.addEventListener("ox:us-refresh", () => {
+    if (isActive) loadMarketData({ force: true });
+  });
+}
+
 
 /* -------------------------------------------------------------------------- */
 /* US module                                                                  */
@@ -371,6 +377,7 @@ export const usModule =
         false;
 
       cancelRequest();
+      cancelUSQuoteLookup();
 
       restoreSharedMarketHost();
     },
@@ -392,6 +399,8 @@ export const usModule =
         activeView =
           view;
       }
+
+      if (activeView !== "radar") cancelUSQuoteLookup();
 
       if (!isActive) {
         return null;

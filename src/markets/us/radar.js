@@ -1,3 +1,5 @@
+import { usProvider } from "./api.js";
+
 /*
  * OX v4.0 Modular
  * US Radar UI
@@ -52,6 +54,11 @@ let searchQuery =
 
 let lastState =
   null;
+
+let lookupInput = "";
+let lookupState = { status: "idle", symbol: "", quote: null, error: "" };
+let lookupController = null;
+let lookupRequestId = 0;
 
 /* ========================================================================== */
 /* Styles                                                                     */
@@ -1969,9 +1976,85 @@ function renderWaitingRow(
 /* Bind UI                                                                    */
 /* ========================================================================== */
 
+export function cancelUSQuoteLookup() {
+  lookupRequestId += 1;
+  lookupController?.abort();
+  lookupController = null;
+  if (lookupState.status === "loading") {
+    lookupState = { status: "idle", symbol: lookupState.symbol, quote: null, error: "" };
+  }
+}
+
+function renderQuoteLookup() {
+  const { status, symbol, quote, error } = lookupState;
+  let result = "<p>輸入美股代號後查詢最新可得報價；此查詢不代表 OX 分級或買賣訊號。</p>";
+  if (status === "loading") result = `<p>正在查詢 ${escapeHTML(symbol)}…</p>`;
+  if (status === "error") result = `<p class="us-lookup-error">${escapeHTML(symbol)}：${escapeHTML(error)}</p>`;
+  if (status === "ready" && quote) {
+    const price = finiteNumber(quote.close ?? quote.price ?? quote.last);
+    const change = finiteNumber(quote.percent_change ?? quote.changePct);
+    result = `
+      <div class="us-lookup-result">
+        <div><strong>${escapeHTML(symbol)}</strong><small>${escapeHTML(quote.name || quote.exchange || "美股")}</small></div>
+        <div><b>${price === null ? "—" : `$${formatPrice(price)}`}</b><span class="${changeClass(change)}">${formatPercent(change)}</span></div>
+        <div><small>成交量</small><b>${formatCompact(quote.volume)}</b></div>
+      </div>
+      <p>資料來源：Twelve Data · ${escapeHTML(quote.datetime || "時間未提供")} · 行情可能延遲，非 OX 排名。</p>`;
+  }
+  return `
+    <section class="us-lookup" aria-label="美股個股報價查詢">
+      <form data-us-lookup-form>
+        <label for="us-lookup-symbol">個股報價查詢 <small>輸入 NVDA、AAPL 等美股代號</small></label>
+        <div class="us-lookup-controls">
+          <input id="us-lookup-symbol" name="symbol" type="search" maxlength="16" autocomplete="off" spellcheck="false" value="${escapeHTML(lookupInput)}" placeholder="股票代號" aria-label="美股股票代號">
+          <button type="submit" ${status === "loading" ? "disabled" : ""}>${status === "loading" ? "查詢中" : "查詢報價"}</button>
+        </div>
+      </form>
+      <div class="us-lookup-message" role="status" aria-live="polite">${result}</div>
+    </section>`;
+}
+
+async function lookupUSQuote(symbol) {
+  const clean = String(symbol || "").trim().toUpperCase();
+  lookupInput = clean;
+  if (!/^[A-Z][A-Z0-9.-]{0,15}$/.test(clean)) {
+    lookupState = { status: "error", symbol: clean || "代號", quote: null, error: "請輸入有效的美股代號。" };
+    renderUSRadar(lastState);
+    return;
+  }
+  cancelUSQuoteLookup();
+  const controller = new AbortController();
+  const requestId = ++lookupRequestId;
+  lookupController = controller;
+  lookupState = { status: "loading", symbol: clean, quote: null, error: "" };
+  renderUSRadar(lastState);
+  try {
+    const quote = await usProvider.getQuote(clean, { signal: controller.signal });
+    if (controller.signal.aborted || requestId !== lookupRequestId) return;
+    if (quote?.status === "error" || quote?.code >= 400 || finiteNumber(quote?.close ?? quote?.price ?? quote?.last) === null) {
+      throw new Error(quote?.message || "資料源沒有回傳有效報價。");
+    }
+    lookupState = { status: "ready", symbol: clean, quote, error: "" };
+  } catch (error) {
+    if (controller.signal.aborted || requestId !== lookupRequestId) return;
+    lookupState = { status: "error", symbol: clean, quote: null, error: error?.message || "查詢暫時失敗。" };
+  } finally {
+    if (requestId === lookupRequestId) lookupController = null;
+  }
+  if (isUSMarket() && document.querySelector("#view-radar.active")) renderUSRadar(lastState);
+}
+
 function bindUI(
   root
 ) {
+  const lookupForm = root.querySelector("[data-us-lookup-form]");
+  lookupForm?.querySelector("input")?.addEventListener("input", event => {
+    lookupInput = event.target.value;
+  });
+  lookupForm?.addEventListener("submit", event => {
+    event.preventDefault();
+    lookupUSQuote(lookupForm.elements.symbol.value);
+  });
   root
     .querySelectorAll(
       "[data-us-radar-tier]"
@@ -2082,6 +2165,7 @@ function renderShell(
   root.classList.add(
     "us-radar-root"
   );
+  root.classList.toggle("has-radar-data", hasRadarData);
 
   root.innerHTML = `
     ${RADAR_STYLE}
@@ -2147,6 +2231,8 @@ function renderShell(
       ${renderSnapshot(
         state
       )}
+
+      ${renderQuoteLookup()}
 
 
       ${
@@ -2265,20 +2351,7 @@ function renderShell(
                     </div>
                   `
               )
-            : Array
-                .from(
-                  {
-                    length: 6
-                  },
-                  (
-                    _,
-                    index
-                  ) =>
-                    renderWaitingRow(
-                      index
-                    )
-                )
-                .join("")
+            : ""
         }
 
       </div>

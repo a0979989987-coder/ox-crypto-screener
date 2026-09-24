@@ -152,13 +152,13 @@ function changeClass(value) {
 function sessionLabel(session) {
   switch (session) {
     case "REGULAR":
-      return "REGULAR";
+      return "美股常規交易時段";
 
     case "CLOSED":
-      return "CLOSED";
+      return "非常規交易時段";
 
     default:
-      return "UNKNOWN";
+      return "時段待確認";
   }
 }
 
@@ -414,6 +414,8 @@ function renderError(
         )}
       </p>
 
+      <button class="us-market-refresh" type="button" data-us-refresh>重新取得行情</button>
+
       <small>
         Provider：
         ${escapeHTML(
@@ -467,23 +469,16 @@ function renderReady(
 
   root.innerHTML = `
     <div class="us-market-home-content">
-      <div class="page-kicker">
-        US MARKET PULSE · REAL DATA
+      <div class="us-market-home-header">
+        <div>
+          <div class="page-kicker">US MARKET PULSE · ETF 基準</div>
+          <h2 id="market-unavailable-title">美股市場</h2>
+          <p id="market-unavailable-copy">
+            SPY / QQQ / IWM · ${sessionLabel(data.session)} · Twelve Data via OX Backend
+          </p>
+        </div>
+        <button class="us-market-refresh" type="button" data-us-refresh ${state.status === "loading" ? "disabled" : ""}>${state.status === "loading" ? "更新中…" : "更新行情"}</button>
       </div>
-
-      <h2 id="market-unavailable-title">
-        美股市場
-      </h2>
-
-      <p id="market-unavailable-copy">
-        SPY / QQQ / IWM ETF 行情
-        ·
-        ${sessionLabel(
-          data.session
-        )}
-        ·
-        Twelve Data via OX Backend
-      </p>
 
       ${state.status === "loading" ? '<p class="us-market-state-note">正在更新；下方保留前一次行情。</p>' : state.status === "error" ? `<p class="us-market-state-note is-error">更新失敗，顯示前一次行情：${escapeHTML(state.error?.message || "資料源暫時不可用")}</p>` : ""}
 
@@ -548,7 +543,7 @@ function renderReady(
         </span>
 
         <span>
-          UPDATED
+          取得時間
           <b>
             ${formatUpdatedAt(
               state.updatedAt
@@ -620,6 +615,10 @@ export function renderUSHome(
       state
     );
   }
+
+  root.querySelector("[data-us-refresh]")?.addEventListener("click", () => {
+    document.dispatchEvent(new Event("ox:us-refresh"));
+  });
 
   return {
     view: "home",
