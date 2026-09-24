@@ -192,16 +192,16 @@ function renderOxLive() {
   }
   const parts = [];
 
-  // T1 TOP 10：直接讀取目前雷達 state.tierMap.t1，與雷達完全同一份資料、同一個排序。
+  // 跑馬燈只選 T1 的十則快訊；雷達榜單各 T 分級可顯示最多三十檔。
   const t1Coins = (state.tierMap.t1 || []).slice(0, 10);
   if (t1Coins.length) {
     const t1Text = t1Coins.map((c, idx) => {
       const symbol = String(c.symbol || "").replace(/USDT$/, "") || "—";
       return `#${idx + 1} ${symbol} OX ${c.oxScore ?? "—"} ${fmtPct(c.change24h)}`;
     }).join("　·　");
-    parts.push(`⚡ T1 TOP 10　${t1Text}`);
+    parts.push(`⚡ T1 精選快訊 · 完整 T1/T2/T3 榜各最多 30 檔　${t1Text}`);
   } else {
-    parts.push("⚡ T1 TOP 10 輪巡整理中");
+    parts.push("⚡ 完整 T1/T2/T3 榜各最多 30 檔 · 輪巡整理中");
   }
 
   const surge = (state.tierMap.surge || [])[0];
