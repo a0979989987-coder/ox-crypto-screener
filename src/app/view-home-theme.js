@@ -19,11 +19,11 @@ function setChartFocus(enabled) {
 }
 
 function switchAppView(view) {
-  if (!['home','strength','radar','media','settings'].includes(view)) return;
+  if (!['home','strength','radar','data','news','media','settings'].includes(view)) return;
   if (document.body.classList.contains('chart-focus')) setChartFocus(false);
 
   const previous = state.activeView;
-  const order = ['home','strength','radar','media','settings'];
+  const order = ['home','strength','radar','data','news','media','settings'];
   const direction = Math.sign(order.indexOf(view) - order.indexOf(previous));
   const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
   const current = document.querySelector(`[data-app-view="${previous}"].active`);

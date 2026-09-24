@@ -24,14 +24,15 @@
    */
 
   const CFG = {
-    hold: 420,
+    hold: 450,
     moveCancel: 24,
     tripleWindow: 650,
     gap: 16,
     hitSlopTop: 36,
     hitSlopBottom: 62,
     armDistance: 24,
-    closeMs: 170
+    closeMs: 170,
+    releaseCloseMs: 3000
   };
 
   const MARKETS = [
@@ -50,6 +51,10 @@
     {
       id: "forex",
       label: "外匯"
+    },
+    {
+      id: "news",
+      label: "新聞"
     }
   ];
 
@@ -466,7 +471,7 @@
 
   grid-template-columns:
     repeat(
-      4,
+      5,
       minmax(0,1fr)
     );
 
@@ -991,6 +996,24 @@ body.theme-light
       menu
     );
 
+    menu.addEventListener('pointerenter', () => clearTimeout(closeTimer));
+    menu.addEventListener('pointerleave', () => { if (!holding) scheduleClose(); });
+    menu.addEventListener('focusin', () => clearTimeout(closeTimer));
+    menu.addEventListener('focusout', event => {
+      if (!menu.contains(event.relatedTarget) && !holding) scheduleClose();
+    });
+    document.addEventListener('pointerdown', event => {
+      if (menu?.classList.contains('is-open') && !menu.contains(event.target) && !radar?.contains(event.target)) closeMenu();
+    });
+    menu.addEventListener('keydown', event => {
+      const buttons = [...menu.querySelectorAll('.ox-mqs-item')];
+      const index = buttons.indexOf(document.activeElement);
+      if (event.key === 'Escape') { event.preventDefault(); closeMenu(); radar?.focus(); }
+      if (event.key === 'ArrowRight' || event.key === 'ArrowLeft') {
+        event.preventDefault(); buttons[(index + (event.key === 'ArrowRight' ? 1 : -1) + buttons.length) % buttons.length]?.focus();
+      }
+    });
+
     /*
      * Direct click fallback.
      */
@@ -1368,6 +1391,11 @@ body.theme-light
       );
   }
 
+  function scheduleClose() {
+    clearTimeout(closeTimer);
+    closeTimer = setTimeout(() => closeMenu(), CFG.releaseCloseMs);
+  }
+
   /* =========================================================
      MARKET CONTROLLER
      ========================================================= */
@@ -1378,6 +1406,13 @@ body.theme-light
     ) {
       return false;
     }
+
+    if (id === 'news') {
+      window.OXNews?.open?.();
+      return Boolean(window.OXNews);
+    }
+
+    if (document.body.dataset.newsMode === '1') window.OXNews?.close?.();
 
     if (
       id ===
@@ -1693,9 +1728,13 @@ body.theme-light
         switchMarket(
           choice
         );
+        closeMenu();
+        return;
       }
 
-      closeMenu();
+      holding = false;
+      document.body.classList.remove('ox-mqs-dragging');
+      scheduleClose();
 
       return;
     }

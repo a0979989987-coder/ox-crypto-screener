@@ -41,6 +41,7 @@
   <link rel="stylesheet" href="src/styles/components/fullscreen-lightglass.css">
   <link rel="stylesheet" href="src/styles/components/feature-search-provider.css">
   <link rel="stylesheet" href="src/styles/markets/forex.css">
+  <link rel="stylesheet" href="src/styles/components/news-center.css">
 
 <!-- CSS moved: ox-premium-glass-design-system -->
 
@@ -179,13 +180,14 @@
             <span class="ox-control-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.6 2.7 4 5.7 4 9s-1.4 6.3-4 9c-2.6-2.7-4-5.7-4-9s1.4-6.3 4-9Z"/></svg></span>
             <span class="ox-control-copy"><b>市場設定</b><small id="ox-market-status-text">Crypto 已接資料；Forex 使用獨立標準模組。</small></span>
             <span class="ox-control-side ox-market-segment">
-              <button class="ox-market-chip active" type="button" data-market-choice="crypto">加密</button><button class="ox-market-chip" type="button" data-market-choice="us">美股</button><button class="ox-market-chip" type="button" data-market-choice="tw">台股</button><button class="ox-market-chip" type="button" data-market-choice="forex">外匯</button>
+              <button class="ox-market-chip active" type="button" data-market-choice="crypto">加密</button><button class="ox-market-chip" type="button" data-market-choice="us">美股</button><button class="ox-market-chip" type="button" data-market-choice="tw">台股</button><button class="ox-market-chip" type="button" data-market-choice="forex">外匯</button><button class="ox-market-chip" type="button" id="ox-open-news">新聞</button>
             </span>
           </div>
         </div>
 
         <div class="ox-control-section-label">Support</div>
         <div class="ox-control-group">
+          <button class="ox-control-row" id="ox-open-settings" type="button"><span class="ox-control-icon" aria-hidden="true">⚙</span><span class="ox-control-copy"><b>設定</b><small>通知、帳號與外觀偏好</small></span><span class="ox-control-side">›</span></button>
           <button class="ox-control-row" id="ox-control-feedback-open" type="button">
             <span class="ox-control-icon"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H8l-4 4Z"/><path d="M8 9h8M8 12h5"/></svg></span>
             <span class="ox-control-copy"><b>意見回饋</b><small>在控制中心內填寫；目前尚未接 Email / 表單後端。</small></span>
@@ -674,6 +676,20 @@
     </div>
   </section>
 
+  <section class="app-view" id="view-data" data-app-view="data">
+    <div class="ox-news-page">
+      <div class="ox-news-heading"><div><span class="page-kicker">OX DATA</span><h1 id="ox-data-heading">市場數據</h1><p>新聞與事件依來源更新；星級代表預期重要性，不代表價格方向。</p></div><button class="ox-news-open" type="button" data-open-cross-news>查看跨市場新聞 ↗</button></div>
+      <div class="ox-news-surface" data-news-surface="market"></div>
+    </div>
+  </section>
+
+  <section class="app-view" id="view-news" data-app-view="news">
+    <div class="ox-news-page">
+      <div class="ox-news-heading"><div><span class="page-kicker">OX NEWS</span><h1>市場新聞中心</h1><p>跨市場快訊、官方公告與預定事件。</p></div><button class="ox-news-open" type="button" id="ox-news-return">返回市場 ↗</button></div>
+      <div class="ox-news-surface" data-news-surface="all"></div>
+    </div>
+  </section>
+
   <section class="app-view" id="view-media" data-app-view="media">
     <div class="media-page">
       <div class="media-card">
@@ -730,14 +746,14 @@
       <div class="page-hero">
         <div class="page-kicker">OX Settings</div>
         <h1>設定</h1>
-        <p>通知偏好與主題會先保存在這台裝置；Email、簡訊與背景推送需要後端服務，之後可以直接接上。</p>
+        <p>目前偏好保存在這台裝置。站內及已授權的瀏覽器前景通知可用；跨裝置帳號、背景推送、Email、簡訊與 Telegram 尚待後端服務。</p>
       </div>
 
       <div class="settings-grid">
         <article class="settings-card">
           <h2>接收方式與頻率</h2>
-          <label class="settings-field"><span>Gmail</span><input id="setting-email" type="email" autocomplete="email" placeholder="yourname@gmail.com"></label>
-          <label class="settings-field"><span>電話</span><input id="setting-phone" type="tel" autocomplete="tel" placeholder="+886 9xx xxx xxx"></label>
+          <label class="settings-field"><span>Email（本機備忘，尚未驗證／發送）</span><input id="setting-email" type="email" autocomplete="email" placeholder="yourname@gmail.com"></label>
+          <label class="settings-field"><span>電話（本機備忘，尚未驗證／發送）</span><input id="setting-phone" type="tel" autocomplete="tel" placeholder="+886 9xx xxx xxx"></label>
           <label class="settings-field"><span>推算 / 彙整頻率</span>
             <select id="setting-frequency">
               <option value="1h">每 1 小時</option>
@@ -770,7 +786,28 @@
           <label class="settings-switch"><span>BTC 強度到達 50</span><input type="checkbox" data-setting-key="btc50" checked></label>
           <label class="settings-switch"><span>BTC 強度到達 75</span><input type="checkbox" data-setting-key="btc75" checked></label>
           <label class="settings-switch"><span>BTC 技術分析內容</span><input type="checkbox" data-setting-key="btcAnalysis" checked></label>
-          <label class="settings-switch"><span>重要新聞 <small>（功能預留）</small></span><input type="checkbox" data-setting-key="news"></label>
+          <label class="settings-switch"><span>重要新聞前景提醒</span><input type="checkbox" data-setting-key="news"></label>
+        </article>
+
+        <article class="settings-card settings-wide ox-news-settings">
+          <h2>新聞與事件通知</h2>
+          <p>僅在網站開啟時檢查新快照；首次讀取的歷史新聞不提醒。</p>
+          <div class="ox-news-settings-grid">
+            <label class="settings-field"><span>最低影響等級</span><select data-news-setting="minimum"><option value="3">三星以上</option><option value="4">四星以上</option><option value="5">五星</option></select></label>
+            <label class="settings-field"><span>安靜時段開始</span><input data-news-setting="quietStart" type="time" value="22:00"></label>
+            <label class="settings-field"><span>安靜時段結束</span><input data-news-setting="quietEnd" type="time" value="08:00"></label>
+          </div>
+          <div class="ox-news-settings-grid">
+            <label class="settings-switch"><span>加密</span><input data-news-market="crypto" type="checkbox" checked></label>
+            <label class="settings-switch"><span>美股</span><input data-news-market="us" type="checkbox" checked></label>
+            <label class="settings-switch"><span>台股</span><input data-news-market="tw" type="checkbox" checked></label>
+            <label class="settings-switch"><span>外匯</span><input data-news-market="forex" type="checkbox" checked></label>
+          </div>
+          <div class="ox-news-settings-grid">
+            <label class="settings-switch"><span>站內提醒</span><input data-news-channel="inPage" type="checkbox"></label>
+            <label class="settings-switch"><span>瀏覽器前景通知</span><input data-news-channel="browser" type="checkbox"></label>
+          </div>
+          <p>手機背景推送、Email、簡訊、Telegram：尚未連接真實發送服務，啟用前需要驗證帳號與訂閱。</p>
         </article>
 
         <article class="settings-card settings-wide">
@@ -810,12 +847,20 @@
       </svg>
     </span><span class="dock-radar-label">雷達</span>
   </button>
+  <button class="dock-btn" type="button" data-view-target="data" aria-label="數據">
+    <span class="dock-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10m5 10V4m5 16v-8m5 8V7"/></svg></span><span>數據</span>
+  </button>
   <button class="dock-btn" type="button" data-view-target="media" aria-label="媒體">
     <span class="dock-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m10 9 5 3-5 3z"/></svg></span><span>媒體</span>
   </button>
-  <button class="dock-btn" type="button" data-view-target="settings" aria-label="設定">
-    <span class="dock-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.2"/><path d="M19 13.5v-3l-2-.7-.8-1.9.9-1.9-2.1-2.1-1.9.9-1.9-.8-.7-2h-3l-.7 2-1.9.8-1.9-.9L.9 6l.9 1.9L1 9.8v3l2 .7.8 1.9-.9 1.9L5 19.4l1.9-.9 1.9.8.7 2h3l.7-2 1.9-.8 1.9.9 2.1-2.1-.9-1.9z" transform="scale(.82) translate(2.6 2.5)"/></svg></span><span>設定</span>
-  </button>
+</nav>
+
+<nav class="ox-news-dock" aria-label="新聞功能">
+  <button type="button" data-news-tab="overview">總覽</button>
+  <button type="button" data-news-tab="latest">快訊</button>
+  <button type="button" data-news-tab="calendar">行事曆</button>
+  <button type="button" data-news-tab="moves">異動</button>
+  <button type="button" data-news-tab="following">追蹤</button>
 </nav>
 
 <div id="toast" class="toast" role="status"></div>
@@ -842,6 +887,7 @@
 <script src="src/components/navigation/repair.js"></script>
 
 <script src="src/components/navigation/market-quick-switch.js"></script>
+<script src="src/components/news/center.js"></script>
 
 
 <script src="src/components/chart/mobile-interaction.js"></script>
