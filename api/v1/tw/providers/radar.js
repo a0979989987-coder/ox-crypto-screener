@@ -2,41 +2,41 @@
  * OX v4.0 Modular
  * Taiwan Stock Radar Provider
  *
- * Official sources:
+ * Primary official sources:
+ *
+ * TWSE
+ * - MI_INDEX / ALLBUT0999
+ *
+ * TPEx
+ * - otc_quotes_no1430 / stkw_wn1430
+ *
+ *
+ * Fallback official sources:
  *
  * TWSE
  * - STOCK_DAY_ALL
- * - t187ap05_L
  *
  * TPEx
  * - tpex_mainboard_daily_close_quotes
+ *
+ *
+ * Industry sources:
+ *
+ * TWSE
+ * - t187ap05_L
+ *
+ * TPEx
  * - mopsfin_t187ap05_O
  *
  *
- * Current Radar v1:
+ * Goal:
  *
- * - Real stock universe
- * - Real close price
- * - Real daily change %
- * - Real volume
- * - Real turnover
- * - Official industry classification
- * - OX daily relative score
- * - T1 / T2 / T3 classification
+ * Always prefer the latest COMPLETED
+ * common trading date of TWSE + TPEx.
  *
+ * Do not mix two exchanges from
+ * different trading dates.
  *
- * NOT connected yet:
- *
- * - Historical volume ratio
- * - 20D breakout
- * - Relative strength history
- * - Per-stock institutional flow
- * - Big-order flow
- *
- *
- * IMPORTANT:
- *
- * Missing fields stay null / false.
  * Never manufacture market data.
  */
 
@@ -45,11 +45,19 @@
 /* Configuration                                                              */
 /* ========================================================================== */
 
-const TWSE_QUOTES_URL =
+const TWSE_DAILY_URL =
+  "https://www.twse.com.tw/rwd/zh/afterTrading/MI_INDEX";
+
+
+const TPEX_DAILY_URL =
+  "https://www.tpex.org.tw/web/stock/aftertrading/otc_quotes_no1430/stk_wn1430_result.php";
+
+
+const TWSE_QUOTES_FALLBACK_URL =
   "https://openapi.twse.com.tw/v1/exchangeReport/STOCK_DAY_ALL";
 
 
-const TPEX_QUOTES_URL =
+const TPEX_QUOTES_FALLBACK_URL =
   "https://www.tpex.org.tw/openapi/v1/tpex_mainboard_daily_close_quotes";
 
 
@@ -62,11 +70,32 @@ const TPEX_INDUSTRY_URL =
 
 
 const DEFAULT_TIMEOUT_MS =
-  10000;
+  12000;
 
 
 const CACHE_TTL_MS =
   60000;
+
+
+/*
+ * Before this time in Taipei,
+ * today's after-trading file is
+ * not considered completed yet.
+ *
+ * We deliberately choose a safe
+ * time instead of assuming data
+ * exists immediately after 13:30.
+ */
+const COMPLETED_SESSION_HOUR =
+  15;
+
+
+/*
+ * Enough to cross weekends and
+ * normal Taiwan market holidays.
+ */
+const MAX_DATE_LOOKBACK =
+  10;
 
 
 /* ========================================================================== */
@@ -148,7 +177,7 @@ export class TWRadarProviderError
 
 
 /* ========================================================================== */
-/* Helpers                                                                    */
+/* Generic helpers                                                            */
 /* ========================================================================== */
 
 function textValue(
@@ -169,6 +198,25 @@ function textValue(
   return String(
     value
   ).trim();
+}
+
+
+function stripHTML(
+  value
+) {
+
+  return textValue(
+    value
+  )
+    .replace(
+      /<[^>]*>/g,
+      ""
+    )
+    .replace(
+      /&nbsp;/gi,
+      " "
+    )
+    .trim();
 }
 
 
@@ -203,10 +251,9 @@ function numberValue(
 
 
   const cleaned =
-    String(
+    stripHTML(
       value
     )
-      .trim()
       .replace(
         /,/g,
         ""
@@ -230,7 +277,9 @@ function numberValue(
     cleaned ===
       "---" ||
     cleaned ===
-      "N/A"
+      "N/A" ||
+    cleaned ===
+      "X"
   ) {
 
     return null;
@@ -424,7 +473,7 @@ function normalizeTier(
 
 
 /* ========================================================================== */
-/* Date                                                                       */
+/* Date helpers                                                               */
 /* ========================================================================== */
 
 function normalizeDate(
@@ -514,6 +563,240 @@ function normalizeDate(
 
 
   return null;
+}
+
+
+function taipeiNowParts() {
+
+  const formatter =
+    new Intl.DateTimeFormat(
+      "en-CA",
+      {
+        timeZone:
+          "Asia/Taipei",
+
+        year:
+          "numeric",
+
+        month:
+          "2-digit",
+
+        day:
+          "2-digit",
+
+        hour:
+          "2-digit",
+
+        hourCycle:
+          "h23"
+      }
+    );
+
+
+  const parts =
+    Object.fromEntries(
+      formatter
+        .formatToParts(
+          new Date()
+        )
+        .filter(
+          item =>
+            item.type !==
+            "literal"
+        )
+        .map(
+          item => [
+            item.type,
+            item.value
+          ]
+        )
+    );
+
+
+  return {
+
+    year:
+      Number(
+        parts.year
+      ),
+
+    month:
+      Number(
+        parts.month
+      ),
+
+    day:
+      Number(
+        parts.day
+      ),
+
+    hour:
+      Number(
+        parts.hour
+      )
+
+  };
+}
+
+
+function toUTCDate(
+  year,
+  month,
+  day
+) {
+
+  return new Date(
+    Date.UTC(
+      year,
+      month -
+      1,
+      day
+    )
+  );
+}
+
+
+function addDays(
+  date,
+  amount
+) {
+
+  const output =
+    new Date(
+      date.getTime()
+    );
+
+
+  output.setUTCDate(
+    output.getUTCDate() +
+    amount
+  );
+
+
+  return output;
+}
+
+
+function isoDate(
+  date
+) {
+
+  return `${
+    date.getUTCFullYear()
+  }-${
+    String(
+      date.getUTCMonth() +
+      1
+    ).padStart(
+      2,
+      "0"
+    )
+  }-${
+    String(
+      date.getUTCDate()
+    ).padStart(
+      2,
+      "0"
+    )
+  }`;
+}
+
+
+function compactDate(
+  date
+) {
+
+  return isoDate(
+    date
+  )
+    .replace(
+      /-/g,
+      ""
+    );
+}
+
+
+function rocDate(
+  date
+) {
+
+  return `${
+    date.getUTCFullYear() -
+    1911
+  }/${
+    String(
+      date.getUTCMonth() +
+      1
+    ).padStart(
+      2,
+      "0"
+    )
+  }/${
+    String(
+      date.getUTCDate()
+    ).padStart(
+      2,
+      "0"
+    )
+  }`;
+}
+
+
+function candidateTradingDates() {
+
+  const now =
+    taipeiNowParts();
+
+
+  let date =
+    toUTCDate(
+      now.year,
+      now.month,
+      now.day
+    );
+
+
+  /*
+   * Before today's post-close
+   * official report is expected,
+   * start from yesterday.
+   */
+  if (
+    now.hour <
+      COMPLETED_SESSION_HOUR
+  ) {
+
+    date =
+      addDays(
+        date,
+        -1
+      );
+  }
+
+
+  const dates =
+    [];
+
+
+  for (
+    let index =
+      0;
+    index <
+      MAX_DATE_LOOKBACK;
+    index +=
+      1
+  ) {
+
+    dates.push(
+      addDays(
+        date,
+        -index
+      )
+    );
+  }
+
+
+  return dates;
 }
 
 
@@ -697,7 +980,7 @@ async function requestJSON(
 
 
 /* ========================================================================== */
-/* Industry map                                                               */
+/* Industry                                                                   */
 /* ========================================================================== */
 
 function normalizeIndustry(
@@ -718,10 +1001,6 @@ function normalizeIndustry(
   }
 
 
-  /*
-   * Do not expose raw numeric
-   * industry codes to the UI.
-   */
   if (
     /^\d+$/
       .test(
@@ -840,9 +1119,126 @@ function buildIndustryMap(
 }
 
 
+async function loadIndustryMaps() {
+
+  const [
+    twseResult,
+    tpexResult
+  ] =
+    await Promise.allSettled([
+
+      requestJSON(
+        TWSE_INDUSTRY_URL,
+        {
+          source:
+            "TWSE-INDUSTRY"
+        }
+      ),
+
+      requestJSON(
+        TPEX_INDUSTRY_URL,
+        {
+          source:
+            "TPEX-INDUSTRY"
+        }
+      )
+
+    ]);
+
+
+  return {
+
+    twse:
+      twseResult.status ===
+        "fulfilled"
+        ? buildIndustryMap(
+            twseResult.value
+          )
+        : null,
+
+    tpex:
+      tpexResult.status ===
+        "fulfilled"
+        ? buildIndustryMap(
+            tpexResult.value
+          )
+        : null,
+
+    errors: {
+
+      TWSE:
+        twseResult.status ===
+          "rejected"
+          ? twseResult.reason
+          : null,
+
+      TPEX:
+        tpexResult.status ===
+          "rejected"
+          ? tpexResult.reason
+          : null
+
+    }
+
+  };
+}
+
+
 /* ========================================================================== */
-/* Change %                                                                   */
+/* Change                                                                     */
 /* ========================================================================== */
+
+function signedTwseChange(
+  difference,
+  signValue
+) {
+
+  if (
+    difference ===
+      null
+  ) {
+
+    return null;
+  }
+
+
+  const sign =
+    stripHTML(
+      signValue
+    );
+
+
+  if (
+    sign.includes(
+      "+"
+    )
+  ) {
+
+    return Math.abs(
+      difference
+    );
+  }
+
+
+  if (
+    sign.includes(
+      "-"
+    )
+  ) {
+
+    return -Math.abs(
+      difference
+    );
+  }
+
+
+  /*
+   * X / blank / special cases:
+   * retain raw numeric difference.
+   */
+  return difference;
+}
+
 
 function calculateChangePct(
   close,
@@ -886,10 +1282,1108 @@ function calculateChangePct(
 
 
 /* ========================================================================== */
-/* TWSE                                                                       */
+/* TWSE daily after-trading                                                   */
 /* ========================================================================== */
 
-function normalizeTwseStock(
+function findTWSEStockTable(
+  payload
+) {
+
+  const tables =
+    Array.isArray(
+      payload?.tables
+    )
+      ? payload.tables
+      : [];
+
+
+  return tables.find(
+    table => {
+
+      const fields =
+        Array.isArray(
+          table?.fields
+        )
+          ? table.fields
+          : [];
+
+
+      return (
+        fields.includes(
+          "證券代號"
+        ) &&
+        fields.includes(
+          "收盤價"
+        ) &&
+        fields.includes(
+          "成交股數"
+        )
+      );
+
+    }
+  ) ||
+  null;
+}
+
+
+function fieldIndex(
+  fields,
+  names
+) {
+
+  for (
+    const name
+    of names
+  ) {
+
+    const index =
+      fields.indexOf(
+        name
+      );
+
+
+    if (
+      index >=
+        0
+    ) {
+
+      return index;
+    }
+  }
+
+
+  return -1;
+}
+
+
+function normalizeTWSEDailyRows(
+  payload,
+  industryMap,
+  requestedDate
+) {
+
+  if (
+    payload?.stat !==
+      "OK"
+  ) {
+
+    return [];
+  }
+
+
+  const table =
+    findTWSEStockTable(
+      payload
+    );
+
+
+  if (
+    !table
+  ) {
+
+    return [];
+  }
+
+
+  const fields =
+    table.fields;
+
+
+  const indexes = {
+
+    symbol:
+      fieldIndex(
+        fields,
+        [
+          "證券代號"
+        ]
+      ),
+
+    name:
+      fieldIndex(
+        fields,
+        [
+          "證券名稱"
+        ]
+      ),
+
+    volume:
+      fieldIndex(
+        fields,
+        [
+          "成交股數"
+        ]
+      ),
+
+    turnover:
+      fieldIndex(
+        fields,
+        [
+          "成交金額"
+        ]
+      ),
+
+    close:
+      fieldIndex(
+        fields,
+        [
+          "收盤價"
+        ]
+      ),
+
+    sign:
+      fieldIndex(
+        fields,
+        [
+          "漲跌(+/-)"
+        ]
+      ),
+
+    difference:
+      fieldIndex(
+        fields,
+        [
+          "漲跌價差"
+        ]
+      )
+
+  };
+
+
+  if (
+    indexes.symbol <
+      0 ||
+    indexes.close <
+      0
+  ) {
+
+    return [];
+  }
+
+
+  const rows =
+    Array.isArray(
+      table.data
+    )
+      ? table.data
+      : [];
+
+
+  return rows
+    .map(
+      row => {
+
+        if (
+          !Array.isArray(
+            row
+          )
+        ) {
+
+          return null;
+        }
+
+
+        const symbol =
+          textValue(
+            row[
+              indexes.symbol
+            ]
+          );
+
+
+        const company =
+          industryMap
+            ?.get(
+              symbol
+            );
+
+
+        if (
+          !company
+        ) {
+
+          return null;
+        }
+
+
+        const price =
+          numberValue(
+            row[
+              indexes.close
+            ]
+          );
+
+
+        if (
+          price ===
+            null ||
+          price <=
+            0
+        ) {
+
+          return null;
+        }
+
+
+        const rawDifference =
+          indexes.difference >=
+            0
+            ? numberValue(
+                row[
+                  indexes.difference
+                ]
+              )
+            : null;
+
+
+        const change =
+          indexes.sign >=
+            0
+            ? signedTwseChange(
+                rawDifference,
+                row[
+                  indexes.sign
+                ]
+              )
+            : rawDifference;
+
+
+        return {
+
+          symbol,
+
+          name:
+            (
+              indexes.name >=
+                0
+                ? textValue(
+                    row[
+                      indexes.name
+                    ]
+                  )
+                : ""
+            ) ||
+            company.name,
+
+          market:
+            "TWSE",
+
+          industry:
+            company.industry,
+
+          theme:
+            company.industry,
+
+          price,
+
+          change,
+
+          changePct:
+            calculateChangePct(
+              price,
+              change
+            ),
+
+          volume:
+            indexes.volume >=
+              0
+              ? numberValue(
+                  row[
+                    indexes.volume
+                  ]
+                )
+              : null,
+
+          turnoverTwd:
+            indexes.turnover >=
+              0
+              ? numberValue(
+                  row[
+                    indexes.turnover
+                  ]
+                )
+              : null,
+
+          dataDate:
+            requestedDate
+
+        };
+
+      }
+    )
+    .filter(
+      Boolean
+    );
+}
+
+
+async function loadTWSEForDate(
+  date,
+  industryMap
+) {
+
+  const url =
+    new URL(
+      TWSE_DAILY_URL
+    );
+
+
+  url.searchParams.set(
+    "response",
+    "json"
+  );
+
+
+  url.searchParams.set(
+    "date",
+    compactDate(
+      date
+    )
+  );
+
+
+  url.searchParams.set(
+    "type",
+    "ALLBUT0999"
+  );
+
+
+  const payload =
+    await requestJSON(
+      url.toString(),
+      {
+        source:
+          "TWSE-MI-INDEX"
+      }
+    );
+
+
+  const requestedDate =
+    isoDate(
+      date
+    );
+
+
+  const rows =
+    normalizeTWSEDailyRows(
+      payload,
+      industryMap,
+      requestedDate
+    );
+
+
+  if (
+    !rows.length
+  ) {
+
+    throw new TWRadarProviderError(
+      "TWSE returned no usable daily stock rows.",
+      {
+        code:
+          "TWSE_RADAR_DAY_EMPTY",
+
+        source:
+          "TWSE",
+
+        details: {
+
+          date:
+            requestedDate
+
+        }
+      }
+    );
+  }
+
+
+  return {
+
+    market:
+      "TWSE",
+
+    dataDate:
+      requestedDate,
+
+    rows
+
+  };
+}
+
+
+/* ========================================================================== */
+/* TPEx daily after-trading                                                   */
+/* ========================================================================== */
+
+function findTPEXStockTable(
+  payload
+) {
+
+  const tables =
+    Array.isArray(
+      payload?.tables
+    )
+      ? payload.tables
+      : [];
+
+
+  return tables.find(
+    table => {
+
+      const fields =
+        Array.isArray(
+          table?.fields
+        )
+          ? table.fields
+          : [];
+
+
+      return (
+        (
+          fields.includes(
+            "代號"
+          ) ||
+          fields.includes(
+            "證券代號"
+          )
+        ) &&
+        (
+          fields.includes(
+            "收盤"
+          ) ||
+          fields.includes(
+            "收盤價"
+          )
+        )
+      );
+
+    }
+  ) ||
+  tables[0] ||
+  null;
+}
+
+
+function normalizeTPEXTableRows(
+  table,
+  industryMap,
+  requestedDate
+) {
+
+  const fields =
+    Array.isArray(
+      table?.fields
+    )
+      ? table.fields
+      : [];
+
+
+  const rows =
+    Array.isArray(
+      table?.data
+    )
+      ? table.data
+      : [];
+
+
+  const indexes = {
+
+    symbol:
+      fieldIndex(
+        fields,
+        [
+          "代號",
+          "證券代號"
+        ]
+      ),
+
+    name:
+      fieldIndex(
+        fields,
+        [
+          "名稱",
+          "證券名稱"
+        ]
+      ),
+
+    close:
+      fieldIndex(
+        fields,
+        [
+          "收盤",
+          "收盤價"
+        ]
+      ),
+
+    change:
+      fieldIndex(
+        fields,
+        [
+          "漲跌",
+          "漲跌價差"
+        ]
+      ),
+
+    volume:
+      fieldIndex(
+        fields,
+        [
+          "成交股數",
+          "成交量"
+        ]
+      ),
+
+    turnover:
+      fieldIndex(
+        fields,
+        [
+          "成交金額(元)",
+          "成交金額",
+          "成交值"
+        ]
+      )
+
+  };
+
+
+  if (
+    indexes.symbol <
+      0 ||
+    indexes.close <
+      0
+  ) {
+
+    return [];
+  }
+
+
+  return rows
+    .map(
+      row => {
+
+        if (
+          !Array.isArray(
+            row
+          )
+        ) {
+
+          return null;
+        }
+
+
+        const symbol =
+          textValue(
+            row[
+              indexes.symbol
+            ]
+          );
+
+
+        const company =
+          industryMap
+            ?.get(
+              symbol
+            );
+
+
+        if (
+          !company
+        ) {
+
+          return null;
+        }
+
+
+        const price =
+          numberValue(
+            row[
+              indexes.close
+            ]
+          );
+
+
+        if (
+          price ===
+            null ||
+          price <=
+            0
+        ) {
+
+          return null;
+        }
+
+
+        const change =
+          indexes.change >=
+            0
+            ? numberValue(
+                row[
+                  indexes.change
+                ]
+              )
+            : null;
+
+
+        return {
+
+          symbol,
+
+          name:
+            (
+              indexes.name >=
+                0
+                ? textValue(
+                    row[
+                      indexes.name
+                    ]
+                  )
+                : ""
+            ) ||
+            company.name,
+
+          market:
+            "TPEX",
+
+          industry:
+            company.industry,
+
+          theme:
+            company.industry,
+
+          price,
+
+          change,
+
+          changePct:
+            calculateChangePct(
+              price,
+              change
+            ),
+
+          volume:
+            indexes.volume >=
+              0
+              ? numberValue(
+                  row[
+                    indexes.volume
+                  ]
+                )
+              : null,
+
+          turnoverTwd:
+            indexes.turnover >=
+              0
+              ? numberValue(
+                  row[
+                    indexes.turnover
+                  ]
+                )
+              : null,
+
+          dataDate:
+            requestedDate
+
+        };
+
+      }
+    )
+    .filter(
+      Boolean
+    );
+}
+
+
+function normalizeTPEXAAData(
+  payload,
+  industryMap,
+  requestedDate
+) {
+
+  const rows =
+    Array.isArray(
+      payload?.aaData
+    )
+      ? payload.aaData
+      : [];
+
+
+  return rows
+    .map(
+      row => {
+
+        if (
+          !Array.isArray(
+            row
+          ) ||
+          row.length <
+            8
+        ) {
+
+          return null;
+        }
+
+
+        const symbol =
+          textValue(
+            row[0]
+          );
+
+
+        const company =
+          industryMap
+            ?.get(
+              symbol
+            );
+
+
+        if (
+          !company
+        ) {
+
+          return null;
+        }
+
+
+        const price =
+          numberValue(
+            row[2]
+          );
+
+
+        if (
+          price ===
+            null ||
+          price <=
+            0
+        ) {
+
+          return null;
+        }
+
+
+        const change =
+          numberValue(
+            row[3]
+          );
+
+
+        return {
+
+          symbol,
+
+          name:
+            textValue(
+              row[1]
+            ) ||
+            company.name,
+
+          market:
+            "TPEX",
+
+          industry:
+            company.industry,
+
+          theme:
+            company.industry,
+
+          price,
+
+          change,
+
+          changePct:
+            calculateChangePct(
+              price,
+              change
+            ),
+
+          volume:
+            numberValue(
+              row[7]
+            ),
+
+          turnoverTwd:
+            row.length >
+              8
+              ? numberValue(
+                  row[8]
+                )
+              : null,
+
+          dataDate:
+            requestedDate
+
+        };
+
+      }
+    )
+    .filter(
+      Boolean
+    );
+}
+
+
+async function loadTPEXForDate(
+  date,
+  industryMap
+) {
+
+  const url =
+    new URL(
+      TPEX_DAILY_URL
+    );
+
+
+  url.searchParams.set(
+    "l",
+    "zh-tw"
+  );
+
+
+  url.searchParams.set(
+    "d",
+    rocDate(
+      date
+    )
+  );
+
+
+  url.searchParams.set(
+    "se",
+    "EW"
+  );
+
+
+  url.searchParams.set(
+    "o",
+    "json"
+  );
+
+
+  const payload =
+    await requestJSON(
+      url.toString(),
+      {
+        source:
+          "TPEX-DAILY-CLOSE"
+      }
+    );
+
+
+  const requestedDate =
+    isoDate(
+      date
+    );
+
+
+  const table =
+    findTPEXStockTable(
+      payload
+    );
+
+
+  let rows =
+    table
+      ? normalizeTPEXTableRows(
+          table,
+          industryMap,
+          requestedDate
+        )
+      : [];
+
+
+  if (
+    !rows.length
+  ) {
+
+    rows =
+      normalizeTPEXAAData(
+        payload,
+        industryMap,
+        requestedDate
+      );
+  }
+
+
+  if (
+    !rows.length
+  ) {
+
+    throw new TWRadarProviderError(
+      "TPEx returned no usable daily stock rows.",
+      {
+        code:
+          "TPEX_RADAR_DAY_EMPTY",
+
+        source:
+          "TPEX",
+
+        details: {
+
+          date:
+            requestedDate
+
+        }
+      }
+    );
+  }
+
+
+  return {
+
+    market:
+      "TPEX",
+
+    dataDate:
+      requestedDate,
+
+    rows
+
+  };
+}
+
+
+/* ========================================================================== */
+/* Common latest completed trading date                                       */
+/* ========================================================================== */
+
+async function loadLatestCommonDailyMarket(
+  twseIndustryMap,
+  tpexIndustryMap
+) {
+
+  if (
+    !twseIndustryMap ||
+    !twseIndustryMap.size ||
+    !tpexIndustryMap ||
+    !tpexIndustryMap.size
+  ) {
+
+    throw new TWRadarProviderError(
+      "Industry maps are unavailable for latest-day Radar.",
+      {
+        code:
+          "TW_RADAR_INDUSTRY_UNAVAILABLE",
+
+        source:
+          "official-tw"
+      }
+    );
+  }
+
+
+  const attempts =
+    [];
+
+
+  for (
+    const date
+    of candidateTradingDates()
+  ) {
+
+    const dateISO =
+      isoDate(
+        date
+      );
+
+
+    const [
+      twseResult,
+      tpexResult
+    ] =
+      await Promise.allSettled([
+
+        loadTWSEForDate(
+          date,
+          twseIndustryMap
+        ),
+
+        loadTPEXForDate(
+          date,
+          tpexIndustryMap
+        )
+
+      ]);
+
+
+    if (
+      twseResult.status ===
+        "fulfilled" &&
+      tpexResult.status ===
+        "fulfilled"
+    ) {
+
+      return {
+
+        mode:
+          "latest-completed-trading-day",
+
+        dataDate:
+          dateISO,
+
+        twse:
+          twseResult.value,
+
+        tpex:
+          tpexResult.value,
+
+        attempts
+
+      };
+    }
+
+
+    attempts.push({
+
+      date:
+        dateISO,
+
+      TWSE:
+        twseResult.status ===
+          "fulfilled"
+          ? "ready"
+          : (
+              twseResult.reason
+                ?.code ||
+              "error"
+            ),
+
+      TPEX:
+        tpexResult.status ===
+          "fulfilled"
+          ? "ready"
+          : (
+              tpexResult.reason
+                ?.code ||
+              "error"
+            )
+
+    });
+  }
+
+
+  throw new TWRadarProviderError(
+    "Unable to find a common completed TWSE / TPEx trading date.",
+    {
+      code:
+        "TW_RADAR_COMMON_DATE_NOT_FOUND",
+
+      source:
+        "official-tw",
+
+      details: {
+
+        attempts
+
+      }
+    }
+  );
+}
+
+
+/* ========================================================================== */
+/* Fallback snapshot                                                          */
+/* ========================================================================== */
+
+function normalizeTwseSnapshotStock(
   row,
   industryMap
 ) {
@@ -907,16 +2401,12 @@ function normalizeTwseStock(
 
 
   const company =
-    industryMap.get(
-      symbol
-    );
+    industryMap
+      ?.get(
+        symbol
+      );
 
 
-  /*
-   * Joining against company industry
-   * data naturally removes most ETFs,
-   * warrants and non-company products.
-   */
   if (
     !company
   ) {
@@ -1032,11 +2522,7 @@ function normalizeTwseStock(
 }
 
 
-/* ========================================================================== */
-/* TPEx                                                                       */
-/* ========================================================================== */
-
-function normalizeTpexStock(
+function normalizeTpexSnapshotStock(
   row,
   industryMap
 ) {
@@ -1055,9 +2541,10 @@ function normalizeTpexStock(
 
 
   const company =
-    industryMap.get(
-      symbol
-    );
+    industryMap
+      ?.get(
+        symbol
+      );
 
 
   if (
@@ -1182,10 +2669,6 @@ function normalizeTpexStock(
 }
 
 
-/* ========================================================================== */
-/* Latest date                                                                */
-/* ========================================================================== */
-
 function latestDate(
   rows
 ) {
@@ -1257,45 +2740,28 @@ function keepLatestDate(
 }
 
 
-/* ========================================================================== */
-/* Load TWSE                                                                  */
-/* ========================================================================== */
+async function loadTWSESnapshot(
+  industryMap
+) {
 
-async function loadTwseStocks() {
-
-  const [
-    quotePayload,
-    industryPayload
-  ] =
-    await Promise.all([
-
-      requestJSON(
-        TWSE_QUOTES_URL,
-        {
-          source:
-            "TWSE-STOCK-DAY-ALL"
-        }
-      ),
-
-      requestJSON(
-        TWSE_INDUSTRY_URL,
-        {
-          source:
-            "TWSE-INDUSTRY"
-        }
-      )
-
-    ]);
+  const payload =
+    await requestJSON(
+      TWSE_QUOTES_FALLBACK_URL,
+      {
+        source:
+          "TWSE-STOCK-DAY-ALL"
+      }
+    );
 
 
   if (
     !Array.isArray(
-      quotePayload
+      payload
     )
   ) {
 
     throw new TWRadarProviderError(
-      "TWSE quote payload is invalid.",
+      "TWSE fallback quote payload is invalid.",
       {
         code:
           "TWSE_RADAR_INVALID",
@@ -1307,17 +2773,11 @@ async function loadTwseStocks() {
   }
 
 
-  const industryMap =
-    buildIndustryMap(
-      industryPayload
-    );
-
-
   const normalized =
-    quotePayload
+    payload
       .map(
         row =>
-          normalizeTwseStock(
+          normalizeTwseSnapshotStock(
             row,
             industryMap
           )
@@ -1338,7 +2798,7 @@ async function loadTwseStocks() {
   ) {
 
     throw new TWRadarProviderError(
-      "TWSE returned no usable Radar stocks.",
+      "TWSE fallback returned no usable Radar stocks.",
       {
         code:
           "TWSE_RADAR_EMPTY",
@@ -1365,45 +2825,28 @@ async function loadTwseStocks() {
 }
 
 
-/* ========================================================================== */
-/* Load TPEx                                                                  */
-/* ========================================================================== */
+async function loadTPEXSnapshot(
+  industryMap
+) {
 
-async function loadTpexStocks() {
-
-  const [
-    quotePayload,
-    industryPayload
-  ] =
-    await Promise.all([
-
-      requestJSON(
-        TPEX_QUOTES_URL,
-        {
-          source:
-            "TPEX-DAILY-QUOTES"
-        }
-      ),
-
-      requestJSON(
-        TPEX_INDUSTRY_URL,
-        {
-          source:
-            "TPEX-INDUSTRY"
-        }
-      )
-
-    ]);
+  const payload =
+    await requestJSON(
+      TPEX_QUOTES_FALLBACK_URL,
+      {
+        source:
+          "TPEX-OPENAPI-DAILY"
+      }
+    );
 
 
   if (
     !Array.isArray(
-      quotePayload
+      payload
     )
   ) {
 
     throw new TWRadarProviderError(
-      "TPEx quote payload is invalid.",
+      "TPEx fallback quote payload is invalid.",
       {
         code:
           "TPEX_RADAR_INVALID",
@@ -1415,17 +2858,11 @@ async function loadTpexStocks() {
   }
 
 
-  const industryMap =
-    buildIndustryMap(
-      industryPayload
-    );
-
-
   const normalized =
-    quotePayload
+    payload
       .map(
         row =>
-          normalizeTpexStock(
+          normalizeTpexSnapshotStock(
             row,
             industryMap
           )
@@ -1446,7 +2883,7 @@ async function loadTpexStocks() {
   ) {
 
     throw new TWRadarProviderError(
-      "TPEx returned no usable Radar stocks.",
+      "TPEx fallback returned no usable Radar stocks.",
       {
         code:
           "TPEX_RADAR_EMPTY",
@@ -1468,6 +2905,147 @@ async function loadTpexStocks() {
 
     rows:
       latest.rows
+
+  };
+}
+
+
+async function loadFallbackMarket(
+  industryMaps
+) {
+
+  const [
+    twseResult,
+    tpexResult
+  ] =
+    await Promise.allSettled([
+
+      industryMaps.twse
+        ? loadTWSESnapshot(
+            industryMaps.twse
+          )
+        : Promise.reject(
+            new TWRadarProviderError(
+              "TWSE industry map unavailable.",
+              {
+                code:
+                  "TWSE_INDUSTRY_UNAVAILABLE",
+
+                source:
+                  "TWSE"
+              }
+            )
+          ),
+
+      industryMaps.tpex
+        ? loadTPEXSnapshot(
+            industryMaps.tpex
+          )
+        : Promise.reject(
+            new TWRadarProviderError(
+              "TPEx industry map unavailable.",
+              {
+                code:
+                  "TPEX_INDUSTRY_UNAVAILABLE",
+
+                source:
+                  "TPEX"
+              }
+            )
+          )
+
+    ]);
+
+
+  const twse =
+    twseResult.status ===
+      "fulfilled"
+      ? twseResult.value
+      : null;
+
+
+  const tpex =
+    tpexResult.status ===
+      "fulfilled"
+      ? tpexResult.value
+      : null;
+
+
+  if (
+    !twse &&
+    !tpex
+  ) {
+
+    throw new TWRadarProviderError(
+      "All Taiwan Radar fallback sources failed.",
+      {
+        code:
+          "TW_RADAR_ALL_FAILED",
+
+        source:
+          "official-tw"
+      }
+    );
+  }
+
+
+  if (
+    twse &&
+    tpex &&
+    twse.dataDate &&
+    tpex.dataDate &&
+    twse.dataDate !==
+      tpex.dataDate
+  ) {
+
+    throw new TWRadarProviderError(
+      "TWSE and TPEx fallback trading dates do not match.",
+      {
+        code:
+          "TW_RADAR_DATE_MISMATCH",
+
+        source:
+          "official-tw",
+
+        details: {
+
+          TWSE:
+            twse.dataDate,
+
+          TPEX:
+            tpex.dataDate
+
+        }
+      }
+    );
+  }
+
+
+  return {
+
+    mode:
+      "openapi-snapshot-fallback",
+
+    dataDate:
+      twse
+        ?.dataDate ||
+      tpex
+        ?.dataDate ||
+      null,
+
+    twse,
+
+    tpex,
+
+    sourceResults: {
+
+      TWSE:
+        twseResult,
+
+      TPEX:
+        tpexResult
+
+    }
 
   };
 }
@@ -1599,19 +3177,17 @@ function percentileRank(
 
 
 /* ========================================================================== */
-/* OX Score v1                                                                */
+/* OX Score                                                                   */
 /* ========================================================================== */
 
 /*
- * Radar v1 score:
+ * OX Radar v1
  *
- * 70% = same-day price strength percentile
- * 30% = turnover percentile
+ * 70% same-day price strength
+ * 30% turnover percentile
  *
- * This is NOT a prediction.
- *
- * It is only a cross-sectional
- * ranking of the current trading day.
+ * This is a ranking model,
+ * not a price prediction.
  */
 function applyOXScore(
   rows
@@ -1801,8 +3377,8 @@ function applyOXScore(
 
 
         /*
-         * Historical data not yet
-         * connected.
+         * Historical Radar fields
+         * are still pending.
          */
         volumeRatio:
           null,
@@ -1817,10 +3393,6 @@ function applyOXScore(
           "",
 
 
-        /*
-         * Current-day limit distance
-         * source is not yet connected.
-         */
         nearLimitUp:
           false,
 
@@ -1828,10 +3400,6 @@ function applyOXScore(
           null,
 
 
-        /*
-         * Per-stock institutional flow
-         * will be connected later.
-         */
         foreignNet:
           null,
 
@@ -1863,16 +3431,15 @@ function applyOXScore(
 
 
 /* ========================================================================== */
-/* Source errors                                                              */
+/* Error summary                                                              */
 /* ========================================================================== */
 
 function errorSummary(
-  result
+  error
 ) {
 
   if (
-    result.status ===
-      "fulfilled"
+    !error
   ) {
 
     return null;
@@ -1882,18 +3449,15 @@ function errorSummary(
   return Object.freeze({
 
     code:
-      result.reason
-        ?.code ||
+      error.code ||
       "UNKNOWN",
 
     source:
-      result.reason
-        ?.source ||
+      error.source ||
       "",
 
     message:
-      result.reason
-        ?.message ||
+      error.message ||
       "Unknown provider error"
 
   });
@@ -1921,100 +3485,63 @@ async function buildUniverse() {
   }
 
 
-  const [
-    twseResult,
-    tpexResult
-  ] =
-    await Promise
-      .allSettled([
-
-        loadTwseStocks(),
-
-        loadTpexStocks()
-
-      ]);
+  const industryMaps =
+    await loadIndustryMaps();
 
 
-  const twse =
-    twseResult.status ===
-      "fulfilled"
-      ? twseResult.value
-      : null;
+  let marketData =
+    null;
 
 
-  const tpex =
-    tpexResult.status ===
-      "fulfilled"
-      ? tpexResult.value
-      : null;
+  let primaryError =
+    null;
 
 
-  if (
-    !twse &&
-    !tpex
+  /*
+   * Primary:
+   * latest common completed
+   * after-trading date.
+   */
+  try {
+
+    marketData =
+      await loadLatestCommonDailyMarket(
+        industryMaps.twse,
+        industryMaps.tpex
+      );
+
+  } catch (
+    error
   ) {
 
-    throw new TWRadarProviderError(
-      "All Taiwan Radar sources failed.",
-      {
-        code:
-          "TW_RADAR_ALL_FAILED",
-
-        source:
-          "official-tw",
-
-        details: {
-
-          TWSE:
-            errorSummary(
-              twseResult
-            ),
-
-          TPEX:
-            errorSummary(
-              tpexResult
-            )
-
-        }
-      }
-    );
+    primaryError =
+      error;
   }
 
 
   /*
-   * Never mix two exchanges
-   * from different trading days.
+   * Fallback:
+   * original OpenAPI snapshots.
    */
   if (
-    twse &&
-    tpex &&
-    twse.dataDate &&
-    tpex.dataDate &&
-    twse.dataDate !==
-      tpex.dataDate
+    !marketData
   ) {
 
-    throw new TWRadarProviderError(
-      "TWSE and TPEx Radar trading dates do not match.",
-      {
-        code:
-          "TW_RADAR_DATE_MISMATCH",
-
-        source:
-          "official-tw",
-
-        details: {
-
-          TWSE:
-            twse.dataDate,
-
-          TPEX:
-            tpex.dataDate
-
-        }
-      }
-    );
+    marketData =
+      await loadFallbackMarket(
+        industryMaps
+      );
   }
+
+
+  const twse =
+    marketData.twse ||
+    null;
+
+
+  const tpex =
+    marketData.tpex ||
+    null;
 
 
   const baseRows =
@@ -2035,6 +3562,23 @@ async function buildUniverse() {
     ];
 
 
+  if (
+    !baseRows.length
+  ) {
+
+    throw new TWRadarProviderError(
+      "Taiwan Radar universe is empty.",
+      {
+        code:
+          "TW_RADAR_EMPTY",
+
+        source:
+          "official-tw"
+      }
+    );
+  }
+
+
   const radar =
     Object.freeze(
       applyOXScore(
@@ -2049,10 +3593,7 @@ async function buildUniverse() {
       radar,
 
       dataDate:
-        twse
-          ?.dataDate ||
-        tpex
-          ?.dataDate ||
+        marketData.dataDate ||
         null,
 
       updatedAt:
@@ -2067,6 +3608,12 @@ async function buildUniverse() {
 
           methodology:
             "daily-relative-strength-activity-v1",
+
+          sourceMode:
+            marketData.mode,
+
+          freshnessPolicy:
+            "latest-completed-common-trading-day",
 
           partial:
             !twse ||
@@ -2121,17 +3668,26 @@ async function buildUniverse() {
 
             }),
 
-          errors:
+          primarySourceError:
+            errorSummary(
+              primaryError
+            ),
+
+          industryErrors:
             Object.freeze({
 
               TWSE:
                 errorSummary(
-                  twseResult
+                  industryMaps
+                    .errors
+                    .TWSE
                 ),
 
               TPEX:
                 errorSummary(
-                  tpexResult
+                  industryMaps
+                    .errors
+                    .TPEX
                 )
 
             })
