@@ -149,7 +149,7 @@ async function preparePage(context, viewport) {
   await page.route("https://ox-crypto-screener.vercel.app/api/v1/us/**", route => {
     const url = new URL(route.request().url());
     const data = url.pathname.endsWith("/quote")
-      ? { symbol: url.searchParams.get("symbol"), name: "NVIDIA", exchange: "NASDAQ", close: "123.45", percent_change: "2.31", volume: "58200000", datetime: "2026-09-23" }
+      ? { symbol: url.searchParams.get("symbol"), name: url.searchParams.get("symbol"), exchange: "NASDAQ", close: "123.45", percent_change: "2.31", high: "125.00", low: "121.00", volume: "58200000", datetime: "2026-09-23" }
       : { benchmarks: Object.fromEntries(["SPY", "QQQ", "IWM"].map((symbol, index) => [symbol, { symbol, name: symbol, close: String(500 - index * 80), percent_change: String(index ? -1 : 1), open: "490", high: "510", low: "480", volume: "15000000", is_market_open: false }]).concat([["VIX", { status: "error", message: "Unavailable" }]])) };
     return route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ ok: true, data }) });
   });
@@ -243,6 +243,10 @@ async function desktopRegression(browser) {
   await page.click("[data-us-lookup-form] button");
   await page.waitForSelector(".us-lookup-result");
   assert((await page.locator(".us-lookup-result").innerText()).includes("$123.45"), "US quote lookup did not show the requested stock");
+  assert((await page.locator(".us-lookup-range").innerText()).includes("$125.00"), "US quote range did not show the provided high");
+  await page.click('[data-us-quick-symbol="AAPL"]');
+  await page.waitForFunction(() => document.querySelector(".us-lookup-result strong")?.textContent === "AAPL");
+  assert(await page.locator('[data-us-quick-symbol="AAPL"]').getAttribute("aria-pressed") === "true", "US quick symbol did not become active");
   await selectView(page, "home");
   await page.waitForSelector(".us-market-pulse-grid .us-market-pulse-item");
   assert(await page.locator(".us-market-pulse-item").count() === 4, "US Home did not render benchmark cards after leaving Radar");

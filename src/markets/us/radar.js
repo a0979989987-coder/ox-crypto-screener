@@ -59,6 +59,7 @@ let lookupInput = "";
 let lookupState = { status: "idle", symbol: "", quote: null, error: "" };
 let lookupController = null;
 let lookupRequestId = 0;
+const QUICK_SYMBOLS = ["NVDA", "AAPL", "TSLA"];
 
 /* ========================================================================== */
 /* Styles                                                                     */
@@ -1993,18 +1994,24 @@ function renderQuoteLookup() {
   if (status === "ready" && quote) {
     const price = finiteNumber(quote.close ?? quote.price ?? quote.last);
     const change = finiteNumber(quote.percent_change ?? quote.changePct);
+    const high = finiteNumber(quote.high);
+    const low = finiteNumber(quote.low);
     result = `
       <div class="us-lookup-result">
         <div><strong>${escapeHTML(symbol)}</strong><small>${escapeHTML(quote.name || quote.exchange || "美股")}</small></div>
         <div><b>${price === null ? "—" : `$${formatPrice(price)}`}</b><span class="${changeClass(change)}">${formatPercent(change)}</span></div>
         <div><small>成交量</small><b>${formatCompact(quote.volume)}</b></div>
       </div>
+      <div class="us-lookup-range"><span>當日高 ${high === null ? "—" : `$${formatPrice(high)}`}</span><span>當日低 ${low === null ? "—" : `$${formatPrice(low)}`}</span></div>
       <p>資料來源：Twelve Data · ${escapeHTML(quote.datetime || "時間未提供")} · 行情可能延遲，非 OX 排名。</p>`;
   }
   return `
     <section class="us-lookup" aria-label="美股個股報價查詢">
       <form data-us-lookup-form>
-        <label for="us-lookup-symbol">個股報價查詢 <small>輸入 NVDA、AAPL 等美股代號</small></label>
+        <label for="us-lookup-symbol">個股報價查詢 <small>點選常看股票，或輸入美股代號</small></label>
+        <div class="us-lookup-quick" aria-label="常看美股">
+          ${QUICK_SYMBOLS.map(item => `<button type="button" data-us-quick-symbol="${item}" aria-pressed="${symbol === item && status === "ready"}">${item}</button>`).join("")}
+        </div>
         <div class="us-lookup-controls">
           <input id="us-lookup-symbol" name="symbol" type="search" maxlength="16" autocomplete="off" spellcheck="false" value="${escapeHTML(lookupInput)}" placeholder="股票代號" aria-label="美股股票代號">
           <button type="submit" ${status === "loading" ? "disabled" : ""}>${status === "loading" ? "查詢中" : "查詢報價"}</button>
@@ -2048,6 +2055,9 @@ function bindUI(
   root
 ) {
   const lookupForm = root.querySelector("[data-us-lookup-form]");
+  root.querySelectorAll("[data-us-quick-symbol]").forEach(button => {
+    button.addEventListener("click", () => lookupUSQuote(button.dataset.usQuickSymbol));
+  });
   lookupForm?.querySelector("input")?.addEventListener("input", event => {
     lookupInput = event.target.value;
   });
