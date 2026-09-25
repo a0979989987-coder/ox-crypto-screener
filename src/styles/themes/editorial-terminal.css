@@ -1109,3 +1109,35 @@ body.ox-terminal .us-strength-shell>.page-kicker {display:none!important}
 body.ox-terminal :is(.twi-header,.twr-header,.us-radar-head,.us-strength-head) {padding:10px 0!important;min-height:0!important;margin:0 0 14px!important}
 body.ox-terminal .twi-header-count {display:flex!important;align-items:baseline!important;gap:8px!important;background:none!important;border:0!important;padding:0!important}
 body.ox-terminal .twi-header-count strong {font-size:20px!important}
+
+/* BTC quote and chart share one compact surface and one live market edge. */
+body.ox-terminal #view-home .ox-home-main {margin-top:14px!important}
+body.ox-terminal #view-home .ox-home-chart {min-height:0!important;padding:17px 20px 12px!important;gap:0}
+body.ox-terminal #view-home .ox-home-chart .ox-home-quote {display:flex!important;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px 20px;min-height:0!important;padding:0 0 13px!important;margin:0 0 12px;border:0!important;border-bottom:1px solid var(--line)!important}
+body.ox-terminal #view-home .ox-home-chart .ox-home-price {justify-content:flex-end;gap:6px 9px}
+body.ox-terminal #view-home .ox-home-chart .ox-home-price strong {font-size:clamp(30px,3vw,43px)}
+body.ox-terminal #view-home .ox-home-chart .ox-home-price>span {margin-left:4px}
+body.ox-terminal #view-home .ox-chart-heading {min-height:30px}
+body.ox-terminal #view-home .ox-chart-heading>div:first-child {display:none}
+body.ox-terminal #view-home .v34-home-main-toolbar {margin-left:auto}
+body.ox-terminal #view-home .btc-premium-chart-wrap,
+body.ox-terminal #view-home #home-btc-mini-chart {height:245px!important;min-height:245px!important;flex:none!important}
+body.ox-terminal #view-home .btc-premium-chart-wrap {margin:7px 0 9px!important}
+body.ox-terminal #view-home .ox-home-chart.ox-market-up {border-color:#80b8a5!important;box-shadow:inset 0 1px 0 #ffffff9c,0 0 0 1px #80b8a538,0 0 22px #69b99b30,0 13px 32px #0003!important}
+body.ox-terminal #view-home .ox-home-chart.ox-market-down {border-color:#c78991!important;box-shadow:inset 0 1px 0 #ffffff9c,0 0 0 1px #c7899138,0 0 22px #bc6f7d30,0 13px 32px #0003!important}
+body.ox-terminal.theme-light #view-home .ox-home-chart.ox-market-up {border-color:#579681!important;box-shadow:0 0 0 1px #57968130,0 8px 22px #39786117!important}
+body.ox-terminal.theme-light #view-home .ox-home-chart.ox-market-down {border-color:#ac6974!important;box-shadow:0 0 0 1px #ac697430,0 8px 22px #93424f17!important}
+@media(min-width:1600px){
+ body.ox-terminal #view-home .btc-premium-chart-wrap,body.ox-terminal #view-home #home-btc-mini-chart {height:285px!important;min-height:285px!important}
+}
+@media(max-width:620px){
+ body.ox-terminal #view-home .ox-home-main {margin-top:9px!important}
+ body.ox-terminal #view-home .ox-home-chart {padding:13px 12px 10px!important}
+ body.ox-terminal #view-home .ox-home-chart .ox-home-quote {gap:7px!important;padding-bottom:10px!important;margin-bottom:7px}
+ body.ox-terminal #view-home .ox-home-chart .ox-home-identity>div {display:flex;align-items:baseline;gap:7px}
+ body.ox-terminal #view-home .ox-home-chart .ox-home-price {width:100%;justify-content:flex-start;flex-wrap:nowrap}
+ body.ox-terminal #view-home .ox-home-chart .ox-home-price strong {font-size:clamp(30px,9vw,39px)}
+ body.ox-terminal #view-home .ox-home-chart .ox-home-price>span {margin-left:auto}
+ body.ox-terminal #view-home .btc-premium-chart-wrap,body.ox-terminal #view-home #home-btc-mini-chart {height:190px!important;min-height:190px!important}
+ body.ox-terminal #view-home .btc-premium-chart-wrap {margin:3px 0 7px!important}
+}
