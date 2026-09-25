@@ -347,7 +347,7 @@ document.addEventListener("click", e => {
     return;
   }
 
-  if (e.target.id === "btn-chart-fullscreen") {
+  if (e.target.closest("#btn-chart-fullscreen")) {
     if (window.matchMedia("(max-width: 900px)").matches) {
       setChartFocus(!document.body.classList.contains("chart-focus"));
     } else {
