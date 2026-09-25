@@ -2113,7 +2113,7 @@ export function renderTWHome(
           <div
             class="tw-home-eyebrow"
           >
-            OX · TAIWAN MARKET
+            TAIWAN / MARKET OVERVIEW
           </div>
 
           <h2
@@ -2125,9 +2125,7 @@ export function renderTWHome(
           <p
             id="market-unavailable-copy"
           >
-            市場 → 資金 → 題材 → 個股。
-            首頁只留下今天真正值得看的資訊，
-            深度分析交給指標與雷達。
+            台灣市場全貌 · 指數、資金與市場廣度。
           </p>
 
         </div>
