@@ -305,7 +305,14 @@ document.addEventListener("click", e => {
   if (star?.dataset.watchSymbol) { e.preventDefault(); e.stopPropagation(); toggleWatchSymbol(star.dataset.watchSymbol); return; }
 
   const homeSymbol = e.target.closest("[data-home-symbol]");
-  if (homeSymbol?.dataset.homeSymbol) { switchSymbol(homeSymbol.dataset.homeSymbol); return; }
+  if (homeSymbol?.dataset.homeSymbol) {
+    if (homeSymbol.dataset.homeSide) {
+      setScannerDirectionFilter(homeSymbol.dataset.homeSide);
+      setScannerTierFilter('t1');
+    }
+    switchSymbol(homeSymbol.dataset.homeSymbol);
+    return;
+  }
 
   const viewBtn = e.target.closest("[data-view-target]");
   if (viewBtn) { switchAppView(viewBtn.dataset.viewTarget); return; }
@@ -366,7 +373,12 @@ document.addEventListener("click", e => {
 
 document.addEventListener("keydown", e => {
   if ((e.key === "Enter" || e.key === " ") && e.target?.dataset?.homeSymbol) {
-    e.preventDefault(); switchSymbol(e.target.dataset.homeSymbol); return;
+    e.preventDefault();
+    if (e.target.dataset.homeSide) {
+      setScannerDirectionFilter(e.target.dataset.homeSide);
+      setScannerTierFilter('t1');
+    }
+    switchSymbol(e.target.dataset.homeSymbol); return;
   }
   if ((e.key === "Enter" || e.key === " ") && e.target?.classList?.contains("coin-card") && e.target.dataset.symbol) {
     e.preventDefault(); switchSymbol(e.target.dataset.symbol);
