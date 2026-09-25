@@ -140,11 +140,11 @@ const HomeChartVariant = (()=>{
   let chart=null, series=null, volumeSeries=null, period="1H", loading=false, ro=null;
   const theme=()=>document.body.classList.contains("theme-light");
   const chartColors=()=> theme() ? {
-    bg:"rgba(255,255,255,0)", text:"#718197",
-    grid:"rgba(91,119,148,.10)", cross:"rgba(72,104,140,.20)"
+    bg:"rgba(255,255,255,0)", text:"#777d79",
+    grid:"rgba(65,72,68,.10)", cross:"rgba(65,72,68,.24)"
   } : {
-    bg:"rgba(0,0,0,0)", text:"#7f91a9",
-    grid:"rgba(91,132,178,.085)", cross:"rgba(139,180,222,.18)"
+    bg:"rgba(0,0,0,0)", text:"#a2a8a3",
+    grid:"rgba(195,201,191,.085)", cross:"rgba(211,213,202,.22)"
   };
 
   const ensure=()=>{
@@ -173,8 +173,8 @@ const HomeChartVariant = (()=>{
       handleScale:{axisPressedMouseMove:false,mouseWheel:true,pinch:true}
     });
     series=chart.addCandlestickSeries({
-      upColor:"#38c99b",downColor:"#ee617c",
-      borderVisible:false,wickUpColor:"#38c99b",wickDownColor:"#ee617c",
+      upColor:"#e5e1d8",downColor:"#8d9490",
+      borderVisible:false,wickUpColor:"#e5e1d8",wickDownColor:"#8d9490",
       priceLineVisible:true,lastValueVisible:true
     });
     volumeSeries=chart.addHistogramSeries({
