@@ -27,6 +27,37 @@
 body[data-news-mode="1"] .app-dock{display:none!important}
 body[data-news-mode="1"] .ox-news-dock{position:fixed;z-index:1000;bottom:max(8px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;width:min(650px,calc(100% - 16px));padding:7px;border:1px solid var(--line,rgba(150,174,205,.22));border-radius:22px;background:var(--panel,#172231);box-shadow:0 12px 40px rgba(0,0,0,.28)}
 .ox-news-dock button{min-height:50px;min-width:0;border:1px solid transparent;border-radius:15px;background:transparent;color:var(--ink,#ecf3fb);font:inherit;font-size:12px;font-weight:700;cursor:pointer}
+/* Native scrolling must start on the first gesture after every route change. */
+html{scroll-behavior:auto!important}
+.app-view.active{animation:none!important;transform:none!important}
+.ox-data-caption{display:none}
+#view-home .v33-home-hero-top > div:first-child,
+#view-strength .page-hero,#view-settings .page-hero,
+#view-media .media-intro .page-kicker,#view-media .media-intro h1,#view-media .media-intro p{display:none!important}
+#view-home .v33-home-hero-top{min-height:0;padding-bottom:0}
+#view-media .media-intro{padding:12px 16px;gap:12px}
+#view-data .media-card{padding:12px!important}
+#view-data .media-page{padding-top:0}
+.ox-news-heading{margin:0 0 6px}
+.ox-news-heading .ox-news-open{width:auto;min-height:44px}
+.ox-news-controls{gap:6px;margin:0 0 6px}
+.ox-news-section-title{font-size:15px;margin:12px 0 8px}
+.ox-news-status{margin:5px 0 9px}
+.ox-news-tabs{display:flex;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;gap:4px;-webkit-overflow-scrolling:touch}
+.ox-news-tabs::-webkit-scrollbar{display:none}
+.ox-news-tabs button{flex:0 0 auto;min-height:44px;padding:0 11px;font-size:12px;white-space:nowrap}
+.ox-news-control-row{display:flex;flex-wrap:nowrap;gap:5px}
+.ox-news-control-row button{flex:1;min-width:0;min-height:44px;padding:0 5px;font-size:11px;white-space:nowrap}
+.ox-news-visual{float:right;display:grid;place-items:center;width:52px;height:52px;margin:0 0 7px 10px;border:1px solid rgba(234,190,101,.38);border-radius:14px;background:linear-gradient(135deg,#263b52,#111e2c);color:#eabe65;font-size:22px;font-weight:900;line-height:1}
+.ox-news-visual-ethereum{background:linear-gradient(135deg,#4b4b77,#172334);color:#d7d4ff}
+.ox-news-visual-ecb{background:linear-gradient(135deg,#214e75,#10253c);color:#c2dbff}
+.ox-news-visual-sec{background:linear-gradient(135deg,#574424,#1f2433);color:#f0d5a2}
+.ox-news-visual-bls-cpi,.ox-news-visual-bls-jobs,.ox-news-visual-bls-calendar{background:linear-gradient(135deg,#31546a,#182b3e);color:#bde1e4}
+.ox-news-more{min-height:44px;width:100%;margin-top:10px;border:1px solid var(--line,rgba(150,174,205,.22));border-radius:12px;background:var(--panel,#172231);color:var(--ink,#ecf3fb);font:inherit;cursor:pointer}
+body[data-news-mode="1"] #ox-forex-module,body[data-news-mode="1"] #market-unavailable-card,
+body[data-news-mode="1"] #ox-us-module,body[data-news-mode="1"] #ox-tw-module{display:none!important}
+body:has(#view-news.active,#view-data.active,#view-media.active,#view-settings.active) #ox-forex-module,
+body:has(#view-news.active,#view-data.active,#view-media.active,#view-settings.active) #market-unavailable-card{display:none!important}
 @media(max-width:720px){
   .ox-news-page{padding:15px 12px 120px}
   .ox-news-heading{align-items:start;flex-direction:column;gap:12px}
@@ -35,10 +66,9 @@ body[data-news-mode="1"] .ox-news-dock{position:fixed;z-index:1000;bottom:max(8p
   .ox-news-open{width:100%}
   .ox-news-list{grid-template-columns:minmax(0,1fr)}
   .ox-news-card{padding:14px}
-  .ox-news-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
-  .ox-news-tabs button{min-width:0;padding:0 5px}
-  .ox-news-control-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
-  .ox-news-filter{min-width:0;padding:0 5px;font-size:12px}
+  .ox-news-tabs{display:flex}
+  .ox-news-control-row{display:flex}
+  .ox-news-filter{min-width:0}
   .ox-news-options>*{flex:1 1 150px;min-width:0}
   .ox-news-dock button{font-size:11px}
 }
