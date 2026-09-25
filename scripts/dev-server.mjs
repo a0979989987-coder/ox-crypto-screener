@@ -4,7 +4,10 @@ import { dirname, extname, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const port = Number(process.env.PORT) || 4174;
+const portFlag = process.argv.indexOf('--port');
+const hostFlag = process.argv.indexOf('--host');
+const port = Number(portFlag >= 0 ? process.argv[portFlag + 1] : process.env.PORT) || 4173;
+const host = hostFlag >= 0 ? process.argv[hostFlag + 1] : '0.0.0.0';
 const types = { ".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".css": "text/css; charset=utf-8", ".json": "application/json; charset=utf-8", ".svg": "image/svg+xml", ".png": "image/png", ".jpg": "image/jpeg", ".webp": "image/webp" };
 
 createServer(async (request, response) => {
@@ -20,4 +23,4 @@ createServer(async (request, response) => {
     response.writeHead(404);
     response.end("Not found");
   }
-}).listen(port, "127.0.0.1", () => console.log(`OX preview: http://127.0.0.1:${port}/`));
+}).listen(port, host, () => console.log(`OX preview: http://127.0.0.1:${port}/`));
