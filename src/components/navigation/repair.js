@@ -4,7 +4,7 @@
     const dock = document.querySelector(".app-dock");
     if (!dock || typeof switchAppView !== "function") return;
 
-    const ordered = ["home","strength","radar","media","settings"];
+    const ordered = ["home","strength","radar","data","media"];
     ordered.forEach((view, index) => {
       const btn = dock.querySelector(`.dock-btn[data-view-target="${view}"]`);
       if (!btn) return;

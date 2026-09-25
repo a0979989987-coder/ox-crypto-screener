@@ -18,23 +18,35 @@ function setChartFocus(enabled) {
   [0, 80, 180, 320].forEach(ms => setTimeout(() => { resizeChartToContainer(); updatePriceTimer(); }, ms));
 }
 
+function renderMarketDataStatus() {
+  const descriptions = {
+    crypto: ['加密市場數據', 'Bitget USDT 永續合約', '行情、K 線與雷達使用既有 Crypto 模組；新聞與事件日曆尚未接入。'],
+    us: ['美股市場數據', 'Twelve Data 後端', 'SPY／QQQ／IWM 及單筆個股查價已接入；全市場廣度、類股和股票池雷達目前無資料。'],
+    tw: ['台股市場數據', 'TWSE／TPEx 官方日資料', '上市與上櫃使用最新共同完成交易日；請至雷達查個股官方收盤價。'],
+    forex: ['外匯市場數據', 'Frankfurter／ECB 每日參考匯率', '已接入每日匯率與貨幣強弱；盤中報價、點差與成交量目前無資料。']
+  };
+  const [heading, source, availability] = descriptions[state.activeMarket] || descriptions.crypto;
+  document.getElementById('ox-data-heading').textContent = heading;
+  document.getElementById('ox-data-source').textContent = `資料來源：${source}`;
+  document.getElementById('ox-data-availability').textContent = availability;
+}
+document.addEventListener('ox:marketchange', () => {
+  if (state.activeView === 'data') renderMarketDataStatus();
+});
+
 function switchAppView(view) {
-  if (!['home','strength','radar','media','settings'].includes(view)) return;
+  if (!['home','strength','radar','data','media','settings'].includes(view)) return;
   if (document.body.classList.contains('chart-focus')) setChartFocus(false);
 
   const previous = state.activeView;
-  const order = ['home','strength','radar','media','settings'];
+  const order = ['home','strength','radar','data','media','settings'];
   const direction = Math.sign(order.indexOf(view) - order.indexOf(previous));
   const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
-  const current = document.querySelector(`[data-app-view="${previous}"].active`);
-  const token = (switchAppView._token = (switchAppView._token || 0) + 1);
-  clearTimeout(switchAppView._timer);
-  document.querySelectorAll('.app-view').forEach(el => el.classList.remove('ox-view-leaving','ox-view-entering'));
-
-  const commit = () => {
-    if (token !== switchAppView._token) return;
-    current?.classList.remove('ox-view-leaving');
+  // Switch immediately: holding the old page for its exit animation blocks taps and scrolling.
+  document.querySelectorAll('.app-view.ox-view-entering').forEach(el => el.classList.remove('ox-view-entering'));
+  {
     state.activeView = view;
+    if (view === 'data') renderMarketDataStatus();
     document.querySelectorAll('[data-app-view]').forEach(el => el.classList.toggle('active', el.dataset.appView === view));
     document.querySelectorAll('[data-view-target]').forEach(btn => btn.classList.toggle('active', btn.dataset.viewTarget === view));
 
@@ -42,25 +54,20 @@ function switchAppView(view) {
     if (!reduced && previous !== view && incoming) {
       incoming.style.setProperty('--ox-view-enter-x', `${direction > 0 ? 10 : direction < 0 ? -10 : 0}px`);
       incoming.classList.add('ox-view-entering');
-      setTimeout(() => incoming.classList.remove('ox-view-entering'), 370);
+      incoming.addEventListener('animationend', () => incoming.classList.remove('ox-view-entering'), { once: true });
     }
 
-    if (view === 'strength') { renderMarketStrength(); setTimeout(() => LiquidationModule?.refresh?.(), 40); }
-    if (view === 'home') { renderHomeOverview(); setTimeout(() => HomeMiniChart.ensureAndLoad(false), 60); }
-    if (view === 'radar') setTimeout(resizeChartToContainer, 80);
     MarketController.syncPlaceholder();
     window.scrollTo({ top: 0, behavior: reduced ? 'auto' : 'auto' });
     document.dispatchEvent(new CustomEvent('ox:viewchange', { detail: { from: previous, to: view, direction } }));
-  };
-
-  if (reduced || previous === view || !current) {
-    commit();
-    return;
+    // Schedule view-specific work after the new page has had a chance to paint.
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      if (state.activeView !== view) return;
+      if (view === 'strength' && state.activeMarket === 'crypto') { renderMarketStrength(); LiquidationModule?.refresh?.(); }
+      if (view === 'home' && state.activeMarket === 'crypto') { renderHomeOverview(); HomeMiniChart.ensureAndLoad(false); }
+      if (view === 'radar' && state.activeMarket === 'crypto') resizeChartToContainer();
+    }));
   }
-
-  current.style.setProperty('--ox-view-exit-x', `${direction > 0 ? -8 : direction < 0 ? 8 : 0}px`);
-  current.classList.add('ox-view-leaving');
-  switchAppView._timer = setTimeout(commit, 105);
 }
 
 

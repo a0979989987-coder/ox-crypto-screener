@@ -33,9 +33,8 @@
   function decorateRadarDirection() {
     radarRaf = 0;
     document.querySelectorAll('#view-radar .coin-card').forEach(card => {
-      card.classList.remove('ox-side-long','ox-side-short');
-      if (card.querySelector('.badge-long')) card.classList.add('ox-side-long');
-      else if (card.querySelector('.badge-short')) card.classList.add('ox-side-short');
+      card.classList.toggle('ox-side-long', !!card.querySelector('.badge-long'));
+      card.classList.toggle('ox-side-short', !!card.querySelector('.badge-short'));
     });
   }
 
@@ -63,7 +62,8 @@
     const radar = document.getElementById('screener-list') || document.getElementById('view-radar');
     if (radar) {
       const mo = new MutationObserver(scheduleRadar);
-      mo.observe(radar, { subtree:true, childList:true, attributes:true, attributeFilter:['class'] });
+      // Class updates here must not schedule another render frame.
+      mo.observe(radar, { subtree:true, childList:true });
     }
   }
 

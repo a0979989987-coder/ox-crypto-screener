@@ -3,17 +3,16 @@ syncKeyLevelVisibilityUI();
 keyLevelVisibilityToggle?.addEventListener("change", e => setKeyLevelsVisible(e.target.checked));
 
 window.addEventListener("DOMContentLoaded", () => {
+  // A fresh visit always opens in the dark Crypto Radar; theme can still be changed in-session.
+  localStorage.setItem("ox-ui-theme", "dark");
   const unlockAudioFromGesture = async () => {
     const ok = await primeAlertAudio(true);
     if (ok) {
-      document.removeEventListener("pointerdown", unlockAudioFromGesture, true);
-      document.removeEventListener("touchstart", unlockAudioFromGesture, true);
-      document.removeEventListener("keydown", unlockAudioFromGesture, true);
+      document.removeEventListener("click", unlockAudioFromGesture, true);
     }
   };
-  document.addEventListener("pointerdown", unlockAudioFromGesture, true);
-  document.addEventListener("touchstart", unlockAudioFromGesture, true);
-  document.addEventListener("keydown", unlockAudioFromGesture, true);
+  // Initial touch gestures are usually scrolls; do not start audio work on them.
+  document.addEventListener("click", unlockAudioFromGesture, true);
   window.addEventListener("focus", syncNotificationPermissionUI);
   document.addEventListener("visibilitychange", () => { if (!document.hidden) syncNotificationPermissionUI(); });
   const fullscreenBtn = document.getElementById("btn-chart-fullscreen");
@@ -34,9 +33,8 @@ window.addEventListener("DOMContentLoaded", () => {
     refreshMarketTickers();
   }
   renderBenchmarkBar();
-  renderMarketStrength();
+  // Offscreen summaries are calculated when their view opens, so startup can paint sooner.
   renderOxLive();
-  renderHomeOverview();
   updateAlertButtons();
   setInterval(refreshMarketTickers, CONFIG.tickerRefreshMs);
   setInterval(renderOxLive, CONFIG.tickerRefreshMs);
