@@ -48,11 +48,8 @@ window.addEventListener("resize", () => {
   }
 });
 
-window.visualViewport?.addEventListener("resize", () => {
-  if (state.activeView === "radar" || document.body.classList.contains("chart-focus")) {
-    [50, 160, 300].forEach(ms => setTimeout(resizeChartToContainer, ms));
-  }
-});
+// Safari changes visualViewport height while hiding its toolbar on every
+// vertical swipe. The chart's ResizeObserver handles actual container changes.
 
 window.addEventListener("orientationchange", () => {
   [80, 220, 420].forEach(ms => setTimeout(resizeChartToContainer, ms));
