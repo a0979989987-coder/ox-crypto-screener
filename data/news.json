@@ -2,6 +2,59 @@
   "schemaVersion": 1,
   "news": [
     {
+      "id": "475befa837d827eb9800",
+      "title": "CFTC Staff Releases Updates to FAQs Concerning Registrants and Registered Entity Activities Relating to Crypto Assets and Blockchain Technologies",
+      "link": "https://www.cftc.gov/PressRoom/PressReleases/9303-26",
+      "publishedAt": "2026-09-24T14:46:00.000Z",
+      "source": "U.S. CFTC",
+      "sourceId": "cftc",
+      "markets": [
+        "us",
+        "crypto"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "impactImportance": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "cftc"
+      },
+      "titleZh": "美國 CFTC 更新加密資產與區塊鏈業務常見問答，涉及註冊機構及登記實體",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "29c2ab10724bf8a3dd11",
+      "title": "Spend more than your cash balance: introducing Kraken Borrow for US customers",
+      "link": "https://blog.kraken.com/product/borrow/us-customers",
+      "publishedAt": "2026-09-24T14:02:59.000Z",
+      "source": "Kraken",
+      "sourceId": "kraken",
+      "markets": [
+        "crypto"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "impactImportance": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "kraken"
+      },
+      "titleZh": "Kraken 推出面向美國用戶的借貸功能 Kraken Borrow",
+      "translationStatus": "translated"
+    },
+    {
       "id": "84ed44c515adc73b974a",
       "title": "ECB Executive Board member Isabel Schnabel to resign to take senior role at IMF",
       "link": "https://www.ecb.europa.eu//press/pr/date/2026/html/ecb.pr260924~bea1dd9824.en.html",
@@ -189,6 +242,32 @@
       "translationStatus": "translated"
     },
     {
+      "id": "0aa9d044effc942a30dd",
+      "title": "CFTC Releases Staff Advisory on Mention Markets",
+      "link": "https://www.cftc.gov/PressRoom/PressReleases/9302-26",
+      "publishedAt": "2026-09-22T20:38:00.000Z",
+      "source": "U.S. CFTC",
+      "sourceId": "cftc",
+      "markets": [
+        "us"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "impactImportance": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "cftc"
+      },
+      "titleZh": "美國 CFTC 發布 Mention Markets 相關工作人員指引",
+      "translationStatus": "translated"
+    },
+    {
       "id": "03054a2bd2cb78b41c77",
       "title": "SEC Censures OTC Link LLC for Repeated Compliance Failures Related to Regulation SCI",
       "link": "https://www.sec.gov/newsroom/press-releases/2026-91-sec-censures-otc-link-llc-repeated-compliance-failures-related-regulation-sci",
@@ -239,6 +318,32 @@
         "sourceId": "ecb"
       },
       "titleZh": "菲利普・連恩接受《時報》專訪",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "7c4f48c0c149e01be316",
+      "title": "CFTC Innovation Task Force to Host Frontier Forum Series on Innovative Financial Technologies",
+      "link": "https://www.cftc.gov/PressRoom/PressReleases/9301-26",
+      "publishedAt": "2026-09-21T13:00:57.000Z",
+      "source": "U.S. CFTC",
+      "sourceId": "cftc",
+      "markets": [
+        "us"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "impactImportance": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "cftc"
+      },
+      "titleZh": "美國 CFTC 創新工作小組將舉辦金融科技前沿論壇系列",
       "translationStatus": "translated"
     },
     {
@@ -296,6 +401,32 @@
       "translationStatus": "translated"
     },
     {
+      "id": "d29893649f9ae085b15a",
+      "title": "v32.0rc2: Bitcoin Core 32.0 release candidate 2",
+      "link": "https://github.com/bitcoin/bitcoin/releases/tag/v32.0rc2",
+      "publishedAt": "2026-09-18T14:30:08.000Z",
+      "source": "Bitcoin Core",
+      "sourceId": "bitcoin-core",
+      "markets": [
+        "crypto"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "impactImportance": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "bitcoin-core"
+      },
+      "titleZh": "比特幣核心 32.0 第二版候選測試版本發布",
+      "translationStatus": "translated"
+    },
+    {
       "id": "3df465f80a9c26c2410d",
       "title": "ECB Consumer Expectations Survey results – August 2026",
       "link": "https://www.ecb.europa.eu//press/pr/date/2026/html/ecb.pr260918~295b3ab978.en.html",
@@ -350,6 +481,32 @@
       "translationStatus": "translated"
     },
     {
+      "id": "5bf32d430a66c613971a",
+      "title": "CFTC Staff Issues No-Action Position to Providers of Passive Software",
+      "link": "https://www.cftc.gov/PressRoom/PressReleases/9300-26",
+      "publishedAt": "2026-09-17T13:08:32.000Z",
+      "source": "U.S. CFTC",
+      "sourceId": "cftc",
+      "markets": [
+        "us"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "impactImportance": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "cftc"
+      },
+      "titleZh": "美國 CFTC 工作人員就被動軟體提供者發布不採取執法行動立場",
+      "translationStatus": "translated"
+    },
+    {
       "id": "3fbb0119863357882524",
       "title": "SEC Issues “Innovation Exemption” to Facilitate the Trading of Tokenized NMS Stock and Request for Comment",
       "link": "https://www.sec.gov/newsroom/press-releases/2026-90-sec-issues-innovation-exemption-facilitate-trading-tokenized-nms-stock-request-comment",
@@ -373,6 +530,84 @@
         "sourceId": "sec"
       },
       "titleZh": "美國證管會發布「創新豁免」，促進代幣化全國市場系統股票交易並徵詢意見",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "93a50ca9b8910710994d",
+      "title": "TREAD is available for trading!",
+      "link": "https://blog.kraken.com/product/asset-listings/tread-is-available-for-trading",
+      "publishedAt": "2026-09-16T18:48:58.000Z",
+      "source": "Kraken",
+      "sourceId": "kraken",
+      "markets": [
+        "crypto"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "impactImportance": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "kraken"
+      },
+      "titleZh": "Kraken 開放 TREAD 交易",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "e67adb1527e225e3e940",
+      "title": "GNOT is available for trading!",
+      "link": "https://blog.kraken.com/product/asset-listings/gnot-is-available-for-trading",
+      "publishedAt": "2026-09-16T18:40:58.000Z",
+      "source": "Kraken",
+      "sourceId": "kraken",
+      "markets": [
+        "crypto"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "impactImportance": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "kraken"
+      },
+      "titleZh": "Kraken 開放 GNOT 交易",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "8b2947785709a1051e3e",
+      "title": "USDC on Arc deposits and withdrawals now available!",
+      "link": "https://blog.kraken.com/product/new-features/usdc-on-arc-deposits-and-withdrawals-now-available",
+      "publishedAt": "2026-09-16T18:32:46.000Z",
+      "source": "Kraken",
+      "sourceId": "kraken",
+      "markets": [
+        "crypto"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "impactImportance": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "kraken"
+      },
+      "titleZh": "Kraken 開放 Arc 網路 USDC 充值與提領",
       "translationStatus": "translated"
     },
     {
@@ -434,6 +669,58 @@
       "translationStatus": "translated"
     },
     {
+      "id": "cb84a5e8d806a2a28735",
+      "title": "Kraken is an official X Cashtag partner, with trading just a tap away from your timeline",
+      "link": "https://blog.kraken.com/news/kraken-is-an-official-x-cashtag-partner",
+      "publishedAt": "2026-09-16T17:59:10.000Z",
+      "source": "Kraken",
+      "sourceId": "kraken",
+      "markets": [
+        "crypto"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "impactImportance": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "kraken"
+      },
+      "titleZh": "Kraken 宣布成為 X Cashtag 合作夥伴，提供交易入口",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "2cac824f7ba0456c84d3",
+      "title": "USDCx on Aleo deposits and withdrawals now available!",
+      "link": "https://blog.kraken.com/product/new-features/usdcx-on-aleo-deposits-and-withdrawals-now-available",
+      "publishedAt": "2026-09-16T17:25:17.000Z",
+      "source": "Kraken",
+      "sourceId": "kraken",
+      "markets": [
+        "crypto"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "impactImportance": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "kraken"
+      },
+      "titleZh": "Kraken 開放 Aleo 網路 USDCx 充值與提領",
+      "translationStatus": "translated"
+    },
+    {
       "id": "74bc20501745ffbed39f",
       "title": "SEC Proposes Rescission of Shareholder Proposal Rule and Reforms to Proxy Solicitation Process",
       "link": "https://www.sec.gov/newsroom/press-releases/2026-89-sec-proposes-rescission-shareholder-proposal-rule-reforms-proxy-solicitation-process",
@@ -457,6 +744,32 @@
         "sourceId": "sec"
       },
       "titleZh": "美國證管會提議廢除股東提案規則並改革委託書徵求程序",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "ff945b6abbdd51e80c50",
+      "title": "The new Kraken Wallet: self-custody, now with DeFi Earn",
+      "link": "https://blog.kraken.com/product/kraken-wallet/self-custody-with-defi-earn",
+      "publishedAt": "2026-09-16T08:18:05.000Z",
+      "source": "Kraken",
+      "sourceId": "kraken",
+      "markets": [
+        "crypto"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "impactImportance": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "kraken"
+      },
+      "titleZh": "Kraken 推出新版自託管錢包，加入 DeFi 收益功能",
       "translationStatus": "translated"
     },
     {
@@ -567,6 +880,32 @@
       "translationStatus": "translated"
     },
     {
+      "id": "20bc3639a3a5a1d0720c",
+      "title": "v32.0rc1: Bitcoin Core 32.0 release candidate 1",
+      "link": "https://github.com/bitcoin/bitcoin/releases/tag/v32.0rc1",
+      "publishedAt": "2026-09-14T12:58:46.000Z",
+      "source": "Bitcoin Core",
+      "sourceId": "bitcoin-core",
+      "markets": [
+        "crypto"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "impactImportance": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "bitcoin-core"
+      },
+      "titleZh": "比特幣核心 32.0 第一版候選測試版本發布",
+      "translationStatus": "translated"
+    },
+    {
       "id": "03676dec5d3fc835e6a8",
       "title": "Isabel Schnabel: Macroeconomic, fiscal and financial stability in a shock-prone world",
       "link": "https://www.ecb.europa.eu//press/key/date/2026/html/ecb.sp260914~0ffd556bc8.en.pdf",
@@ -621,6 +960,32 @@
       "translationStatus": "translated"
     },
     {
+      "id": "4e67ddc0da672bb08477",
+      "title": "CFTC Approves Final Rule Concerning Whistleblower Awards",
+      "link": "https://www.cftc.gov/PressRoom/PressReleases/9297-26",
+      "publishedAt": "2026-09-11T18:08:58.000Z",
+      "source": "U.S. CFTC",
+      "sourceId": "cftc",
+      "markets": [
+        "us"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "impactImportance": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "cftc"
+      },
+      "titleZh": "美國 CFTC 通過檢舉獎勵相關最終規則",
+      "translationStatus": "translated"
+    },
+    {
       "id": "9ea8a473b0a7787951ca",
       "title": "Joint Readout of Principals’ Meeting of U.S. and UK Authorities Regarding Central Counterparty Resolution",
       "link": "https://www.sec.gov/newsroom/press-releases/2026-87-joint-readout-principals-meeting-us-uk-authorities-regarding-central-counterparty-resolution",
@@ -644,6 +1009,32 @@
         "sourceId": "sec"
       },
       "titleZh": "美英主管機關就中央交易對手處置舉行首長會議並發布聯合摘要",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "97e201b3d4748de3028c",
+      "title": "Joint Readout of Principals’ Meeting of UK and U.S. Authorities Regarding Central Counterparty Resolution",
+      "link": "https://www.cftc.gov/PressRoom/PressReleases/9296-26",
+      "publishedAt": "2026-09-11T14:20:08.000Z",
+      "source": "U.S. CFTC",
+      "sourceId": "cftc",
+      "markets": [
+        "us"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "impactImportance": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "cftc"
+      },
+      "titleZh": "英美主管機關發布中央交易對手處置會議聯合摘要",
       "translationStatus": "translated"
     },
     {
@@ -673,6 +1064,32 @@
         "sourceId": "bls-cpi"
       },
       "titleZh": "8 月整體消費者物價指數上升 0.4%；汽油價格上漲",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "1e0b05ef8f2261802a89",
+      "title": "CFTC Chairman Selig and Kansas State University Announce Agenda for October 22-23 AgCon Conference in Overland Park",
+      "link": "https://www.cftc.gov/PressRoom/PressReleases/9295-26",
+      "publishedAt": "2026-09-10T20:36:53.000Z",
+      "source": "U.S. CFTC",
+      "sourceId": "cftc",
+      "markets": [
+        "us"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "impactImportance": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "cftc"
+      },
+      "titleZh": "美國 CFTC 主席與堪薩斯州立大學公布 10 月 22 至 23 日農業會議議程",
       "translationStatus": "translated"
     },
     {
@@ -861,6 +1278,58 @@
       "translationStatus": "translated"
     },
     {
+      "id": "77b74b71e4aa0a6d3285",
+      "title": "CFTC Staff Issues No-Action Position on Large Trader Reporting for Direct Participants",
+      "link": "https://www.cftc.gov/PressRoom/PressReleases/9293-26",
+      "publishedAt": "2026-09-02T17:27:34.000Z",
+      "source": "U.S. CFTC",
+      "sourceId": "cftc",
+      "markets": [
+        "us"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "impactImportance": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "cftc"
+      },
+      "titleZh": "美國 CFTC 工作人員就直接參與者的大額交易人申報發布不採取執法行動立場",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "03bf08305d9e3c352b0d",
+      "title": "CFTC Issues Final Rule to Modify Clearing Requirement for Canadian Dollar- and Mexican Peso-Denominated Interest Rate Swaps",
+      "link": "https://www.cftc.gov/PressRoom/PressReleases/9292-26",
+      "publishedAt": "2026-09-02T16:04:52.000Z",
+      "source": "U.S. CFTC",
+      "sourceId": "cftc",
+      "markets": [
+        "us"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "impactImportance": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "cftc"
+      },
+      "titleZh": "美國 CFTC 修訂加元與墨西哥披索利率交換交易的清算要求",
+      "translationStatus": "translated"
+    },
+    {
       "id": "2d7e58c53f41bc217240",
       "title": "SEC Announces Agenda and Panelists for Roundtable on Preparations for 24-Hour Trading",
       "link": "https://www.sec.gov/newsroom/press-releases/2026-83-sec-announces-agenda-panelists-roundtable-preparations-24-hour-trading",
@@ -936,6 +1405,32 @@
         "sourceId": "sec"
       },
       "titleZh": "美國證管會提議更新註冊證券過戶代理人規則",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "69b25a261f180882509d",
+      "title": "CFTC Further Extends Compliance Date for Amendments to Form PF",
+      "link": "https://www.cftc.gov/PressRoom/PressReleases/9290-26",
+      "publishedAt": "2026-08-31T18:54:03.000Z",
+      "source": "U.S. CFTC",
+      "sourceId": "cftc",
+      "markets": [
+        "us"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "impactImportance": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "cftc"
+      },
+      "titleZh": "美國 CFTC 再延長 Form PF 修正規定的遵循期限",
       "translationStatus": "translated"
     },
     {
@@ -1637,6 +2132,58 @@
       "translationStatus": "translated"
     },
     {
+      "id": "8aca6009ba2e27db6606",
+      "title": "Bitcoin Core 29.4",
+      "link": "https://github.com/bitcoin/bitcoin/releases/tag/v29.4",
+      "publishedAt": "2026-07-10T14:25:37.000Z",
+      "source": "Bitcoin Core",
+      "sourceId": "bitcoin-core",
+      "markets": [
+        "crypto"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "impactImportance": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "bitcoin-core"
+      },
+      "titleZh": "比特幣核心 29.4 正式版本發布",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "93037bb387bf1c33212a",
+      "title": "Bitcoin Core 30.3",
+      "link": "https://github.com/bitcoin/bitcoin/releases/tag/v30.3",
+      "publishedAt": "2026-07-10T09:34:59.000Z",
+      "source": "Bitcoin Core",
+      "sourceId": "bitcoin-core",
+      "markets": [
+        "crypto"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "impactImportance": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "bitcoin-core"
+      },
+      "titleZh": "比特幣核心 30.3 正式版本發布",
+      "translationStatus": "translated"
+    },
+    {
       "id": "61a7bae109af084abef4",
       "title": "Federal Reserve announces the leadership and objectives of its task forces to advance the conduct of monetary policy",
       "link": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260709a.htm",
@@ -1721,6 +2268,32 @@
       "translationStatus": "translated"
     },
     {
+      "id": "f4bcad95ca29d90bda00",
+      "title": "Bitcoin Core 31.1",
+      "link": "https://github.com/bitcoin/bitcoin/releases/tag/v31.1",
+      "publishedAt": "2026-07-08T09:14:15.000Z",
+      "source": "Bitcoin Core",
+      "sourceId": "bitcoin-core",
+      "markets": [
+        "crypto"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "impactImportance": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "bitcoin-core"
+      },
+      "titleZh": "比特幣核心 31.1 正式版本發布",
+      "translationStatus": "translated"
+    },
+    {
       "id": "0d7795acda5e1ccedb8a",
       "title": "Both payroll employment (+57,000) and unemployment rate (4.2%) change little in June",
       "link": "https://www.bls.gov/news.release/archives/empsit_07022026.htm",
@@ -1773,6 +2346,84 @@
         "sourceId": "ethereum"
       },
       "titleZh": "政府與機構如何使用以太坊：中立基礎設施為何在當下重要",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "767797e14fdadc9cd268",
+      "title": "v29.4rc1: Bitcoin Core 29.4 release candidate 1",
+      "link": "https://github.com/bitcoin/bitcoin/releases/tag/v29.4rc1",
+      "publishedAt": "2026-06-24T09:18:35.000Z",
+      "source": "Bitcoin Core",
+      "sourceId": "bitcoin-core",
+      "markets": [
+        "crypto"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "impactImportance": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "bitcoin-core"
+      },
+      "titleZh": "比特幣核心 29.4 第一版候選測試版本發布",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "d719445a24f4244e903c",
+      "title": "v30.3rc1: Bitcoin Core 30.3 release candidate 1",
+      "link": "https://github.com/bitcoin/bitcoin/releases/tag/v30.3rc1",
+      "publishedAt": "2026-06-23T18:14:19.000Z",
+      "source": "Bitcoin Core",
+      "sourceId": "bitcoin-core",
+      "markets": [
+        "crypto"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "impactImportance": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "bitcoin-core"
+      },
+      "titleZh": "比特幣核心 30.3 第一版候選測試版本發布",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "0a61da50d1775733608b",
+      "title": "v31.1rc1: Bitcoin Core 31.1 release candidate 1",
+      "link": "https://github.com/bitcoin/bitcoin/releases/tag/v31.1rc1",
+      "publishedAt": "2026-06-23T09:58:30.000Z",
+      "source": "Bitcoin Core",
+      "sourceId": "bitcoin-core",
+      "markets": [
+        "crypto"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "impactImportance": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "bitcoin-core"
+      },
+      "titleZh": "比特幣核心 31.1 第一版候選測試版本發布",
       "translationStatus": "translated"
     },
     {
@@ -2190,6 +2841,58 @@
         "sourceId": "ethereum"
       },
       "titleZh": "以太坊基金會資助配置更新：2026 年第 1 季",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "a46dc294baf611be08c9",
+      "title": "v27-final: Bitcoin Core 27.x Final",
+      "link": "https://github.com/bitcoin/bitcoin/releases/tag/v27-final",
+      "publishedAt": "2026-04-22T01:06:45.000Z",
+      "source": "Bitcoin Core",
+      "sourceId": "bitcoin-core",
+      "markets": [
+        "crypto"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "impactImportance": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "bitcoin-core"
+      },
+      "titleZh": "比特幣核心 27.x 最終版本發布",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "27ededef1aaf1e5376c7",
+      "title": "v26-final: Bitcoin Core 25.x Final",
+      "link": "https://github.com/bitcoin/bitcoin/releases/tag/v26-final",
+      "publishedAt": "2026-04-22T01:04:57.000Z",
+      "source": "Bitcoin Core",
+      "sourceId": "bitcoin-core",
+      "markets": [
+        "crypto"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "impactImportance": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "bitcoin-core"
+      },
+      "titleZh": "比特幣核心 25.x 最終版本發布",
       "translationStatus": "translated"
     },
     {
@@ -3584,12 +4287,12 @@
       }
     }
   ],
-  "generatedAt": "2026-09-25T08:25:09.787Z",
+  "generatedAt": "2026-09-25T08:51:18.381Z",
   "sources": [
     {
       "id": "fed",
-      "status": "error",
-      "message": "The operation was aborted due to timeout"
+      "status": "ready",
+      "count": 15
     },
     {
       "id": "bls-cpi",
@@ -3603,8 +4306,8 @@
     },
     {
       "id": "ecb",
-      "status": "error",
-      "message": "The operation was aborted due to timeout"
+      "status": "ready",
+      "count": 15
     },
     {
       "id": "sec",
@@ -3613,23 +4316,23 @@
     },
     {
       "id": "ethereum",
-      "status": "error",
-      "message": "The operation was aborted due to timeout"
+      "status": "ready",
+      "count": 35
     },
     {
       "id": "kraken",
-      "status": "error",
-      "message": "The operation was aborted due to timeout"
+      "status": "ready",
+      "count": 7
     },
     {
       "id": "cftc",
-      "status": "error",
-      "message": "The operation was aborted due to timeout"
+      "status": "ready",
+      "count": 10
     },
     {
       "id": "bitcoin-core",
-      "status": "error",
-      "message": "The operation was aborted due to timeout"
+      "status": "ready",
+      "count": 10
     }
   ]
 }
