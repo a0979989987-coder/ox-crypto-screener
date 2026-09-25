@@ -75,6 +75,20 @@ const retainEvent = item => ({ ...item, sourceUrl: item.sourceUrl ?? item.link ?
   actual: item.actual ?? null, revised: item.revised ?? null, updatedAt: item.updatedAt ?? null,
   impact: impact(item.title, item.sourceId) });
 
+// Preserve translations only while both the source identity and original title match.
+export function localize(item, previous = []) {
+  const old = previous.find(entry => entry.id === item.id && entry.title === item.title);
+  let titleZh = old?.titleZh || null;
+  if (item.kind === 'event') {
+    const match = item.title.match(/^(Consumer Price Index|Employment Situation|Producer Price Index|Job Openings and Labor Turnover Survey) for (\w+) (\d{4})$/);
+    const names = { 'Consumer Price Index': '消費者物價指數', 'Employment Situation': '就業情勢報告', 'Producer Price Index': '生產者物價指數', 'Job Openings and Labor Turnover Survey': '職缺與勞動流動調查' };
+    const months = 'January February March April May June July August September October November December'.split(' ');
+    const month = match ? months.indexOf(match[2]) + 1 : 0;
+    if (match && month) titleZh = `美國 ${match[3]} 年 ${month} 月${names[match[1]]}`;
+  }
+  return { ...item, titleZh, translationStatus: titleZh ? 'translated' : 'pending' };
+}
+
 export async function collect() {
   const old = await readFile(new URL('../data/news.json', import.meta.url), 'utf8').then(JSON.parse).catch(() => null);
   const results = await Promise.allSettled(FEEDS.map(async feed => ({ feed, items: normalizeFeed(await fetchText(feed.url), feed) })));
@@ -88,7 +102,7 @@ export async function collect() {
   try { events = parseBlsCalendar(await fetchText('https://www.bls.gov/schedule/news_release/current_year.asp')); }
   catch (error) { sources.push({ id: 'bls-calendar', status: 'error', message: String(error.message).slice(0,100) }); events = (old?.events ?? []).filter(item => safeUrl(item.link) && Date.parse(item.occursAt) >= Date.now()).map(retainEvent); }
   if (!news.length && !events.length) throw new Error('No verified source data; snapshot not replaced');
-  const comparable = { schemaVersion: 1, news, events };
+  const comparable = { schemaVersion: 1, news: news.map(item => localize(item, old?.news)), events: events.map(item => localize(item, old?.events)) };
   const oldComparable = old && { schemaVersion: old.schemaVersion, news: old.news, events: old.events };
   if (JSON.stringify(comparable) === JSON.stringify(oldComparable)) return { changed: false, sources };
   const snapshot = { ...comparable, generatedAt: new Date().toISOString(), sources };
