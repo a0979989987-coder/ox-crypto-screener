@@ -135,20 +135,20 @@ function initChart() {
     width: container.clientWidth || 820,
     height: container.clientHeight || 440,
     layout: {
-      background: { type: "solid", color: "#090e17" },
-      textColor: "#8b9db7"
+      background: { type: "solid", color: "#121417" },
+      textColor: "#929995"
     },
     grid: {
-      vertLines: { color: "#162335" },
-      horzLines: { color: "#162335" }
+      vertLines: { color: "#202725", visible: false },
+      horzLines: { color: "#202725" }
     },
     rightPriceScale: {
-      borderColor: "#223147",
+      borderColor: "#343b37",
       autoScale: true,
       scaleMargins: { top: 0.08, bottom: 0.25 }
     },
     timeScale: {
-      borderColor: "#223147",
+      borderColor: "#343b37",
       timeVisible: true,
       secondsVisible: false,
       rightOffset: window.matchMedia("(max-width: 720px)").matches ? 12 : 12,
@@ -167,16 +167,17 @@ function initChart() {
   if (window.matchMedia("(max-width: 720px)").matches) {
     state.chart.applyOptions({
       layout: { fontSize: 9 },
-      rightPriceScale: { borderColor: "#223147", autoScale: true, scaleMargins: { top: 0.08, bottom: 0.25 } }
+      rightPriceScale: { borderColor: "#343b37", autoScale: true, scaleMargins: { top: 0.08, bottom: 0.25 } }
     });
   }
 
+  // User chart reference (Display P3 converted to sRGB): cyan up, magenta down.
   state.candleSeries = state.chart.addCandlestickSeries({
-    upColor: "#38c99b",
-    downColor: "#ee617c",
+    upColor: "#00b8d4",
+    downColor: "#ff3078",
     borderVisible: false,
-    wickUpColor: "#38c99b",
-    wickDownColor: "#ee617c"
+    wickUpColor: "#00b8d4",
+    wickDownColor: "#ff3078"
   });
 
   state.volumeSeries = state.chart.addHistogramSeries({
@@ -251,7 +252,7 @@ function renderChartData(candles, fitContent = false) {
   const volData = candles.map(c => ({
     time: c.time,
     value: c.quoteVolume || c.volume,
-    color: c.close >= c.open ? "#38c99b40" : "#ee617c40"
+    color: c.close >= c.open ? "#00b8d440" : "#ff307840"
   }));
   state.volumeSeries.setData(volData);
 
@@ -267,9 +268,9 @@ function renderChartData(candles, fitContent = false) {
       const avgVol = prev20.reduce((s, x) => s + x.volume, 0) / prev20.length || 1;
       const ratio = c.volume / avgVol;
       if (c.close > prevHigh && ratio >= 1.45) {
-        markers.push({ time:c.time, position:"belowBar", color:"#38c99b", shape:"arrowUp", text:"▲", size:1 });
+        markers.push({ time:c.time, position:"belowBar", color:"#00b8d4", shape:"arrowUp", text:"▲", size:1 });
       } else if (c.close < prevLow && ratio >= 1.45) {
-        markers.push({ time:c.time, position:"aboveBar", color:"#ee617c", shape:"arrowDown", text:"▼", size:1 });
+        markers.push({ time:c.time, position:"aboveBar", color:"#ff3078", shape:"arrowDown", text:"▼", size:1 });
       }
     }
     state.candleSeries.setMarkers(markers.slice(-6));
