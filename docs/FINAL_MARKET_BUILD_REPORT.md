@@ -71,3 +71,13 @@
 第二輪已正式發布：兩個正式網址均檢查新觸控樣式，GitHub Pages 的 30 次桌面切頁及瀏覽器程式錯誤檢查通過。28 項測試及建置檢查通過；本機 Chrome 缺失使完整 E2E 無法執行，Safari 實機卡頓仍是待驗證限制。
 
 已追加修改過的 CSS／JS 版本查詢字串 `20260925c`，確保瀏覽器重新開啟時向正式站要求新檔案；正式網頁版本確認仍待發布後檢查。
+
+
+## 2026-09-25 OX Live 與全站捲動容器修正
+
+- 使用者 17:38 錄影仍顯示全站卡頓，並指出滑回頂部後 OX Live 需再滑一次。程式確認：OX Live 位於主 header 與 main 之間，沒有獨立直向列表；市場快捷選單卻在手機注入 `html,body overflow-x:hidden!important`，覆蓋原有 `clip`，使另一軸計算成 `auto`。已移除這組全站覆寫，並移除市場手勢中改寫 body overflow 的鎖定。
+- 手機頂欄改為隨頁面正常捲動；OX Live 裁切改為 `clip`，新聞返回列不再繼承全域 sticky header。保留圖表與榜單並排、Radar 長按 420ms 與放手保留 3 秒。
+- 移除市場程式全域 gesture 阻擋及禁縮放的 viewport 改寫；瀏覽器失焦或 pagehide 時清理未完成 Radar 觸控，避免留下攔截滑動的 document listener。
+- 新回歸測試在舊版重現兩項失敗（viewport 被改寫、blur 留下 touchmove），修正後全部通過；`npm test` 31 項、`npm run check` 61 資產／202 ID 通過。CSS／JS 快取版本更新為 `20260925d`。
+- 這是程式與手勢生命週期的驗證，並非 iPhone Safari 滑動延遲的量測；本地測試網址受瀏覽器限制，完整 E2E 和實機首滑仍未驗收，不宣稱完全根治。正式部署後另核對實際載入版本。
+- 無新增外部 API／Secret；保留遠端自動收集的 `data/news.json`。本輪正式回退點：`40ce7e6196980a69f44ca59373adf23c77e4ff85`。
