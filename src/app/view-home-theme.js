@@ -144,7 +144,9 @@ function renderHomeOverview() {
 
   // The paired T1 board reads the radar's independent long and short rankings.
   for (const [side, label] of [["long", "上漲"], ["short", "下跌"]]) {
-    const rows = state.tierMapBySide?.[side]?.t1 || [];
+    const rows = (state.tierMapBySide?.[side]?.t1 || []).filter(candidate =>
+      side === "long" ? num(candidate.change24h) > 0 : num(candidate.change24h) < 0
+    );
     setText(`home-t1-${side}-count`, rows.length);
     const box = document.getElementById(`home-t1-${side}-list`);
     if (!box) continue;
@@ -164,12 +166,15 @@ function renderHomeOverview() {
       row.dataset.homeSide = side;
       const symbol = document.createElement("strong");
       symbol.textContent = String(candidate.symbol || "—").replace(/USDT$/, "");
+      const identity = document.createElement("span");
+      identity.className = "ox-home-t1-identity";
+      identity.append(createCoinLogo(candidate.symbol), symbol);
       const score = document.createElement("small");
       score.textContent = `OX ${candidate.oxScore ?? "—"}`;
       const change = document.createElement("em");
-      change.className = side === "long" ? "positive" : "negative";
+      change.className = num(candidate.change24h) > 0 ? "positive" : "negative";
       change.textContent = fmtPct(candidate.change24h);
-      row.append(symbol, score, change);
+      row.append(identity, score, change);
       box.append(row);
     }
   }
