@@ -54,6 +54,9 @@ html{scroll-behavior:auto!important}
 .ox-news-visual-sec{background:linear-gradient(135deg,#574424,#1f2433);color:#f0d5a2}
 .ox-news-visual-bls-cpi,.ox-news-visual-bls-jobs,.ox-news-visual-bls-calendar{background:linear-gradient(135deg,#31546a,#182b3e);color:#bde1e4}
 .ox-news-more{min-height:44px;width:100%;margin-top:10px;border:1px solid var(--line,rgba(150,174,205,.22));border-radius:12px;background:var(--panel,#172231);color:var(--ink,#ecf3fb);font:inherit;cursor:pointer}
+.ox-news-major{padding:3px 7px;border:1px solid rgba(234,190,101,.55);border-radius:7px;background:rgba(234,190,101,.12);color:#eabe65;font-size:11px;font-weight:800}
+.ox-news-impact{white-space:nowrap;font-size:15px}
+.ox-unlock-countdown{display:inline-block;margin:9px 0 4px;padding:7px 10px;border:1px solid rgba(234,190,101,.3);border-radius:9px;color:#eabe65;font-size:13px;font-weight:800;font-variant-numeric:tabular-nums}
 body[data-news-mode="1"] #ox-forex-module,body[data-news-mode="1"] #market-unavailable-card,
 body[data-news-mode="1"] #ox-us-module,body[data-news-mode="1"] #ox-tw-module{display:none!important}
 body:has(#view-news.active,#view-data.active,#view-media.active,#view-settings.active) #ox-forex-module,
