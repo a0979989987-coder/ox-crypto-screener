@@ -683,18 +683,16 @@
 
   <section class="app-view" id="view-data" data-app-view="data">
     <div class="media-page"><div class="media-card">
-      <div class="page-kicker">OX 數據</div><h1 id="ox-data-heading">加密市場數據</h1>
-      <p id="ox-data-source">切換市場後查看對應資料狀態。</p>
-      <div class="media-sections">
-        <section class="media-section"><h2>市場資料</h2><p id="ox-data-availability">正在確認資料狀態…</p></section>
-        <section class="media-section full"><h2>官方新聞與行事曆</h2><div data-news-surface="market"></div></section>
-      </div>
+      <div class="ox-data-caption" id="ox-data-heading">加密 · 新聞與事件</div>
+      <div class="ox-data-caption" id="ox-data-source">資料來源待確認</div>
+      <p class="ox-data-caption" id="ox-data-availability">正在確認資料狀態…</p>
+      <div data-news-surface="market"></div>
     </div></div>
   </section>
 
   <section class="app-view" id="view-news" data-app-view="news">
     <div class="ox-news-page">
-      <header class="ox-news-heading"><div><div class="page-kicker">OX 新聞</div><h1>跨市場消息</h1><p>官方標題繁體中文翻譯與預定事件；影響力待評估，並非逐秒即時新聞。</p></div><button class="ox-news-open" id="ox-news-return" type="button">返回市場</button></header>
+      <header class="ox-news-heading"><button class="ox-news-open" id="ox-news-return" type="button" aria-label="返回市場">‹ 返回</button></header>
       <div data-news-surface="all"></div>
     </div>
   </section>
