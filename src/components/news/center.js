@@ -6,13 +6,15 @@
   const titleName = item => item.titleZh || '官方消息（繁體中文翻譯待補）';
   const TABS = { overview: '總覽', latest: '快訊', calendar: '行事曆', moves: '異動', following: '追蹤' };
   const SAVED_KEY = 'ox-news-preferences-v1';
-  const state = { snapshot: null, lastError: null, pending: null, tab: 'overview', previous: null, request: 0, optionsOpen: false, marketFilter: '', sourceFilter: '', unreadOnly: false, category: 'news', limit: 12 };
+  const state = { snapshot: null, lastError: null, pending: null, tab: 'overview', previous: null, request: 0, optionsOpen: false, marketFilter: '', sourceFilter: '', unreadOnly: false, category: 'news', limit: 12, calendarMonth: new Date(new Date().getFullYear(), new Date().getMonth(), 1), calendarDate: null };
   const store = () => { try { return JSON.parse(localStorage.getItem(SAVED_KEY) || '{}'); } catch { return {}; } };
   const save = patch => localStorage.setItem(SAVED_KEY, JSON.stringify({ ...store(), ...patch }));
   const fmt = value => value && Number.isFinite(Date.parse(value)) ? new Intl.DateTimeFormat('zh-TW', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value)) : '時間待確認';
   const el = (tag, className, content) => { const node = document.createElement(tag); if (className) node.className = className; if (content != null) node.textContent = content; return node; };
   const currentMarket = () => MARKET_NAMES[document.body.dataset.market] ? document.body.dataset.market : 'crypto';
   const normalized = data => data && data.schemaVersion === 1 && Array.isArray(data.news) && Array.isArray(data.events);
+  const dayKey = date => `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
+  const eventDay = item => item.status === 'date-only' && item.date ? item.date : item.occursAt ? dayKey(new Date(item.occursAt)) : null;
   function unlockCountdown(item, now = new Date()) {
     if (item.status === 'date-only' && /^\d{4}-\d{2}-\d{2}$/.test(item.date || '')) {
       const today = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
@@ -64,7 +66,7 @@
     if (onlyFollowing) items = items.filter(item => (prefs.followedSources || []).includes(item.sourceId));
     if (kind === 'news' && prefs.majorOnly === true) items = items.filter(item => (score(item) ?? 0) >= 3);
     if (prefs.minimumStars) items = items.filter(item => (score(item) ?? 0) >= Number(prefs.minimumStars));
-    if (kind === 'event') { const now = new Date(); const localDay = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`; items = [...items].filter(item => item.status === 'date-only' && item.date ? item.date >= localDay : Date.parse(item.occursAt) >= now.getTime()).sort((a,b) => (a.occursAt || a.date).localeCompare(b.occursAt || b.date)); }
+    if (kind === 'event') { const now = new Date(); const localDay = dayKey(now); items = [...items].filter(item => item.status === 'date-only' && item.date ? item.date >= localDay : Date.parse(item.occursAt) >= now.getTime()).sort((a,b) => (a.occursAt || a.date).localeCompare(b.occursAt || b.date)); }
     else if (prefs.sort === 'impact' && kind === 'news') items = [...items].sort((a,b) => (score(b) ?? 0) - (score(a) ?? 0) || b.publishedAt.localeCompare(a.publishedAt));
     else items = [...items].sort((a,b) => (b.occursAt || b.publishedAt || '').localeCompare(a.occursAt || a.publishedAt || ''));
     return items;
@@ -154,6 +156,40 @@
     surface.append(wrap);
   }
 
+  function miniCalendar(events) {
+    const month = state.calendarMonth;
+    const year = month.getFullYear(), index = month.getMonth();
+    const counts = new Map();
+    events.forEach(item => { const day = eventDay(item); if (day) counts.set(day, (counts.get(day) || 0) + 1); });
+    const box = el('section', 'ox-mini-calendar'); box.setAttribute('aria-label', '事件月份日曆');
+    const toolbar = el('div', 'ox-mini-calendar-toolbar');
+    const prev = el('button', '', '‹'); prev.type = 'button'; prev.setAttribute('aria-label', '上個月');
+    const next = el('button', '', '›'); next.type = 'button'; next.setAttribute('aria-label', '下個月');
+    const title = el('strong', '', `${year} 年 ${index+1} 月`);
+    prev.addEventListener('click', () => { state.calendarMonth = new Date(year, index-1, 1); state.calendarDate = null; render(); });
+    next.addEventListener('click', () => { state.calendarMonth = new Date(year, index+1, 1); state.calendarDate = null; render(); });
+    toolbar.append(prev, title, next); box.append(toolbar);
+    const grid = el('div', 'ox-mini-calendar-grid');
+    ['一','二','三','四','五','六','日'].forEach(label => grid.append(el('span', 'ox-mini-weekday', label)));
+    const offset = (new Date(year, index, 1).getDay() + 6) % 7;
+    for (let i=0; i<offset; i++) grid.append(el('span', 'ox-mini-spacer'));
+    const today = dayKey(new Date());
+    for (let day=1, last=new Date(year,index+1,0).getDate(); day<=last; day++) {
+      const key = dayKey(new Date(year,index,day));
+      const button = el('button', 'ox-mini-day', String(day)); button.type = 'button';
+      if (counts.has(key)) button.classList.add('has-event');
+      if (key === today) button.classList.add('is-today');
+      if (key === state.calendarDate) button.classList.add('is-selected');
+      button.setAttribute('aria-label', `${year} 年 ${index+1} 月 ${day} 日，${counts.get(key) || 0} 個事件`);
+      button.setAttribute('aria-pressed', String(key === state.calendarDate));
+      button.addEventListener('click', () => { state.calendarDate = state.calendarDate === key ? null : key; render(); });
+      grid.append(button);
+    }
+    box.append(grid);
+    if (state.calendarDate) { const clear = el('button', 'ox-mini-calendar-clear', '顯示全部日期'); clear.type = 'button'; clear.addEventListener('click', () => { state.calendarDate = null; render(); }); box.append(clear); }
+    return box;
+  }
+
   function renderSurface(surface, market) {
     const isAll = !market;
     surface.replaceChildren();
@@ -191,7 +227,11 @@
     if (tab === 'overview') {
       add('近期官方消息', filtered('news', market), state.limit);
       add('即將公布', filtered('event', market), 8);
-    } else if (tab === 'calendar') add('事件行事曆 · 美國官方公布時間', filtered('event', market), state.limit);
+    } else if (tab === 'calendar') {
+      const events = filtered('event', market);
+      surface.append(miniCalendar(events));
+      add(state.calendarDate ? `${state.calendarDate} · 官方事件` : '即將公布的官方事件', state.calendarDate ? events.filter(item => eventDay(item) === state.calendarDate) : events, state.limit);
+    }
     else if (tab === 'following') add('追蹤來源', filtered('news', market, true), state.limit);
     else add('最新快訊', filtered('news', market), state.limit);
     if (snapshot.sources?.some(source => source.status === 'error')) surface.append(el('p', 'ox-news-status', `部分來源暫不可用：${snapshot.sources.filter(source => source.status === 'error').map(source => sourceName(source)).join('、')}`));
