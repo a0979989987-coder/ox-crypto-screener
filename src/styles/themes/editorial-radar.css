@@ -1,0 +1,237 @@
+/* Radar terminal surface. Preserve workspace placement and existing input handlers. */
+body.ox-terminal #view-radar {--radar-surface:var(--bg);--radar-line:var(--line)}
+body.ox-terminal .ox-live-strip {border-radius:0!important;background:var(--bg)!important;box-shadow:none!important}
+body.ox-terminal .ox-live-badge {background:transparent!important;color:var(--ink)!important}
+body.ox-terminal #view-radar:has(#direction-toggle) .market-line-card {
+ background:linear-gradient(115deg,#ffffff09,transparent 80%)!important;border:1px solid var(--line)!important;border-radius:3px!important;box-shadow:inset 0 1px 0 #ffffff26!important;backdrop-filter:blur(10px)!important
+}
+body.ox-terminal #view-radar .market-line-item {background:none!important;border-color:var(--line)!important;box-shadow:none!important}
+body.ox-terminal #view-radar .market-line-item label {color:var(--muted)!important}
+body.ox-terminal #view-radar #price {color:var(--ink)!important;font-family:Georgia,serif!important;font-weight:400!important}
+body.ox-terminal #view-radar .panel {background:var(--bg)!important;border:1px solid var(--line)!important;border-radius:0!important;box-shadow:none!important}
+body.ox-terminal #view-radar .panel-head,body.ox-terminal #view-radar .chart-controls,body.ox-terminal #view-radar .scanner-tabs {background:var(--bg)!important;border-color:var(--line)!important}
+body.ox-terminal #view-radar .chart-controls>.ctrl-group {background:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;padding:0!important}
+body.ox-terminal #view-radar .chart-controls .btn-tf {
+ color:var(--muted)!important;background:none!important;border:0!important;border-bottom:2px solid transparent!important;border-radius:0!important;box-shadow:none!important;transform:none!important;font-weight:500!important
+}
+body.ox-terminal #view-radar .chart-controls .btn-tf.active {color:var(--ink)!important;background:linear-gradient(145deg,#ffffff36,#e1e4ea0c)!important;border:1px solid #ffffff66!important;border-radius:5px!important;box-shadow:inset 0 1px 0 #ffffffcc,inset 0 -1px 0 #ffffff80,0 0 8px #ffffff2b!important}
+body.ox-terminal #view-radar .chart-controls .btn-tf::before,body.ox-terminal #view-radar .chart-controls .btn-tf::after {display:none!important}
+body.ox-terminal #view-radar .chart-controls .toggle-lbl,body.ox-terminal #view-radar .chart-controls .toggle-lbl:has(input:checked) {
+ border:0!important;border-radius:0!important;background:none!important;box-shadow:none!important;color:var(--muted)!important;padding:4px 2px!important;gap:4px!important;font-weight:400!important
+}
+body.ox-terminal #view-radar .chart-controls .toggle-lbl:has(input:checked) {color:var(--ink)!important}
+body.ox-terminal #view-radar .chart-controls .toggle-lbl input {width:12px!important;min-width:12px!important;height:12px!important;border:1px solid var(--muted)!important;border-radius:1px!important;background:none!important;box-shadow:none!important;position:relative!important}
+body.ox-terminal #view-radar .chart-controls .toggle-lbl input::after {display:none!important}
+body.ox-terminal #view-radar .chart-controls .toggle-lbl input:checked {background:var(--ink)!important;border-color:var(--ink)!important}
+body.ox-terminal #view-radar .chart-controls .toggle-lbl input:checked::after {display:block!important;content:""!important;left:3px!important;top:1px!important;width:3px!important;height:6px!important;border:solid var(--bg)!important;border-width:0 1px 1px 0!important;border-radius:0!important;background:none!important;transform:rotate(45deg)!important;box-shadow:none!important}
+body.ox-terminal #view-radar #direction-toggle {width:auto!important;min-width:36px!important;max-width:none!important;padding:4px 6px!important;height:26px!important;background:none!important;border:1px solid var(--line)!important;border-radius:0!important;color:var(--ink)!important;box-shadow:none!important;font-size:11px!important;transform:none!important}
+body.ox-terminal #view-radar #direction-toggle::before,body.ox-terminal #view-radar #direction-toggle::after {display:none!important}
+body.ox-terminal #view-radar .scanner-tabs .tab-btn {background:none!important;border:0!important;border-bottom:2px solid transparent!important;border-radius:0!important;color:var(--muted)!important;box-shadow:none!important;transform:none!important}
+body.ox-terminal #view-radar .scanner-tabs .tab-btn.active {background:var(--panel-alt)!important;border-bottom-color:var(--ink)!important;color:var(--ink)!important;box-shadow:none!important}
+body.ox-terminal #view-radar .scanner-tabs .tab-btn::before,body.ox-terminal #view-radar .scanner-tabs .tab-btn::after {display:none!important}
+body.ox-terminal #view-radar #chart,body.ox-terminal #view-radar .ox-indicator-legend {background:var(--bg)!important;border-color:var(--line)!important;color:var(--muted)!important}
+body.ox-terminal #view-radar .ox-indicator-up {color:var(--green)!important}
+body.ox-terminal #view-radar .ox-indicator-down {color:var(--red)!important}
+body.ox-terminal #view-radar #price-timer {border:0!important;background:var(--bg)!important;border-radius:0!important;box-shadow:none!important;color:var(--muted)!important;padding:3px!important}
+body.ox-terminal #view-radar #price-timer small {color:var(--muted)!important;font-weight:400!important}
+body.ox-terminal #view-radar .chart-benchmark-bar,body.ox-terminal #view-radar .chart-quickbar {background:none!important;border-color:var(--line)!important;border-radius:0!important;box-shadow:none!important}
+body.ox-terminal #view-radar .benchmark-card,body.ox-terminal #view-radar .alert-btn {border-radius:0!important;background:none!important;border-color:var(--line)!important;box-shadow:none!important}
+body.ox-terminal #view-radar .coin-card {background:none!important;box-shadow:none!important;border-radius:0!important;border-left:2px solid transparent!important;border-bottom:1px solid var(--line)!important}
+body.ox-terminal #view-radar .coin-card.selected {background:var(--panel-alt)!important;border-left-color:var(--ink)!important;box-shadow:none!important}
+body.ox-terminal #view-radar .coin-card::before,body.ox-terminal #view-radar .coin-card::after {display:none!important}
+body.ox-terminal #view-radar .coin-ox {color:var(--muted)!important;background:none!important;border:0!important;border-radius:0!important;font-weight:400!important}
+body.ox-terminal #view-radar .watch-star {background:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;color:var(--muted)!important}
+body.ox-terminal #view-radar .watch-star.is-starred {color:var(--ink)!important}
+body.ox-terminal #view-radar #screener-list {scrollbar-width:thin!important;scrollbar-color:var(--line) transparent!important}
+body.ox-terminal #view-radar #screener-list::-webkit-scrollbar {width:3px!important}
+body.ox-terminal #view-radar #screener-list::-webkit-scrollbar-track {background:transparent!important}
+body.ox-terminal #view-radar #screener-list::-webkit-scrollbar-thumb {background:var(--line)!important;border-radius:0!important}
+@media(max-width:720px){
+ body.ox-terminal[data-view="radar"] .wrap {padding-left:12px!important;padding-right:12px!important}
+ body.ox-terminal #view-radar .workspace {grid-template-columns:minmax(0,1fr) 124px!important;gap:7px!important}
+ body.ox-terminal #view-radar .market-line-card {padding:9px 3px!important;margin:0 0 9px!important;min-height:52px!important}
+ body.ox-terminal #view-radar .market-line-item {padding:0 8px!important}
+ body.ox-terminal #view-radar .market-line-item:first-child {padding-left:8px!important}
+ body.ox-terminal #view-radar .market-line-item label {font-size:8px!important;line-height:1.5!important}
+ body.ox-terminal #view-radar #price {font-size:22px!important;line-height:1.2!important}
+ body.ox-terminal #view-radar #quote,body.ox-terminal #view-radar #change {font-size:12px!important;font-weight:500!important}
+ body.ox-terminal #view-radar .chart-controls {gap:5px!important;padding:7px 4px!important}
+ body.ox-terminal #view-radar .chart-controls .btn-tf {height:32px!important;min-height:32px!important;min-width:0!important;padding:0 1px!important;font-size:9px!important}
+ body.ox-terminal #view-radar .chart-controls .toggle-lbl {font-size:8px!important;min-height:28px!important;overflow:visible!important}
+ body.ox-terminal #view-radar .workspace>aside .panel-head {padding:7px 6px!important;min-height:43px!important}
+ body.ox-terminal #view-radar .workspace>aside .panel-title {font-size:11px!important;font-weight:500!important}
+ body.ox-terminal #view-radar .scanner-tabs {padding:0 3px!important;gap:0!important;min-height:34px!important}
+ body.ox-terminal #view-radar .scanner-tabs .tab-btn {font-size:10px!important;min-height:32px!important;height:32px!important;padding:0!important}
+ body.ox-terminal #view-radar .coin-card {display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;grid-template-rows:auto auto auto auto!important;gap:4px 3px!important;padding:9px 8px 6px!important;min-height:112px!important;margin:0!important;position:relative!important}
+ body.ox-terminal #view-radar .coin-top {display:contents!important}
+ body.ox-terminal #view-radar .coin-title {grid-column:1/-1!important;grid-row:1!important;display:flex!important;align-items:baseline!important;gap:6px!important;min-width:0!important;max-width:none!important;overflow:visible!important;flex-wrap:nowrap!important;line-height:1.3!important}
+ body.ox-terminal #view-radar .coin-title .coin-rank {color:var(--muted)!important;font-size:9px!important;font-weight:400!important;flex:none!important}
+ body.ox-terminal #view-radar .coin-symbol-mobile {font-size:13px!important;font-weight:600!important;line-height:1.45!important;min-width:0!important;max-width:none!important;overflow:visible!important;white-space:normal!important;overflow-wrap:anywhere!important;text-overflow:clip!important;color:var(--ink)!important}
+ body.ox-terminal #view-radar .coin-top-right {grid-column:1/-1!important;grid-row:2!important;width:auto!important;min-width:0!important;display:block!important;align-self:center!important}
+ body.ox-terminal #view-radar .coin-ox {font-size:9px!important;width:auto!important;max-width:none!important;white-space:nowrap!important;line-height:1.5!important}
+ body.ox-terminal #view-radar .coin-mid {grid-column:1/-1!important;grid-row:3!important;margin:0!important;min-width:0!important;align-self:center!important}
+ body.ox-terminal #view-radar .mobile-coin-volume {color:var(--muted)!important;font-size:9px!important;line-height:1.5!important;white-space:nowrap!important;overflow:visible!important;text-overflow:clip!important}
+ body.ox-terminal #view-radar .coin-mobile-bottom {grid-column:1/-1!important;grid-row:4!important;display:flex!important;flex-direction:row-reverse!important;align-items:center!important;justify-content:space-between!important;gap:3px!important;margin:0!important}
+ body.ox-terminal #view-radar .coin-mobile-bottom .coin-change {font:600 13px/1.3 -apple-system,BlinkMacSystemFont,sans-serif!important;font-variant-numeric:tabular-nums!important;white-space:nowrap!important}
+ body.ox-terminal #view-radar .watch-star-mobile {width:32px!important;min-width:32px!important;height:32px!important;min-height:32px!important;padding:8px!important;font-size:16px!important}
+ body.ox-terminal #view-radar .watch-star-desktop {display:none!important}
+}
+@media(max-width:360px){body.ox-terminal #view-radar .workspace {grid-template-columns:minmax(0,1fr) 114px!important} body.ox-terminal #view-radar .coin-card {padding-left:5px!important;padding-right:5px!important}}
+
+body.ox-terminal #view-radar #direction-toggle.is-long .direction-toggle-icon {color:var(--green)!important}
+body.ox-terminal #view-radar #direction-toggle.is-short .direction-toggle-icon {color:var(--red)!important}
+body.ox-terminal #view-radar .chart-quickitem {background:var(--bg)!important;border-color:var(--line)!important}
+body.ox-terminal #view-radar .radar-tab-icon {display:block;width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+body.ox-terminal.theme-light #view-radar:has(#direction-toggle) .market-line-card {background:var(--bg)!important;border:1px solid var(--line)!important;box-shadow:none!important}
+
+/* Redundant chart footer summary removed; data hooks remain for the existing renderer. */
+body.ox-terminal #view-radar .chart-quickbar[hidden] {display:none!important}
+
+/* A small frosted control band, without moving the chart or candidates. */
+body.ox-terminal:not(.theme-light) #view-radar .chart-controls {
+ background:radial-gradient(ellipse at 15% 0,#ffffff12,transparent 70%),linear-gradient(115deg,#ffffff13,#262a3045)!important;
+ border-top:1px solid #ffffff55!important;border-bottom:1px solid #ffffff33!important;
+ box-shadow:inset 0 1px 0 #ffffff4d,inset 0 -1px 0 #ffffff2b,0 0 9px #ffffff15!important;
+ backdrop-filter:blur(10px) saturate(115%)!important;-webkit-backdrop-filter:blur(10px) saturate(115%)!important;
+}
+body.ox-terminal:not(.theme-light) #view-radar .scanner-tabs .tab-btn.active {background:linear-gradient(140deg,#ffffff29,#ffffff09)!important;border-bottom-color:#f5f6f8!important;box-shadow:inset 0 1px 0 #ffffff99,0 0 6px #ffffff1f!important}
+body.ox-terminal #view-radar .coin-card.selected {background:linear-gradient(100deg,#c6cad219,transparent)!important;border-left-color:#e2e4ea!important}
+body.ox-terminal.theme-light #view-radar .chart-controls .btn-tf.active {background:#fff9!important;border-color:#a4a8b0!important;box-shadow:inset 0 1px 0 #fff!important}
+
+/* OX LIVE stays in its original tape; the white neon rim identifies the broadcast. */
+body.ox-terminal:not(.theme-light) .ox-live-strip {
+ background:linear-gradient(100deg,#ffffff0c,transparent 48%)!important;
+ border:1px solid #ffffff4a!important;border-radius:2px!important;
+ box-shadow:inset 0 1px 0 #ffffff66,0 0 6px #ffffff29,0 0 16px #ffffff2b!important;
+}
+body.ox-terminal:not(.theme-light) .ox-live-badge {
+ color:#ffffff!important;border-right-color:#ffffff66!important;
+ background:linear-gradient(100deg,#ffffff1c,transparent)!important;
+ text-shadow:0 0 8px #ffffff88;
+}
+body.ox-terminal:not(.theme-light) .ox-live-window {color:#c9ccd3!important}
+/* The dock must not cover the return icon in the rotated mobile chart. */
+body.ox-terminal.chart-focus .app-dock.glass-nav {display:none!important}
+
+/* Market light follows the selected symbol's displayed 24h change, never the filter. */
+body.ox-terminal #view-radar[data-price-direction="up"] {--radar-price-rgb:113,155,190}
+body.ox-terminal #view-radar[data-price-direction="down"] {--radar-price-rgb:190,117,145}
+body.ox-terminal #view-radar[data-price-direction="up"] .chart-box,
+body.ox-terminal #view-radar[data-price-direction="down"] .chart-box {
+ border-color:rgba(var(--radar-price-rgb),.521)!important;
+ box-shadow:inset 0 1px 0 rgba(var(--radar-price-rgb),.546),0 0 9px rgba(var(--radar-price-rgb),.168),0 0 22px rgba(var(--radar-price-rgb),.101)!important;
+}
+body.ox-terminal #view-radar[data-price-direction]:has(#direction-toggle) .market-line-card {
+ border-color:rgba(var(--radar-price-rgb),.504)!important;border-top-color:rgba(var(--radar-price-rgb),.588)!important;
+ background:linear-gradient(100deg,rgba(var(--radar-price-rgb),.101),transparent 80%)!important;
+ box-shadow:0 0 8px rgba(var(--radar-price-rgb),.143),0 0 20px rgba(var(--radar-price-rgb),.084)!important;
+}
+body.ox-terminal #view-radar[data-price-direction] .chart-controls {
+ border-top-color:rgba(var(--radar-price-rgb),.42)!important;border-bottom-color:rgba(var(--radar-price-rgb),.336)!important;
+ background:linear-gradient(110deg,rgba(var(--radar-price-rgb),.126),#ffffff08 76%)!important;
+ box-shadow:inset 0 1px 0 rgba(var(--radar-price-rgb),.42),0 0 11px rgba(var(--radar-price-rgb),.067)!important;
+}
+body.ox-terminal #view-radar[data-price-direction] .coin-card.selected {
+ border-left-color:rgb(var(--radar-price-rgb))!important;
+ background:linear-gradient(100deg,rgba(var(--radar-price-rgb),.118),transparent)!important;
+ box-shadow:inset 2px 0 9px rgba(var(--radar-price-rgb),.101)!important;
+}
+body.ox-terminal.theme-light #view-radar[data-price-direction="up"] {--radar-price-rgb:0,119,138}
+body.ox-terminal.theme-light #view-radar[data-price-direction="down"] {--radar-price-rgb:184,21,80}
+
+/* Native vector star stays consistent across devices and keeps its own touch target. */
+body.ox-terminal #view-radar .watch-star {display:inline-grid!important;place-items:center!important}
+body.ox-terminal #view-radar .watch-star-icon {display:block;width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
+body.ox-terminal #view-radar .watch-star.is-starred .watch-star-icon {fill:currentColor}
+body.ox-terminal #view-radar .coin-ox-value {font-weight:500}
+@media(max-width:720px){
+ /* Each row has a name, a score, a volume and a final action/value line. */
+ body.ox-terminal #view-radar .coin-ox {display:flex!important;justify-content:space-between!important;align-items:baseline!important;gap:5px!important;width:100%!important;padding:0!important;line-height:1.4!important}
+ body.ox-terminal #view-radar .coin-ox-label {font-size:9px!important;letter-spacing:.05em;color:var(--muted)!important}
+ body.ox-terminal #view-radar .coin-ox-value {font-size:15px!important;font-weight:500!important;line-height:1.2!important;font-variant-numeric:tabular-nums;color:var(--ink)!important}
+ body.ox-terminal #view-radar .mobile-coin-volume {display:flex!important;justify-content:space-between!important;align-items:baseline!important;gap:4px!important;width:100%!important;font-variant-numeric:tabular-nums}
+ body.ox-terminal #view-radar .coin-volume-label {font-size:8px!important;white-space:nowrap}
+ body.ox-terminal #view-radar .coin-volume-value {font-size:10px!important;text-align:right;white-space:nowrap;color:var(--muted)!important}
+ body.ox-terminal #view-radar .coin-mobile-bottom {min-height:32px!important;padding-top:2px!important;border-top:1px solid #ffffff09!important}
+ body.ox-terminal #view-radar .coin-title .coin-rank {min-width:13px!important;font-size:8px!important}
+ body.ox-terminal #view-radar .watch-star-mobile {margin-right:-6px!important}
+ body.ox-terminal #view-radar .watch-star-desktop {display:none!important}
+ /* Saved symbols use the same vertical rhythm; their existing latest-price field remains. */
+ body.ox-terminal #view-radar .coin-card.watch-list-card {display:block!important;min-height:112px!important}
+ body.ox-terminal #view-radar .watch-card-main {display:grid!important;grid-template-columns:minmax(0,1fr) 26px!important;gap:4px!important;align-items:center!important}
+ body.ox-terminal #view-radar .watch-card-copy,body.ox-terminal #view-radar .watch-metrics {display:contents!important}
+ body.ox-terminal #view-radar .watch-coin-title {grid-column:1/-1!important;grid-row:1!important}
+ body.ox-terminal #view-radar .watch-symbol {font-size:13px!important;line-height:1.45!important;min-width:0!important;max-width:none!important;overflow:visible!important;text-overflow:clip!important;white-space:normal!important;overflow-wrap:anywhere!important;color:var(--ink)!important}
+ body.ox-terminal #view-radar .watch-coin-title .badge {display:none!important}
+ body.ox-terminal #view-radar .watch-metric {display:flex!important;align-items:baseline!important;justify-content:space-between!important;gap:4px!important;background:none!important;padding:0!important;border:0!important;border-radius:0!important;min-width:0!important}
+ body.ox-terminal #view-radar .watch-metric label {font-size:8px!important;color:var(--muted)!important;white-space:nowrap!important}
+ body.ox-terminal #view-radar .watch-metric strong {font-size:10px!important;font-weight:500!important;font-variant-numeric:tabular-nums!important;white-space:nowrap!important;overflow:visible!important;text-overflow:clip!important;max-width:none!important;flex-shrink:0!important}
+ body.ox-terminal #view-radar .watch-metric:nth-child(3) {grid-column:1/-1!important;grid-row:2!important}
+ body.ox-terminal #view-radar .watch-metric:nth-child(3) strong {font-size:15px!important;color:var(--ink)!important}
+ body.ox-terminal #view-radar .watch-metric:nth-child(1) {grid-column:1/-1!important;grid-row:3!important}
+ body.ox-terminal #view-radar .watch-metric:nth-child(2) {grid-column:1!important;grid-row:4!important;min-height:32px!important;align-items:center!important}
+ body.ox-terminal #view-radar .watch-metric:nth-child(2) label {display:none!important}
+ body.ox-terminal #view-radar .watch-metric:nth-child(2) strong {font-size:13px!important;font-weight:600!important}
+ body.ox-terminal #view-radar .watch-card-main>.watch-star {grid-column:2!important;grid-row:4!important;width:32px!important;min-width:32px!important;height:32px!important;min-height:32px!important;padding:8px!important;justify-self:end!important;margin-right:-6px!important}
+ /* Mobile halo is a little bluer and lower in luminance; candle colors are unchanged. */
+ body.ox-terminal:not(.theme-light) #view-radar[data-price-direction="up"] {--radar-price-rgb:99,145,186}
+ body.ox-terminal #view-radar[data-price-direction] .chart-box {border-color:rgba(var(--radar-price-rgb),.353)!important;box-shadow:inset 0 1px 0 rgba(var(--radar-price-rgb),.353),0 0 9px rgba(var(--radar-price-rgb),.101),0 0 22px rgba(var(--radar-price-rgb),.055)!important}
+ body.ox-terminal #view-radar[data-price-direction]:has(#direction-toggle) .market-line-card {border-color:rgba(var(--radar-price-rgb),.319)!important;border-top-color:rgba(var(--radar-price-rgb),.378)!important;background:linear-gradient(100deg,rgba(var(--radar-price-rgb),.055),transparent 80%)!important;box-shadow:0 0 8px rgba(var(--radar-price-rgb),.084),0 0 20px rgba(var(--radar-price-rgb),.046)!important}
+ body.ox-terminal #view-radar[data-price-direction] .chart-controls {border-top-color:rgba(var(--radar-price-rgb),.269)!important;border-bottom-color:rgba(var(--radar-price-rgb),.235)!important;background:linear-gradient(110deg,rgba(var(--radar-price-rgb),.063),#ffffff06 76%)!important;box-shadow:inset 0 1px 0 rgba(var(--radar-price-rgb),.269),0 0 11px rgba(var(--radar-price-rgb),.038)!important}
+ body.ox-terminal #view-radar[data-price-direction] .coin-card.selected {border-left-color:rgba(var(--radar-price-rgb),.546)!important;background:linear-gradient(100deg,rgba(var(--radar-price-rgb),.067),transparent)!important;box-shadow:inset 2px 0 9px rgba(var(--radar-price-rgb),.05)!important}
+}
+
+/* The analysis band and detail accents follow the selected market signal. */
+body.ox-terminal #view-radar[data-price-direction] .detail-cell:has(#detail-ox),
+body.ox-terminal #view-radar[data-price-direction] .detail-cell:has(#detail-setup) {
+ border-color:rgba(var(--radar-price-rgb),.353)!important;
+ background:linear-gradient(130deg,rgba(var(--radar-price-rgb),.084),transparent 85%)!important;
+ box-shadow:inset 0 1px 0 rgba(var(--radar-price-rgb),.336),0 0 13px rgba(var(--radar-price-rgb),.076)!important;
+}
+body.ox-terminal #view-radar .workspace>aside.panel,
+body.ox-terminal #view-radar #ox-detail-panel {
+ border-top-color:#ffffff42!important;
+ box-shadow:inset 0 1px 0 #ffffff35,0 -4px 12px -8px #ffffff55!important;
+}
+body.ox-terminal #view-radar #ox-detail-panel>.panel-head {border-bottom-color:#ffffff28!important}
+@media(max-width:720px){
+  body.ox-terminal #view-radar[data-price-direction] .detail-cell:has(#detail-ox),
+ body.ox-terminal #view-radar[data-price-direction] .detail-cell:has(#detail-setup) {
+  border-color:rgba(var(--radar-price-rgb),.252)!important;
+  background:linear-gradient(130deg,rgba(var(--radar-price-rgb),.055),transparent 85%)!important;
+  box-shadow:inset 0 1px 0 rgba(var(--radar-price-rgb),.252),0 0 13px rgba(var(--radar-price-rgb),.042)!important;
+ }
+}
+body.ox-terminal.theme-light #view-radar .workspace>aside.panel,
+body.ox-terminal.theme-light #view-radar #ox-detail-panel {border-top-color:var(--line)!important;box-shadow:inset 0 1px 0 #fff9!important}
+
+/* All five summary fields share the original quote strip's single surface. */
+body.ox-terminal #view-radar>.compact-summary {display:block!important}
+body.ox-terminal #view-radar:has(#direction-toggle) .market-line-card {grid-template-columns:minmax(0,1.35fr) minmax(0,.72fr) minmax(0,.88fr) minmax(0,.62fr) minmax(0,1fr)!important}
+body.ox-terminal #view-radar .market-line-item {display:flex!important;flex-direction:column!important;justify-content:center!important;gap:3px;padding:12px 14px!important}
+body.ox-terminal #view-radar .market-line-item strong {line-height:1.25!important}
+body.ox-terminal #view-radar .radar-analysis-cell strong {color:var(--ink)!important;font-size:18px!important;font-weight:500!important;overflow-wrap:anywhere}
+body.ox-terminal #view-radar .radar-analysis-cell small {color:var(--muted)!important;line-height:1.5!important}
+body.ox-terminal:not(.theme-light) #view-radar .chart-benchmark-bar {border-top-color:#ffffff45!important;box-shadow:0 -3px 10px -6px #ffffff55!important}
+body.ox-terminal:not(.theme-light) #view-radar .benchmark-card.active,
+body.ox-terminal:not(.theme-light) #view-radar .alert-btn[aria-pressed="true"] {border-color:#ffffff55!important;box-shadow:inset 0 1px 0 #ffffff55,0 0 8px #ffffff14!important}
+body.ox-terminal:not(.theme-light) #view-radar :is(.tab-btn,.btn-tf,.watch-star,.alert-btn,.benchmark-card):focus-visible {outline:1px solid #ffffffb3!important;outline-offset:2px;box-shadow:0 0 9px #ffffff40!important}
+@media(max-width:720px){
+ /* Retain the mobile workspace height; the full analysis remains below the chart. */
+ body.ox-terminal #view-radar .radar-analysis-cell {display:none!important}
+ body.ox-terminal #view-radar:has(#direction-toggle) .market-line-card {grid-template-columns:minmax(0,1.28fr) minmax(0,.76fr) minmax(0,.82fr)!important}
+ body.ox-terminal #view-radar .market-line-item {padding:0 7px!important}
+ body.ox-terminal #view-radar .market-line-item:nth-child(3) {border-right:0!important}
+}
+
+/* Alert metadata uses a quiet text row, preserving all states and controls. */
+body.ox-terminal #view-radar .alert-state-row {gap:10px 18px!important;background:none!important;border-color:var(--line)!important}
+body.ox-terminal #view-radar .alert-chip {border:0!important;border-radius:0!important;background:none!important;box-shadow:none!important;color:var(--muted)!important;padding:3px 0!important;font-size:11px!important;line-height:1.5!important}
+body.ox-terminal #view-radar .alert-chip+.alert-chip {border-left:1px solid var(--line)!important;padding-left:14px!important}
+body.ox-terminal #view-radar .detail-progress {background:var(--line)!important;border-radius:1px!important}
+body.ox-terminal #view-radar .detail-progress i {background:var(--meter-color,var(--ink))!important;border-radius:1px!important}
+body.ox-terminal #view-radar .score-pill {background:none!important;border:0!important;border-radius:0!important;color:var(--muted)!important;padding:2px 0!important;box-shadow:none!important}
+body.ox-terminal #view-radar .score-pill+.score-pill {border-left:1px solid var(--line)!important;padding-left:7px!important}
+body.ox-terminal #view-radar .coin-title .badge {border:0!important;background:none!important;box-shadow:none!important;border-radius:0!important;padding:1px 3px!important}
+body.ox-terminal #view-radar .badge-long {color:var(--green)!important}
+body.ox-terminal #view-radar .badge-short {color:var(--red)!important}

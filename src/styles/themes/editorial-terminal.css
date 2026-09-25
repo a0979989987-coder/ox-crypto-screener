@@ -364,3 +364,663 @@ body.theme-light .ox-live-strip {background:#f3f3ed!important}
 body.theme-light .ox-live-badge {background:#e2e6e0!important;color:#28322b!important}
 body.theme-light #ox-news-return {color:#253029!important;border-color:#b3beb5!important}
 body.theme-light .ox-news-options,body.theme-light .ox-mini-calendar {background:#f6f6f1!important;border-color:#c5ccc5!important}
+
+/* Editorial workspace, second edition. Layout and typography are intentionally
+   independent of the former dashboard surfaces. Radar geometry stays intact. */
+body.ox-terminal {
+  --bg:#121417; --panel:#1c1f23; --panel-alt:#292d32; --ink:#f0ede5;
+  --muted:#acb0b7; --line:#3b4147; --gold:#e6dfcf; --gold-dim:#e6dfcf12;
+  --blue:#bbc2c0; --purple:#bbc2c0; --green:#00b8d4; --red:#ff3078;
+  --tier-t1:#e6dfcf; --tier-t2:#bbc2c0; --tier-t3:#8e9993;
+  background:var(--bg)!important; color:var(--ink)!important;
+  font-family:-apple-system,BlinkMacSystemFont,"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+  font-size:14px; padding-bottom:32px!important;
+}
+body.ox-terminal.theme-light {--bg:#f3f1eb;--panel:#eae8e1;--panel-alt:#e4e2da;--ink:#222a26;--muted:#626e66;--line:#c8cec7;--gold:#4c574e;--green:#00778a;--red:#b81550;background:var(--bg)!important}
+body.ox-terminal .wrap {max-width:1600px!important;width:100%;padding-left:40px!important;padding-right:40px!important}
+body.ox-terminal main.wrap {padding-top:0!important;padding-bottom:40px!important}
+body.ox-terminal::before,body.ox-terminal::after,body.ox-terminal main.wrap::before,body.ox-terminal main.wrap::after {display:none!important;content:none!important}
+body.ox-terminal :where(h1,h2,h3,h4,p) {text-wrap:pretty}
+body.ox-terminal :where(button,input,select,textarea) {font:inherit}
+body.ox-terminal :where(button,a) {touch-action:manipulation}
+body.ox-terminal :where(button,a,input,select,summary):focus-visible {outline:2px solid var(--ink)!important;outline-offset:4px!important}
+body.ox-terminal [hidden] {display:none!important}
+body.ox-terminal .positive,body.ox-terminal .is-up {color:var(--green)!important}
+body.ox-terminal .negative,body.ox-terminal .is-down {color:var(--red)!important}
+body.ox-terminal :where(.panel,.metric-card,.strength-card,.glass,.glass-strong,.settings-card,.media-card,.media-section,.v33-card,.coin-card,.benchmark-card,.detail-cell,.us-lookup) {
+  border-radius:2px!important;box-shadow:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
+  background:var(--panel)!important;border-color:var(--line)!important;
+}
+body.ox-terminal :where(.panel,.coin-card,.media-card,.media-section,.settings-card,.glass,.glass-strong)::before,
+body.ox-terminal :where(.panel,.coin-card,.media-card,.media-section,.settings-card,.glass,.glass-strong)::after {display:none!important}
+body.ox-terminal :where(.pill,.btn-act,.btn-tf,.tab-btn,.alert-btn,.ox-market-chip,.theme-choice,.ox-control-refresh,.ox-control-back) {border-radius:2px!important;box-shadow:none!important;background:transparent!important;border-color:var(--line)!important;color:var(--ink)!important}
+body.ox-terminal :where(.btn-act,.btn-tf,.tab-btn,.alert-btn):hover {background:var(--panel-alt)!important}
+body.ox-terminal :where(.btn-tf.active,.tab-btn.active,.theme-choice.active,.ox-market-chip.active) {background:var(--ink)!important;color:var(--bg)!important;border-color:var(--ink)!important}
+body.ox-terminal .page-kicker,body.ox-terminal .ox-eyebrow {color:var(--muted)!important;font:500 10px/1.4 Arial,sans-serif!important;letter-spacing:.16em!important}
+body.ox-terminal :where(.ox-text-button,.ox-outline-button) {background:none;border:0;color:var(--ink);padding:7px 0;display:inline-flex;align-items:center;justify-content:space-between;gap:14px;font-size:12px;cursor:pointer;text-decoration:none;border-radius:0}
+body.ox-terminal .ox-outline-button {border:1px solid var(--line);padding:12px 16px;min-height:44px}
+body.ox-terminal .ox-outline-button:hover {border-color:var(--ink);background:var(--panel-alt)}
+/* A slim working navigation. The old brand and horizontal market-switch row are removed. */
+body.ox-terminal>header.ox-shell-header {position:relative!important;top:auto!important;z-index:30;background:var(--bg)!important;border:0!important;box-shadow:none!important;backdrop-filter:none!important}
+body.ox-terminal>header .nav {height:62px!important;min-height:62px!important;padding-block:0!important;gap:24px!important;border-bottom:1px solid var(--line)}
+body.ox-terminal .ox-desktop-nav {display:flex;align-items:stretch;align-self:stretch;gap:32px}
+body.ox-terminal .ox-desktop-nav button {position:relative;background:none;border:0;border-radius:0;color:var(--muted);font-size:12px;padding:0 1px;white-space:nowrap}
+body.ox-terminal .ox-desktop-nav button.active {color:var(--ink)}
+body.ox-terminal .ox-desktop-nav button.active::after {position:absolute;content:"";bottom:-1px;height:2px;background:var(--ink);left:0;right:0}
+body.ox-terminal .ox-mobile-location {display:none}
+body.ox-terminal .nav-stats {margin-left:auto!important;gap:16px!important}
+body.ox-terminal .nav-stats .live {font-size:10px;color:var(--muted)!important;max-width:145px}
+body.ox-terminal .nav-stats .dot {width:4px;height:4px;background:var(--muted)!important;box-shadow:none!important;animation:none!important}
+body.ox-terminal #btn-force-rescan {padding:5px 0!important;border:0!important;font-size:10px;color:var(--muted)!important}
+body.ox-terminal #ox-control-open {width:46px!important;height:38px!important;min-width:46px!important;min-height:38px!important;background:none!important;border:0!important;border-radius:0!important;padding:5px 4px!important;box-shadow:none!important;display:flex!important;flex-direction:column;justify-content:center;gap:3px}
+body.ox-terminal #ox-control-open>span {display:none!important}
+body.ox-terminal #ox-control-open small {font:12px Arial,sans-serif;color:var(--ink);white-space:nowrap}
+body.ox-terminal #ox-control-open small::after {content:" ☰";font-size:14px}
+body.ox-terminal .ox-live-shell {margin:10px auto 0!important}
+body.ox-terminal .ox-live-strip {height:29px!important;min-height:29px!important;background:var(--panel)!important;border:1px solid var(--line)!important;border-radius:0!important;box-shadow:none!important}
+body.ox-terminal .ox-live-badge {align-self:stretch;display:flex;align-items:center;min-width:89px;padding:0 14px!important;letter-spacing:.12em!important;font:600 9px Arial,sans-serif!important;color:var(--ink)!important;background:none!important;border-right:1px solid var(--line)!important}
+body.ox-terminal .ox-live-window {font-size:10px!important;color:var(--muted)!important}
+body.ox-terminal #ox-live-text {font-size:10px!important}
+body.ox-terminal .app-dock {display:none!important}
+body.ox-terminal .ox-news-dock {display:none!important}
+/* Home cover */
+body.ox-terminal #view-home .ox-editorial-home {padding:0 0 32px!important;gap:0!important}
+body.ox-terminal .ox-page-caption {display:flex;align-items:center;justify-content:space-between;color:var(--muted);font-size:9px;letter-spacing:.12em;padding:25px 0 0}
+body.ox-terminal .ox-page-caption>span:last-child {letter-spacing:0;font-size:10px}
+body.ox-terminal .ox-caption-separator {margin:0 10px;color:var(--line)}
+body.ox-terminal #view-home .ox-home-quote {grid-template-columns:minmax(160px,.75fr) minmax(245px,1.25fr) minmax(370px,1.65fr);gap:30px;padding:26px 0 28px;min-height:0;border-color:var(--line)}
+body.ox-terminal #view-home .ox-home-identity {gap:15px}
+body.ox-terminal #view-home .ox-home-coin {width:48px;height:48px;background:var(--panel-alt);border:1px solid var(--line);color:var(--ink);font-size:29px;border-radius:50%}
+body.ox-terminal #view-home .ox-home-ticker {font:400 30px/1.2 Georgia,serif;color:var(--ink)}
+body.ox-terminal #view-home .ox-home-identity small {font-size:10px;color:var(--muted);margin-top:5px}
+body.ox-terminal #view-home .ox-home-price strong {font:400 clamp(40px,3.7vw,59px)/1 Georgia,serif;letter-spacing:-.045em;color:var(--ink)}
+body.ox-terminal #view-home .ox-home-price>span {flex-basis:auto;font-size:14px;margin-top:0;margin-left:4px}
+body.ox-terminal #view-home .ox-home-price small {font-size:10px;color:var(--muted)}
+body.ox-terminal #view-home .ox-home-quote-metrics>div {border-color:var(--line);padding-left:25px}
+body.ox-terminal #view-home .ox-home-quote-metrics strong {font:400 21px/1.2 Georgia,serif;margin-top:9px;color:var(--ink)}
+body.ox-terminal #view-home .ox-home-quote-metrics small {color:var(--muted);font-size:10px}
+body.ox-terminal #view-home .ox-home-main {grid-template-columns:minmax(0,1.92fr) minmax(300px,.95fr);gap:32px;margin-top:28px}
+body.ox-terminal #view-home .ox-home-chart {padding:23px 25px 15px;min-height:485px;border-radius:6px;background:radial-gradient(ellipse at 0 0,#ffffff0c,transparent 62%),linear-gradient(145deg,#ffffff12,#292e3538 42%,#1c1f2355)!important;border:1px solid #ffffff51!important;box-shadow:inset 0 1px 0 #ffffffab,inset 1px 0 0 #ffffff2b,inset 0 -1px 0 #ffffff52,0 0 8px #ffffff19,0 0 26px #ffffff20,0 16px 40px #0003!important;backdrop-filter:blur(14px) saturate(120%)!important;-webkit-backdrop-filter:blur(14px) saturate(120%)!important}
+body.ox-terminal #view-home .ox-chart-heading h1 {font:400 29px/1.2 Georgia,serif;letter-spacing:-.015em;color:var(--ink);margin-top:7px}
+body.ox-terminal #view-home .ox-chart-heading h1 span {color:var(--muted)}
+body.ox-terminal #view-home .v34-home-main-toolbar {padding:0!important;gap:0!important}
+body.ox-terminal #view-home .v34-home-mini-tf {border:0!important;border-bottom:1px solid var(--line)!important;min-width:41px!important;height:30px!important;border-radius:0!important;color:var(--muted)!important;background:transparent!important}
+body.ox-terminal #view-home .v34-home-mini-tf.active {color:var(--ink)!important;border-bottom:2px solid var(--ink)!important;background:#ffffff08!important}
+body.ox-terminal #view-home .btc-premium-chart-wrap {margin:20px 0 12px!important;min-height:365px!important;height:365px!important;flex:1!important;border-radius:0!important}
+body.ox-terminal #view-home #home-btc-mini-chart {min-height:365px!important;height:365px!important;background:transparent!important;box-shadow:none!important;border:0!important;border-radius:0!important}
+body.ox-terminal #view-home .ox-chart-foot {color:var(--muted);border-color:var(--line);font-size:10px;padding-top:12px}
+body.ox-terminal #view-home .v34-home-open-radar {color:var(--ink)!important;font-size:10px!important}
+body.ox-terminal #view-home .ox-home-analysis {padding:0!important;border:0!important;border-radius:0!important;background:none!important;gap:0}
+body.ox-terminal #view-home .ox-analysis-heading {display:flex;justify-content:space-between;align-items:center;padding:0 0 6px}
+body.ox-terminal #view-home .ox-analysis-heading h2 {font:400 25px/1.4 Georgia,"Noto Serif TC",serif;color:var(--ink);margin-top:5px}
+body.ox-terminal #view-home .ox-analysis-heading .ox-text-button {font-size:20px;padding:0 3px}
+body.ox-terminal #view-home .ox-strength-duo {margin:14px 0 0;gap:10px}
+body.ox-terminal #view-home .ox-strength-reading {position:relative;text-align:center;padding:34px 0 8px!important;border:0!important;min-height:132px}
+body.ox-terminal #view-home .ox-strength-gauge {position:absolute;width:100%;height:116px;top:0;left:0;fill:none;overflow:visible;pointer-events:none}
+body.ox-terminal #view-home .ox-strength-gauge path {stroke-width:7;stroke-linecap:round}
+body.ox-terminal #view-home .ox-gauge-track {stroke:#2a302f}
+body.ox-terminal #view-home .ox-gauge-value {stroke:var(--gold)}
+body.ox-terminal #view-home .ox-strength-reading small {font-size:11px;color:var(--ink);position:relative}
+body.ox-terminal #view-home .ox-strength-reading>div:nth-of-type(1) {justify-content:center;gap:4px;position:relative;margin-top:4px}
+body.ox-terminal #view-home .ox-strength-reading strong {font:400 42px/1.1 Georgia,serif;letter-spacing:-.035em;color:var(--ink)}
+body.ox-terminal #view-home .ox-strength-reading>span {position:relative;display:block;color:var(--muted);font-size:9px;margin-top:6px}
+body.ox-terminal #view-home .ox-strength-reading .ox-meter {display:none}
+body.ox-terminal #view-home .ox-strength-context {gap:18px;margin:7px 0 18px;font-size:9px;line-height:1.7;color:var(--muted);min-height:31px}
+body.ox-terminal #view-home .ox-score-panel {position:relative;padding:18px 20px;margin-top:auto;min-height:160px;border:1px solid #ffffff61!important;border-radius:6px;background:radial-gradient(ellipse at 100% 100%,#ffffff15,transparent 70%),linear-gradient(135deg,#ffffff19,#d0d3d80d 35%,#25282e4a)!important;box-shadow:inset 0 1px 0 #ffffffb3,inset 0 -1px 0 #ffffff57,0 0 8px #ffffff1f,0 0 25px #ffffff24!important;backdrop-filter:blur(14px) saturate(125%)!important;-webkit-backdrop-filter:blur(14px) saturate(125%)!important}
+body.ox-terminal .ox-score-index {float:right;font-size:10px;letter-spacing:0}
+body.ox-terminal #view-home .ox-score-reading {float:left;margin:14px 15px 13px 0}
+body.ox-terminal #view-home .ox-score-reading strong {font:400 68px/.95 Georgia,serif;letter-spacing:-.06em;color:var(--ink)}
+body.ox-terminal #view-home #home-market-state {display:block;padding-top:24px;font-size:12px;color:var(--ink)}
+body.ox-terminal #view-home .ox-score-panel>.ox-meter {clear:both;height:4px;background:#333b36;border-radius:0;margin-top:15px}
+body.ox-terminal #view-home .ox-score-panel>.ox-meter i {background:var(--gold);border-radius:0}
+body.ox-terminal #view-home .ox-analysis-benchmark {margin-top:17px;padding-top:13px;border-color:var(--line);font-size:10px;gap:7px 10px}
+body.ox-terminal #view-home .ox-analysis-benchmark>span:first-child {font-size:17px;color:var(--ink)}
+body.ox-terminal #view-home .ox-analysis-benchmark strong {font-weight:400;color:var(--ink)}
+body.ox-terminal #view-home .ox-analysis-eth-note {font-size:9px;color:var(--muted)}
+body.ox-terminal .ox-section-heading {display:flex;align-items:flex-end;justify-content:space-between;gap:20px;padding:0 0 15px}
+body.ox-terminal .ox-section-heading h2 {font:400 23px/1.3 Georgia,serif;color:var(--ink);margin:5px 0 0}
+body.ox-terminal .ox-section-heading>span {color:var(--muted);font-size:10px}
+body.ox-terminal #view-home .ox-section-heading {padding-top:31px}
+body.ox-terminal #view-home .ox-home-tiers {margin:0;border-color:var(--line);gap:0}
+body.ox-terminal #view-home .ox-tier-column {padding:17px 24px 6px}
+body.ox-terminal #view-home .ox-tier-column:first-child {padding-left:0}
+body.ox-terminal #view-home .ox-tier-column:last-child {padding-right:0}
+body.ox-terminal #view-home .ox-tier-column+.ox-tier-column {border-color:var(--line)}
+body.ox-terminal #view-home .ox-tier-title {gap:10px;margin:0 0 14px}
+body.ox-terminal #view-home .ox-tier-title>span {font:400 28px Georgia,serif;color:var(--ink)}
+body.ox-terminal #view-home .ox-tier-title h2 {font-size:13px;font-weight:500;color:var(--ink);letter-spacing:.06em}
+body.ox-terminal #view-home .ox-tier-title small {display:none}
+body.ox-terminal #view-home .ox-tier-title button {font-size:10px;color:var(--muted);background:none;border:0}
+body.ox-terminal #view-home .ox-tier-row {grid-template-columns:20px minmax(65px,1fr) minmax(50px,.7fr) 53px 65px;column-gap:8px;min-height:61px;padding:8px 0;border-color:var(--line);position:relative}
+body.ox-terminal #view-home .ox-tier-row:hover {background:var(--panel-alt)}
+body.ox-terminal #view-home .ox-tier-row .ox-tier-rank {font-size:9px;color:#69736d;align-self:start;padding-top:5px}
+body.ox-terminal #view-home .ox-tier-identity {display:grid;grid-template-columns:24px minmax(0,1fr);column-gap:7px;row-gap:4px;align-items:center;min-width:0}
+body.ox-terminal #view-home .ox-tier-identity strong {font:600 12px -apple-system,BlinkMacSystemFont,sans-serif;color:var(--ink);min-width:0;overflow-wrap:anywhere}
+body.ox-terminal #view-home .ox-tier-identity small {grid-column:2;max-width:110px;font-size:9px;color:var(--muted)}
+body.ox-terminal #view-home .ox-tier-price {font-size:11px;color:var(--ink);text-align:right;font-variant-numeric:tabular-nums}
+body.ox-terminal #view-home .ox-tier-row em {font-size:11px;text-align:right}
+body.ox-terminal #view-home .ox-tier-row>span:last-child {display:none}
+body.ox-terminal #view-home .ox-tier-spark {width:65px;height:30px;fill:none;stroke:currentColor;stroke-width:1.25;opacity:.9}
+body.ox-terminal #view-home .ox-home-events {grid-template-columns:160px 1fr;gap:30px;padding:24px 0;border-color:var(--line)}
+body.ox-terminal #view-home .ox-home-events h2 {font:400 18px Georgia,serif;color:var(--ink);margin-top:5px}
+body.ox-terminal #view-home .ox-event-list>.v33-event-row {border-color:var(--line)!important;color:var(--ink);padding:4px 18px!important}
+body.ox-terminal #view-home .ox-event-list .v33-row-main b {font-size:12px;line-height:1.8;font-weight:500}
+body.ox-terminal #view-home .ox-event-list .v33-row-main small {font-size:10px;color:var(--muted);line-height:1.8}
+body.ox-terminal #view-home .ox-home-more {border-color:var(--line);margin-top:16px}
+body.ox-terminal #view-home .ox-home-more>summary {color:var(--ink);font-size:15px;padding:20px 0}
+body.ox-terminal #view-home .ox-home-more>summary span {font-size:10px;color:var(--muted)}
+body.ox-terminal #view-home .ox-home-more-content {grid-template-columns:1fr 1fr;gap:24px;padding-bottom:24px}
+body.ox-terminal #view-home .ox-home-more-content>section {border-color:var(--line)}
+body.ox-terminal #view-home .ox-home-detail-grid,body.ox-terminal #view-home .ox-home-shortcuts {grid-column:1/-1}
+body.ox-terminal #view-home :where(.v33-watch-row,.v33-rank-row) {background:none!important;border:0!important;border-bottom:1px solid var(--line)!important;border-radius:0!important;box-shadow:none!important;color:var(--ink)!important;padding:11px 0!important}
+body.ox-terminal #view-home :where(.v33-watch-row,.v33-rank-row) small {color:var(--muted)!important}
+body.ox-terminal #view-home .ox-home-shortcuts .v33-action {border:0!important;border-right:1px solid var(--line)!important;border-radius:0!important;padding:0 25px 0 0;flex:1;min-width:140px}
+body.ox-terminal #view-home .ox-home-shortcuts .v33-action:last-child {border-right:0!important}
+/* Radar: presentation only. Never reorder the chart, controls, tiers or symbols. */
+body.ox-terminal #view-radar .panel {border-radius:2px!important;background:var(--panel)!important}
+body.ox-terminal #view-radar :where(.panel-head,.chart-controls,.scanner-tabs,.chart-quickbar,.benchmark-bar) {background:transparent!important;border-color:var(--line)!important;box-shadow:none!important}
+body.ox-terminal #view-radar .coin-card {border:0!important;border-bottom:1px solid var(--line)!important;border-left:2px solid transparent!important;border-radius:0!important;margin:0!important;background:transparent!important;box-shadow:none!important}
+body.ox-terminal #view-radar .coin-card.selected {border-left-color:var(--ink)!important;background:var(--panel-alt)!important}
+body.ox-terminal #view-radar :where(.coin-name,.coin-sym,.panel-title) {color:var(--ink)!important}
+body.ox-terminal #view-radar .detail-cell {border:0!important;border-left:1px solid var(--line)!important;border-radius:0!important}
+body.ox-terminal #view-radar .market-line-card {border-color:var(--line)!important;box-shadow:none!important}
+/* Indicator workspace, large comparative reading with a quiet data ledger. */
+body.ox-terminal .strength-page {display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:28px!important;padding-top:28px!important}
+body.ox-terminal .strength-page>.page-hero {grid-column:1/-1;padding:0 0 23px!important;border:0!important;border-bottom:1px solid var(--line)!important;background:none!important}
+body.ox-terminal .page-hero h1 {font:400 37px/1.3 Georgia,serif!important;letter-spacing:-.025em!important;color:var(--ink)!important;margin:10px 0!important}
+body.ox-terminal .page-hero p {font-size:12px!important;line-height:1.8!important;color:var(--muted)!important;max-width:660px}
+body.ox-terminal .strength-compare-panel {grid-column:1/-1;padding:23px 30px!important;border:0!important;border-top:1px solid var(--line)!important;border-bottom:1px solid var(--line)!important;background:none!important;border-radius:0!important}
+body.ox-terminal .strength-compare-top h2 {font:400 24px/1.3 Georgia,serif!important;color:var(--ink)!important}
+body.ox-terminal .strength-compare-top p {color:var(--muted)!important;font-size:11px!important}
+body.ox-terminal .strength-compare-side strong {font:400 76px/1 Georgia,serif!important;color:var(--ink)!important}
+body.ox-terminal .strength-compare-scale {height:7px!important;background:var(--line)!important;border-radius:0!important;box-shadow:none!important}
+body.ox-terminal .strength-compare-scale i {background:var(--gold)!important;box-shadow:none!important}
+body.ox-terminal .strength-compare-scale i.alt {background:#66796d!important}
+body.ox-terminal .strength-grid {grid-column:1/-1;display:grid!important;grid-template-columns:1fr 1fr!important;gap:32px!important}
+body.ox-terminal .strength-card {padding:24px 30px!important;border:0!important;border-bottom:1px solid var(--line)!important;background:none!important;border-radius:0!important}
+body.ox-terminal .strength-head h2 {font-size:18px!important;font-weight:400!important;color:var(--ink)!important}
+body.ox-terminal :where(.strength-state,.strength-compare-leader,.ox-liq-source-badge) {border-radius:0!important;background:var(--panel-alt)!important;border-color:var(--line)!important;color:var(--ink)!important;box-shadow:none!important}
+body.ox-terminal .strength-arc {filter:grayscale(1);opacity:.65}
+body.ox-terminal .strength-value {font-family:Georgia,serif!important;color:var(--ink)!important}
+body.ox-terminal .ox-liquidation-section,body.ox-terminal .strength-explain {grid-column:1/-1}
+body.ox-terminal .ox-liquidation-card {border:0!important;border-top:1px solid var(--line)!important;border-radius:0!important;background:none!important;box-shadow:none!important}
+body.ox-terminal .ox-liquidation-empty {border-radius:0!important;background:var(--panel)!important;border-color:var(--line)!important}
+/* News and data: a publication, with a leading story, feed, and small utility controls. */
+body.ox-terminal #view-news .ox-news-page {max-width:none!important;width:100%!important;padding:20px 0 45px!important}
+body.ox-terminal #view-news .ox-news-heading {display:flex!important;align-items:center;gap:10px;position:static!important;padding:0!important;margin:0 0 27px!important;border:0!important;background:none!important;box-shadow:none!important;color:var(--muted);font-size:10px}
+body.ox-terminal #ox-news-return {width:28px!important;min-width:28px!important;height:28px!important;min-height:28px!important;padding:0!important;border:1px solid var(--line)!important;border-radius:0!important;font-size:16px!important;color:var(--ink)!important;background:none!important}
+body.ox-terminal .ox-news-edition {margin-left:auto;font-size:10px}
+body.ox-terminal .ox-news-masthead {display:flex;align-items:flex-end;justify-content:space-between;gap:25px;padding:0 0 30px;border-bottom:1px solid var(--ink)}
+body.ox-terminal .ox-news-masthead h1 {font:400 clamp(34px,4vw,59px)/1.2 Georgia,serif!important;letter-spacing:-.035em;margin:12px 0 0;color:var(--ink)}
+body.ox-terminal .ox-news-masthead p {font-size:11px;color:var(--muted);margin-bottom:6px}
+body.ox-terminal .ox-news-section-nav {display:flex;gap:32px;overflow-x:auto;border-bottom:1px solid var(--line);padding:0;margin-bottom:22px}
+body.ox-terminal .ox-news-section-nav button {flex:none;min-height:46px;border:0;border-bottom:2px solid transparent;border-radius:0;background:none;font-size:12px;color:var(--muted);padding:0}
+body.ox-terminal .ox-news-section-nav button.active {color:var(--ink);border-bottom-color:var(--ink)}
+body.ox-terminal .ox-news-controls {border:0!important;background:none!important;box-shadow:none!important;padding:0!important;margin:0 0 15px!important}
+body.ox-terminal .ox-news-tabs {gap:24px!important;border-bottom:1px solid var(--line);padding:0 0 8px!important;margin-bottom:18px}
+body.ox-terminal .ox-news-tabs button {border:0!important;border-radius:0!important;padding:7px 0!important;background:none!important;color:var(--muted)!important}
+body.ox-terminal .ox-news-tabs button.active {color:var(--ink)!important;border-bottom:1px solid var(--ink)!important}
+body.ox-terminal .ox-news-control-row {display:flex;justify-content:flex-end;gap:8px!important;flex-wrap:wrap}
+body.ox-terminal :where(.ox-news-filter,.ox-news-options button,.ox-news-options select,.ox-news-more) {font-size:10px!important;min-height:30px!important;padding:5px 10px!important;border:1px solid var(--line)!important;border-radius:0!important;background:none!important;box-shadow:none!important;color:var(--ink)!important}
+body.ox-terminal .ox-news-options {border-radius:0!important;background:var(--panel)!important;border-color:var(--line)!important;box-shadow:none!important}
+body.ox-terminal .ox-news-section-title {font:400 19px Georgia,serif!important;color:var(--ink)!important;padding:24px 0 13px!important;margin:0!important;border:0!important}
+body.ox-terminal .ox-news-list {display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:0!important;border-top:1px solid var(--line);align-items:start}
+body.ox-terminal .ox-news-card {padding:22px 23px!important;min-width:0;border:0!important;border-bottom:1px solid var(--line)!important;border-right:1px solid var(--line)!important;background:none!important;border-radius:0!important;box-shadow:none!important;display:flex;flex-direction:column;gap:11px}
+body.ox-terminal .ox-news-card:nth-child(3n) {border-right:0!important}
+body.ox-terminal .ox-news-card h3 {font:400 18px/1.6 Georgia,"Noto Serif TC",serif!important;color:var(--ink)!important;margin:0!important}
+body.ox-terminal .ox-news-card p {margin:0!important;font-size:10px!important;line-height:1.75!important;color:var(--muted)!important}
+body.ox-terminal .ox-news-meta {display:flex!important;flex-wrap:wrap;gap:6px 14px!important;font-size:9px!important;color:var(--muted)!important}
+body.ox-terminal .ox-news-source {color:var(--ink)!important;font-size:10px!important}
+body.ox-terminal .ox-news-impact {color:var(--muted)!important;margin-left:auto}
+body.ox-terminal .ox-news-major {color:var(--ink)!important;background:var(--panel-alt)!important;border-radius:0!important}
+body.ox-terminal .ox-news-actions {display:flex!important;flex-wrap:wrap;gap:6px 15px!important;margin-top:auto!important;padding-top:12px}
+body.ox-terminal .ox-news-actions :where(a,button) {font-size:9px!important;min-height:24px!important;background:none!important;border:0!important;border-radius:0!important;color:var(--muted)!important;box-shadow:none!important;padding:0!important}
+body.ox-terminal .ox-news-actions a {color:var(--ink)!important}
+body.ox-terminal .ox-news-list.is-featured {grid-template-columns:1.45fr 1fr 1fr!important}
+body.ox-terminal .ox-news-list.is-featured>.ox-news-card:first-child {grid-row:span 2;min-height:345px;padding:27px 32px 24px 0!important}
+body.ox-terminal .ox-news-list.is-featured>.ox-news-card:first-child h3 {font-size:31px!important;line-height:1.45!important;letter-spacing:-.02em}
+body.ox-terminal .ox-news-list.is-featured>.ox-news-card:first-child .ox-news-detail {margin-top:6px!important}
+body.ox-terminal .ox-news-status {font-size:10px!important;color:var(--muted)!important;line-height:1.7}
+body.ox-terminal .ox-news-empty {border:0!important;border-top:1px solid var(--line)!important;border-bottom:1px solid var(--line)!important;border-radius:0!important;background:none!important;padding:45px 0!important;text-align:left!important;color:var(--muted)!important}
+body.ox-terminal .ox-mini-calendar {max-width:620px!important;border:1px solid var(--line)!important;border-radius:0!important;box-shadow:none!important;background:var(--panel)!important}
+body.ox-terminal #view-data .media-page {max-width:none!important;padding-top:30px!important}
+body.ox-terminal #view-data .media-card {background:none!important;border:0!important;padding:0!important}
+body.ox-terminal .ox-data-masthead {border-bottom:1px solid var(--line);padding-bottom:24px;margin-bottom:17px}
+body.ox-terminal .ox-data-masthead h1 {font:400 40px/1.2 Georgia,serif;margin:8px 0 0;color:var(--ink)}
+body.ox-terminal #view-data .ox-data-caption {color:var(--muted)!important;font-size:11px!important;margin:6px 0!important}
+body.ox-terminal #ox-data-heading {color:var(--ink)!important;font-size:15px!important}
+body.ox-terminal #view-data [data-news-surface] {margin-top:25px}
+/* Journal and settings use an editorial column system, not cards. */
+body.ox-terminal #view-media .media-page {max-width:none!important;padding-top:35px!important}
+body.ox-terminal #view-media .media-card {padding:0!important;background:none!important;border:0!important}
+body.ox-terminal #view-media .media-intro {display:grid!important;grid-template-columns:180px minmax(0,1fr)!important;gap:55px!important;padding:24px 0 45px!important;border-bottom:1px solid var(--line)!important}
+body.ox-terminal #view-media .media-logo {width:150px!important;height:150px!important;background:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;opacity:.8}
+body.ox-terminal #view-media .media-intro h1 {font:400 clamp(36px,4.2vw,65px)/1.4 Georgia,serif!important;letter-spacing:-.035em!important;color:var(--ink)!important;margin:17px 0!important}
+body.ox-terminal #view-media .media-intro p {max-width:650px;font-size:13px!important;line-height:1.9!important;color:var(--muted)!important}
+body.ox-terminal #view-media .media-intro :is(.page-kicker,h1,p) {display:block!important}
+body.ox-terminal #view-media .ox-news-open {padding:10px 0!important;margin-top:16px;background:none!important;border:0!important;border-bottom:1px solid var(--ink)!important;border-radius:0!important;box-shadow:none!important;color:var(--ink)!important;font-size:12px!important}
+body.ox-terminal #view-media .media-sections {display:grid!important;grid-template-columns:1fr 1fr!important;gap:0!important}
+body.ox-terminal #view-media .media-section {padding:34px 0!important;border:0!important;border-bottom:1px solid var(--line)!important;border-radius:0!important;background:none!important}
+body.ox-terminal #view-media .media-section:nth-child(2) {padding-left:45px!important}
+body.ox-terminal #view-media .media-section h2 {font:400 24px Georgia,serif!important;color:var(--ink)!important;margin-bottom:20px!important}
+body.ox-terminal #view-media .media-section p {font-size:13px!important;line-height:2!important;color:var(--muted)!important;max-width:860px}
+body.ox-terminal #view-media .media-section.full {grid-column:1/-1;display:grid;grid-template-columns:190px 1fr;gap:0 45px}
+body.ox-terminal #view-media .media-section.full>p,body.ox-terminal #view-media .media-social-links {grid-column:2}
+body.ox-terminal #view-media .media-section .story-quote {font:400 24px/1.7 Georgia,serif!important;color:var(--ink)!important;padding:0!important;border:0!important}
+body.ox-terminal .media-function-list {display:grid!important;grid-template-columns:1fr 1fr!important;gap:22px!important}
+body.ox-terminal .media-function-item {padding:0 0 18px!important;border:0!important;border-bottom:1px solid var(--line)!important;border-radius:0!important;background:none!important;box-shadow:none!important}
+body.ox-terminal .media-function-item b {font-size:14px!important;color:var(--ink)!important}
+body.ox-terminal .media-function-item span {font-size:12px!important;line-height:1.8;color:var(--muted)!important}
+body.ox-terminal .media-social-links a {background:none!important;border:1px solid var(--line)!important;border-radius:0!important;box-shadow:none!important;color:var(--ink)!important;font-size:12px!important}
+body.ox-terminal .settings-page {max-width:1060px!important;padding:28px 0!important}
+body.ox-terminal .settings-grid {gap:32px!important}
+body.ox-terminal .settings-card {background:none!important;border:0!important;border-top:1px solid var(--line)!important;border-radius:0!important;padding:24px 0!important}
+body.ox-terminal .settings-card h2 {font:400 22px Georgia,serif!important;color:var(--ink)!important}
+body.ox-terminal .settings-field :where(input,select) {border-radius:0!important;background:var(--panel)!important;border-color:var(--line)!important;color:var(--ink)!important}
+body.ox-terminal .settings-switch {border-bottom:1px solid var(--line)!important;padding:15px 0!important;color:var(--ink)!important}
+/* Market modules */
+body.ox-terminal #market-unavailable-card {background:none!important;border:0!important;padding:0!important;box-shadow:none!important;border-radius:0!important;margin-top:0!important}
+body.ox-terminal :where(.us-market-home-content,.tw-home-shell,.fx-module) {color:var(--ink)!important}
+body.ox-terminal :where(.us-market-home-header,.tw-home-topbar,.fx-module-head) {position:static!important;padding:28px 0 25px!important;border:0!important;border-bottom:1px solid var(--line)!important;background:none!important;box-shadow:none!important;border-radius:0!important;display:flex!important;align-items:flex-end!important;justify-content:space-between!important;gap:25px}
+body.ox-terminal :where(.us-market-home-header h2,.tw-home-topbar h2,.fx-module-head h1) {font:400 42px/1.2 Georgia,serif!important;color:var(--ink)!important;letter-spacing:-.03em!important;margin:10px 0!important}
+body.ox-terminal :where(.us-market-home-header p,.tw-home-topbar p,.fx-module-head p) {color:var(--muted)!important;font-size:11px!important;line-height:1.7!important;margin:0!important}
+body.ox-terminal :where(.us-market-refresh,.tw-home-refresh,.tw-home-action) {background:none!important;color:var(--ink)!important;border:1px solid var(--line)!important;border-radius:0!important;box-shadow:none!important;font-size:11px!important;padding:8px 12px!important}
+body.ox-terminal .ox-us-workspace {display:grid;grid-template-columns:minmax(0,1.8fr) minmax(280px,1fr);gap:48px;padding:36px 0 28px}
+body.ox-terminal .ox-us-benchmark>.ox-section-heading {padding:0 0 22px;border-bottom:1px solid var(--line)}
+body.ox-terminal .us-market-pulse-item {border:0!important;border-radius:0!important;background:none!important;box-shadow:none!important;padding:20px 0!important;color:var(--ink)!important}
+body.ox-terminal .us-market-pulse-primary {display:grid;grid-template-columns:1fr auto;gap:15px 24px}
+body.ox-terminal .us-market-pulse-symbol strong {font:400 29px Georgia,serif!important;color:var(--ink)!important}
+body.ox-terminal .us-market-pulse-symbol small {font-size:10px!important;color:var(--muted)!important}
+body.ox-terminal .us-market-pulse-price {display:flex;align-items:baseline;gap:14px}
+body.ox-terminal .us-market-pulse-price b {font:400 33px Georgia,serif!important;letter-spacing:-.025em;color:var(--ink)!important}
+body.ox-terminal .us-market-pulse-primary .us-market-pulse-price {grid-row:2;grid-column:1/-1;padding:17px 0 22px}
+body.ox-terminal .us-market-pulse-primary .us-market-pulse-price b {font-size:clamp(60px,6.8vw,100px)!important;line-height:1!important;letter-spacing:-.06em!important}
+body.ox-terminal .us-market-pulse-primary .us-market-pulse-price span {font-size:21px!important}
+body.ox-terminal .us-market-pulse-meta {grid-column:1/-1;display:flex!important;gap:0!important;border-top:1px solid var(--line);padding-top:18px}
+body.ox-terminal .us-market-pulse-meta>span {flex:1;border-right:1px solid var(--line);padding:0 16px!important;font-size:9px!important;color:var(--muted)!important}
+body.ox-terminal .us-market-pulse-meta>span:first-child {padding-left:0!important}
+body.ox-terminal .us-market-pulse-meta>span:last-child {border:0}
+body.ox-terminal .us-market-pulse-meta b {font-size:13px!important;font-weight:400!important;color:var(--ink)!important}
+body.ox-terminal .ox-us-secondary {display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--line);margin-top:18px;gap:30px}
+body.ox-terminal .ox-us-secondary .us-market-pulse-price {padding:15px 0}
+body.ox-terminal .ox-us-secondary .us-market-pulse-meta {display:none!important}
+body.ox-terminal .ox-us-context {padding:0 0 0 32px;border-left:1px solid var(--line)}
+body.ox-terminal .ox-us-context h3 {font:400 25px Georgia,serif;margin:7px 0 34px;color:var(--ink)}
+body.ox-terminal .ox-us-regime {font-size:21px}
+body.ox-terminal .ox-us-breadth {display:flex;align-items:center;gap:14px;padding:24px 0}
+body.ox-terminal .ox-us-breadth strong {font:400 88px/1 Georgia,serif;color:var(--ink);letter-spacing:-.05em}
+body.ox-terminal .ox-us-breadth span {font-size:12px;color:var(--muted);line-height:1.9}
+body.ox-terminal .ox-us-context p {font-size:12px;color:var(--muted);line-height:1.8;margin:0 0 30px}
+body.ox-terminal .ox-us-context .ox-outline-button {width:100%;margin:0 0 10px}
+body.ox-terminal .ox-us-research {display:grid;grid-template-columns:1fr 1fr 1.1fr;gap:32px;border-top:1px solid var(--line);padding:27px 0}
+body.ox-terminal .ox-us-research h3 {font:400 24px Georgia,serif;color:var(--ink);margin:8px 0}
+body.ox-terminal .ox-us-research p,body.ox-terminal .ox-us-coverage p {font-size:11px;line-height:1.8;color:var(--muted)}
+body.ox-terminal .ox-us-research .us-market-pulse-item {padding:0!important}
+body.ox-terminal .ox-us-coverage {border-left:1px solid var(--line);padding-left:28px}
+body.ox-terminal .ox-us-coverage h4 {font-size:14px;font-weight:400;color:var(--ink);margin:0 0 15px}
+body.ox-terminal .us-market-home-footer {border-top:1px solid var(--line)!important;padding:16px 0!important;font-size:10px!important;color:var(--muted)!important;background:none!important;box-shadow:none!important}
+body.ox-terminal .us-market-home-footer b {font-size:10px!important;font-weight:400;color:var(--ink)!important}
+/* Taiwan: index band above a broad market ledger and a narrower capital column. */
+body.ox-terminal .tw-home-root .tw-home-shell {display:grid!important;grid-template-columns:minmax(0,1.65fr) minmax(290px,1fr)!important;gap:0 40px!important;padding:0!important}
+body.ox-terminal .tw-home-root .tw-home-two {display:contents!important}
+body.ox-terminal .tw-home-root :where(.tw-home-topbar,.tw-home-notice,.tw-pulse,.tw-theme,.tw-home-actions) {grid-column:1/-1}
+body.ox-terminal .tw-home-root .tw-home-system {max-width:450px;justify-content:flex-end;gap:6px!important}
+body.ox-terminal .tw-home-root .tw-home-chip {background:none!important;border:0!important;border-radius:0!important;color:var(--muted)!important;font-size:9px!important;padding:2px 6px!important;box-shadow:none!important}
+body.ox-terminal .tw-home-root .tw-panel {border:0!important;border-bottom:1px solid var(--line)!important;background:none!important;border-radius:0!important;box-shadow:none!important;padding:25px 0!important}
+body.ox-terminal .tw-home-root .tw-panel-head {padding:0 0 17px!important;border:0!important;min-height:0!important}
+body.ox-terminal .tw-home-root .tw-panel-head h3 {font:400 19px Georgia,serif!important;color:var(--ink)!important;letter-spacing:0!important}
+body.ox-terminal .tw-home-root .tw-panel-head p {font-size:10px!important;color:var(--muted)!important}
+body.ox-terminal .tw-home-root .tw-panel-tag {border:0!important;border-radius:0!important;background:none!important;color:var(--muted)!important;font-size:9px!important;padding:0!important}
+body.ox-terminal .tw-home-root .tw-pulse>.tw-panel-head {display:none!important}
+body.ox-terminal .tw-home-root .tw-pulse-grid {grid-template-columns:1.35fr 1fr 1fr!important;gap:0!important;border:0!important}
+body.ox-terminal .tw-home-root .tw-pulse-card {padding:16px 25px!important;border:0!important;border-right:1px solid var(--line)!important;background:none!important;border-radius:0!important;box-shadow:none!important}
+body.ox-terminal .tw-home-root .tw-pulse-card:first-child {padding-left:0!important}
+body.ox-terminal .tw-home-root .tw-pulse-card:last-child {border-right:0!important}
+body.ox-terminal .tw-home-root .tw-pulse-price {font:400 40px/1.2 Georgia,serif!important;letter-spacing:-.035em!important;color:var(--ink)!important}
+body.ox-terminal .tw-home-root .tw-pulse-card.primary .tw-pulse-price {font-size:58px!important}
+body.ox-terminal .tw-home-root .tw-structure-bar {border:0!important;border-top:1px solid var(--line)!important;background:none!important;border-radius:0!important;padding:14px 0 0!important;margin-top:25px!important}
+body.ox-terminal .tw-home-root .tw-structure-item {background:none!important;border:0!important;border-radius:0!important}
+body.ox-terminal .tw-home-root .tw-structure-item b {font-size:13px!important;color:var(--ink)!important}
+body.ox-terminal .tw-home-root .tw-xray-grid {display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:0!important;border:0!important}
+body.ox-terminal .tw-home-root .tw-xray-cell {border:0!important;border-bottom:1px solid var(--line)!important;border-radius:0!important;background:none!important;padding:20px 0!important}
+body.ox-terminal .tw-home-root .tw-xray-cell strong {font:400 32px Georgia,serif!important}
+body.ox-terminal .tw-home-root .tw-xray-cell small {font-size:10px!important;color:var(--muted)!important}
+body.ox-terminal .tw-home-root .tw-money {border-left:1px solid var(--line)!important;padding-left:28px!important}
+body.ox-terminal .tw-home-root .tw-money-row {border:0!important;border-bottom:1px solid var(--line)!important;border-radius:0!important;padding:13px 0!important;background:none!important;box-shadow:none!important}
+body.ox-terminal .tw-home-root .tw-theme-list {display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:0 28px!important}
+body.ox-terminal .tw-home-root :where(.tw-theme-card,.tw-feed-item,.tw-myox-stat) {border:0!important;border-bottom:1px solid var(--line)!important;border-radius:0!important;background:none!important;box-shadow:none!important}
+body.ox-terminal .tw-home-root .tw-myox {border-left:1px solid var(--line)!important;padding-left:28px!important}
+/* Forex: more canvas, a compact session column, then a border-led quote list. */
+body.ox-terminal #ox-forex-module {margin-top:0!important;padding:0!important}
+body.ox-terminal .fx-module-head label {font-size:10px!important;color:var(--muted)!important}
+body.ox-terminal .fx-module-head select {border:1px solid var(--line)!important;border-radius:0!important;background:var(--panel)!important;color:var(--ink)!important;min-width:150px;padding:10px}
+body.ox-terminal .fx-hero-grid {grid-template-columns:minmax(0,1.95fr) minmax(280px,1fr)!important;gap:35px!important;padding:30px 0 0}
+body.ox-terminal .fx-panel {border:0!important;border-radius:0!important;background:none!important;box-shadow:none!important;padding:0!important}
+body.ox-terminal .fx-chart-panel {padding:22px 24px!important;border:1px solid var(--line)!important;background:linear-gradient(145deg,#1b2120a0,#101413)!important;border-radius:2px!important}
+body.ox-terminal .fx-panel-head h2 {font:400 27px Georgia,serif!important;letter-spacing:-.02em;color:var(--ink)!important}
+body.ox-terminal .fx-panel-head p {font-size:10px!important;color:var(--muted)!important}
+body.ox-terminal .fx-quote strong {font:400 41px Georgia,serif!important;color:var(--ink)!important;letter-spacing:-.035em}
+body.ox-terminal .fx-line-chart {height:290px!important;margin:25px 0!important}
+body.ox-terminal .fx-line-chart .fx-area {opacity:0!important}
+body.ox-terminal .fx-line-chart.up .fx-line {stroke:var(--green)!important;stroke-width:1.3!important}
+body.ox-terminal .fx-line-chart.down .fx-line {stroke:var(--red)!important;stroke-width:1.3!important}
+body.ox-terminal .fx-line-chart .fx-grid {stroke:var(--line)!important;opacity:.5}
+body.ox-terminal .fx-chart-foot {font-size:10px!important;color:var(--muted)!important}
+body.ox-terminal .fx-session-panel {padding:3px 0!important}
+body.ox-terminal .fx-session-panel h3 {font:400 25px Georgia,serif!important;color:var(--ink)!important;margin:10px 0 25px}
+body.ox-terminal .fx-session-state {background:none!important;border:0!important;border-bottom:1px solid var(--line)!important;border-radius:0!important;color:var(--ink)!important;padding:10px 0!important}
+body.ox-terminal .fx-leader {padding:22px 0!important;border:0!important;border-bottom:1px solid var(--line)!important;background:none!important;border-radius:0!important}
+body.ox-terminal .fx-leader b {font:400 28px Georgia,serif!important;color:var(--ink)!important}
+body.ox-terminal .fx-session-panel p {font-size:11px!important;line-height:1.8!important;color:var(--muted)!important;margin-top:24px}
+body.ox-terminal .fx-pulse-row {margin:28px 0!important;gap:0!important;border-color:var(--line)!important}
+body.ox-terminal .fx-pulse-row>div {background:none!important;border:0!important;border-right:1px solid var(--line)!important;border-radius:0!important;padding:20px 24px!important}
+body.ox-terminal .fx-pulse-row>div:first-child {padding-left:0!important}
+body.ox-terminal .fx-pulse-row b {font:400 29px Georgia,serif!important;color:var(--ink)!important}
+body.ox-terminal .fx-opportunity {padding:18px 0!important;border:0!important;border-bottom:1px solid var(--line)!important;background:none!important;border-radius:0!important;color:var(--ink)!important}
+body.ox-terminal .fx-radar-grid {gap:0 30px!important}
+body.ox-terminal .fx-pair-card {background:none!important;border:0!important;border-bottom:1px solid var(--line)!important;border-radius:0!important;padding:16px 0!important;box-shadow:none!important}
+body.ox-terminal .fx-pair-card.selected {background:var(--panel-alt)!important;box-shadow:inset 2px 0 0 var(--ink)!important;padding-left:12px!important}
+body.ox-terminal .fx-strength-track i {background:var(--gold)!important}
+/* Menu remains collapsed and all existing settings remain reachable. */
+body.ox-terminal .ox-control-panel {background:var(--bg)!important;border-left:1px solid var(--line)!important;border-radius:0!important;box-shadow:-25px 0 65px #0007!important;backdrop-filter:none!important}
+body.ox-terminal :where(.ox-control-panel-head,.ox-control-group,.ox-control-row,.ox-auth-card,.ox-feedback-card) {background:none!important;border-color:var(--line)!important;border-radius:0!important;box-shadow:none!important;color:var(--ink)!important}
+body.ox-terminal .ox-control-title h2 {font:400 28px Georgia,serif!important;letter-spacing:-.02em!important;color:var(--ink)!important}
+body.ox-terminal .ox-control-kicker,body.ox-terminal .ox-control-section-label {color:var(--muted)!important;font-size:9px!important;letter-spacing:.16em!important}
+body.ox-terminal .ox-control-row {border-bottom:1px solid var(--line)!important}
+body.ox-terminal .ox-control-copy b {font-size:13px!important;font-weight:500!important;color:var(--ink)!important}
+body.ox-terminal .ox-control-copy small {color:var(--muted)!important;font-size:10px!important}
+body.ox-terminal :where(.ox-control-ui-tag,.ox-control-live-tag,.ox-theme-segment,.ox-theme-segment button) {background:none!important;border-color:var(--line)!important;border-radius:0!important;box-shadow:none!important;color:var(--ink)!important}
+body.ox-terminal #ox-market-quick-switch {background:var(--panel)!important;border:1px solid var(--line)!important;border-radius:2px!important;box-shadow:0 12px 32px #0005!important;backdrop-filter:none!important}
+body.ox-terminal #ox-market-quick-switch :where(.ox-mqs-item,.ox-mqs-item.is-selected) {border-radius:0!important;background:none!important;box-shadow:none!important;color:var(--ink)!important;transform:none!important}
+body.ox-terminal #ox-market-quick-switch .ox-mqs-item.is-selected {background:var(--panel-alt)!important;border-color:var(--muted)!important}
+body.ox-terminal #ox-market-quick-switch .ox-mqs-dot {background:var(--muted)!important;box-shadow:none!important}
+body.ox-terminal #ox-market-quick-switch .ox-mqs-item.is-current .ox-mqs-dot {background:var(--ink)!important}
+/* Responsive composition: mobile uses the same hierarchy, with the central Radar intact. */
+@media(min-width:1600px){body.ox-terminal #view-home .btc-premium-chart-wrap,body.ox-terminal #view-home #home-btc-mini-chart {height:410px!important;min-height:410px!important}}
+@media(max-width:1250px){
+  body.ox-terminal .wrap {padding-left:26px!important;padding-right:26px!important}
+  body.ox-terminal #view-home .ox-home-quote {grid-template-columns:.8fr 1.1fr 1.7fr;gap:17px}
+  body.ox-terminal #view-home .ox-home-price strong {font-size:43px}
+  body.ox-terminal #view-home .ox-home-quote-metrics>div {padding-left:17px}
+  body.ox-terminal #view-home .ox-home-quote-metrics strong {font-size:18px}
+  body.ox-terminal #view-home .ox-home-main {gap:24px;grid-template-columns:minmax(0,1.75fr) minmax(270px,1fr)}
+  body.ox-terminal #view-home .ox-tier-column {padding-left:16px;padding-right:16px}
+  body.ox-terminal #view-home .ox-tier-row {grid-template-columns:17px minmax(55px,1fr) minmax(40px,.7fr) 48px;gap:6px}
+  body.ox-terminal #view-home .ox-tier-spark {display:none}
+  body.ox-terminal .ox-desktop-nav {gap:25px}
+}
+@media(max-width:900px){
+  body.ox-terminal .wrap {padding-left:20px!important;padding-right:20px!important}
+  body.ox-terminal .nav-stats .live,body.ox-terminal #btn-force-rescan {display:none!important}
+  body.ox-terminal #view-home .ox-home-quote {grid-template-columns:1fr 1.5fr;gap:15px}
+  body.ox-terminal #view-home .ox-home-quote-metrics {grid-column:1/-1;padding-top:7px}
+  body.ox-terminal #view-home .ox-home-quote-metrics>div:first-child {border-left:0;padding-left:0}
+  body.ox-terminal #view-home .ox-home-main {grid-template-columns:1fr;gap:28px}
+  body.ox-terminal #view-home .ox-home-analysis {display:grid;grid-template-columns:1fr 1fr;gap:0 25px}
+  body.ox-terminal #view-home .ox-analysis-heading {grid-column:1}
+  body.ox-terminal #view-home .ox-strength-duo {grid-column:1;grid-row:2}
+  body.ox-terminal #view-home .ox-strength-context {grid-column:1;grid-row:3}
+  body.ox-terminal #view-home .ox-score-panel {grid-column:2;grid-row:1/4;margin:0;align-self:center;width:100%}
+  body.ox-terminal #view-home .ox-analysis-benchmark {grid-column:1/-1}
+  body.ox-terminal #view-home .ox-home-tiers {grid-template-columns:1fr 1fr 1fr}
+  body.ox-terminal #view-home .ox-tier-row {grid-template-columns:15px 1fr 52px;gap:5px}
+  body.ox-terminal #view-home .ox-tier-price {display:none}
+  body.ox-terminal #view-home .ox-tier-title {gap:6px;flex-wrap:wrap}
+  body.ox-terminal #view-home .ox-tier-title>span {font-size:24px}
+  body.ox-terminal #view-home .ox-tier-title h2 {font-size:12px}
+  body.ox-terminal #view-home .ox-tier-title button {display:none}
+  body.ox-terminal .ox-us-workspace {gap:25px;grid-template-columns:1.6fr 1fr}
+  body.ox-terminal .ox-us-context {padding-left:22px}
+  body.ox-terminal .ox-us-secondary {gap:20px}
+  body.ox-terminal .us-market-pulse-price b {font-size:25px!important}
+  body.ox-terminal .tw-home-root .tw-home-shell {grid-template-columns:1.4fr 1fr!important;gap:0 24px!important}
+  body.ox-terminal .tw-home-root .tw-home-topbar {align-items:flex-start!important}
+  body.ox-terminal .tw-home-root .tw-home-system {max-width:280px}
+  body.ox-terminal .tw-home-root .tw-pulse-card.primary .tw-pulse-price {font-size:43px!important}
+  body.ox-terminal .tw-home-root .tw-pulse-price {font-size:30px!important}
+  body.ox-terminal .fx-hero-grid {grid-template-columns:1.7fr 1fr!important;gap:24px!important}
+  body.ox-terminal .fx-line-chart {height:240px!important}
+  body.ox-terminal .fx-quote strong {font-size:30px!important}
+  body.ox-terminal .ox-news-list.is-featured {grid-template-columns:1.3fr 1fr!important}
+  body.ox-terminal .ox-news-list {grid-template-columns:1fr 1fr!important}
+  body.ox-terminal .ox-news-card:nth-child(3n) {border-right:1px solid var(--line)!important}
+  body.ox-terminal .ox-news-card:nth-child(2n) {border-right:0!important}
+}
+@media(max-width:620px){
+  body.ox-terminal {padding-bottom:88px!important}
+  body.ox-terminal .wrap {padding-left:16px!important;padding-right:16px!important}
+  body.ox-terminal>header .nav {height:46px!important;min-height:46px!important;flex-wrap:nowrap!important;padding-block:0!important}
+  body.ox-terminal .ox-desktop-nav {display:none}
+  body.ox-terminal .ox-mobile-location {display:block;color:var(--muted);font-size:11px;letter-spacing:.06em}
+  body.ox-terminal .ox-live-shell {margin:8px auto 0!important;padding:0 16px!important}
+  body.ox-terminal .ox-live-strip {height:27px!important;min-height:27px!important}
+  body.ox-terminal .ox-live-badge {min-width:69px;padding:0 10px!important;font-size:8px!important}
+  body.ox-terminal .ox-page-caption {padding-top:21px;font-size:8px;letter-spacing:.1em}
+  body.ox-terminal .ox-page-caption>span:last-child {font-size:8px}
+  body.ox-terminal #view-home .ox-home-quote {grid-template-columns:1fr;gap:12px;padding:20px 0;min-height:0}
+  body.ox-terminal #view-home .ox-home-identity {gap:10px}
+  body.ox-terminal #view-home .ox-home-coin {width:31px;height:31px;font-size:19px}
+  body.ox-terminal #view-home .ox-home-ticker {font-size:23px}
+  body.ox-terminal #view-home .ox-home-identity>div {display:flex;align-items:center;gap:10px}
+  body.ox-terminal #view-home .ox-home-identity small {font-size:9px;margin:0}
+  body.ox-terminal #view-home .ox-home-price {gap:8px}
+  body.ox-terminal #view-home .ox-home-price strong {font-size:48px;letter-spacing:-.045em}
+  body.ox-terminal #view-home .ox-home-price>span {font-size:13px;margin-left:auto}
+  body.ox-terminal #view-home .ox-home-quote-metrics {grid-column:auto;padding-top:8px;margin:0}
+  body.ox-terminal #view-home .ox-home-quote-metrics>div {padding-left:14px}
+  body.ox-terminal #view-home .ox-home-quote-metrics strong {font-size:17px;margin-top:7px}
+  body.ox-terminal #view-home .ox-home-quote-metrics small {font-size:9px}
+  body.ox-terminal #view-home .ox-home-main {margin-top:20px;gap:28px}
+  body.ox-terminal #view-home .ox-home-chart {padding:16px 11px 12px!important;min-height:360px!important}
+  body.ox-terminal #view-home .ox-chart-heading {align-items:center}
+  body.ox-terminal #view-home .ox-chart-heading h1 {font-size:22px;margin-top:5px}
+  body.ox-terminal #view-home .ox-chart-heading .ox-eyebrow {font-size:8px!important}
+  body.ox-terminal #view-home .v34-home-mini-tf {min-width:31px!important;font-size:10px!important}
+  body.ox-terminal #view-home .btc-premium-chart-wrap,body.ox-terminal #view-home #home-btc-mini-chart {height:290px!important;min-height:290px!important}
+  body.ox-terminal #view-home .ox-chart-foot {font-size:9px;gap:7px}
+  body.ox-terminal #view-home .v34-home-open-radar {font-size:9px!important}
+  body.ox-terminal #view-home .ox-home-analysis {grid-template-columns:1fr;gap:0}
+  body.ox-terminal #view-home .ox-analysis-heading {grid-column:auto}
+  body.ox-terminal #view-home .ox-analysis-heading h2 {font-size:24px}
+  body.ox-terminal #view-home .ox-strength-duo {grid-column:auto;grid-row:auto;gap:30px;margin:18px 0 2px}
+  body.ox-terminal #view-home .ox-strength-gauge {height:124px}
+  body.ox-terminal #view-home .ox-strength-reading {min-height:143px;padding-top:40px!important}
+  body.ox-terminal #view-home .ox-strength-reading strong {font-size:44px}
+  body.ox-terminal #view-home .ox-strength-context {grid-column:auto;grid-row:auto;font-size:9px;gap:30px;margin-bottom:20px}
+  body.ox-terminal #view-home .ox-score-panel {grid-column:auto;grid-row:auto;min-height:158px;padding:20px!important}
+  body.ox-terminal #view-home .ox-analysis-benchmark {grid-column:auto;margin-top:18px}
+  body.ox-terminal #view-home .ox-home-tiers {display:block;margin:0}
+  body.ox-terminal #view-home .ox-tier-column,body.ox-terminal #view-home .ox-tier-column:first-child,body.ox-terminal #view-home .ox-tier-column:last-child {padding:19px 0 12px;border:0;border-bottom:1px solid var(--line)}
+  body.ox-terminal #view-home .ox-tier-title {margin-bottom:11px;gap:10px}
+  body.ox-terminal #view-home .ox-tier-title>span {font-size:29px}
+  body.ox-terminal #view-home .ox-tier-title h2 {font-size:14px}
+  body.ox-terminal #view-home .ox-tier-title small {display:inline;font-size:9px}
+  body.ox-terminal #view-home .ox-tier-title button {display:block;font-size:10px}
+  body.ox-terminal #view-home .ox-tier-row {grid-template-columns:18px minmax(65px,1fr) 58px 55px 57px;gap:6px;min-height:59px}
+  body.ox-terminal #view-home .ox-tier-price {display:block;font-size:11px}
+  body.ox-terminal #view-home .ox-tier-spark {display:block;width:57px}
+  body.ox-terminal #view-home .ox-tier-identity small {font-size:9px}
+  body.ox-terminal #view-home .ox-home-events {display:block;padding:24px 0}
+  body.ox-terminal #view-home .ox-home-events-head {margin-bottom:14px}
+  body.ox-terminal #view-home .ox-event-list {grid-template-columns:1fr}
+  body.ox-terminal #view-home .ox-event-list>.v33-event-row {border-left:0!important;border-top:1px solid var(--line)!important;padding:12px 0!important}
+  body.ox-terminal #view-home .ox-home-more-content {grid-template-columns:1fr;gap:23px}
+  body.ox-terminal #view-home .ox-home-detail-grid {grid-template-columns:1fr}
+  body.ox-terminal #view-home .ox-home-more-content>section,body.ox-terminal #view-home .ox-home-detail-grid>div {grid-column:auto}
+  body.ox-terminal #view-home .ox-home-detail-grid>div+div {border:0;border-top:1px solid var(--line);padding:18px 0 0}
+  body.ox-terminal #view-home .ox-home-shortcuts .v33-action {min-width:125px;padding:7px 15px 7px 0}
+  body.ox-terminal .app-dock.glass-nav {display:grid!important;position:fixed!important;left:0!important;right:0!important;bottom:0!important;top:auto!important;transform:none!important;width:100%!important;max-width:none!important;min-height:66px!important;height:calc(66px + env(safe-area-inset-bottom))!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:0!important;border:0!important;border-top:1px solid var(--line)!important;border-radius:0!important;background:#121618f7!important;padding:5px 8px calc(5px + env(safe-area-inset-bottom))!important;box-shadow:none!important;backdrop-filter:blur(12px)!important}
+  body.ox-terminal .app-dock.glass-nav>.dock-btn {position:relative!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;height:55px!important;min-height:55px!important;gap:5px!important;border:0!important;border-radius:0!important;background:none!important;color:#7f8983!important;padding:4px!important;font-size:9px!important;box-shadow:none!important}
+  body.ox-terminal .app-dock.glass-nav>.dock-btn.active {color:var(--ink)!important;background:none!important}
+  body.ox-terminal .app-dock .dock-icon,body.ox-terminal .app-dock .dock-icon svg {width:18px!important;height:18px!important}
+  body.ox-terminal .app-dock .dock-radar-orb {position:relative!important;left:auto!important;top:auto!important;transform:none!important;display:grid!important;place-items:center!important;width:34px!important;height:31px!important;border:1px solid #858b7e!important;border-radius:2px!important;background:#252b26!important;box-shadow:none!important;animation:none!important}
+  body.ox-terminal .app-dock .dock-radar-logo {width:21px!important;height:21px!important;color:var(--gold)!important}
+  body.ox-terminal .app-dock .dock-radar-label {margin:0!important;position:static!important;font-size:9px!important;line-height:1!important;color:var(--ink)!important}
+  body.ox-terminal .app-dock :where(.ox-dock-indicator,.ox-motion-shine) {display:none!important}
+  body.ox-terminal .app-dock .dock-radar-orb::before,body.ox-terminal .app-dock .dock-radar-orb::after {display:none!important}
+  body.ox-terminal .strength-page {display:block;padding-top:25px!important}
+  body.ox-terminal .strength-page>.page-hero {margin-bottom:25px}
+  body.ox-terminal .page-hero h1 {font-size:31px!important}
+  body.ox-terminal .strength-compare-panel {padding:22px 0!important;margin-bottom:20px!important}
+  body.ox-terminal .strength-compare-side strong {font-size:48px!important}
+  body.ox-terminal .strength-grid {grid-template-columns:1fr!important;gap:0!important}
+  body.ox-terminal .strength-card {padding:24px 0!important}
+  body.ox-terminal .ox-news-masthead {display:block;padding-bottom:24px}
+  body.ox-terminal .ox-news-masthead h1 {font-size:37px!important}
+  body.ox-terminal .ox-news-masthead p {margin:14px 0 0;font-size:10px}
+  body.ox-terminal .ox-news-section-nav {gap:24px;margin-bottom:17px}
+  body.ox-terminal .ox-news-section-nav button {font-size:11px}
+  body.ox-terminal .ox-news-control-row {justify-content:flex-start}
+  body.ox-terminal .ox-news-control-row button {flex:none!important}
+  body.ox-terminal .ox-news-list,body.ox-terminal .ox-news-list.is-featured {grid-template-columns:1fr!important}
+  body.ox-terminal .ox-news-card,body.ox-terminal .ox-news-card:nth-child(3n),body.ox-terminal .ox-news-card:nth-child(2n) {padding:22px 0!important;border-right:0!important;gap:10px}
+  body.ox-terminal .ox-news-list.is-featured>.ox-news-card:first-child {grid-row:auto;min-height:0;padding:25px 0!important}
+  body.ox-terminal .ox-news-list.is-featured>.ox-news-card:first-child h3 {font-size:27px!important}
+  body.ox-terminal .ox-news-card h3 {font-size:20px!important}
+  body.ox-terminal .ox-data-masthead h1 {font-size:34px}
+  body.ox-terminal #view-media .media-intro {grid-template-columns:1fr!important;gap:20px!important;padding:0 0 30px!important}
+  body.ox-terminal #view-media .media-logo {width:54px!important;height:54px!important}
+  body.ox-terminal #view-media .media-intro h1 {font-size:40px!important}
+  body.ox-terminal #view-media .media-sections {display:block!important}
+  body.ox-terminal #view-media .media-section,body.ox-terminal #view-media .media-section:nth-child(2) {padding:26px 0!important}
+  body.ox-terminal #view-media .media-section.full {display:block}
+  body.ox-terminal .media-function-list {grid-template-columns:1fr!important}
+  body.ox-terminal .settings-grid {display:block!important}
+  body.ox-terminal :where(.us-market-home-header,.tw-home-topbar,.fx-module-head) {padding:25px 0 21px!important;align-items:flex-start!important;gap:15px!important;flex-wrap:wrap}
+  body.ox-terminal :where(.us-market-home-header h2,.tw-home-topbar h2,.fx-module-head h1) {font-size:35px!important}
+  body.ox-terminal .ox-us-workspace {display:block;padding:25px 0 0}
+  body.ox-terminal .us-market-pulse-primary .us-market-pulse-price b {font-size:66px!important}
+  body.ox-terminal .us-market-pulse-primary .us-market-pulse-price span {font-size:17px!important}
+  body.ox-terminal .ox-us-context {border:0;border-top:1px solid var(--line);padding:24px 0;margin-top:15px}
+  body.ox-terminal .ox-us-context h3 {margin-bottom:20px}
+  body.ox-terminal .ox-us-breadth {float:right;padding:0 0 15px 20px}
+  body.ox-terminal .ox-us-breadth strong {font-size:65px}
+  body.ox-terminal .ox-us-context p {margin:16px 0 25px}
+  body.ox-terminal .ox-us-research {grid-template-columns:1fr 1fr;gap:22px}
+  body.ox-terminal .ox-us-research>div:first-child {grid-column:1/-1}
+  body.ox-terminal .ox-us-coverage {padding-left:20px}
+  body.ox-terminal .tw-home-root .tw-home-shell {display:block!important}
+  body.ox-terminal .tw-home-root .tw-home-system {max-width:none;justify-content:flex-start}
+  body.ox-terminal .tw-home-root .tw-pulse-grid {display:grid!important;grid-template-columns:1fr 1fr!important}
+  body.ox-terminal .tw-home-root .tw-pulse-card.primary {grid-column:1/-1;border:0!important;border-bottom:1px solid var(--line)!important;padding:0 0 23px!important}
+  body.ox-terminal .tw-home-root .tw-pulse-card {padding:20px 15px!important}
+  body.ox-terminal .tw-home-root .tw-pulse-card:nth-child(2) {padding-left:0!important}
+  body.ox-terminal .tw-home-root .tw-pulse-card.primary .tw-pulse-price {font-size:59px!important}
+  body.ox-terminal .tw-home-root .tw-money,body.ox-terminal .tw-home-root .tw-myox {border-left:0!important;padding-left:0!important}
+  body.ox-terminal .tw-home-root .tw-theme-list {grid-template-columns:1fr!important}
+  body.ox-terminal .fx-hero-grid {grid-template-columns:1fr!important;gap:27px!important;padding-top:24px}
+  body.ox-terminal .fx-chart-panel {padding:16px 13px!important}
+  body.ox-terminal .fx-line-chart {height:245px!important;margin:20px 0!important}
+  body.ox-terminal .fx-quote strong {font-size:29px!important}
+  body.ox-terminal .fx-chart-foot {font-size:8px!important;gap:6px!important}
+  body.ox-terminal .fx-session-panel {display:grid;grid-template-columns:1fr 1fr;gap:0 22px}
+  body.ox-terminal .fx-session-panel>small,body.ox-terminal .fx-session-panel>h3,body.ox-terminal .fx-session-state,body.ox-terminal .fx-session-panel>p {grid-column:1/-1}
+  body.ox-terminal .fx-session-panel h3 {margin-bottom:5px}
+  body.ox-terminal .fx-session-panel p {margin:17px 0 0!important}
+  body.ox-terminal .fx-pulse-row>div {padding:16px 10px!important}
+  body.ox-terminal .fx-pulse-row b {font-size:21px!important}
+  body.ox-terminal .fx-pulse-row small,body.ox-terminal .fx-pulse-row em {font-size:9px!important}
+}
+@media(prefers-reduced-motion:reduce){body.ox-terminal * {scroll-behavior:auto!important;transition:none!important}}
+body.ox-terminal.theme-light #view-home .ox-home-chart,body.ox-terminal.theme-light #view-home .ox-score-panel,body.ox-terminal.theme-light .fx-chart-panel {background:var(--panel)!important;border-color:var(--line)!important}
+body.ox-terminal.theme-light .ox-strength-gauge .ox-gauge-track {stroke:var(--line)}
+
+/* Final control surfaces, shared with the compact mobile menu. */
+body.ox-terminal .ox-control-icon,body.ox-terminal .ox-control-close,body.ox-terminal .ox-control-back {background:none!important;border-color:var(--line)!important;color:var(--muted)!important;border-radius:2px!important;box-shadow:none!important}
+body.ox-terminal .ox-control-panel input,body.ox-terminal .ox-control-panel textarea {border-radius:2px!important;background:var(--panel)!important;border-color:var(--line)!important;color:var(--ink)!important;box-shadow:none!important}
+body.ox-terminal .ox-control-group {border:0!important;border-bottom:1px solid var(--line)!important}
+body.ox-terminal .ox-control-system-state i {background:var(--muted)!important;box-shadow:none!important}
+body.ox-terminal .ox-theme-segment button.active {background:var(--ink)!important;color:var(--bg)!important}
+body.ox-terminal .ox-news-control-row {display:flex!important;justify-content:flex-start!important}
+body.ox-terminal .ox-news-control-row>button {flex:0 0 auto!important;width:auto!important;min-width:100px!important;padding:0 18px!important}
+body.ox-terminal .market-unavailable-icon {background:none!important;color:var(--muted)!important;border:0!important;border-radius:0!important;box-shadow:none!important}
+
+body.ox-terminal #view-radar :is(.tf-group,.toggle-lbl,.direction-toggle-btn,.watch-star) {background:transparent!important;border-radius:2px!important;box-shadow:none!important;border-color:var(--line)!important}
+body.ox-terminal #view-radar .chart-controls .toggle-lbl:has(input:checked) {background:var(--panel-alt)!important;border-color:var(--muted)!important;color:var(--ink)!important}
+body.ox-terminal #view-radar .chart-controls .toggle-lbl input:checked {background:var(--muted)!important;border-color:var(--ink)!important}
+body.ox-terminal #view-radar .chart-controls .toggle-lbl input:checked::after {background:var(--ink)!important;box-shadow:none!important}
+@media(max-width:620px){
+ body.ox-terminal #view-radar .coin-top {grid-template-columns:minmax(0,1fr) 30px!important}
+ body.ox-terminal #view-radar .coin-top-right {width:30px!important;min-width:30px!important;grid-template-columns:1fr!important}
+ body.ox-terminal #view-radar .coin-symbol-mobile {max-width:100%!important}
+}
+
+body.ox-terminal .tw-home-root .tw-home-notice {border:0!important;border-top:1px solid var(--line)!important;border-bottom:1px solid var(--line)!important;border-radius:0!important;background:none!important;color:var(--muted)!important;padding:12px 0!important}
+body.ox-terminal .tw-home-root .tw-pulse-value b {font:400 clamp(28px,3vw,44px)/1.2 Georgia,serif!important;letter-spacing:-.025em}
+body.ox-terminal .tw-home-root .tw-pulse-card:first-child .tw-pulse-value b {font-size:clamp(34px,4vw,58px)!important}
+body.ox-terminal .tw-home-root .tw-money-row {display:flex!important;justify-content:space-between!important;gap:18px!important}
+
+/* Light refracts only through the principal surfaces; data and rows stay crisp. */
+body.ox-terminal:not(.theme-light)[data-view="home"] {
+ background:radial-gradient(ellipse 900px 550px at 10% 24%,#62687329,transparent 72%),radial-gradient(ellipse 540px 400px at 92% 38%,#80838b1c,transparent 72%),var(--bg)!important;
+}
+body.ox-terminal #view-home .ox-home-chart,body.ox-terminal #view-home .ox-score-panel {position:relative}
+body.ox-terminal #view-home .ox-home-chart::after,body.ox-terminal #view-home .ox-score-panel::after {
+ content:""!important;display:block!important;position:absolute;inset:0 0 auto;height:1px;
+ background:linear-gradient(90deg,transparent,#ffffff 18%,#ffffff99 40%,transparent 75%);box-shadow:0 0 6px #ffffffbb,0 0 13px #ffffff47;pointer-events:none;z-index:2;
+}
+body.ox-terminal #view-home .ox-coin-logo {grid-column:1;grid-row:1/3;position:relative;display:grid;place-items:center;width:24px;height:24px;flex:none;border-radius:50%;background:#363a42;color:#f0f1f4;font:600 8px/1 -apple-system,BlinkMacSystemFont,sans-serif;overflow:hidden}
+body.ox-terminal #view-home .ox-coin-logo img {position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:var(--bg)}
+body.ox-terminal #view-home .ox-gauge-track {stroke:#3e434b}
+body.ox-terminal #view-home .ox-gauge-value {stroke:#efe4c6}
+body.ox-terminal .us-positive,body.ox-terminal .tw-up {color:var(--green)!important}
+body.ox-terminal .us-negative,body.ox-terminal .tw-down {color:var(--red)!important}
+body.ox-terminal #btn-chart-fullscreen {display:inline-grid!important;place-items:center!important;width:32px!important;height:32px!important;min-width:32px!important;min-height:32px!important;padding:6px!important;flex:none!important;border:0!important;background:transparent!important;color:var(--ink)!important}
+body.ox-terminal #btn-chart-fullscreen svg {width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+body.ox-terminal #btn-chart-fullscreen:hover {background:var(--panel-alt)!important}
+@media(min-width:621px) and (max-width:1050px){
+ body.ox-terminal #view-home .ox-tier-row {grid-template-columns:14px minmax(70px,1fr) 52px!important;column-gap:5px}
+ body.ox-terminal #view-home .ox-tier-price,body.ox-terminal #view-home .ox-tier-spark {display:none}
+ body.ox-terminal #view-home .ox-tier-identity {grid-template-columns:20px minmax(0,1fr);column-gap:5px}
+ body.ox-terminal #view-home .ox-coin-logo {width:20px;height:20px}
+}
+@media(max-width:620px){
+ body.ox-terminal #view-home .ox-tier-row {grid-template-columns:15px minmax(90px,1fr) 54px 55px 43px;gap:5px}
+ body.ox-terminal #view-home .ox-tier-spark {width:43px}
+}
+@media(max-width:360px){body.ox-terminal #view-home .ox-tier-row {grid-template-columns:12px minmax(82px,1fr) 50px 53px;gap:4px}body.ox-terminal #view-home .ox-tier-spark {display:none}}
+
+/* Fine white neon accents mark section boundaries without enclosing every row. */
+body.ox-terminal:not(.theme-light) #view-home .ox-home-tiers,
+body.ox-terminal:not(.theme-light) #view-home .ox-home-events {position:relative}
+body.ox-terminal:not(.theme-light) #view-home .ox-home-tiers::before,
+body.ox-terminal:not(.theme-light) #view-home .ox-home-events::before {
+ content:"";position:absolute;top:0;left:0;width:min(240px,45%);height:1px;pointer-events:none;
+ background:linear-gradient(90deg,#ffffffb3,#ffffff55 45%,transparent);
+ box-shadow:0 -2px 8px #ffffff24,0 2px 7px #ffffff1a;
+}
+body.ox-terminal:not(.theme-light) .ox-control-panel {border-top-color:#ffffff66!important;box-shadow:inset 0 1px 0 #ffffff66,0 0 18px #ffffff10,0 20px 60px #0008!important}
+@media(max-width:720px){
+ body.ox-terminal:not(.theme-light) #view-home .ox-home-tiers::before,
+ body.ox-terminal:not(.theme-light) #view-home .ox-home-events::before {opacity:.7}
+}
+
+/* Finish shared controls: no legacy blue capsules or ornamental corner shapes. */
+body.ox-terminal {--meter-weak:#c17b91;--meter-mid:#c5aa77;--meter-strong:#759fd0}
+body.ox-terminal.theme-light {--meter-weak:#9f4965;--meter-mid:#8b682d;--meter-strong:#416fa3}
+body.ox-terminal .strength-card::before,body.ox-terminal .strength-card::after {display:none!important;content:none!important}
+body.ox-terminal .strength-note {border-color:var(--line)!important;color:var(--muted)!important}
+body.ox-terminal .strength-explain {background:none!important;border:0!important;border-top:1px solid var(--line)!important;border-radius:0!important;padding:16px 0!important;color:var(--muted)!important;font-size:12px!important;line-height:1.7!important}
+body.ox-terminal .strength-reason-chip {background:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;padding:4px 0!important;font-size:11px!important;line-height:1.5!important;color:var(--muted)!important}
+body.ox-terminal .strength-reason-chip+.strength-reason-chip {border-left:1px solid var(--line)!important;padding-left:12px!important;margin-left:4px!important}
+body.ox-terminal .ox-liquidation-filters select,body.ox-terminal .ox-liquidation-empty code {background:var(--bg)!important;border:1px solid var(--line)!important;border-radius:2px!important;color:var(--ink)!important;box-shadow:none!important;font:inherit!important}
+body.ox-terminal .ox-liquidation-filters select {min-height:32px!important;padding:4px 8px!important;font-size:12px!important}
+body.ox-terminal .ox-feature-search-wrap {background:var(--bg)!important;padding:4px 0 10px!important}
+body.ox-terminal .ox-feature-search-box {background:var(--panel)!important;border:1px solid var(--line)!important;border-radius:2px!important;box-shadow:none!important;backdrop-filter:none!important}
+body.ox-terminal .ox-feature-search-box input {background:transparent!important;border:0!important;font-size:13px!important;color:var(--ink)!important}
+body.ox-terminal .ox-feature-search-box input::placeholder {color:var(--muted)!important}
+body.ox-terminal .ox-feature-search-box:focus-within {border-color:var(--ink)!important;box-shadow:0 0 8px #ffffff10!important}
+body.ox-terminal .ox-control-toggle span {background:var(--panel-alt)!important;border:1px solid var(--muted)!important;border-radius:3px!important;box-shadow:none!important}
+body.ox-terminal .ox-control-toggle span::after {background:var(--muted)!important;border-radius:1px!important;box-shadow:none!important}
+body.ox-terminal .ox-control-toggle input:checked+span {background:var(--ink)!important;border-color:var(--ink)!important}
+body.ox-terminal .ox-control-toggle input:checked+span::after {background:var(--bg)!important}
+body.ox-terminal .ox-control-toggle:has(input:focus-visible) {outline:1px solid var(--ink);outline-offset:4px}
+body.ox-terminal .ox-control-toggle:has(input:disabled) {opacity:.45}
+body.ox-terminal .ox-control-note {color:var(--muted)!important;font-size:12px!important;line-height:1.7!important;border-top:1px solid var(--line);padding-top:14px;margin-top:16px}
+/* Analytical color belongs to the scale/fill; numerals remain warm white. */
+body.ox-terminal .strength-arc {filter:none!important;opacity:.86!important;background:conic-gradient(from 270deg at 50% 100%,var(--meter-weak) 0deg,var(--meter-mid) 90deg,var(--meter-strong) 180deg,transparent 180deg 360deg)!important}
+body.ox-terminal .strength-arc::after {background:var(--bg)!important}
+body.ox-terminal .strength-compare-scale i.btc {background:var(--meter-mid)!important}
+body.ox-terminal .strength-compare-scale i.alt {background:var(--meter-strong)!important}
+body.ox-terminal #view-home .ox-gauge-value {stroke:var(--meter-color,var(--meter-mid))!important}
+body.ox-terminal #view-home .ox-meter i {background:var(--meter-color,var(--meter-mid))!important}
