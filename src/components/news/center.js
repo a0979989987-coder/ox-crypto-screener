@@ -40,7 +40,8 @@
     if (onlyFollowing) items = items.filter(item => (prefs.followedSources || []).includes(item.sourceId));
     if (kind === 'news' && prefs.majorOnly === true) items = items.filter(item => (score(item) ?? 0) >= 3);
     if (prefs.minimumStars) items = items.filter(item => (score(item) ?? 0) >= Number(prefs.minimumStars));
-    if (prefs.sort === 'impact' && kind === 'news') items = [...items].sort((a,b) => (score(b) ?? 0) - (score(a) ?? 0) || b.publishedAt.localeCompare(a.publishedAt));
+    if (kind === 'event') items = [...items].filter(item => Date.parse(item.occursAt) >= Date.now()).sort((a,b) => a.occursAt.localeCompare(b.occursAt));
+    else if (prefs.sort === 'impact' && kind === 'news') items = [...items].sort((a,b) => (score(b) ?? 0) - (score(a) ?? 0) || b.publishedAt.localeCompare(a.publishedAt));
     else items = [...items].sort((a,b) => (b.occursAt || b.publishedAt || '').localeCompare(a.occursAt || a.publishedAt || ''));
     return items;
   }
@@ -173,12 +174,24 @@
   document.addEventListener('click', event => {
     if (event.target.closest('[data-open-cross-news], #ox-open-news')) { event.preventDefault(); open(); document.getElementById('ox-control-close')?.click(); }
     if (event.target.closest('#ox-news-return')) { event.preventDefault(); close({ useHistory: true }); }
-    if (event.target.closest('#ox-open-settings') && document.body.dataset.newsMode === '1') { event.preventDefault(); document.getElementById('ox-control-close')?.click(); close({ useHistory: true }); window.switchAppView?.('settings'); }
     const tab = event.target.closest('[data-news-tab]'); if (tab) { state.tab = tab.dataset.newsTab; render(); window.scrollTo(0,0); }
   });
   document.addEventListener('ox:marketchange', () => { if (document.body.dataset.newsMode !== '1') render(); });
-  document.addEventListener('ox:viewchange', event => { if (event.detail?.to === 'data' || event.detail?.to === 'news') { refresh(); render(); } });
-  window.addEventListener('popstate', event => { if (event.state?.oxNews) open({ historyEntry: false, previous: event.state.oxPrevious }); else if (document.body.dataset.newsMode === '1') close(); });
+  document.addEventListener('ox:viewchange', event => {
+    const view = event.detail?.to;
+    if (view && view !== 'news' && document.body.dataset.newsMode === '1') {
+      document.body.dataset.newsMode = '0';
+      history.pushState({ oxView: view }, '', location.pathname + location.search);
+    }
+    if (view === 'data' || view === 'news') { refresh(); render(); }
+  });
+  window.addEventListener('popstate', event => {
+    if (event.state?.oxNews) open({ historyEntry: false, previous: event.state.oxPrevious });
+    else {
+      if (document.body.dataset.newsMode === '1') close();
+      if (event.state?.oxView) window.switchAppView?.(event.state.oxView);
+    }
+  });
   window.OXNews = Object.freeze({ open, close, refresh, render });
   if (location.hash === '#news') document.addEventListener('DOMContentLoaded', () => open({ historyEntry: false, previous: history.state?.oxPrevious }), { once: true });
   else render();
