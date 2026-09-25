@@ -127,6 +127,7 @@ function renderHomeOverview() {
   setText("home-surge-count", (state.tierMap.surge || []).length);
   setText("home-side-market-state", marketStateText);
   setText("home-side-market-score", marketScore);
+  setWidth("home-market-meter", marketScore);
   setText("home-side-t1", (state.tierMap.t1 || []).length);
   setText("home-side-t2", (state.tierMap.t2 || []).length);
   setText("home-side-surge", (state.tierMap.surge || []).length);
@@ -140,7 +141,6 @@ function renderHomeOverview() {
   setText("home-btc-hero-strength", btcStrength);
   setText("home-btc-market-state", marketStateText);
   setText("home-btc-note", `${homeStructureText(btcA, btc)}${btcA ? ` · OX ${btcA.oxScore}` : ""}`);
-  setWidth("home-btc-meter", btcA?.oxScore ?? btcStrength);
 
   setText("home-eth-price", eth ? fmtPrice(eth.lastPr) : "—"); setChange("home-eth-change", eth);
   setText("home-eth-note", `${homeStructureText(ethA, eth)}${ethA ? ` · OX ${ethA.oxScore}` : ""}`);
@@ -183,6 +183,40 @@ function renderHomeOverview() {
   };
   renderRank("home-gainers", state.tierMap.gainers);
   renderRank("home-losers", state.tierMap.losers);
+
+  // The editorial home uses the same analyzed candidates as the radar tabs.
+  // Keep each tier independent so the overview never invents a market signal.
+  for (const tier of ["t1", "t2", "t3"]) {
+    const list = document.getElementById(`home-tier-${tier}`);
+    if (!list) continue;
+    const rows = (state.tierMap[tier] || []).slice(0, 3);
+    list.replaceChildren();
+    if (!rows.length) {
+      const empty = document.createElement("div");
+      empty.className = "v33-list-empty";
+      empty.textContent = `等待 ${tier.toUpperCase()} 候選標的`;
+      list.append(empty);
+      continue;
+    }
+    for (const candidate of rows) {
+      const row = document.createElement("button");
+      row.type = "button";
+      row.className = "ox-tier-row";
+      row.dataset.homeSymbol = candidate.symbol;
+      const symbol = document.createElement("strong");
+      symbol.textContent = String(candidate.symbol || "—").replace(/USDT$/, "");
+      const setup = document.createElement("small");
+      setup.textContent = candidate.setupName || candidate.structureLabel || "結構觀察中";
+      const score = document.createElement("span");
+      score.textContent = `OX ${candidate.oxScore ?? "—"}`;
+      const change = document.createElement("em");
+      const move = num(candidate.change24h);
+      change.className = move >= 0 ? "positive" : "negative";
+      change.textContent = fmtPct(candidate.change24h);
+      row.append(symbol, setup, score, change);
+      list.append(row);
+    }
+  }
 
   setText("home-radar-t1", (state.tierMap.t1 || []).length);
   setText("home-radar-t2", (state.tierMap.t2 || []).length);
@@ -234,7 +268,7 @@ const systemThemeQuery = window.matchMedia("(prefers-color-scheme: light)");
 
 function getSavedThemeMode() {
   const saved = localStorage.getItem("ox-ui-theme");
-  return ["dark", "light", "system"].includes(saved) ? saved : "system";
+  return ["dark", "light", "system"].includes(saved) ? saved : "dark";
 }
 
 function applyTheme(themeMode = "system") {

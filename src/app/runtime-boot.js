@@ -3,8 +3,7 @@ syncKeyLevelVisibilityUI();
 keyLevelVisibilityToggle?.addEventListener("change", e => setKeyLevelsVisible(e.target.checked));
 
 window.addEventListener("DOMContentLoaded", () => {
-  // A fresh visit always opens in the dark Crypto Radar; theme can still be changed in-session.
-  localStorage.setItem("ox-ui-theme", "dark");
+  // Start at the market cover; a saved light-theme choice remains available.
   const unlockAudioFromGesture = async () => {
     const ok = await primeAlertAudio(true);
     if (ok) {
@@ -27,7 +26,7 @@ window.addEventListener("DOMContentLoaded", () => {
   setKeyLevelsVisible(false, { persist: true });
   initChart();
   applyTheme(getSavedThemeMode());
-  switchAppView("radar");
+  switchAppView("home");
   if (state.activeMarket === "crypto") {
     loadSymbolCandles(true);
     refreshMarketTickers();
