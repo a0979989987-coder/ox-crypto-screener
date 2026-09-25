@@ -1814,6 +1814,11 @@ body.theme-light
     touchId =
       touch.identifier;
 
+    // Keep document scrolling compositor-driven until a Radar gesture begins.
+    document.addEventListener('touchmove', onTouchMove, { passive: false, capture: true });
+    document.addEventListener('touchend', onTouchEnd, { passive: false, capture: true });
+    document.addEventListener('touchcancel', onTouchCancel, { passive: true, capture: true });
+
     beginGesture(
       touch.clientX,
       touch.clientY
@@ -1869,7 +1874,7 @@ body.theme-light
      * Prevent Safari synthetic click / zoom.
      */
     if (
-      event.cancelable
+      event.cancelable && !moved
     ) {
       event.preventDefault();
     }
@@ -1879,6 +1884,8 @@ body.theme-light
 
     touchId =
       null;
+
+    releaseTouchListeners();
 
     finishGesture(
       touch.clientX,
@@ -1899,7 +1906,15 @@ body.theme-light
     touchId =
       null;
 
+    releaseTouchListeners();
+
     cancelGesture();
+  }
+
+  function releaseTouchListeners() {
+    document.removeEventListener('touchmove', onTouchMove, true);
+    document.removeEventListener('touchend', onTouchEnd, true);
+    document.removeEventListener('touchcancel', onTouchCancel, true);
   }
 
   /* =========================================================
@@ -2027,6 +2042,11 @@ body.theme-light
      ========================================================= */
 
   function cancelGesture() {
+    if (touchActive) {
+      touchActive = false;
+      touchId = null;
+      releaseTouchListeners();
+    }
     clearTimeout(
       holdTimer
     );
@@ -2094,33 +2114,6 @@ body.theme-light
       onTouchStart,
       {
         passive: true
-      }
-    );
-
-    document.addEventListener(
-      "touchmove",
-      onTouchMove,
-      {
-        passive: false,
-        capture: true
-      }
-    );
-
-    document.addEventListener(
-      "touchend",
-      onTouchEnd,
-      {
-        passive: false,
-        capture: true
-      }
-    );
-
-    document.addEventListener(
-      "touchcancel",
-      onTouchCancel,
-      {
-        passive: false,
-        capture: true
       }
     );
 
