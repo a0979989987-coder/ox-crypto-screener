@@ -28,6 +28,8 @@ test('leaving news for settings restores market navigation and supports history'
     fetch: async () => ({ ok: true, json: async () => ({ schemaVersion: 1, news: [], events: [] }) })
   });
   vm.runInContext(await readFile(new URL('../src/components/news/center.js', import.meta.url), 'utf8'), context);
+  assert.equal(window.OXNews.unlockCountdown({ status: 'date-only', date: '2026-10-12' }, new Date('2026-09-25T02:00:00Z')), '距官方預估日期 17 天・時間待公布');
+  assert.equal(window.OXNews.unlockCountdown({ status: 'confirmed', occursAt: '2026-09-26T02:00:00Z' }, new Date('2026-09-25T02:00:00Z')), '倒數 1 天 00:00:00');
   window.OXNews.open();
   await window.OXNews.refresh();
   const newsEntry = entries.at(-1).state;
