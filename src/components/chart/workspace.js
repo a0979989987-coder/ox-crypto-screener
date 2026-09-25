@@ -157,7 +157,10 @@ function initChart() {
       fixRightEdge: false,
       lockVisibleTimeRangeOnResize: true
     },
-    crosshair: { mode: LightweightCharts.CrosshairMode.Normal }
+    crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
+    // Vertical swipes over the large mobile chart should move the page.
+    // Horizontal drags still pan candles and pinch zoom remains available.
+    handleScroll: { mouseWheel: true, pressedMouseMove: true, horzTouchDrag: true, vertTouchDrag: false }
   });
 
   // Mobile only: keep price-axis text compact so the chart has more usable candle space.
@@ -415,5 +418,4 @@ function updatePriceTimer() {
     timerEl.style.top = `${Math.max(16, Math.min(document.getElementById("chart").clientHeight - 24, y))}px`;
   }
 }
-
 
