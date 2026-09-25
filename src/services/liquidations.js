@@ -339,7 +339,6 @@ document.addEventListener("click", e => {
   if (tfBtn && tfBtn.dataset.tf) {
     state.period = tfBtn.dataset.tf;
     document.querySelectorAll(".btn-tf").forEach(b => b.classList.toggle("active", b === tfBtn));
-    document.getElementById("tf-pill").textContent = `${tfBtn.textContent} ${tfBtn.dataset.tf.includes('D') ? '日線' : tfBtn.dataset.tf.includes('W') ? '週線' : ''}`;
     state.currentLevels = { high: 0, low: 0, sourcePeriod: getKeyLevelPeriod(), highTime: 0, lowTime: 0 };
     state.secondaryLevels = null;
     updateAlertButtons();
