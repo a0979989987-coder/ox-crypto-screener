@@ -7,7 +7,7 @@ const errors = [];
 
 const localRefs = [...html.matchAll(/(?:src|href)="(src\/[^"]+)"/g)].map(match => match[1]);
 for (const ref of localRefs) {
-  if (!existsSync(resolve(root, ref))) errors.push(`Missing local asset: ${ref}`);
+  if (!existsSync(resolve(root, ref.split('?')[0]))) errors.push(`Missing local asset: ${ref}`);
 }
 
 const ids = [...html.matchAll(/\sid="([^"]+)"/g)].map(match => match[1]);
