@@ -1,6 +1,9 @@
 (() => {
   'use strict';
   const MARKET_NAMES = { crypto: '加密', us: '美股', tw: '台股', forex: '外匯' };
+  const SOURCE_NAMES = { fed: '美國聯準會', 'bls-cpi': '美國勞工統計局・物價', 'bls-jobs': '美國勞工統計局・就業', 'bls-calendar': '美國勞工統計局・行事曆', ecb: '歐洲央行', sec: '美國證券交易委員會', ethereum: '以太坊基金會' };
+  const sourceName = item => SOURCE_NAMES[item.sourceId || item.id] || '官方來源';
+  const titleName = item => item.titleZh || '官方消息（繁體中文翻譯待補）';
   const TABS = { overview: '總覽', latest: '快訊', calendar: '行事曆', moves: '異動', following: '追蹤' };
   const SAVED_KEY = 'ox-news-preferences-v1';
   const state = { snapshot: null, lastError: null, pending: null, tab: 'overview', previous: null, request: 0, optionsOpen: false, marketFilter: '', sourceFilter: '', unreadOnly: false };
@@ -50,11 +53,11 @@
     const article = el('article', 'ox-news-card');
     const prefs = store();
     const meta = el('div', 'ox-news-meta');
-    meta.append(el('span', 'ox-news-source', item.source), el('time', '', fmt(item.occursAt || item.publishedAt)));
+    meta.append(el('span', 'ox-news-source', sourceName(item)), el('time', '', fmt(item.occursAt || item.publishedAt)));
     const stars = score(item);
     meta.append(el('span', stars ? 'ox-news-impact' : 'ox-news-unrated', stars ? `${'★'.repeat(stars)}${'☆'.repeat(5-stars)}` : '待評估'));
-    article.append(meta, el('h3', '', item.title));
-    const detail = el('p', 'ox-news-detail', `${(item.markets || []).map(m => MARKET_NAMES[m]).filter(Boolean).join(' · ')} · ${item.kind === 'event' ? '官方預定時間' : '官方來源原文'}`);
+    article.append(meta, el('h3', '', titleName(item)));
+    const detail = el('p', 'ox-news-detail', `${(item.markets || []).map(m => MARKET_NAMES[m]).filter(Boolean).join(' · ')} · ${item.kind === 'event' ? '官方預定時間' : '官方標題繁體中文翻譯'}`);
     article.append(detail);
     if (state.snapshot?.sources?.some(source => source.id === item.sourceId && source.status === 'error') || (item.sourceId === 'bls-calendar' && state.snapshot?.sources?.some(source => source.id === 'bls-calendar' && source.status === 'error')))
       article.append(el('p', 'ox-news-status', '來源更新失敗 · 保留前次快照'));
@@ -62,7 +65,7 @@
     article.append(reason);
     const actions = el('div', 'ox-news-actions');
     const link = el('a', '', '查看來源 ↗'); link.href = item.link; link.target = '_blank'; link.rel = 'noopener noreferrer'; actions.append(link);
-    const hide = el('button', '', '隱藏'); hide.type = 'button'; hide.setAttribute('aria-label', `隱藏：${item.title}`);
+    const hide = el('button', '', '隱藏'); hide.type = 'button'; hide.setAttribute('aria-label', `隱藏：${titleName(item)}`);
     hide.addEventListener('click', () => { save({ hidden: [...new Set([...(store().hidden || []), item.id])] }); render(); });
     actions.append(hide);
     const read = el('button', '', (prefs.read || []).includes(item.id) ? '標為未讀' : '標為已讀'); read.type = 'button';
@@ -102,7 +105,7 @@
       market.value = state.marketFilter; market.addEventListener('change', () => { state.marketFilter = market.value; render(); }); panel.append(market);
     }
     const source = el('select'); source.setAttribute('aria-label', '篩選來源');
-    for (const [value, label] of [['', '全部來源'], ...[...new Map([...(state.snapshot?.news || []), ...(state.snapshot?.events || [])].map(item => [item.sourceId, [item.sourceId, item.source]])).values()]]) { const o = el('option', '', label); o.value = value; source.append(o); }
+    for (const [value, label] of [['', '全部來源'], ...[...new Map([...(state.snapshot?.news || []), ...(state.snapshot?.events || [])].map(item => [item.sourceId, [item.sourceId, sourceName(item)]])).values()]]) { const o = el('option', '', label); o.value = value; source.append(o); }
     source.value = state.sourceFilter; source.addEventListener('change', () => { state.sourceFilter = source.value; render(); }); panel.append(source);
     const unread = el('button', '', state.unreadOnly ? '僅未讀 ✓' : '全部閱讀狀態'); unread.type = 'button'; unread.setAttribute('aria-pressed', String(state.unreadOnly));
     unread.addEventListener('click', () => { state.unreadOnly = !state.unreadOnly; render(); }); panel.append(unread);
@@ -122,7 +125,7 @@
     const snapshot = state.snapshot;
     const status = el('p', 'ox-news-status');
     if (state.pending && !snapshot) status.textContent = '讀取官方新聞快照中…';
-    else if (state.lastError) status.textContent = snapshot ? `資料更新失敗，保留前次資料 · ${state.lastError.message}` : `新聞目前無法讀取 · ${state.lastError.message}`;
+    else if (state.lastError) status.textContent = snapshot ? '資料更新失敗，保留前次資料' : '新聞目前無法讀取，請稍後重試';
     else if (snapshot) status.textContent = `資料快照：${fmt(snapshot.generatedAt)} · 目前需手動產生新版快照，並非即時新聞`;
     else status.textContent = '等待新聞資料';
     surface.append(status);
@@ -143,7 +146,7 @@
     } else if (tab === 'calendar') add('事件行事曆', filtered('event', market), 60);
     else if (tab === 'following') add('追蹤來源', filtered('news', market, true), 60);
     else add('最新快訊', filtered('news', market), 60);
-    if (snapshot.sources?.some(source => source.status === 'error')) surface.append(el('p', 'ox-news-status', `部分來源暫不可用：${snapshot.sources.filter(source => source.status === 'error').map(source => source.id).join('、')}`));
+    if (snapshot.sources?.some(source => source.status === 'error')) surface.append(el('p', 'ox-news-status', `部分來源暫不可用：${snapshot.sources.filter(source => source.status === 'error').map(source => sourceName(source)).join('、')}`));
   }
 
   function render() {
