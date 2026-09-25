@@ -162,7 +162,7 @@
     const status = el('p', 'ox-news-status');
     if (state.pending && !snapshot) status.textContent = '讀取官方新聞快照中…';
     else if (state.lastError) status.textContent = snapshot ? '資料更新失敗，保留前次資料' : '新聞目前無法讀取，請稍後重試';
-    else if (snapshot) status.textContent = `資料快照：${fmt(snapshot.generatedAt)} · 目前需手動產生新版快照，並非即時新聞`;
+    else if (snapshot) status.textContent = `資料快照：${fmt(snapshot.generatedAt)} · 定時收集的官方來源，非即時新聞`;
     else status.textContent = '等待新聞資料';
     surface.append(status);
     if (!snapshot) return;
