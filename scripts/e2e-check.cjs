@@ -175,7 +175,7 @@ async function cssAudit(page, audit) {
     sheets: [...document.styleSheets].map(sheet => ({ href: sheet.href ? new URL(sheet.href).pathname.slice(1) : null, rules: (() => { try { return sheet.cssRules.length; } catch { return -1; } })() }))
   }));
   assert(JSON.stringify(result.hrefs) === JSON.stringify(expectedCss), "CSS link order differs from RC2 definition");
-  assert(classifiedCss.length === 30, `Expected 30 classified CSS modules, found ${classifiedCss.length}`);
+  assert(classifiedCss.length === 31, `Expected 31 classified CSS modules, found ${classifiedCss.length}`);
   for (const path of expectedCss) {
     assert(audit.cssResponses.get(path) === 200, `CSS did not return HTTP 200: ${path}`);
     const sheet = result.sheets.find(row => row.href === path);

@@ -31,7 +31,8 @@
     hitSlopTop: 36,
     hitSlopBottom: 62,
     armDistance: 24,
-    closeMs: 170
+    closeMs: 170,
+    postReleaseHoldMs: 3000
   };
 
   const MARKETS = [
@@ -50,11 +51,15 @@
     {
       id: "forex",
       label: "外匯"
+    },
+    {
+      id: "news",
+      label: "新聞"
     }
   ];
 
   const IDS =
-    MARKETS.map(
+    MARKETS.filter(item => item.id !== 'news').map(
       item => item.id
     );
 
@@ -72,6 +77,15 @@
 
   let holdTimer = null;
   let closeTimer = null;
+  let postReleaseTimer = null;
+  let pointerHover = false;
+
+  function pauseAutoClose() { clearTimeout(postReleaseTimer); postReleaseTimer = null; }
+  function scheduleAutoClose() {
+    pauseAutoClose();
+    if (holding || pointerHover || menu?.contains(document.activeElement)) return;
+    postReleaseTimer = setTimeout(() => closeMenu(), CFG.postReleaseHoldMs);
+  }
 
   let holding = false;
   let moved = false;
@@ -466,7 +480,7 @@
 
   grid-template-columns:
     repeat(
-      4,
+      5,
       minmax(0,1fr)
     );
 
@@ -991,6 +1005,29 @@ body.theme-light
       menu
     );
 
+    menu.addEventListener('pointerenter', event => {
+      pointerHover = event.pointerType === 'mouse';
+      if (pointerHover) pauseAutoClose();
+    });
+    menu.addEventListener('pointerleave', () => { pointerHover = false; scheduleAutoClose(); });
+    menu.addEventListener('focusin', pauseAutoClose);
+    menu.addEventListener('focusout', event => {
+      if (!menu.contains(event.relatedTarget)) scheduleAutoClose();
+    });
+    menu.addEventListener('pointerdown', pauseAutoClose);
+    menu.addEventListener('pointerup', event => {
+      if (!event.target.closest('.ox-mqs-item')) scheduleAutoClose();
+    });
+    menu.addEventListener('keydown', event => {
+      const buttons = [...menu.querySelectorAll('.ox-mqs-item')];
+      const index = buttons.indexOf(document.activeElement);
+      if (event.key === 'Escape') { event.preventDefault(); closeMenu(); radar.focus(); }
+      if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+        event.preventDefault();
+        buttons[(index + (event.key === 'ArrowRight' ? 1 : -1) + buttons.length) % buttons.length].focus();
+      }
+    });
+
     /*
      * Direct click fallback.
      */
@@ -1101,7 +1138,7 @@ body.theme-light
 
   function setSelected(id) {
     const next =
-      valid(id)
+      (valid(id) || id === 'news')
         ? id
         : null;
 
@@ -1217,6 +1254,7 @@ body.theme-light
      ========================================================= */
 
   function openMenu() {
+    pauseAutoClose();
     clearTimeout(
       closeTimer
     );
@@ -1291,6 +1329,7 @@ body.theme-light
     clearTimeout(
       closeTimer
     );
+    pauseAutoClose();
 
     holdTimer =
       null;
@@ -1373,6 +1412,10 @@ body.theme-light
      ========================================================= */
 
   function switchMarket(id) {
+    if (id === 'news') {
+      window.OXNews?.open();
+      return true;
+    }
     if (
       !valid(id)
     ) {
@@ -1695,7 +1738,14 @@ body.theme-light
         );
       }
 
-      closeMenu();
+      if (selectionArmed && choice) closeMenu();
+      else {
+        holding = false;
+        selectionArmed = false;
+        setSelected(null);
+        document.body.classList.remove('ox-mqs-dragging');
+        scheduleAutoClose();
+      }
 
       return;
     }
@@ -2173,6 +2223,9 @@ body.theme-light
           event.preventDefault();
 
           openMenu();
+          holding = false;
+          document.body.classList.remove('ox-mqs-dragging');
+          menu.querySelector('.ox-mqs-item')?.focus();
 
         }
 
@@ -2187,6 +2240,10 @@ body.theme-light
 
       }
     );
+
+    document.addEventListener('pointerdown', event => {
+      if (menu?.classList.contains('is-open') && !menu.contains(event.target) && !radar.contains(event.target)) closeMenu();
+    });
 
     /*
      * =======================================================

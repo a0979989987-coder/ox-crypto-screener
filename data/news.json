@@ -1,0 +1,3472 @@
+{
+  "schemaVersion": 1,
+  "news": [
+    {
+      "id": "84ed44c515adc73b974a",
+      "title": "ECB Executive Board member Isabel Schnabel to resign to take senior role at IMF",
+      "link": "https://www.ecb.europa.eu//press/pr/date/2026/html/ecb.pr260924~bea1dd9824.en.html",
+      "publishedAt": "2026-09-24T12:00:00.000Z",
+      "source": "European Central Bank",
+      "sourceId": "ecb",
+      "markets": [
+        "forex",
+        "us"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "ecb"
+      },
+      "titleZh": "歐洲央行執行委員施納貝爾將辭職，轉任國際貨幣基金組織高階職務",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "059a1723ec41ace80fd5",
+      "title": "Philip R. Lane: The outlook for the euro area economy",
+      "link": "https://www.ecb.europa.eu//press/key/date/2026/html/ecb.sp260924~e0eceef02c.en.pdf",
+      "publishedAt": "2026-09-24T09:00:00.000Z",
+      "source": "European Central Bank",
+      "sourceId": "ecb",
+      "markets": [
+        "forex",
+        "us"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "ecb"
+      },
+      "titleZh": "菲利普・連恩：歐元區經濟展望",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "08ff3726bdd2dc32af77",
+      "title": "SEC Publishes Updated Market Statistics, Highlighting Increase in IPOs and Proceeds Raised",
+      "link": "https://www.sec.gov/newsroom/press-releases/2026-93-sec-publishes-updated-market-statistics-highlighting-increase-ipos-proceeds-raised",
+      "publishedAt": "2026-09-23T18:27:00.000Z",
+      "source": "U.S. SEC",
+      "sourceId": "sec",
+      "markets": [
+        "us"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "sec"
+      },
+      "titleZh": "美國證管會公布最新市場統計：首次公開募股數量與募資額增加",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "644a3acf377cbf555989",
+      "title": "Philip R. Lane: The Outlook for the Euro Area Economy",
+      "link": "https://www.ecb.europa.eu//press/key/date/2026/html/ecb.sp260923_1~ac21bf46e3.en.pdf",
+      "publishedAt": "2026-09-23T16:30:00.000Z",
+      "source": "European Central Bank",
+      "sourceId": "ecb",
+      "markets": [
+        "forex",
+        "us"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "ecb"
+      },
+      "titleZh": "菲利普・連恩：歐元區經濟展望",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "160b7321e871c39236d8",
+      "title": "The digitalisation of money, payments and finance",
+      "link": "https://www.ecb.europa.eu//press/key/date/2026/html/ecb.sp260923~87850778f5.en.pdf",
+      "publishedAt": "2026-09-23T16:00:00.000Z",
+      "source": "European Central Bank",
+      "sourceId": "ecb",
+      "markets": [
+        "forex",
+        "us"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "ecb"
+      },
+      "titleZh": "貨幣、支付與金融的數位化",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "7e5fe3784030dac86bf9",
+      "title": "SEC Charges South Florida Resident and His Company for Alleged Investment Scheme Defrauding Law Enforcement",
+      "link": "https://www.sec.gov/newsroom/press-releases/2026-92-sec-charges-south-florida-resident-his-company-alleged-investment-scheme-defrauding-law-enforcement",
+      "publishedAt": "2026-09-23T16:00:00.000Z",
+      "source": "U.S. SEC",
+      "sourceId": "sec",
+      "markets": [
+        "us"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "sec"
+      },
+      "titleZh": "美國證管會指控南佛羅里達州居民及其公司涉嫌以投資計畫詐騙執法人員",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "eee1f6575cc05cc42236",
+      "title": "Almost ten million people took part in ECB survey on new euro banknotes",
+      "link": "https://www.ecb.europa.eu//press/pr/date/2026/html/ecb.pr260923~6ebddaf01e.en.html",
+      "publishedAt": "2026-09-23T09:00:00.000Z",
+      "source": "European Central Bank",
+      "sourceId": "ecb",
+      "markets": [
+        "forex",
+        "us"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "ecb"
+      },
+      "titleZh": "近千萬人參與歐洲央行新版歐元紙鈔調查",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "03054a2bd2cb78b41c77",
+      "title": "SEC Censures OTC Link LLC for Repeated Compliance Failures Related to Regulation SCI",
+      "link": "https://www.sec.gov/newsroom/press-releases/2026-91-sec-censures-otc-link-llc-repeated-compliance-failures-related-regulation-sci",
+      "publishedAt": "2026-09-22T16:41:11.000Z",
+      "source": "U.S. SEC",
+      "sourceId": "sec",
+      "markets": [
+        "us"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "sec"
+      },
+      "titleZh": "美國證管會譴責 OTC Link 公司多次違反系統合規與完整性規範",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "90c1ae71a19fb7409882",
+      "title": "Philip R. Lane: Interview with Le Temps",
+      "link": "https://www.ecb.europa.eu//press/inter/date/2026/html/ecb.in260922~5f89d300ee.en.html",
+      "publishedAt": "2026-09-22T05:00:00.000Z",
+      "source": "European Central Bank",
+      "sourceId": "ecb",
+      "markets": [
+        "forex",
+        "us"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "ecb"
+      },
+      "titleZh": "菲利普・連恩接受《時報》專訪",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "3be66ef6857dee63934e",
+      "title": "ECB to invest part of own funds in tokenised securities, with settlement via Pontes",
+      "link": "https://www.ecb.europa.eu//press/pr/date/2026/html/ecb.pr260921_1~5a011ecbea.en.html",
+      "publishedAt": "2026-09-21T10:00:00.000Z",
+      "source": "European Central Bank",
+      "sourceId": "ecb",
+      "markets": [
+        "forex",
+        "us"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "ecb"
+      },
+      "titleZh": "歐洲央行將把部分自有資金投入代幣化證券，透過 Pontes 系統結算",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "207cee2512b633f98b08",
+      "title": "Eurosystem brings central bank money to tokenised finance",
+      "link": "https://www.ecb.europa.eu//press/pr/date/2026/html/ecb.pr260921~e754847a7b.en.html",
+      "publishedAt": "2026-09-21T10:00:00.000Z",
+      "source": "European Central Bank",
+      "sourceId": "ecb",
+      "markets": [
+        "forex",
+        "us"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "ecb"
+      },
+      "titleZh": "歐元體系將央行貨幣引入代幣化金融",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "3df465f80a9c26c2410d",
+      "title": "ECB Consumer Expectations Survey results – August 2026",
+      "link": "https://www.ecb.europa.eu//press/pr/date/2026/html/ecb.pr260918~295b3ab978.en.html",
+      "publishedAt": "2026-09-18T08:00:00.000Z",
+      "source": "European Central Bank",
+      "sourceId": "ecb",
+      "markets": [
+        "forex",
+        "us"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "ecb"
+      },
+      "titleZh": "歐洲央行消費者預期調查：2026 年 8 月結果",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "dd37e15d5254d8e21def",
+      "title": "Boris Vujčić: Interview with Reuters",
+      "link": "https://www.ecb.europa.eu//press/inter/date/2026/html/ecb.in260918~33f023fe26.en.html",
+      "publishedAt": "2026-09-18T06:00:00.000Z",
+      "source": "European Central Bank",
+      "sourceId": "ecb",
+      "markets": [
+        "forex",
+        "us"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "ecb"
+      },
+      "titleZh": "鮑里斯・武伊契奇接受路透社專訪",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "3fbb0119863357882524",
+      "title": "SEC Issues “Innovation Exemption” to Facilitate the Trading of Tokenized NMS Stock and Request for Comment",
+      "link": "https://www.sec.gov/newsroom/press-releases/2026-90-sec-issues-innovation-exemption-facilitate-trading-tokenized-nms-stock-request-comment",
+      "publishedAt": "2026-09-17T12:55:00.000Z",
+      "source": "U.S. SEC",
+      "sourceId": "sec",
+      "markets": [
+        "us"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "sec"
+      },
+      "titleZh": "美國證管會發布「創新豁免」，促進代幣化全國市場系統股票交易並徵詢意見",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "da3bcbb85f4595d6b859",
+      "title": "Federal Reserve issues FOMC statement",
+      "link": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260916a.htm",
+      "publishedAt": "2026-09-16T18:00:00.000Z",
+      "source": "Federal Reserve",
+      "sourceId": "fed",
+      "markets": [
+        "us",
+        "forex",
+        "crypto",
+        "tw"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "fed"
+      },
+      "titleZh": "美國聯準會發布聯邦公開市場委員會聲明",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "7400cab4847e7a3384d1",
+      "title": "Federal Reserve Board and Federal Open Market Committee release economic projections from the September 15-16 FOMC meeting",
+      "link": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260916b.htm",
+      "publishedAt": "2026-09-16T18:00:00.000Z",
+      "source": "Federal Reserve",
+      "sourceId": "fed",
+      "markets": [
+        "us",
+        "forex",
+        "crypto",
+        "tw"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "fed"
+      },
+      "titleZh": "美國聯準會公布 9 月 15 至 16 日政策會議經濟預測",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "74bc20501745ffbed39f",
+      "title": "SEC Proposes Rescission of Shareholder Proposal Rule and Reforms to Proxy Solicitation Process",
+      "link": "https://www.sec.gov/newsroom/press-releases/2026-89-sec-proposes-rescission-shareholder-proposal-rule-reforms-proxy-solicitation-process",
+      "publishedAt": "2026-09-16T14:00:00.000Z",
+      "source": "U.S. SEC",
+      "sourceId": "sec",
+      "markets": [
+        "us"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "sec"
+      },
+      "titleZh": "美國證管會提議廢除股東提案規則並改革委託書徵求程序",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "32d3cbc35db37bca19fe",
+      "title": "ECB wage tracker at 2.7% in H1 2027, pointing to a modest uptick in negotiated wage growth",
+      "link": "https://www.ecb.europa.eu//press/pr/date/2026/html/ecb.pr260916~7bc58ebef4.en.html",
+      "publishedAt": "2026-09-16T08:00:00.000Z",
+      "source": "European Central Bank",
+      "sourceId": "ecb",
+      "markets": [
+        "forex",
+        "us"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "ecb"
+      },
+      "titleZh": "歐洲央行薪資追蹤指標：2027 年上半年為 2.7%，協商薪資成長略有回升",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "fe38980a962e16d6f926",
+      "title": "SEC Grants Exemptive Relief from Certain Inline XBRL Filing or Submission Requirements",
+      "link": "https://www.sec.gov/newsroom/press-releases/2026-88-sec-grants-exemptive-relief-certain-inline-xbrl-filing-or-submission-requirements",
+      "publishedAt": "2026-09-14T16:47:00.000Z",
+      "source": "U.S. SEC",
+      "sourceId": "sec",
+      "markets": [
+        "us"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "sec"
+      },
+      "titleZh": "美國證管會豁免部分內嵌式可延伸商業報導語言申報或提交要求",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "86b43637921b32c4422e",
+      "title": "Christine Lagarde: A new age of capital: growth, sovereignty and AI",
+      "link": "https://www.ecb.europa.eu//press/key/date/2026/html/ecb.sp260914_2~a3f0efbee4.en.html",
+      "publishedAt": "2026-09-14T15:15:00.000Z",
+      "source": "European Central Bank",
+      "sourceId": "ecb",
+      "markets": [
+        "forex",
+        "us"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "ecb"
+      },
+      "titleZh": "克莉絲汀・拉加德：資本新時代——成長、主權與人工智慧",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "42d5e29366054486d1af",
+      "title": "Piero Cipollone: The future of euro cash: trusted today, designed for tomorrow",
+      "link": "https://www.ecb.europa.eu//press/key/date/2026/html/ecb.sp260914_1~91d3436449.en.html",
+      "publishedAt": "2026-09-14T13:00:00.000Z",
+      "source": "European Central Bank",
+      "sourceId": "ecb",
+      "markets": [
+        "forex",
+        "us"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "ecb"
+      },
+      "titleZh": "皮耶羅・奇波洛內：歐元現金的未來——今日的信任，明日的設計",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "03676dec5d3fc835e6a8",
+      "title": "Isabel Schnabel: Macroeconomic, fiscal and financial stability in a shock-prone world",
+      "link": "https://www.ecb.europa.eu//press/key/date/2026/html/ecb.sp260914~0ffd556bc8.en.pdf",
+      "publishedAt": "2026-09-14T09:15:00.000Z",
+      "source": "European Central Bank",
+      "sourceId": "ecb",
+      "markets": [
+        "forex",
+        "us"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "ecb"
+      },
+      "titleZh": "伊莎貝爾・施納貝爾：衝擊頻仍世界中的總體經濟、財政與金融穩定",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "44be4f6a261f5c1d4596",
+      "title": "Christine Lagarde: Interview with Ouest-France",
+      "link": "https://www.ecb.europa.eu//press/inter/date/2026/html/ecb.in260912~3cc706f4d6.en.html",
+      "publishedAt": "2026-09-12T20:00:00.000Z",
+      "source": "European Central Bank",
+      "sourceId": "ecb",
+      "markets": [
+        "forex",
+        "us"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "ecb"
+      },
+      "titleZh": "克莉絲汀・拉加德接受《法國西部報》專訪",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "9ea8a473b0a7787951ca",
+      "title": "Joint Readout of Principals’ Meeting of U.S. and UK Authorities Regarding Central Counterparty Resolution",
+      "link": "https://www.sec.gov/newsroom/press-releases/2026-87-joint-readout-principals-meeting-us-uk-authorities-regarding-central-counterparty-resolution",
+      "publishedAt": "2026-09-11T15:00:00.000Z",
+      "source": "U.S. SEC",
+      "sourceId": "sec",
+      "markets": [
+        "us"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "sec"
+      },
+      "titleZh": "美英主管機關就中央交易對手處置舉行首長會議並發布聯合摘要",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "18d8a9d8da71888c9bf7",
+      "title": "CPI for all items increases 0.4% in August; gasoline rises",
+      "link": "https://www.bls.gov/news.release/archives/cpi_09112026.htm",
+      "publishedAt": "2026-09-11T11:50:40.968Z",
+      "source": "U.S. BLS · CPI",
+      "sourceId": "bls-cpi",
+      "markets": [
+        "us",
+        "forex",
+        "crypto",
+        "tw"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "bls-cpi"
+      },
+      "titleZh": "8 月整體消費者物價指數上升 0.4%；汽油價格上漲",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "090be0142402bc553397",
+      "title": "SEC Charges Founder and His Two New Jersey-Based Companies in Alleged $16 Million Ponzi Scheme",
+      "link": "https://www.sec.gov/newsroom/press-releases/2026-86-sec-charges-founder-his-two-new-jersey-based-companies-alleged-16-million-ponzi-scheme",
+      "publishedAt": "2026-09-10T17:45:22.000Z",
+      "source": "U.S. SEC",
+      "sourceId": "sec",
+      "markets": [
+        "us"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "sec"
+      },
+      "titleZh": "美國證管會指控創辦人及其兩家紐澤西州公司涉嫌 1,600 萬美元龐氏騙局",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "9d3ada0e5b894d5d968b",
+      "title": "Join Us: EF Protocol Reddit AMA - September 16th, 2026",
+      "link": "https://blog.ethereum.org/en/2026/09/09/reddit-ama",
+      "publishedAt": "2026-09-09T00:00:00.000Z",
+      "source": "Ethereum Foundation",
+      "sourceId": "ethereum",
+      "markets": [
+        "crypto"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "ethereum"
+      },
+      "titleZh": "以太坊基金會協定團隊將於 2026 年 9 月 16 日舉辦線上問答",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "47a6f39a69c0490ff975",
+      "title": "EF Protocol: The Hegotá EIP Opinion Post and Tier List",
+      "link": "https://blog.ethereum.org/en/2026/09/07/protocol-hegota-eips",
+      "publishedAt": "2026-09-07T00:00:00.000Z",
+      "source": "Ethereum Foundation",
+      "sourceId": "ethereum",
+      "markets": [
+        "crypto"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "ethereum"
+      },
+      "titleZh": "以太坊基金會協定團隊：Hegotá 升級提案意見與優先順序",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "967ee8436d41f8a1c8c8",
+      "title": "EF Protocol: Current and Emerging Priorities",
+      "link": "https://blog.ethereum.org/en/2026/09/07/protocol-priorities",
+      "publishedAt": "2026-09-07T00:00:00.000Z",
+      "source": "Ethereum Foundation",
+      "sourceId": "ethereum",
+      "markets": [
+        "crypto"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "ethereum"
+      },
+      "titleZh": "以太坊基金會協定團隊：目前與新興優先事項",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "3567549a5dd2bd3f8e13",
+      "title": "Payroll employment increases by 162,000 in August; unemployment rate unchanged at 4.1%",
+      "link": "https://www.bls.gov/news.release/archives/empsit_09042026.htm",
+      "publishedAt": "2026-09-04T11:51:08.695Z",
+      "source": "U.S. BLS · Employment",
+      "sourceId": "bls-jobs",
+      "markets": [
+        "us",
+        "forex",
+        "crypto",
+        "tw"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "bls-jobs"
+      },
+      "titleZh": "8 月非農就業增加 16.2 萬人；失業率維持 4.1%",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "b3dea868b7763f3a9d9c",
+      "title": "SEC Proposes Rescission of Political Contribution Rule for Investment Advisers",
+      "link": "https://www.sec.gov/newsroom/press-releases/2026-85-sec-proposes-rescission-political-contribution-rule-investment-advisers",
+      "publishedAt": "2026-09-03T20:30:00.000Z",
+      "source": "U.S. SEC",
+      "sourceId": "sec",
+      "markets": [
+        "us"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "sec"
+      },
+      "titleZh": "美國證管會提議廢除投資顧問政治獻金規則",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "39bb794b9982e6edc2bf",
+      "title": "SEC Investor Advisory Committee to Host Sept. 10 Meeting",
+      "link": "https://www.sec.gov/newsroom/press-releases/2026-84-sec-investor-advisory-committee-host-sept-10-meeting",
+      "publishedAt": "2026-09-03T14:27:49.000Z",
+      "source": "U.S. SEC",
+      "sourceId": "sec",
+      "markets": [
+        "us"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "sec"
+      },
+      "titleZh": "美國證管會投資人諮詢委員會將於 9 月 10 日開會",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "2d7e58c53f41bc217240",
+      "title": "SEC Announces Agenda and Panelists for Roundtable on Preparations for 24-Hour Trading",
+      "link": "https://www.sec.gov/newsroom/press-releases/2026-83-sec-announces-agenda-panelists-roundtable-preparations-24-hour-trading",
+      "publishedAt": "2026-09-01T19:17:39.000Z",
+      "source": "U.S. SEC",
+      "sourceId": "sec",
+      "markets": [
+        "us"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "sec"
+      },
+      "titleZh": "美國證管會公布全天候交易準備圓桌會議議程與與談人",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "fd30a06f9719b219ee07",
+      "title": "SEC Charges San Francisco Bay Area Private Fund Executives with Multimillion Dollar Ponzi-Like Scheme",
+      "link": "https://www.sec.gov/newsroom/press-releases/2026-82-sec-charges-san-francisco-bay-area-private-fund-executives-multimillion-dollar-ponzi-scheme",
+      "publishedAt": "2026-09-01T17:52:32.000Z",
+      "source": "U.S. SEC",
+      "sourceId": "sec",
+      "markets": [
+        "us"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "sec"
+      },
+      "titleZh": "美國證管會指控舊金山灣區私募基金主管涉及數百萬美元類龐氏騙局",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "b9e36e52c6bf8aa9fd72",
+      "title": "SEC Proposes to Modernize Rules for Registered Transfer Agents",
+      "link": "https://www.sec.gov/newsroom/press-releases/2026-81-sec-proposes-modernize-rules-registered-transfer-agents",
+      "publishedAt": "2026-09-01T14:57:00.000Z",
+      "source": "U.S. SEC",
+      "sourceId": "sec",
+      "markets": [
+        "us"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "sec"
+      },
+      "titleZh": "美國證管會提議更新註冊證券過戶代理人規則",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "78fa58be510538a8b13c",
+      "title": "SEC and FDA Announce MOU to Bolster Cooperation and Ensure Market Integrity",
+      "link": "https://www.sec.gov/newsroom/press-releases/2026-80-sec-fda-announce-mou-bolster-cooperation-ensure-market-integrity",
+      "publishedAt": "2026-08-31T18:24:32.000Z",
+      "source": "U.S. SEC",
+      "sourceId": "sec",
+      "markets": [
+        "us"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "sec"
+      },
+      "titleZh": "美國證管會與食品藥物管理局簽署合作備忘錄，強化合作及市場健全性",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "53fc06255428bf5d6506",
+      "title": "SEC Proposes Amendments to Exchange Act Rule 3a12-8 to Add European Union Debt Obligations",
+      "link": "https://www.sec.gov/newsroom/press-releases/2026-79-sec-proposes-amendments-exchange-act-rule-3a12-8-add-european-union-debt-obligations",
+      "publishedAt": "2026-08-28T17:33:00.000Z",
+      "source": "U.S. SEC",
+      "sourceId": "sec",
+      "markets": [
+        "us"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "sec"
+      },
+      "titleZh": "美國證管會提議修訂交易法規則，納入歐盟債務工具",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "d7f5dc9a251342a84823",
+      "title": "SEC: 38 Entities Feigned Legitimacy as U.S. Advisers Through False Filings to Lure Retail Investors",
+      "link": "https://www.sec.gov/newsroom/press-releases/2026-78-sec-38-entities-feigned-legitimacy-us-advisers-through-false-filings-lure-retail-investors",
+      "publishedAt": "2026-08-27T21:30:00.000Z",
+      "source": "U.S. SEC",
+      "sourceId": "sec",
+      "markets": [
+        "us"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "sec"
+      },
+      "titleZh": "美國證管會：38 家機構以虛假申報冒充美國投資顧問，招攬散戶",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "f48681be97f292e1b3f7",
+      "title": "Minutes of the Board&#39;s discount rate meetings on July 20 and July 29, 2026",
+      "link": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260825a.htm",
+      "publishedAt": "2026-08-25T18:00:00.000Z",
+      "source": "Federal Reserve",
+      "sourceId": "fed",
+      "markets": [
+        "us",
+        "forex",
+        "crypto",
+        "tw"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "fed"
+      },
+      "titleZh": "美國聯準會公布 2026 年 7 月 20 日及 29 日貼現率會議紀錄",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "89e8b96aea43c18e614d",
+      "title": "Glamsterdam Repricing Impact for Smart Contract Developers",
+      "link": "https://blog.ethereum.org/en/2026/08/24/glamsterdam-repricing-testing",
+      "publishedAt": "2026-08-24T00:00:00.000Z",
+      "source": "Ethereum Foundation",
+      "sourceId": "ethereum",
+      "markets": [
+        "crypto"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "ethereum"
+      },
+      "titleZh": "Glamsterdam 升級重新定價對智慧合約開發者的影響",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "16f31916a05ea3b69565",
+      "title": "Raising machine-checked security benchmarks to advance hash-based SNARKs through agentic collaboration",
+      "link": "https://blog.ethereum.org/en/2026/08/20/better-codes-challenge",
+      "publishedAt": "2026-08-20T00:00:00.000Z",
+      "source": "Ethereum Foundation",
+      "sourceId": "ethereum",
+      "markets": [
+        "crypto"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "ethereum"
+      },
+      "titleZh": "透過人工智慧代理協作，提高機器驗證安全基準，推進雜湊型精簡非互動式知識論證",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "dfdf8d18c6f010c7a318",
+      "title": "Minutes of the Federal Open Market Committee, July 28–29, 2026",
+      "link": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260819a.htm",
+      "publishedAt": "2026-08-19T18:00:00.000Z",
+      "source": "Federal Reserve",
+      "sourceId": "fed",
+      "markets": [
+        "us",
+        "forex",
+        "crypto",
+        "tw"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "fed"
+      },
+      "titleZh": "美國聯準會公布 2026 年 7 月 28 至 29 日政策會議紀錄",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "406336148014b91ebb9c",
+      "title": "SEC Charges Former Executives With Fraud in Connection With $1.9 Billion Collapse of Subprime Auto Lender Tricolor",
+      "link": "https://www.sec.gov/newsroom/press-releases/2026-77-sec-charges-former-executives-fraud-connection-19-billion-collapse-subprime-auto-lender-tricolor",
+      "publishedAt": "2026-08-18T19:55:10.000Z",
+      "source": "U.S. SEC",
+      "sourceId": "sec",
+      "markets": [
+        "us"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "sec"
+      },
+      "titleZh": "美國證管會指控前主管詐欺，涉及次級汽車貸款業者 Tricolor 的 19 億美元倒閉案",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "7e5c95757102f19f017c",
+      "title": "SEC Proposes New Regulation Crypto Assets",
+      "link": "https://www.sec.gov/newsroom/press-releases/2026-76-sec-proposes-new-regulation-crypto-assets",
+      "publishedAt": "2026-08-18T17:15:48.000Z",
+      "source": "U.S. SEC",
+      "sourceId": "sec",
+      "markets": [
+        "us",
+        "crypto"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "sec"
+      },
+      "titleZh": "美國證管會提議制定新的加密資產監管規則",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "1b2a5eb57d534653afd5",
+      "title": "Allocation Update - Q2 2026",
+      "link": "https://blog.ethereum.org/en/2026/08/18/allocation-q2-26",
+      "publishedAt": "2026-08-18T00:00:00.000Z",
+      "source": "Ethereum Foundation",
+      "sourceId": "ethereum",
+      "markets": [
+        "crypto"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "ethereum"
+      },
+      "titleZh": "以太坊基金會資助配置更新：2026 年第 2 季",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "f75fbb25a9ffd601c259",
+      "title": "Announcing the Platåberget Testnet",
+      "link": "https://blog.ethereum.org/en/2026/08/17/plataberget-testnet",
+      "publishedAt": "2026-08-17T00:00:00.000Z",
+      "source": "Ethereum Foundation",
+      "sourceId": "ethereum",
+      "markets": [
+        "crypto"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "ethereum"
+      },
+      "titleZh": "以太坊宣布推出 Platåberget 測試網",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "9a2c3554bf239005ba19",
+      "title": "SEC Charges Boiler Room Operator and Three Entities with Defrauding Retail Investors in $74 Million Pre-IPO Investment Scam",
+      "link": "https://www.sec.gov/newsroom/press-releases/2026-75-sec-charges-boiler-room-operator-three-entities-defrauding-retail-investors-74-million-pre-ipo",
+      "publishedAt": "2026-08-14T20:16:34.000Z",
+      "source": "U.S. SEC",
+      "sourceId": "sec",
+      "markets": [
+        "us"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "sec"
+      },
+      "titleZh": "美國證管會指控高壓推銷業者及三家機構，以 7,400 萬美元上市前投資騙局詐騙散戶",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "fa4e9cecec3e8d7dcc82",
+      "title": "SEC Charges Toms River Trio in Connection with Alleged $47 Million Fraud Targeting Orthodox Jewish Communities",
+      "link": "https://www.sec.gov/newsroom/press-releases/2026-74-sec-charges-toms-river-trio-connection-alleged-47-million-fraud-targeting-orthodox-jewish",
+      "publishedAt": "2026-08-13T20:32:19.000Z",
+      "source": "U.S. SEC",
+      "sourceId": "sec",
+      "markets": [
+        "us"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "sec"
+      },
+      "titleZh": "美國證管會指控湯姆斯河三人涉嫌以 4,700 萬美元騙局鎖定正統猶太社群",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "dc91b81ebe98c431bc5d",
+      "title": "CPI for all items increases 0.1% in July; shelter rises",
+      "link": "https://www.bls.gov/news.release/archives/cpi_08122026.htm",
+      "publishedAt": "2026-08-12T11:51:16.210Z",
+      "source": "U.S. BLS · CPI",
+      "sourceId": "bls-cpi",
+      "markets": [
+        "us",
+        "forex",
+        "crypto",
+        "tw"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "bls-cpi"
+      },
+      "titleZh": "7 月整體消費者物價指數上升 0.1%；居住成本上漲",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "607891ddb7eae21c74cd",
+      "title": "SEC Charges Private Fund Adviser Adit Ventures Management, Its CEO and Affiliated General Partners in Alleged Fraud",
+      "link": "https://www.sec.gov/newsroom/press-releases/2026-73-sec-charges-private-fund-adviser-adit-ventures-management-its-ceo-affiliated-general-partners",
+      "publishedAt": "2026-08-10T18:00:00.000Z",
+      "source": "U.S. SEC",
+      "sourceId": "sec",
+      "markets": [
+        "us"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "sec"
+      },
+      "titleZh": "美國證管會指控私募基金顧問 Adit Ventures Management、其執行長及關係普通合夥人涉嫌詐欺",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "f326a283a45d18b3b4d6",
+      "title": "Both payroll employment (-23,000) and unemployment rate (4.1%) change little in July",
+      "link": "https://www.bls.gov/news.release/archives/empsit_08072026.htm",
+      "publishedAt": "2026-08-07T11:50:34.021Z",
+      "source": "U.S. BLS · Employment",
+      "sourceId": "bls-jobs",
+      "markets": [
+        "us",
+        "forex",
+        "crypto",
+        "tw"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "bls-jobs"
+      },
+      "titleZh": "7 月非農就業減少 2.3 萬人，失業率為 4.1%；兩者變動不大",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "1c9e1bbeb9e7eb51909f",
+      "title": "SEC Establishes Financial Reporting and Accounting Unit in Enforcement Division",
+      "link": "https://www.sec.gov/newsroom/press-releases/2026-72-sec-establishes-financial-reporting-accounting-unit-enforcement-division",
+      "publishedAt": "2026-08-05T18:30:00.000Z",
+      "source": "U.S. SEC",
+      "sourceId": "sec",
+      "markets": [
+        "us"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "sec"
+      },
+      "titleZh": "美國證管會在執法部門成立財務報導與會計小組",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "bf6945162d68dc5a1887",
+      "title": "Announcing a Trillion Dollar Security grant for WEBCAT",
+      "link": "https://blog.ethereum.org/en/2026/08/05/1ts-grant",
+      "publishedAt": "2026-08-05T00:00:00.000Z",
+      "source": "Ethereum Foundation",
+      "sourceId": "ethereum",
+      "markets": [
+        "crypto"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "ethereum"
+      },
+      "titleZh": "以太坊「兆美元安全」計畫宣布提供 WEBCAT 專案補助",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "b49643d97ea1e3486909",
+      "title": "SEC Announces Continuation of Small Business Advisory Committee Meeting",
+      "link": "https://www.sec.gov/newsroom/press-releases/2026-71-sec-announces-continuation-small-business-advisory-committee-meeting",
+      "publishedAt": "2026-07-30T13:53:38.000Z",
+      "source": "U.S. SEC",
+      "sourceId": "sec",
+      "markets": [
+        "us"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "sec"
+      },
+      "titleZh": "美國證管會宣布續開小型企業諮詢委員會會議",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "e290aabba3caad804968",
+      "title": "Federal Reserve issues FOMC statement",
+      "link": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260729a.htm",
+      "publishedAt": "2026-07-29T18:00:00.000Z",
+      "source": "Federal Reserve",
+      "sourceId": "fed",
+      "markets": [
+        "us",
+        "forex",
+        "crypto",
+        "tw"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "fed"
+      },
+      "titleZh": "美國聯準會發布聯邦公開市場委員會聲明",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "d6be24ba4c1a3beeadbc",
+      "title": "Ethereum Foundation Board Update",
+      "link": "https://blog.ethereum.org/en/2026/07/29/ef-board-update",
+      "publishedAt": "2026-07-29T00:00:00.000Z",
+      "source": "Ethereum Foundation",
+      "sourceId": "ethereum",
+      "markets": [
+        "crypto"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "ethereum"
+      },
+      "titleZh": "以太坊基金會董事會近況",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "31270f0e83371c528dd4",
+      "title": "Small Business Forum’s Report to Congress Highlights Recommendations to Improve Capital-Raising Policy",
+      "link": "https://www.sec.gov/newsroom/press-releases/2026-70-small-business-forums-report-congress-highlights-recommendations-improve-capital-raising-policy",
+      "publishedAt": "2026-07-27T19:59:17.000Z",
+      "source": "U.S. SEC",
+      "sourceId": "sec",
+      "markets": [
+        "us"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "sec"
+      },
+      "titleZh": "小型企業論壇向國會提交報告，提出改善募資政策建議",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "2c242017eb037b992c43",
+      "title": "SEC Announces Roundtable on Preparations for 24-Hour Trading",
+      "link": "https://www.sec.gov/newsroom/press-releases/2026-69-sec-announces-roundtable-preparations-24-hour-trading",
+      "publishedAt": "2026-07-23T15:04:00.000Z",
+      "source": "U.S. SEC",
+      "sourceId": "sec",
+      "markets": [
+        "us"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "sec"
+      },
+      "titleZh": "美國證管會宣布舉辦全天候交易準備圓桌會議",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "5a26ae43a3fa1c29fad7",
+      "title": "Minutes of the Board&#39;s discount rate meetings on June 8 and June 17, 2026",
+      "link": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260714a.htm",
+      "publishedAt": "2026-07-14T18:00:00.000Z",
+      "source": "Federal Reserve",
+      "sourceId": "fed",
+      "markets": [
+        "us",
+        "forex",
+        "crypto",
+        "tw"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "fed"
+      },
+      "titleZh": "美國聯準會公布 2026 年 6 月 8 日及 17 日貼現率會議紀錄",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "27278ee88bdb251f2f51",
+      "title": "CPI for all items falls 0.4% in June; gasoline down",
+      "link": "https://www.bls.gov/news.release/archives/cpi_07142026.htm",
+      "publishedAt": "2026-07-14T11:50:27.969Z",
+      "source": "U.S. BLS · CPI",
+      "sourceId": "bls-cpi",
+      "markets": [
+        "us",
+        "forex",
+        "crypto",
+        "tw"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "bls-cpi"
+      },
+      "titleZh": "6 月整體消費者物價指數下降 0.4%；汽油價格下跌",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "38c78d5920b799354c32",
+      "title": "Devcon 8 Tickets Are Live: Find Your Path to Mumbai",
+      "link": "https://blog.ethereum.org/en/2026/07/14/devcon8-tickets",
+      "publishedAt": "2026-07-14T00:00:00.000Z",
+      "source": "Ethereum Foundation",
+      "sourceId": "ethereum",
+      "markets": [
+        "crypto"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "ethereum"
+      },
+      "titleZh": "第 8 屆以太坊開發者大會門票開賣：前往孟買",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "61a7bae109af084abef4",
+      "title": "Federal Reserve announces the leadership and objectives of its task forces to advance the conduct of monetary policy",
+      "link": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260709a.htm",
+      "publishedAt": "2026-07-09T19:00:00.000Z",
+      "source": "Federal Reserve",
+      "sourceId": "fed",
+      "markets": [
+        "us",
+        "forex",
+        "crypto",
+        "tw"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "fed"
+      },
+      "titleZh": "美國聯準會公布推進貨幣政策執行之工作小組主管與目標",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "7eefa1131a7ebdd0717a",
+      "title": "The triage is the product: running AI agents against Ethereum's protocol code",
+      "link": "https://blog.ethereum.org/en/2026/07/09/triage-is-the-product",
+      "publishedAt": "2026-07-09T00:00:00.000Z",
+      "source": "Ethereum Foundation",
+      "sourceId": "ethereum",
+      "markets": [
+        "crypto"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "ethereum"
+      },
+      "titleZh": "分類處理就是成果：運用人工智慧代理檢查以太坊協定程式碼",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "10d78437804234563a59",
+      "title": "Minutes of the Federal Open Market Committee, June 16-17, 2026",
+      "link": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260708a.htm",
+      "publishedAt": "2026-07-08T18:00:00.000Z",
+      "source": "Federal Reserve",
+      "sourceId": "fed",
+      "markets": [
+        "us",
+        "forex",
+        "crypto",
+        "tw"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "fed"
+      },
+      "titleZh": "美國聯準會公布 2026 年 6 月 16 至 17 日政策會議紀錄",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "0d7795acda5e1ccedb8a",
+      "title": "Both payroll employment (+57,000) and unemployment rate (4.2%) change little in June",
+      "link": "https://www.bls.gov/news.release/archives/empsit_07022026.htm",
+      "publishedAt": "2026-07-02T11:50:52.662Z",
+      "source": "U.S. BLS · Employment",
+      "sourceId": "bls-jobs",
+      "markets": [
+        "us",
+        "forex",
+        "crypto",
+        "tw"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "bls-jobs"
+      },
+      "titleZh": "6 月非農就業增加 5.7 萬人，失業率為 4.2%；兩者變動不大",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "54f4cb6cbcd363e0da38",
+      "title": "Ethereum for Governments and Institutions: Why neutral infrastructure matters now",
+      "link": "https://blog.ethereum.org/en/2026/07/01/ethereum-for-institutions",
+      "publishedAt": "2026-07-01T00:00:00.000Z",
+      "source": "Ethereum Foundation",
+      "sourceId": "ethereum",
+      "markets": [
+        "crypto"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "ethereum"
+      },
+      "titleZh": "政府與機構如何使用以太坊：中立基礎設施為何在當下重要",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "3f5b3fef2fea6b81e93c",
+      "title": "The EF’s new structure",
+      "link": "https://blog.ethereum.org/en/2026/06/23/ef-structure",
+      "publishedAt": "2026-06-23T00:00:00.000Z",
+      "source": "Ethereum Foundation",
+      "sourceId": "ethereum",
+      "markets": [
+        "crypto"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "ethereum"
+      },
+      "titleZh": "以太坊基金會的新組織架構",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "94826fcab8a056185eb9",
+      "title": "Federal Reserve issues FOMC statement",
+      "link": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260617a.htm",
+      "publishedAt": "2026-06-17T18:00:00.000Z",
+      "source": "Federal Reserve",
+      "sourceId": "fed",
+      "markets": [
+        "us",
+        "forex",
+        "crypto",
+        "tw"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "fed"
+      },
+      "titleZh": "美國聯準會發布聯邦公開市場委員會聲明",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "6a35ed96da249fba1c6b",
+      "title": "Federal Reserve Board and Federal Open Market Committee release economic projections from the June 16-17 FOMC meeting",
+      "link": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260617b.htm",
+      "publishedAt": "2026-06-17T18:00:00.000Z",
+      "source": "Federal Reserve",
+      "sourceId": "fed",
+      "markets": [
+        "us",
+        "forex",
+        "crypto",
+        "tw"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "fed"
+      },
+      "titleZh": "美國聯準會公布 6 月 16 至 17 日政策會議經濟預測",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "cf6f99881b421826cdc3",
+      "title": "CPI for all items rises 0.5% in May; gasoline and shelter up",
+      "link": "https://www.bls.gov/news.release/archives/cpi_06102026.htm",
+      "publishedAt": "2026-06-10T12:30:00.000Z",
+      "source": "U.S. BLS · CPI",
+      "sourceId": "bls-cpi",
+      "markets": [
+        "us",
+        "forex",
+        "crypto",
+        "tw"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "bls-cpi"
+      },
+      "titleZh": "5 月整體消費者物價指數上升 0.5%；汽油價格與居住成本上漲",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "b5f91cbc297c1d9b99d8",
+      "title": "Payroll employment increases by 172,000 in May; unemployment rate unchanged at 4.3%",
+      "link": "https://www.bls.gov/news.release/archives/empsit_06052026.htm",
+      "publishedAt": "2026-06-05T12:30:00.000Z",
+      "source": "U.S. BLS · Employment",
+      "sourceId": "bls-jobs",
+      "markets": [
+        "us",
+        "forex",
+        "crypto",
+        "tw"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "bls-jobs"
+      },
+      "titleZh": "5 月非農就業增加 17.2 萬人；失業率維持 4.3%",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "5f4f51040948b17bdc95",
+      "title": "Minutes of the Board&#39;s discount rate meeting on April 20 and 29, 2026",
+      "link": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260526a.htm",
+      "publishedAt": "2026-05-26T18:00:00.000Z",
+      "source": "Federal Reserve",
+      "sourceId": "fed",
+      "markets": [
+        "us",
+        "forex",
+        "crypto",
+        "tw"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "fed"
+      },
+      "titleZh": "美國聯準會公布 2026 年 4 月 20 日及 29 日貼現率會議紀錄",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "94080a607bd11e08b829",
+      "title": "Minutes of the Federal Open Market Committee, April 28-29, 2026",
+      "link": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260520a.htm",
+      "publishedAt": "2026-05-20T18:00:00.000Z",
+      "source": "Federal Reserve",
+      "sourceId": "fed",
+      "markets": [
+        "us",
+        "forex",
+        "crypto",
+        "tw"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "fed"
+      },
+      "titleZh": "美國聯準會公布 2026 年 4 月 28 至 29 日政策會議紀錄",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "5f83512383be1e0ecea3",
+      "title": "CPI for all items rises 0.6% in April; shelter and gasoline up",
+      "link": "https://www.bls.gov/news.release/archives/cpi_05122026.htm",
+      "publishedAt": "2026-05-12T12:30:00.000Z",
+      "source": "U.S. BLS · CPI",
+      "sourceId": "bls-cpi",
+      "markets": [
+        "us",
+        "forex",
+        "crypto",
+        "tw"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "bls-cpi"
+      },
+      "titleZh": "4 月整體消費者物價指數上升 0.6%；居住成本與汽油價格上漲",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "fbddc555f2a12d38fbe8",
+      "title": "Clear Signing: Making Transaction Approvals Safer on Ethereum",
+      "link": "https://blog.ethereum.org/en/2026/05/12/clear-signing-announcement",
+      "publishedAt": "2026-05-12T00:00:00.000Z",
+      "source": "Ethereum Foundation",
+      "sourceId": "ethereum",
+      "markets": [
+        "crypto"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "ethereum"
+      },
+      "titleZh": "清晰簽署：讓以太坊交易授權更安全",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "d36831204140ca96bbd6",
+      "title": "Protocol Cluster Updates: May 2026",
+      "link": "https://blog.ethereum.org/en/2026/05/11/protocol-update-may-26",
+      "publishedAt": "2026-05-11T00:00:00.000Z",
+      "source": "Ethereum Foundation",
+      "sourceId": "ethereum",
+      "markets": [
+        "crypto"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "ethereum"
+      },
+      "titleZh": "以太坊協定團隊更新：2026 年 5 月",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "ecd1a6416310e6f192c8",
+      "title": "Payroll employment edges up by 115,000 in April; unemployment rate unchanged at 4.3%",
+      "link": "https://www.bls.gov/news.release/archives/empsit_05082026.htm",
+      "publishedAt": "2026-05-08T12:30:00.000Z",
+      "source": "U.S. BLS · Employment",
+      "sourceId": "bls-jobs",
+      "markets": [
+        "us",
+        "forex",
+        "crypto",
+        "tw"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "bls-jobs"
+      },
+      "titleZh": "4 月非農就業小幅增加 11.5 萬人；失業率維持 4.3%",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "5724c7a2322c4c9c546b",
+      "title": "Soldøgn Interop Recap ☀️",
+      "link": "https://blog.ethereum.org/en/2026/05/02/soldogn-interop-recap",
+      "publishedAt": "2026-05-02T00:00:00.000Z",
+      "source": "Ethereum Foundation",
+      "sourceId": "ethereum",
+      "markets": [
+        "crypto"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "ethereum"
+      },
+      "titleZh": "Soldøgn 互通性活動回顧",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "181df2ba6aaefb4cf764",
+      "title": "Announcing Cohort 7 of the Ethereum Protocol Fellowship",
+      "link": "https://blog.ethereum.org/en/2026/04/30/epf-7",
+      "publishedAt": "2026-04-30T00:00:00.000Z",
+      "source": "Ethereum Foundation",
+      "sourceId": "ethereum",
+      "markets": [
+        "crypto"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "ethereum"
+      },
+      "titleZh": "以太坊協定研習計畫第 7 期正式公布",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "cd22c1d43e70bea1bd8f",
+      "title": "Federal Reserve issues FOMC statement",
+      "link": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260429a.htm",
+      "publishedAt": "2026-04-29T18:00:00.000Z",
+      "source": "Federal Reserve",
+      "sourceId": "fed",
+      "markets": [
+        "us",
+        "forex",
+        "crypto",
+        "tw"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "fed"
+      },
+      "titleZh": "美國聯準會發布聯邦公開市場委員會聲明",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "bc435490e21c2fd3b423",
+      "title": "Allocation Update - Q1 2026",
+      "link": "https://blog.ethereum.org/en/2026/04/29/allocation-q1-26",
+      "publishedAt": "2026-04-29T00:00:00.000Z",
+      "source": "Ethereum Foundation",
+      "sourceId": "ethereum",
+      "markets": [
+        "crypto"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "ethereum"
+      },
+      "titleZh": "以太坊基金會資助配置更新：2026 年第 1 季",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "cadc4cebd433e5d3c896",
+      "title": "ETH Rangers Program Recap",
+      "link": "https://blog.ethereum.org/en/2026/04/16/eth-rangers-recap",
+      "publishedAt": "2026-04-16T00:00:00.000Z",
+      "source": "Ethereum Foundation",
+      "sourceId": "ethereum",
+      "markets": [
+        "crypto"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "ethereum"
+      },
+      "titleZh": "以太坊守護者計畫回顧",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "d439f60f33e134ffbed6",
+      "title": "Minutes of the Board’s discount rate meetings on February 9 and March 18, 2026",
+      "link": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260414a.htm",
+      "publishedAt": "2026-04-14T18:00:00.000Z",
+      "source": "Federal Reserve",
+      "sourceId": "fed",
+      "markets": [
+        "us",
+        "forex",
+        "crypto",
+        "tw"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "fed"
+      },
+      "titleZh": "美國聯準會公布 2026 年 2 月 9 日及 3 月 18 日貼現率會議紀錄",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "5f546ec9842ae0a75165",
+      "title": "CPI for all items rises 0.9% in March; gasoline up",
+      "link": "https://www.bls.gov/news.release/archives/cpi_04102026.htm",
+      "publishedAt": "2026-04-10T12:30:00.000Z",
+      "source": "U.S. BLS · CPI",
+      "sourceId": "bls-cpi",
+      "markets": [
+        "us",
+        "forex",
+        "crypto",
+        "tw"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "bls-cpi"
+      },
+      "titleZh": "3 月整體消費者物價指數上升 0.9%；汽油價格上漲",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "84edff943f27583beb32",
+      "title": "Checkpoint #9: Apr 2026",
+      "link": "https://blog.ethereum.org/en/2026/04/10/checkpoint-9",
+      "publishedAt": "2026-04-10T00:00:00.000Z",
+      "source": "Ethereum Foundation",
+      "sourceId": "ethereum",
+      "markets": [
+        "crypto"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "ethereum"
+      },
+      "titleZh": "以太坊進度檢視第 9 期：2026 年 4 月",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "af987b39b0d986ed4a5f",
+      "title": "Minutes of the Federal Open Market Committee, March 17–18, 2026",
+      "link": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260408a.htm",
+      "publishedAt": "2026-04-08T18:00:00.000Z",
+      "source": "Federal Reserve",
+      "sourceId": "fed",
+      "markets": [
+        "us",
+        "forex",
+        "crypto",
+        "tw"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "fed"
+      },
+      "titleZh": "美國聯準會公布 2026 年 3 月 17 至 18 日政策會議紀錄",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "9fd408d0d217d58a5153",
+      "title": "Payroll employment increases by 178,000 in March; unemployment rate changes little at 4.3%",
+      "link": "https://www.bls.gov/news.release/archives/empsit_04032026.htm",
+      "publishedAt": "2026-04-03T12:30:00.000Z",
+      "source": "U.S. BLS · Employment",
+      "sourceId": "bls-jobs",
+      "markets": [
+        "us",
+        "forex",
+        "crypto",
+        "tw"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "bls-jobs"
+      },
+      "titleZh": "3 月非農就業增加 17.8 萬人；失業率變動不大，為 4.3%",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "d1d11e69b5da2bf0f04e",
+      "title": "How L1 and L2s can build the strongest possible Ethereum",
+      "link": "https://blog.ethereum.org/en/2026/03/23/l1-l2-ethereum",
+      "publishedAt": "2026-03-23T00:00:00.000Z",
+      "source": "Ethereum Foundation",
+      "sourceId": "ethereum",
+      "markets": [
+        "crypto"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "ethereum"
+      },
+      "titleZh": "第一層與第二層網路如何攜手打造更強大的以太坊",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "34a28f5df03584fb309f",
+      "title": "The Promise of Ethereum: Introducing the EF Mandate",
+      "link": "https://blog.ethereum.org/en/2026/03/13/ef-mandate",
+      "publishedAt": "2026-03-13T00:00:00.000Z",
+      "source": "Ethereum Foundation",
+      "sourceId": "ethereum",
+      "markets": [
+        "crypto"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "ethereum"
+      },
+      "titleZh": "以太坊的承諾：介紹以太坊基金會使命",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "a10cd21d554c84081f04",
+      "title": "CPI for all items rises 0.3% in February; shelter up",
+      "link": "https://www.bls.gov/news.release/archives/cpi_03112026.htm",
+      "publishedAt": "2026-03-11T12:30:00.000Z",
+      "source": "U.S. BLS · CPI",
+      "sourceId": "bls-cpi",
+      "markets": [
+        "us",
+        "forex",
+        "crypto",
+        "tw"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "bls-cpi"
+      },
+      "titleZh": "2 月整體消費者物價指數上升 0.3%；居住成本上漲",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "fd81bc5af8982ee25a47",
+      "title": "Payroll employment edges down 92,000 in February; unemployment rate changes little at 4.4%",
+      "link": "https://www.bls.gov/news.release/archives/empsit_03062026.htm",
+      "publishedAt": "2026-03-06T13:30:00.000Z",
+      "source": "U.S. BLS · Employment",
+      "sourceId": "bls-jobs",
+      "markets": [
+        "us",
+        "forex",
+        "crypto",
+        "tw"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "bls-jobs"
+      },
+      "titleZh": "2 月非農就業小幅減少 9.2 萬人；失業率變動不大，為 4.4%",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "d8cd7420c5781f3c10f6",
+      "title": "This Is Fine (Until the Grant Runs Out)",
+      "link": "https://blog.ethereum.org/en/2026/02/27/project-odin",
+      "publishedAt": "2026-02-27T00:00:00.000Z",
+      "source": "Ethereum Foundation",
+      "sourceId": "ethereum",
+      "markets": [
+        "crypto"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "ethereum"
+      },
+      "titleZh": "看似一切安好，直到補助用完",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "f0bf85ce98e4ca6c4cd6",
+      "title": "Treasury Staking Initiative",
+      "link": "https://blog.ethereum.org/en/2026/02/24/staking",
+      "publishedAt": "2026-02-24T00:00:00.000Z",
+      "source": "Ethereum Foundation",
+      "sourceId": "ethereum",
+      "markets": [
+        "crypto"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "ethereum"
+      },
+      "titleZh": "以太坊基金會財庫質押計畫",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "0fdb974b911a5f5a0d8f",
+      "title": "The Ethereum Foundation's Commitment to DeFi",
+      "link": "https://blog.ethereum.org/en/2026/02/23/commitment-to-defi",
+      "publishedAt": "2026-02-23T00:00:00.000Z",
+      "source": "Ethereum Foundation",
+      "sourceId": "ethereum",
+      "markets": [
+        "crypto"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "ethereum"
+      },
+      "titleZh": "以太坊基金會對去中心化金融的承諾",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "0eab2a7fb5e7bfb55784",
+      "title": "Protocol Priorities Update for 2026",
+      "link": "https://blog.ethereum.org/en/2026/02/18/protocol-priorities-update-2026",
+      "publishedAt": "2026-02-18T00:00:00.000Z",
+      "source": "Ethereum Foundation",
+      "sourceId": "ethereum",
+      "markets": [
+        "crypto"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "ethereum"
+      },
+      "titleZh": "2026 年以太坊協定優先事項更新",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "eb7c24d699c249737b44",
+      "title": "Announcing the Platform Team at EF",
+      "link": "https://blog.ethereum.org/en/2026/02/17/platform",
+      "publishedAt": "2026-02-17T00:00:00.000Z",
+      "source": "Ethereum Foundation",
+      "sourceId": "ethereum",
+      "markets": [
+        "crypto"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "ethereum"
+      },
+      "titleZh": "以太坊基金會宣布成立平台團隊",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "a60fe4c684fb422af5d5",
+      "title": "Ethereum Protocol Studies 2026",
+      "link": "https://blog.ethereum.org/en/2026/02/17/ethereum-protocol-studies-26",
+      "publishedAt": "2026-02-17T00:00:00.000Z",
+      "source": "Ethereum Foundation",
+      "sourceId": "ethereum",
+      "markets": [
+        "crypto"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "ethereum"
+      },
+      "titleZh": "2026 年以太坊協定研究計畫",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "6e5b3e8c610cbc72c34b",
+      "title": "CPI for all items rises 0.2% in January; shelter up",
+      "link": "https://www.bls.gov/news.release/archives/cpi_02132026.htm",
+      "publishedAt": "2026-02-13T13:30:00.000Z",
+      "source": "U.S. BLS · CPI",
+      "sourceId": "bls-cpi",
+      "markets": [
+        "us",
+        "forex",
+        "crypto",
+        "tw"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "bls-cpi"
+      },
+      "titleZh": "1 月整體消費者物價指數上升 0.2%；居住成本上漲",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "f25d0badeb8b8810ebe9",
+      "title": "Executive Leadership Update",
+      "link": "https://blog.ethereum.org/en/2026/02/13/leadership-update",
+      "publishedAt": "2026-02-13T00:00:00.000Z",
+      "source": "Ethereum Foundation",
+      "sourceId": "ethereum",
+      "markets": [
+        "crypto"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "ethereum"
+      },
+      "titleZh": "以太坊基金會高階領導團隊近況",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "bffb5f9db71027bd5ed8",
+      "title": "An update from Tomasz",
+      "link": "https://blog.ethereum.org/en/2026/02/13/tomasz-update",
+      "publishedAt": "2026-02-13T00:00:00.000Z",
+      "source": "Ethereum Foundation",
+      "sourceId": "ethereum",
+      "markets": [
+        "crypto"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "ethereum"
+      },
+      "titleZh": "托馬什的近況更新",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "ba71d93760493d2309a5",
+      "title": "Payroll employment rises by 130,000 in January; unemployment rate changes little at 4.3%",
+      "link": "https://www.bls.gov/news.release/archives/empsit_02112026.htm",
+      "publishedAt": "2026-02-11T13:30:00.000Z",
+      "source": "U.S. BLS · Employment",
+      "sourceId": "bls-jobs",
+      "markets": [
+        "us",
+        "forex",
+        "crypto",
+        "tw"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "bls-jobs"
+      },
+      "titleZh": "1 月非農就業增加 13 萬人；失業率變動不大，為 4.3%",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "875532250abff9286dca",
+      "title": "Introducing the EF Academic Secretariat 2026 PhD Fellowship",
+      "link": "https://blog.ethereum.org/en/2026/02/05/phd-fellowship",
+      "publishedAt": "2026-02-05T00:00:00.000Z",
+      "source": "Ethereum Foundation",
+      "sourceId": "ethereum",
+      "markets": [
+        "crypto"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "ethereum"
+      },
+      "titleZh": "以太坊基金會學術秘書處推出 2026 年博士研究獎助計畫",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "303653c34f06b549a63f",
+      "title": "Trillion Dollar Security Day at Devconnect",
+      "link": "https://blog.ethereum.org/en/2026/02/03/1ts-day-devconnect-ba",
+      "publishedAt": "2026-02-03T00:00:00.000Z",
+      "source": "Ethereum Foundation",
+      "sourceId": "ethereum",
+      "markets": [
+        "crypto"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "ethereum"
+      },
+      "titleZh": "以太坊開發者交流大會的「兆美元安全日」",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "5efe64096adf61b9d470",
+      "title": "Allocation Update - Q4 2025",
+      "link": "https://blog.ethereum.org/en/2026/01/27/allocation-q4-25",
+      "publishedAt": "2026-01-27T00:00:00.000Z",
+      "source": "Ethereum Foundation",
+      "sourceId": "ethereum",
+      "markets": [
+        "crypto"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "ethereum"
+      },
+      "titleZh": "以太坊基金會資助配置更新：2025 年第 4 季",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "6965916cdac43bfa1fa9",
+      "title": "Checkpoint #8: Jan 2026",
+      "link": "https://blog.ethereum.org/en/2026/01/20/checkpoint-8",
+      "publishedAt": "2026-01-20T00:00:00.000Z",
+      "source": "Ethereum Foundation",
+      "sourceId": "ethereum",
+      "markets": [
+        "crypto"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "ethereum"
+      },
+      "titleZh": "以太坊進度檢視第 8 期：2026 年 1 月",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "52a6a84b61bb06d46f89",
+      "title": "CPI for all items rises 0.3% in December; shelter and food up",
+      "link": "https://www.bls.gov/news.release/archives/cpi_01132026.htm",
+      "publishedAt": "2026-01-13T13:30:00.000Z",
+      "source": "U.S. BLS · CPI",
+      "sourceId": "bls-cpi",
+      "markets": [
+        "us",
+        "forex",
+        "crypto",
+        "tw"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "bls-cpi"
+      },
+      "titleZh": "12 月整體消費者物價指數上升 0.3%；居住成本與食品價格上漲",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "743e08f7c2b706e99210",
+      "title": "Both payroll employment (+50,000) and unemployment rate (4.4%) change little in December",
+      "link": "https://www.bls.gov/news.release/archives/empsit_01092026.htm",
+      "publishedAt": "2026-01-09T13:30:00.000Z",
+      "source": "U.S. BLS · Employment",
+      "sourceId": "bls-jobs",
+      "markets": [
+        "us",
+        "forex",
+        "crypto",
+        "tw"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "bls-jobs"
+      },
+      "titleZh": "12 月非農就業增加 5 萬人，失業率為 4.4%；兩者變動不大",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "eebb3fef3b76a665857f",
+      "title": "Devcon 8 is coming to Mumbai, India in November 2026",
+      "link": "https://blog.ethereum.org/en/2025/12/23/devcon-mumbai",
+      "publishedAt": "2025-12-23T00:00:00.000Z",
+      "source": "Ethereum Foundation",
+      "sourceId": "ethereum",
+      "markets": [
+        "crypto"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "ethereum"
+      },
+      "titleZh": "第 8 屆以太坊開發者大會將於 2026 年 11 月在印度孟買舉行",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "fd1c5c8a98273d0a5f07",
+      "title": "CPI for all items rises 2.7% over 12 months ending in November; shelter up",
+      "link": "https://www.bls.gov/news.release/archives/cpi_12182025.htm",
+      "publishedAt": "2025-12-18T13:30:00.000Z",
+      "source": "U.S. BLS · CPI",
+      "sourceId": "bls-cpi",
+      "markets": [
+        "us",
+        "forex",
+        "crypto",
+        "tw"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "bls-cpi"
+      },
+      "titleZh": "截至 11 月的過去 12 個月，整體消費者物價指數上升 2.7%；居住成本上漲",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "568949ec16ec1dd7f5c3",
+      "title": "Both payroll employment (+64,000) and unemployment rate (4.6%) change little in November",
+      "link": "https://www.bls.gov/news.release/archives/empsit_12162025.htm",
+      "publishedAt": "2025-12-16T13:30:00.000Z",
+      "source": "U.S. BLS · Employment",
+      "sourceId": "bls-jobs",
+      "markets": [
+        "us",
+        "forex",
+        "crypto",
+        "tw"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "bls-jobs"
+      },
+      "titleZh": "11 月非農就業增加 6.4 萬人，失業率為 4.6%；兩者變動不大",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "d36298aa80b69287e1a8",
+      "title": "Payroll employment edges up 119,000 in September; unemployment rate changes little at 4.4%",
+      "link": "https://www.bls.gov/news.release/archives/empsit_11202025.htm",
+      "publishedAt": "2025-11-20T13:30:00.000Z",
+      "source": "U.S. BLS · Employment",
+      "sourceId": "bls-jobs",
+      "markets": [
+        "us",
+        "forex",
+        "crypto",
+        "tw"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "bls-jobs"
+      },
+      "titleZh": "9 月非農就業小幅增加 11.9 萬人；失業率變動不大，為 4.4%",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "b9bfe886dc97e3e3cb73",
+      "title": "CPI for all items rises 0.3% in September; gasoline up",
+      "link": "https://www.bls.gov/news.release/archives/cpi_10242025.htm",
+      "publishedAt": "2025-10-24T12:30:00.000Z",
+      "source": "U.S. BLS · CPI",
+      "sourceId": "bls-cpi",
+      "markets": [
+        "us",
+        "forex",
+        "crypto",
+        "tw"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "bls-cpi"
+      },
+      "titleZh": "9 月整體消費者物價指數上升 0.3%；汽油價格上漲",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "6b66b982f398db09cb09",
+      "title": "CPI for all items rises 0.4% in August; shelter and food up",
+      "link": "https://www.bls.gov/news.release/archives/cpi_09112025.htm",
+      "publishedAt": "2025-09-11T12:30:00.000Z",
+      "source": "U.S. BLS · CPI",
+      "sourceId": "bls-cpi",
+      "markets": [
+        "us",
+        "forex",
+        "crypto",
+        "tw"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "bls-cpi"
+      },
+      "titleZh": "8 月整體消費者物價指數上升 0.4%；居住成本與食品價格上漲",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "f188b1b118d50b395712",
+      "title": "Both payroll employment (+22,000) and unemployment rate (4.3%) change little in August",
+      "link": "https://www.bls.gov/news.release/archives/empsit_09052025.htm",
+      "publishedAt": "2025-09-05T12:30:00.000Z",
+      "source": "U.S. BLS · Employment",
+      "sourceId": "bls-jobs",
+      "markets": [
+        "us",
+        "forex",
+        "crypto",
+        "tw"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "bls-jobs"
+      },
+      "titleZh": "8 月非農就業增加 2.2 萬人，失業率為 4.3%；兩者變動不大",
+      "translationStatus": "translated"
+    }
+  ],
+  "events": [
+    {
+      "id": "3087b4a699f8dcffa243",
+      "title": "Job Openings and Labor Turnover Survey for August 2026",
+      "link": "https://www.bls.gov/schedule/news_release/current_year.asp",
+      "occursAt": "2026-09-29T14:00:00.000Z",
+      "source": "U.S. BLS",
+      "sourceId": "bls-calendar",
+      "markets": [
+        "us",
+        "forex",
+        "crypto",
+        "tw"
+      ],
+      "kind": "event",
+      "status": "confirmed",
+      "originalZone": "America/New_York",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "bls-calendar"
+      },
+      "sourceUrl": "https://www.bls.gov/schedule/news_release/current_year.asp",
+      "originalTimezone": "America/New_York",
+      "symbols": [],
+      "previous": null,
+      "consensus": null,
+      "actual": null,
+      "revised": null,
+      "updatedAt": null,
+      "titleZh": "美國 2026 年 8 月職缺與勞動流動調查",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "f4964d40632c6e2651b9",
+      "title": "Employment Situation for September 2026",
+      "link": "https://www.bls.gov/schedule/news_release/current_year.asp",
+      "occursAt": "2026-10-02T12:30:00.000Z",
+      "source": "U.S. BLS",
+      "sourceId": "bls-calendar",
+      "markets": [
+        "us",
+        "forex",
+        "crypto",
+        "tw"
+      ],
+      "kind": "event",
+      "status": "confirmed",
+      "originalZone": "America/New_York",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "bls-calendar"
+      },
+      "sourceUrl": "https://www.bls.gov/schedule/news_release/current_year.asp",
+      "originalTimezone": "America/New_York",
+      "symbols": [],
+      "previous": null,
+      "consensus": null,
+      "actual": null,
+      "revised": null,
+      "updatedAt": null,
+      "titleZh": "美國 2026 年 9 月就業情勢報告",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "211937e0d413ab7fce6d",
+      "title": "Consumer Price Index for September 2026",
+      "link": "https://www.bls.gov/schedule/news_release/current_year.asp",
+      "occursAt": "2026-10-14T12:30:00.000Z",
+      "source": "U.S. BLS",
+      "sourceId": "bls-calendar",
+      "markets": [
+        "us",
+        "forex",
+        "crypto",
+        "tw"
+      ],
+      "kind": "event",
+      "status": "confirmed",
+      "originalZone": "America/New_York",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "bls-calendar"
+      },
+      "sourceUrl": "https://www.bls.gov/schedule/news_release/current_year.asp",
+      "originalTimezone": "America/New_York",
+      "symbols": [],
+      "previous": null,
+      "consensus": null,
+      "actual": null,
+      "revised": null,
+      "updatedAt": null,
+      "titleZh": "美國 2026 年 9 月消費者物價指數",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "08ab71336eeed30d0665",
+      "title": "Producer Price Index for September 2026",
+      "link": "https://www.bls.gov/schedule/news_release/current_year.asp",
+      "occursAt": "2026-10-15T12:30:00.000Z",
+      "source": "U.S. BLS",
+      "sourceId": "bls-calendar",
+      "markets": [
+        "us",
+        "forex",
+        "crypto",
+        "tw"
+      ],
+      "kind": "event",
+      "status": "confirmed",
+      "originalZone": "America/New_York",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "bls-calendar"
+      },
+      "sourceUrl": "https://www.bls.gov/schedule/news_release/current_year.asp",
+      "originalTimezone": "America/New_York",
+      "symbols": [],
+      "previous": null,
+      "consensus": null,
+      "actual": null,
+      "revised": null,
+      "updatedAt": null,
+      "titleZh": "美國 2026 年 9 月生產者物價指數",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "b61279d32bd79bc7c389",
+      "title": "Job Openings and Labor Turnover Survey for September 2026",
+      "link": "https://www.bls.gov/schedule/news_release/current_year.asp",
+      "occursAt": "2026-11-03T15:00:00.000Z",
+      "source": "U.S. BLS",
+      "sourceId": "bls-calendar",
+      "markets": [
+        "us",
+        "forex",
+        "crypto",
+        "tw"
+      ],
+      "kind": "event",
+      "status": "confirmed",
+      "originalZone": "America/New_York",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "bls-calendar"
+      },
+      "sourceUrl": "https://www.bls.gov/schedule/news_release/current_year.asp",
+      "originalTimezone": "America/New_York",
+      "symbols": [],
+      "previous": null,
+      "consensus": null,
+      "actual": null,
+      "revised": null,
+      "updatedAt": null,
+      "titleZh": "美國 2026 年 9 月職缺與勞動流動調查",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "cd9614c27b79aa3233bd",
+      "title": "Employment Situation for October 2026",
+      "link": "https://www.bls.gov/schedule/news_release/current_year.asp",
+      "occursAt": "2026-11-06T13:30:00.000Z",
+      "source": "U.S. BLS",
+      "sourceId": "bls-calendar",
+      "markets": [
+        "us",
+        "forex",
+        "crypto",
+        "tw"
+      ],
+      "kind": "event",
+      "status": "confirmed",
+      "originalZone": "America/New_York",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "bls-calendar"
+      },
+      "sourceUrl": "https://www.bls.gov/schedule/news_release/current_year.asp",
+      "originalTimezone": "America/New_York",
+      "symbols": [],
+      "previous": null,
+      "consensus": null,
+      "actual": null,
+      "revised": null,
+      "updatedAt": null,
+      "titleZh": "美國 2026 年 10 月就業情勢報告",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "3cf523deb974172eb429",
+      "title": "Consumer Price Index for October 2026",
+      "link": "https://www.bls.gov/schedule/news_release/current_year.asp",
+      "occursAt": "2026-11-10T13:30:00.000Z",
+      "source": "U.S. BLS",
+      "sourceId": "bls-calendar",
+      "markets": [
+        "us",
+        "forex",
+        "crypto",
+        "tw"
+      ],
+      "kind": "event",
+      "status": "confirmed",
+      "originalZone": "America/New_York",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "bls-calendar"
+      },
+      "sourceUrl": "https://www.bls.gov/schedule/news_release/current_year.asp",
+      "originalTimezone": "America/New_York",
+      "symbols": [],
+      "previous": null,
+      "consensus": null,
+      "actual": null,
+      "revised": null,
+      "updatedAt": null,
+      "titleZh": "美國 2026 年 10 月消費者物價指數",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "45e0a704aba0f76cdac9",
+      "title": "Producer Price Index for October 2026",
+      "link": "https://www.bls.gov/schedule/news_release/current_year.asp",
+      "occursAt": "2026-11-13T13:30:00.000Z",
+      "source": "U.S. BLS",
+      "sourceId": "bls-calendar",
+      "markets": [
+        "us",
+        "forex",
+        "crypto",
+        "tw"
+      ],
+      "kind": "event",
+      "status": "confirmed",
+      "originalZone": "America/New_York",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "bls-calendar"
+      },
+      "sourceUrl": "https://www.bls.gov/schedule/news_release/current_year.asp",
+      "originalTimezone": "America/New_York",
+      "symbols": [],
+      "previous": null,
+      "consensus": null,
+      "actual": null,
+      "revised": null,
+      "updatedAt": null,
+      "titleZh": "美國 2026 年 10 月生產者物價指數",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "1d517c1107f23ac03fd6",
+      "title": "Job Openings and Labor Turnover Survey for October 2026",
+      "link": "https://www.bls.gov/schedule/news_release/current_year.asp",
+      "occursAt": "2026-12-01T15:00:00.000Z",
+      "source": "U.S. BLS",
+      "sourceId": "bls-calendar",
+      "markets": [
+        "us",
+        "forex",
+        "crypto",
+        "tw"
+      ],
+      "kind": "event",
+      "status": "confirmed",
+      "originalZone": "America/New_York",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "bls-calendar"
+      },
+      "sourceUrl": "https://www.bls.gov/schedule/news_release/current_year.asp",
+      "originalTimezone": "America/New_York",
+      "symbols": [],
+      "previous": null,
+      "consensus": null,
+      "actual": null,
+      "revised": null,
+      "updatedAt": null,
+      "titleZh": "美國 2026 年 10 月職缺與勞動流動調查",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "07f91fd2ebccea7906a1",
+      "title": "Employment Situation for November 2026",
+      "link": "https://www.bls.gov/schedule/news_release/current_year.asp",
+      "occursAt": "2026-12-04T13:30:00.000Z",
+      "source": "U.S. BLS",
+      "sourceId": "bls-calendar",
+      "markets": [
+        "us",
+        "forex",
+        "crypto",
+        "tw"
+      ],
+      "kind": "event",
+      "status": "confirmed",
+      "originalZone": "America/New_York",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "bls-calendar"
+      },
+      "sourceUrl": "https://www.bls.gov/schedule/news_release/current_year.asp",
+      "originalTimezone": "America/New_York",
+      "symbols": [],
+      "previous": null,
+      "consensus": null,
+      "actual": null,
+      "revised": null,
+      "updatedAt": null,
+      "titleZh": "美國 2026 年 11 月就業情勢報告",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "484ad69acea89f05194e",
+      "title": "Consumer Price Index for November 2026",
+      "link": "https://www.bls.gov/schedule/news_release/current_year.asp",
+      "occursAt": "2026-12-10T13:30:00.000Z",
+      "source": "U.S. BLS",
+      "sourceId": "bls-calendar",
+      "markets": [
+        "us",
+        "forex",
+        "crypto",
+        "tw"
+      ],
+      "kind": "event",
+      "status": "confirmed",
+      "originalZone": "America/New_York",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "bls-calendar"
+      },
+      "sourceUrl": "https://www.bls.gov/schedule/news_release/current_year.asp",
+      "originalTimezone": "America/New_York",
+      "symbols": [],
+      "previous": null,
+      "consensus": null,
+      "actual": null,
+      "revised": null,
+      "updatedAt": null,
+      "titleZh": "美國 2026 年 11 月消費者物價指數",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "28ff383939bac29f9a5b",
+      "title": "Producer Price Index for November 2026",
+      "link": "https://www.bls.gov/schedule/news_release/current_year.asp",
+      "occursAt": "2026-12-15T13:30:00.000Z",
+      "source": "U.S. BLS",
+      "sourceId": "bls-calendar",
+      "markets": [
+        "us",
+        "forex",
+        "crypto",
+        "tw"
+      ],
+      "kind": "event",
+      "status": "confirmed",
+      "originalZone": "America/New_York",
+      "impact": {
+        "stars": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "bls-calendar"
+      },
+      "sourceUrl": "https://www.bls.gov/schedule/news_release/current_year.asp",
+      "originalTimezone": "America/New_York",
+      "symbols": [],
+      "previous": null,
+      "consensus": null,
+      "actual": null,
+      "revised": null,
+      "updatedAt": null,
+      "titleZh": "美國 2026 年 11 月生產者物價指數",
+      "translationStatus": "translated"
+    }
+  ],
+  "generatedAt": "2026-09-25T05:01:25.441Z",
+  "sources": [
+    {
+      "id": "fed",
+      "status": "ready",
+      "count": 15
+    },
+    {
+      "id": "bls-cpi",
+      "status": "error",
+      "message": "The operation was aborted due to timeout"
+    },
+    {
+      "id": "bls-jobs",
+      "status": "error",
+      "message": "The operation was aborted due to timeout"
+    },
+    {
+      "id": "ecb",
+      "status": "ready",
+      "count": 15
+    },
+    {
+      "id": "sec",
+      "status": "ready",
+      "count": 25
+    },
+    {
+      "id": "ethereum",
+      "status": "error",
+      "message": "The operation was aborted due to timeout"
+    },
+    {
+      "id": "bls-calendar",
+      "status": "error",
+      "message": "The operation was aborted due to timeout"
+    }
+  ]
+}

@@ -13,20 +13,6 @@ const OXFeaturePack = (()=>{
     document.addEventListener("click",e=>{ if(e.target.closest("[data-theme-choice],[data-control-theme]")) setTimeout(AccountStore.capturePrefs,0); });
     document.addEventListener("ox:filterchange",()=>setTimeout(AccountStore.capturePrefs,0));
     document.querySelectorAll("[data-home-mini-tf]").forEach(b=>b.addEventListener("click",e=>{e.preventDefault();e.stopPropagation();HomeMiniChart.setPeriod(b.dataset.homeMiniTf);}));
-    const radar=document.querySelector(".dock-radar");
-    if(radar){
-      let radarClickTimer=null, radarClickCount=0;
-      radar.addEventListener("click",e=>{
-        e.preventDefault(); e.stopPropagation();
-        radarClickCount += 1;
-        if(radarClickCount===1){
-          radarClickTimer=setTimeout(()=>{ radarClickCount=0; switchAppView("radar"); },260);
-        }else{
-          clearTimeout(radarClickTimer); radarClickCount=0; MarketController.cycle();
-        }
-      },true);
-      radar.addEventListener("dblclick",e=>{e.preventDefault();e.stopPropagation();},true);
-    }
     if(state.activeView==="home") setTimeout(()=>HomeMiniChart.ensureAndLoad(true),80);
     setInterval(()=>{ if(state.activeView==="home"&&state.activeMarket==="crypto") HomeMiniChart.ensureAndLoad(false); },60000);
   };
@@ -128,6 +114,10 @@ const OXControlPanel = (() => {
       close();
       switchAppView("settings");
       setTimeout(() => document.querySelector("#view-settings .settings-grid")?.scrollIntoView({ behavior: "smooth", block: "start" }), 120);
+    });
+    q("#ox-control-open-settings")?.addEventListener("click", () => {
+      close();
+      switchAppView("settings");
     });
 
     q("#ox-control-refresh")?.addEventListener("click", () => {

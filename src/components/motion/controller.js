@@ -244,7 +244,8 @@
     initLiquidationObserver();
     initControlObserver();
     probePerformance();
-    revealView(window.state?.activeView || 'radar');
+    // Avoid animating ten cards while the first Radar chart and feed initialize.
+    seenViews.add('radar');
     targetScroll=window.scrollY||0; smoothScroll=targetScroll; scheduleFrame();
   }
 

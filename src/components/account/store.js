@@ -60,7 +60,6 @@ const AccountStore = (() => {
     if (prefs.frequency) localStorage.setItem("ox-setting-frequency", prefs.frequency);
     if (prefs.filters?.tier && ["t1","t2","t3","surge","watch"].includes(prefs.filters.tier)) { state.currentTab = prefs.filters.tier; localStorage.setItem("ox-scanner-tier-filter", prefs.filters.tier); }
     if (prefs.filters?.direction) { const dir = ["long","short"].includes(prefs.filters.direction) ? prefs.filters.direction : "long"; state.directionFilter = dir; localStorage.setItem("ox-scanner-direction-filter", dir); }
-    if (prefs.market && ["crypto","us","tw","forex"].includes(prefs.market)) localStorage.setItem("ox-active-market", prefs.market);
     Object.keys(localStorage).filter(k => k.startsWith("ox-level-alert:")).forEach(k => localStorage.removeItem(k));
     Object.entries(prefs.levelAlerts || {}).forEach(([k,v]) => { if (k.startsWith("ox-level-alert:") && v !== null) localStorage.setItem(k, String(v)); });
 
@@ -73,7 +72,7 @@ const AccountStore = (() => {
     const freq = document.getElementById("setting-frequency"); if (freq) freq.value = localStorage.getItem("ox-setting-frequency") || "1h";
     document.querySelectorAll("[data-setting-key]").forEach(input => { const v=localStorage.getItem(`ox-setting-${input.dataset.settingKey}`); if(v!==null) input.checked = v === "1"; });
     syncScannerFilterUI();
-    if (prefs.market && typeof MarketController !== "undefined") MarketController.setMarket(prefs.market,{toast:false,kick:false});
+    // Account preferences must not override the startup Crypto Radar default.
     syncNotificationPermissionUI(); syncWatchBadge(); renderCurrentTab();
   };
   const capturePrefs = () => {
@@ -110,7 +109,9 @@ function updateAccountUI() {
 const MarketController = (() => {
   const labels={crypto:"加密貨幣",us:"美股",tw:"台股",forex:"外匯"};
   const setMarket = (market,{toast=true,kick=true}={}) => {
-    if(!labels[market]) return; state.activeMarket=market; localStorage.setItem("ox-active-market",market); document.body.dataset.market=market;
+    if(!labels[market]) return;
+    if (state.activeMarket === market && document.body.dataset.market === market) return;
+    state.activeMarket=market; localStorage.setItem("ox-active-market",market); document.body.dataset.market=market;
     document.dispatchEvent(new CustomEvent("ox:marketchange",{detail:{market}}));
     document.querySelectorAll("[data-market-choice]").forEach(b=>b.classList.toggle("active",b.dataset.marketChoice===market));
     const st=document.getElementById("ox-market-status-text"); if(st) st.textContent = market==="crypto" ? "加密市場行情已連線" : market==="forex" ? "外匯每日參考匯率 · 非即時" : market==="tw" ? "台股官方收盤資料已連線" : "美股 ETF 行情已連線 · 廣度與類股待接";
@@ -128,7 +129,7 @@ const MarketController = (() => {
     const card=document.getElementById("market-unavailable-card"); if(card) { card.hidden=!unsupported; if(unsupported){ const name=labels[state.activeMarket]; const title=card.querySelector("#market-unavailable-title"), copy=card.querySelector("#market-unavailable-copy"); if(title) title.textContent=`${name}市場`; if(copy) copy.textContent=`正在讀取${name}市場資料…`; } }
   };
   const cycle = () => { const order=["crypto","us","tw","forex"]; const i=order.indexOf(state.activeMarket); setMarket(order[(i+1)%order.length]); };
-  const init=()=>{ const saved=localStorage.getItem("ox-active-market"); state.activeMarket=["crypto","us","tw","forex"].includes(saved)?saved:"crypto"; setMarket(state.activeMarket,{toast:false,kick:false}); };
+  const init=()=>{ state.activeMarket="crypto"; setMarket("crypto",{toast:false,kick:false}); };
   return {setMarket,syncPlaceholder,cycle,init,labels};
 })();
 window.OXMarketController = MarketController;
@@ -244,4 +245,3 @@ const HomeChartVariant = (()=>{
   return {ensureAndLoad:load,setPeriod,applyTheme:applyThemeHome};
 })();
 const HomeMiniChart = HomeChartVariant;
-

@@ -38,16 +38,17 @@
 
   const scheduleAudit = () => {
     clearTimeout(scheduleAudit._timer);
-    scheduleAudit._timer = setTimeout(auditOverflow, 180);
+    scheduleAudit._timer = setTimeout(() => {
+      if (window.requestIdleCallback) requestIdleCallback(auditOverflow, { timeout: 3000 });
+      else auditOverflow();
+    }, 1200);
   };
 
   window.addEventListener('resize', scheduleAudit, { passive: true });
   window.addEventListener('orientationchange', scheduleAudit, { passive: true });
   window.visualViewport?.addEventListener('resize', scheduleAudit, { passive: true });
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', scheduleAudit, { once: true });
-  } else {
-    scheduleAudit();
-  }
+  // The full DOM geometry audit is a diagnostic. Running it during the first
+  // scroll forces layout on every element and stalls touch interaction.
+  window.OXAuditMobileOverflow = auditOverflow;
 })();

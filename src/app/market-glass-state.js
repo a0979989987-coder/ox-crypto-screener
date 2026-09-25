@@ -31,6 +31,7 @@
 
   function refresh() {
     raf = 0;
+    if (document.body.dataset.market !== 'crypto') return;
 
     // BTC main card: strong 24H move gets the edge glass state.
     setTone(
@@ -72,8 +73,12 @@
     schedule();
     // Text / list replacements are what the existing app uses for live data refreshes.
     const observer = new MutationObserver(schedule);
-    observer.observe(document.body, { subtree: true, childList: true, characterData: true });
+    ['view-home', 'view-radar'].forEach(id => {
+      const root = document.getElementById(id);
+      if (root) observer.observe(root, { subtree: true, childList: true, characterData: true });
+    });
     document.addEventListener("ox:viewchange", schedule);
+    document.addEventListener("ox:marketchange", schedule);
     document.addEventListener("ox:themechange", schedule);
     window.addEventListener("resize", schedule, { passive: true });
   };

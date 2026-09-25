@@ -30,17 +30,17 @@
 }
 .app-view.ox-view-entering{
   display:block!important;
-  animation:oxViewEnter var(--motion-slow) var(--ease-smooth) both;
-  will-change:transform,opacity,filter;
+  animation:oxViewEnter 160ms var(--ease-smooth) both;
+  will-change:transform,opacity;
 }
 @keyframes oxViewLeave{
   from{opacity:1;transform:translate3d(0,0,0) scale(1);filter:blur(0)}
   to{opacity:.18;transform:translate3d(var(--ox-view-exit-x,0),3px,0) scale(.992);filter:blur(.7px)}
 }
 @keyframes oxViewEnter{
-  from{opacity:0;transform:translate3d(var(--ox-view-enter-x,0),6px,0) scale(.988);filter:blur(1px)}
+  from{opacity:.75;transform:translate3d(var(--ox-view-enter-x,0),3px,0)}
   58%{opacity:1}
-  to{opacity:1;transform:translate3d(0,0,0) scale(1);filter:blur(0)}
+  to{opacity:1;transform:translate3d(0,0,0)}
 }
 
 /* ---------- First-view card reveal (only once per page) ---------- */
@@ -261,8 +261,8 @@ html.ox-motion-lite .dock-radar.active .dock-radar-orb.glass-orb{animation:none!
 .app-dock > .dock-btn[data-view-target="home"]{grid-column:1 !important;}
 .app-dock > .dock-btn[data-view-target="strength"]{grid-column:2 !important;}
 .app-dock > .dock-btn[data-view-target="radar"]{grid-column:3 !important;}
-.app-dock > .dock-btn[data-view-target="media"]{grid-column:4 !important;}
-.app-dock > .dock-btn[data-view-target="settings"]{grid-column:5 !important;}
+.app-dock > .dock-btn[data-view-target="data"]{grid-column:4 !important;}
+.app-dock > .dock-btn[data-view-target="media"]{grid-column:5 !important;}
 .app-dock > .ox-dock-indicator,
 .app-dock > .ox-motion-shine{
   position:absolute !important;
@@ -550,4 +550,3 @@ body.theme-light .btc-premium-state{color:#9b6500;border-color:rgba(174,119,20,.
   .btc-premium-price strong{font-size:24px !important;}
   .btc-premium-visual{width:41%;min-width:108px;}
 }
-
