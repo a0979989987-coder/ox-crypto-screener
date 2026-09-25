@@ -17,6 +17,7 @@ export function renderForexHome(container, analysis, selectedPair) {
   const positive = pair.change >= 0;
   const path = linePath(pair.series.slice(-60));
   container.innerHTML = `
+    <div class="fx-pulse-row">${["EURUSD", "GBPUSD", "USDJPY"].map(id => { const item = analysis.pairs.find(pair => pair.id === id); return `<button type="button" data-fx-pair="${id}" aria-pressed="${id === selectedPair}"><small>${id}</small><b>${formatRate(item.price, id)}</b><em class="${item.changePct >= 0 ? "positive" : "negative"}">${formatPercent(item.changePct)}</em></button>`; }).join("")}</div>
     <div class="fx-hero-grid">
       <article class="fx-panel fx-chart-panel">
         <div class="fx-panel-head">
@@ -38,6 +39,6 @@ export function renderForexHome(container, analysis, selectedPair) {
         <p>近 14 個交易日平均每日收盤變動 ${pair.averageDailyMovePct?.toFixed(2) ?? "—"}%。每日 ECB 參考匯率；時段為觀察窗口，沒有即時報價、真實成交量或 spread。</p>
       </article>
     </div>
-    <div class="fx-pulse-row">${["EURUSD", "GBPUSD", "USDJPY"].map(id => { const item = analysis.pairs.find(pair => pair.id === id); return `<div><small>${id}</small><b>${formatRate(item.price, id)}</b><em class="${item.changePct >= 0 ? "positive" : "negative"}">${formatPercent(item.changePct)}</em></div>`; }).join("")}</div>
+
     <div class="fx-opportunity"><small>STRONG vs WEAK · 技術觀察</small><b>${analysis.radar[0].id} · ${analysis.radar[0].direction === "LONG" ? "基礎貨幣較強" : "報價貨幣較強"}</b><span>強弱差 ${analysis.radar[0].relativeStrength.toFixed(0)} · 依每日收盤變動與時段計算，非交易指令</span></div>`;
 }

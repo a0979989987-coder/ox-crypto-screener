@@ -65,7 +65,7 @@ function render() {
   if (!analysis) return;
   ensureRoot().innerHTML = `
     <div class="fx-module-head">
-      <div><span>FOREIGN EXCHANGE / DAILY REFERENCE</span><h1>外匯市場</h1><p>${analysis.source} · 更新 ${analysis.updatedAt}</p></div>
+      <small class="fx-reference-date">${analysis.source} · ${analysis.updatedAt}</small>
       <label>貨幣對<select id="fx-pair-select">${FOREX_PAIRS.map(pair => `<option value="${pair.id}" ${pair.id === selectedPair ? "selected" : ""}>${pair.id}</option>`).join("")}</select></label>
     </div>
     <div id="fx-home"></div><div id="fx-strength"></div><div id="fx-radar"></div>`;
