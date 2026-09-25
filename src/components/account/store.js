@@ -140,11 +140,11 @@ const HomeChartVariant = (()=>{
   let chart=null, series=null, volumeSeries=null, period="1H", loading=false, ro=null;
   const theme=()=>document.body.classList.contains("theme-light");
   const chartColors=()=> theme() ? {
-    bg:"rgba(255,255,255,0)", text:"#718197",
-    grid:"rgba(91,119,148,.10)", cross:"rgba(72,104,140,.20)"
+    bg:"rgba(255,255,255,0)", text:"#777d79",
+    grid:"rgba(65,72,68,.10)", cross:"rgba(65,72,68,.24)"
   } : {
-    bg:"rgba(0,0,0,0)", text:"#7f91a9",
-    grid:"rgba(91,132,178,.085)", cross:"rgba(139,180,222,.18)"
+    bg:"rgba(0,0,0,0)", text:"#a2a8a3",
+    grid:"rgba(195,201,191,.085)", cross:"rgba(211,213,202,.22)"
   };
 
   const ensure=()=>{
@@ -173,8 +173,8 @@ const HomeChartVariant = (()=>{
       handleScale:{axisPressedMouseMove:false,mouseWheel:true,pinch:true}
     });
     series=chart.addCandlestickSeries({
-      upColor:"#38c99b",downColor:"#ee617c",
-      borderVisible:false,wickUpColor:"#38c99b",wickDownColor:"#ee617c",
+      upColor:theme()?"#00778a":"#00b8d4",downColor:theme()?"#b81550":"#ff3078",
+      borderVisible:false,wickUpColor:theme()?"#00778a":"#00b8d4",wickDownColor:theme()?"#b81550":"#ff3078",
       priceLineVisible:true,lastValueVisible:true
     });
     volumeSeries=chart.addHistogramSeries({
@@ -194,6 +194,8 @@ const HomeChartVariant = (()=>{
   const applyThemeHome=()=>{
     if(!chart) return;
     const c=chartColors();
+    const up=theme()?"#00778a":"#00b8d4",down=theme()?"#b81550":"#ff3078";
+    series?.applyOptions({upColor:up,downColor:down,wickUpColor:up,wickDownColor:down});
     chart.applyOptions({
       layout:{background:{type:"solid",color:c.bg},textColor:c.text,fontSize:9},
       grid:{vertLines:{color:c.grid},horzLines:{color:c.grid}},
@@ -214,7 +216,7 @@ const HomeChartVariant = (()=>{
         volumeSeries?.setData(data.map(c=>({
           time:c.time,
           value:num(c.quoteVolume || c.volume),
-          color:c.close>=c.open ? "rgba(56,201,155,.26)" : "rgba(238,97,124,.23)"
+          color:c.close>=c.open ? "rgba(0,184,212,.29)" : "rgba(255,48,120,.27)"
         })));
         const mobile = window.matchMedia("(max-width:720px)").matches;
         const compact = window.matchMedia("(max-width:430px)").matches;

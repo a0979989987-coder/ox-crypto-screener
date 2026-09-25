@@ -194,13 +194,13 @@ function updateAlertButtons() {
   lowBtn.disabled = !state.currentLevels.low;
   highBtn.className = "alert-btn" + (high?.triggered ? " triggered" : high?.enabled ? " enabled-high" : "");
   lowBtn.className = "alert-btn" + (low?.triggered ? " triggered" : low?.enabled ? " enabled-low" : "");
-  highBtn.textContent = high?.triggered ? `✅ 前高` : high?.enabled ? `🔔 前高` : `🔔 前高`;
-  lowBtn.textContent = low?.triggered ? `✅ 前低` : low?.enabled ? `🔔 前低` : `🔔 前低`;
+  highBtn.textContent = high?.triggered ? `✓ 前高` : `前高`;
+  lowBtn.textContent = low?.triggered ? `✓ 前低` : `前低`;
 
   const highChip = document.getElementById("detail-high-alert");
   const lowChip = document.getElementById("detail-low-alert");
-  if (highChip) highChip.textContent = high?.triggered ? `✅ ${sourcePeriod}前高已觸發 ${fmtPrice(high.target)}` : high?.enabled ? `🔔 ${sourcePeriod}前高提醒 ${fmtPrice(high.target)}` : `🔕 ${sourcePeriod}前高提醒：未設定`;
-  if (lowChip) lowChip.textContent = low?.triggered ? `✅ ${sourcePeriod}前低已觸發 ${fmtPrice(low.target)}` : low?.enabled ? `🔔 ${sourcePeriod}前低提醒 ${fmtPrice(low.target)}` : `🔕 ${sourcePeriod}前低提醒：未設定`;
+  if (highChip) highChip.textContent = high?.triggered ? `${sourcePeriod}前高已觸發 ${fmtPrice(high.target)}` : high?.enabled ? `提醒中 · ${sourcePeriod}前高提醒 ${fmtPrice(high.target)}` : `${sourcePeriod}前高提醒：未設定`;
+  if (lowChip) lowChip.textContent = low?.triggered ? `${sourcePeriod}前低已觸發 ${fmtPrice(low.target)}` : low?.enabled ? `提醒中 · ${sourcePeriod}前低提醒 ${fmtPrice(low.target)}` : `${sourcePeriod}前低提醒：未設定`;
 }
 
 async function toggleLevelAlert(kind) {

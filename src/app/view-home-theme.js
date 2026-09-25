@@ -14,10 +14,36 @@ function resizeChartToContainer() {
   }
 }
 
+function updateChartExpandButton() {
+  const button = document.getElementById("btn-chart-fullscreen");
+  if (!button) return;
+  const expanded = document.body.classList.contains("chart-focus") || !!document.fullscreenElement;
+  button.setAttribute("aria-label", expanded ? "收合圖表" : "展開圖表");
+  button.setAttribute("aria-pressed", String(expanded));
+  button.title = expanded ? "收合圖表" : "展開圖表";
+  button.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${expanded ? 'M9 3v6H3m18 0h-6V3M3 15h6v6m6 0v-6h6' : 'M9 3H3v6m12-6h6v6M3 15v6h6m6 0h6v-6'}"/></svg>`;
+}
+
+function createCoinLogo(symbol) {
+  const base = String(symbol || "").replace(/USDT$/, "");
+  const key = base.replace(/^1000(?=[A-Z])/, "").toLowerCase();
+  const badge = document.createElement("span");
+  badge.className = "ox-coin-logo";
+  badge.setAttribute("aria-hidden", "true");
+  badge.textContent = base.slice(0, 2);
+  const source = OX_COIN_LOGOS[key];
+  if (source) {
+    const img = document.createElement("img");
+    img.src = source; img.alt = ""; img.width = 24; img.height = 24; img.decoding = "async";
+    img.addEventListener("error", () => img.remove(), { once: true });
+    badge.append(img);
+  }
+  return badge;
+}
+
 function setChartFocus(enabled) {
   document.body.classList.toggle("chart-focus", enabled);
-  const btn = document.getElementById("btn-chart-fullscreen");
-  if (btn) btn.textContent = enabled ? "✕ 返回" : (window.matchMedia("(max-width: 900px)").matches ? "展開圖表" : "全螢幕");
+  updateChartExpandButton();
   [0, 80, 180, 320].forEach(ms => setTimeout(() => { resizeChartToContainer(); updatePriceTimer(); }, ms));
 }
 
@@ -50,6 +76,7 @@ function switchAppView(view) {
   document.querySelectorAll('.app-view.ox-mobile-view-in').forEach(el => el.classList.remove('ox-mobile-view-in'));
   {
     state.activeView = view;
+    document.body.dataset.view = view;
     if (view === 'data') renderMarketDataStatus();
     document.querySelectorAll('[data-app-view]').forEach(el => el.classList.toggle('active', el.dataset.appView === view));
     document.querySelectorAll('[data-view-target]').forEach(btn => btn.classList.toggle('active', btn.dataset.viewTarget === view));
@@ -112,7 +139,7 @@ function renderHomeOverview() {
   const altStrength = clamp(Math.round(num(strength.altRaw)));
   const marketScore = Math.round((btcStrength + altStrength) / 2);
   const setText = (id, value) => { const el = document.getElementById(id); if (el) el.textContent = value; };
-  const setWidth = (id, value) => { const el = document.getElementById(id); if (el) el.style.width = `${clamp(value)}%`; };
+  const setWidth = (id, value) => { const el = document.getElementById(id); if (el) { el.style.width = `${clamp(value)}%`; el.style.setProperty("--meter-color", value < 40 ? "var(--meter-weak)" : value < 60 ? "var(--meter-mid)" : "var(--meter-strong)"); } };
   const setChange = (id, ticker) => {
     const el = document.getElementById(id); if (!el) return;
     el.textContent = ticker ? fmtPct(ticker.change24h) : "—";
@@ -127,6 +154,7 @@ function renderHomeOverview() {
   setText("home-surge-count", (state.tierMap.surge || []).length);
   setText("home-side-market-state", marketStateText);
   setText("home-side-market-score", marketScore);
+  setWidth("home-market-meter", marketScore);
   setText("home-side-t1", (state.tierMap.t1 || []).length);
   setText("home-side-t2", (state.tierMap.t2 || []).length);
   setText("home-side-surge", (state.tierMap.surge || []).length);
@@ -140,7 +168,6 @@ function renderHomeOverview() {
   setText("home-btc-hero-strength", btcStrength);
   setText("home-btc-market-state", marketStateText);
   setText("home-btc-note", `${homeStructureText(btcA, btc)}${btcA ? ` · OX ${btcA.oxScore}` : ""}`);
-  setWidth("home-btc-meter", btcA?.oxScore ?? btcStrength);
 
   setText("home-eth-price", eth ? fmtPrice(eth.lastPr) : "—"); setChange("home-eth-change", eth);
   setText("home-eth-note", `${homeStructureText(ethA, eth)}${ethA ? ` · OX ${ethA.oxScore}` : ""}`);
@@ -154,6 +181,11 @@ function renderHomeOverview() {
   const altP = strength.altParts;
   setText("home-alt-note", altP ? `已分析 ${strength.sampleSize} · 結構廣度 ${Math.round(altP.structureBreadth)}% · 資金活躍 ${Math.round(altP.moneyBreadth)}%` : `已分析 ${strength.sampleSize} 檔 · 等待更多樣本`);
   setWidth("home-alt-meter", altStrength);
+  for (const [id, score] of [["home-btc-arc", btcStrength], ["home-alt-arc", altStrength]]) {
+    document.getElementById(id)?.style.setProperty("--meter-color", score < 40 ? "var(--meter-weak)" : score < 60 ? "var(--meter-mid)" : "var(--meter-strong)");
+  }
+  document.getElementById("home-btc-arc")?.setAttribute("stroke-dasharray", `${btcStrength} 100`);
+  document.getElementById("home-alt-arc")?.setAttribute("stroke-dasharray", `${altStrength} 100`);
 
   // 重要資訊：只從現有 analyzedCache / tierMap 產生，不塞假資料
   const events = [];
@@ -183,6 +215,51 @@ function renderHomeOverview() {
   };
   renderRank("home-gainers", state.tierMap.gainers);
   renderRank("home-losers", state.tierMap.losers);
+
+  // The editorial home uses the same analyzed candidates as the radar tabs.
+  // Keep each tier independent so the overview never invents a market signal.
+  for (const tier of ["t1", "t2", "t3"]) {
+    const list = document.getElementById(`home-tier-${tier}`);
+    if (!list) continue;
+    const rows = (state.tierMap[tier] || []).slice(0, 4);
+    list.replaceChildren();
+    if (!rows.length) {
+      const empty = document.createElement("div");
+      empty.className = "v33-list-empty";
+      empty.textContent = `等待 ${tier.toUpperCase()} 候選標的`;
+      list.append(empty);
+      continue;
+    }
+    for (const [index, candidate] of rows.entries()) {
+      const row = document.createElement("button");
+      row.type = "button";
+      row.className = "ox-tier-row";
+      row.dataset.homeSymbol = candidate.symbol;
+      const symbol = document.createElement("strong");
+      symbol.textContent = String(candidate.symbol || "—").replace(/USDT$/, "");
+      const setup = document.createElement("small");
+      setup.textContent = candidate.setupName || candidate.structureLabel || "結構觀察中";
+      const score = document.createElement("span");
+      score.textContent = `OX ${candidate.oxScore ?? "—"}`;
+      const change = document.createElement("em");
+      const move = num(candidate.change24h);
+      change.className = move >= 0 ? "positive" : "negative";
+      change.textContent = fmtPct(candidate.change24h);
+      const rank = document.createElement("span"); rank.className = "ox-tier-rank"; rank.textContent = String(index + 1).padStart(2, "0");
+      const identity = document.createElement("span"); identity.className = "ox-tier-identity"; identity.append(createCoinLogo(candidate.symbol), symbol, setup);
+      const price = document.createElement("span"); price.className = "ox-tier-price"; price.textContent = candidate.ticker ? fmtPrice(candidate.ticker.lastPr) : "—";
+      const trend = document.createElementNS("http://www.w3.org/2000/svg", "svg"); trend.setAttribute("viewBox", "0 0 78 30"); trend.setAttribute("aria-hidden", "true"); trend.classList.add("ox-tier-spark", move >= 0 ? "positive" : "negative");
+      const points = (candidate.sparkline || []).filter(Number.isFinite);
+      if (points.length > 1) {
+        const lo = Math.min(...points), range = Math.max(...points) - lo || 1;
+        const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        path.setAttribute("d", points.map((value, i) => `${i ? "L" : "M"}${(i / (points.length - 1) * 76 + 1).toFixed(1)},${(26 - (value - lo) / range * 22).toFixed(1)}`).join(" "));
+        trend.append(path);
+      }
+      row.append(rank, identity, price, change, trend, score);
+      list.append(row);
+    }
+  }
 
   setText("home-radar-t1", (state.tierMap.t1 || []).length);
   setText("home-radar-t2", (state.tierMap.t2 || []).length);
@@ -234,7 +311,7 @@ const systemThemeQuery = window.matchMedia("(prefers-color-scheme: light)");
 
 function getSavedThemeMode() {
   const saved = localStorage.getItem("ox-ui-theme");
-  return ["dark", "light", "system"].includes(saved) ? saved : "system";
+  return ["dark", "light", "system"].includes(saved) ? saved : "dark";
 }
 
 function applyTheme(themeMode = "system") {
@@ -249,12 +326,16 @@ function applyTheme(themeMode = "system") {
   document.querySelectorAll("[data-theme-choice]").forEach(btn => btn.classList.toggle("active", btn.dataset.themeChoice === mode));
   document.dispatchEvent(new CustomEvent("ox:themechange", { detail: { mode, resolved } }));
 
+  if (state.candleSeries) {
+    const up = light ? "#00778a" : "#00b8d4", down = light ? "#b81550" : "#ff3078";
+    state.candleSeries.applyOptions({upColor:up,downColor:down,wickUpColor:up,wickDownColor:down});
+  }
   if (state.chart) {
     state.chart.applyOptions({
-      layout: { background: { type: "solid", color: light ? "#edf3f7" : "#090e17" }, textColor: light ? "#4f647b" : "#8b9db7" },
-      grid: { vertLines: { color: light ? "rgba(92,120,148,.13)" : "#162335" }, horzLines: { color: light ? "rgba(92,120,148,.13)" : "#162335" } },
-      rightPriceScale: { borderColor: light ? "#c2ced9" : "#223147" },
-      timeScale: { borderColor: light ? "#c2ced9" : "#223147" }
+      layout: { background: { type: "solid", color: light ? "#f3f1eb" : "#121417" }, textColor: light ? "#626e66" : "#929995" },
+      grid: { vertLines: { color: light ? "rgba(90,100,92,.12)" : "#202725" }, horzLines: { color: light ? "rgba(90,100,92,.12)" : "#202725" } },
+      rightPriceScale: { borderColor: light ? "#c8cec7" : "#343b37" },
+      timeScale: { borderColor: light ? "#c8cec7" : "#343b37" }
     });
   }
 }

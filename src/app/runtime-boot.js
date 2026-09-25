@@ -3,8 +3,7 @@ syncKeyLevelVisibilityUI();
 keyLevelVisibilityToggle?.addEventListener("change", e => setKeyLevelsVisible(e.target.checked));
 
 window.addEventListener("DOMContentLoaded", () => {
-  // A fresh visit always opens in the dark Crypto Radar; theme can still be changed in-session.
-  localStorage.setItem("ox-ui-theme", "dark");
+  // Start at the market cover; a saved light-theme choice remains available.
   const unlockAudioFromGesture = async () => {
     const ok = await primeAlertAudio(true);
     if (ok) {
@@ -15,8 +14,8 @@ window.addEventListener("DOMContentLoaded", () => {
   document.addEventListener("click", unlockAudioFromGesture, true);
   window.addEventListener("focus", syncNotificationPermissionUI);
   document.addEventListener("visibilitychange", () => { if (!document.hidden) syncNotificationPermissionUI(); });
-  const fullscreenBtn = document.getElementById("btn-chart-fullscreen");
-  if (fullscreenBtn && window.matchMedia("(max-width: 900px)").matches) fullscreenBtn.textContent = "展開圖表";
+  updateChartExpandButton();
+  document.addEventListener("fullscreenchange", updateChartExpandButton);
   initSettings();
   OXControlPanel.init();
   OXFeaturePack.init();
@@ -27,7 +26,7 @@ window.addEventListener("DOMContentLoaded", () => {
   setKeyLevelsVisible(false, { persist: true });
   initChart();
   applyTheme(getSavedThemeMode());
-  switchAppView("radar");
+  switchAppView("home");
   if (state.activeMarket === "crypto") {
     loadSymbolCandles(true);
     refreshMarketTickers();

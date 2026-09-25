@@ -73,7 +73,9 @@ const DEFAULT_TIMEOUT_MS =
  * honestly unconfigured.
  */
 const DEFAULT_API_BASE =
-  "https://ox-crypto-screener.vercel.app/api";
+  typeof window !== "undefined" && window.location.hostname.endsWith(".vercel.app")
+    ? `${window.location.origin}/api`
+    : "https://ox-crypto-screener.vercel.app/api";
 
 
 

@@ -10,7 +10,7 @@ export function bootOXModules(modules = []) {
 }
 
 const router = bootOXModules([cryptoModule, usModule, twModule, forexModule]);
-let currentView = "radar";
+let currentView = "home";
 let renderToken = 0;
 
 function scheduleMarketView() {

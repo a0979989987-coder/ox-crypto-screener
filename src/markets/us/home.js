@@ -468,91 +468,26 @@ function renderReady(
   root.hidden = false;
 
   root.innerHTML = `
-    <div class="us-market-home-content">
-      <div class="us-market-home-header">
-        <div>
-          <div class="page-kicker">US MARKET PULSE · ETF 基準</div>
-          <h2 id="market-unavailable-title">美股市場</h2>
-          <p id="market-unavailable-copy">
-            SPY / QQQ / IWM · ${sessionLabel(data.session)} · Twelve Data via OX Backend
-          </p>
-        </div>
-        <button class="us-market-refresh" type="button" data-us-refresh ${state.status === "loading" ? "disabled" : ""}>${state.status === "loading" ? "更新中…" : "更新行情"}</button>
+    <div class="us-market-home-content ox-us-editorial">
+      <header class="us-market-home-header ox-regional-masthead">
+        <div><span class="page-kicker">UNITED STATES / MARKET OVERVIEW</span><h2 id="market-unavailable-title">美股市場</h2><p id="market-unavailable-copy">${sessionLabel(data.session)} · SPY / QQQ / IWM</p></div>
+        <button class="us-market-refresh" type="button" data-us-refresh ${state.status === "loading" ? "disabled" : ""}>${state.status === "loading" ? "更新中…" : "更新行情 ↻"}</button>
+      </header>
+      ${state.status === "error" ? `<p class="us-market-state-note is-error">更新暫時失敗，保留前次行情：${escapeHTML(state.error?.message || "資料源暫時不可用")}</p>` : ""}
+      <div class="ox-us-workspace">
+        <section class="ox-us-benchmark"><div class="ox-section-heading"><span class="ox-eyebrow">S&P 500 / PRIMARY BENCHMARK</span><span>USD</span></div>${renderBenchmark(spy, { primary: true })}
+          <div class="ox-us-secondary">${renderBenchmark(qqq)}${renderBenchmark(iwm)}</div>
+        </section>
+        <aside class="ox-us-context"><span class="ox-eyebrow">MARKET DIRECTION</span><h3>風險偏好</h3><div class="ox-us-regime ${regime.tone}">${regime.label}</div>
+          <div class="ox-us-breadth"><strong>${regime.positive ?? "—"}</strong><span>/ 3<br>核心 ETF 上漲</span></div>
+          <p>${regime.positive === null ? "等待三檔核心 ETF 的有效報價。" : "根據 SPY、QQQ、IWM 同步表現，觀察美股整體風險偏好。"}</p>
+          <button type="button" data-view-target="radar" class="ox-outline-button">查詢個股與行情 <span>↗</span></button>
+          <button type="button" data-view-target="strength" class="ox-text-button">查看市場指標 ↗</button>
+        </aside>
       </div>
-
-      ${state.status === "loading" ? '<p class="us-market-state-note">正在更新；下方保留前一次行情。</p>' : state.status === "error" ? `<p class="us-market-state-note is-error">更新失敗，顯示前一次行情：${escapeHTML(state.error?.message || "資料源暫時不可用")}</p>` : ""}
-
-      <div class="us-market-pulse-grid">
-        ${renderBenchmark(
-          spy,
-          {
-            primary: true
-          }
-        )}
-
-        ${renderBenchmark(
-          qqq
-        )}
-
-        ${renderBenchmark(
-          iwm
-        )}
-
-        ${renderBenchmark(
-          vix
-        )}
-      </div>
-
-      <div class="us-market-insights">
-        <article class="us-market-insight">
-          <div class="page-kicker">RISK REGIME · ETF PROXY</div>
-          <h3 class="${regime.tone}">${regime.label}</h3>
-          <p>${regime.positive === null ? "核心 ETF 尚未全部取得有效報價。" : `SPY、QQQ、IWM 中 ${regime.positive} / 3 上漲；三者同漲視為升溫、同跌視為降溫，其餘為分歧。`}</p>
-        </article>
-        <article class="us-market-insight">
-          <div class="page-kicker">MARKET BREADTH</div>
-          <h3>全市場廣度待接</h3>
-          <p>目前僅有 ETF 報價，不能推算上漲家數、新高家數或均線以上家數。</p>
-        </article>
-        <article class="us-market-insight">
-          <div class="page-kicker">SECTOR ROTATION</div>
-          <h3>類股輪動待接</h3>
-          <p>現有資料方案每分鐘限額不足以同時取得 11 檔類股 ETF；不顯示不完整排名。</p>
-        </article>
-      </div>
-
-      <div class="us-market-home-footer">
-        <span>
-          MARKET SESSION
-          <b>
-            ${sessionLabel(
-              data.session
-            )}
-          </b>
-        </span>
-
-        <span>
-          AVAILABLE
-          <b>
-            ${
-              data
-                .availableSymbols
-                ?.length ?? 0
-            } / 4
-          </b>
-        </span>
-
-        <span>
-          取得時間
-          <b>
-            ${formatUpdatedAt(
-              state.updatedAt
-            )}
-          </b>
-        </span>
-      </div>
-    </div>
-  `;
+      <section class="ox-us-research"><div><span class="ox-eyebrow">MARKET COVERAGE</span><h3>市場資料</h3></div><div>${renderBenchmark(vix)}</div><div class="ox-us-coverage"><h4>市場廣度與類股輪動</h4><p>目前提供核心 ETF 報價；全市場廣度與完整類股排名尚未接入。</p></div></section>
+      <footer class="us-market-home-footer"><span>市場時段 <b>${sessionLabel(data.session)}</b></span><span>可用報價 <b>${data.availableSymbols?.length ?? 0} / 4</b></span><span>更新時間 <b>${formatUpdatedAt(state.updatedAt)}</b></span></footer>
+    </div>`;
 }
 
 /* -------------------------------------------------------------------------- */

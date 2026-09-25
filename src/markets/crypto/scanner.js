@@ -1,3 +1,5 @@
+const WATCH_STAR_SVG = '<svg class="watch-star-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 2.78 5.63L21 9.54l-4.5 4.39 1.06 6.2L12 17.2l-5.56 2.93 1.06-6.2L3 9.54l6.22-.91Z"/></svg>';
+
 async function refreshMarketTickers() {
   if (state.activeMarket && state.activeMarket !== "crypto") return;
   try {
@@ -133,6 +135,7 @@ async function runScanQueueLoop() {
 
         state.analyzedCache.set(symbol, {
           symbol,
+          sparkline: candles.slice(-24).map(candle => candle.close),
           ticker,
           oxScore,
           liqScore: liq.score,
@@ -283,7 +286,7 @@ function renderCurrentTab() {
               <span class="watch-metric"><label>OX 分數</label><strong style="color:var(--gold)">${c.oxScore ?? rec.oxScore ?? '—'}</strong></span>
             </div>
           </div>
-          <button class="watch-star is-starred" type="button" data-watch-symbol="${rec.symbol}" aria-label="移除 ${rec.symbol} 收藏"><span aria-hidden="true">★</span></button>
+          <button class="watch-star is-starred" type="button" data-watch-symbol="${rec.symbol}" aria-pressed="true" aria-label="移除 ${rec.symbol} 收藏">${WATCH_STAR_SVG}</button>
         </div>
       </div>`;
     }).join('');
@@ -318,15 +321,15 @@ function renderCurrentTab() {
           <span class="badge badge-${displayTier}">${displayTier.toUpperCase()}</span>
           ${c.isSurge ? '<span class="badge badge-surge">🔥</span>' : ''}
         </span>
-        <span class="coin-top-right"><span class="coin-ox">OX ${c.oxScore}</span>${allowStar ? `<button class="watch-star watch-star-desktop ${starred?'is-starred':''}" type="button" data-watch-symbol="${c.symbol}" aria-label="${starred?'移除':'加入'} ${c.symbol} 收藏"><span aria-hidden="true">${starred?'★':'☆'}</span></button>` : ''}</span>
+        <span class="coin-top-right"><span class="coin-ox" aria-label="OX 分數 ${c.oxScore}"><span class="coin-ox-label">OX</span> <strong class="coin-ox-value">${c.oxScore}</strong></span>${allowStar ? `<button class="watch-star watch-star-desktop ${starred?'is-starred':''}" type="button" data-watch-symbol="${c.symbol}" aria-pressed="${starred}" aria-label="${starred?'移除':'加入'} ${c.symbol} 收藏">${WATCH_STAR_SVG}</button>` : ''}</span>
       </div>
       <div class="coin-mid">
         <span class="meta desktop-coin-meta">${status} · Fit ${fit ?? '—'} · 24H Vol ${fmtUsd(c.quoteVol)} USDT</span>
-        <span class="mobile-coin-volume">24H 成交量 ${fmtUsd(c.quoteVol)} USDT</span>
+        <span class="mobile-coin-volume" title="24H 成交量 ${fmtUsd(c.quoteVol)} USDT" aria-label="24 小時成交量 ${fmtUsd(c.quoteVol)} USDT"><span class="coin-volume-label">24H 量</span><span class="coin-volume-value">${fmtUsd(c.quoteVol)}</span></span>
         <span class="coin-change desktop-coin-change ${c.change24h >= 0 ? 'positive' : 'negative'}" style="font-weight:700">${fmtPct(c.change24h)}</span>
       </div>
       <div class="coin-mobile-bottom">
-        ${allowStar ? `<button class="watch-star watch-star-mobile ${starred?'is-starred':''}" type="button" data-watch-symbol="${c.symbol}" aria-label="${starred?'移除':'加入'} ${c.symbol} 收藏"><span aria-hidden="true">${starred?'★':'☆'}</span></button>` : '<span></span>'}
+        ${allowStar ? `<button class="watch-star watch-star-mobile ${starred?'is-starred':''}" type="button" data-watch-symbol="${c.symbol}" aria-pressed="${starred}" aria-label="${starred?'移除':'加入'} ${c.symbol} 收藏">${WATCH_STAR_SVG}</button>` : '<span></span>'}
         <span class="coin-change ${c.change24h >= 0 ? 'positive' : 'negative'}" style="font-weight:700">${fmtPct(c.change24h)}</span>
       </div>
       <div class="coin-reason"><div class="setup-head">${c.setupName}</div><div>• ${c.reasons.join('</div><div>• ')}</div></div>

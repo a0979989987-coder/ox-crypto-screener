@@ -218,7 +218,7 @@
     const add = (title, items, limit) => {
       surface.append(el('h2', 'ox-news-section-title', title));
       if (!items.length) { surface.append(el('p', 'ox-news-empty', store().majorOnly === true ? '目前沒有已核實影響星級的消息；可切回全部新聞查看官方標題。' : '目前沒有符合條件的官方來源資料。')); return; }
-      const section = el('div', 'ox-news-list'); items.slice(0, limit).forEach(item => section.append(card(item))); surface.append(section);
+      const section = el('div', `ox-news-list${tab === 'overview' && title === '近期官方消息' ? ' is-featured' : ''}`); items.slice(0, limit).forEach(item => section.append(card(item))); surface.append(section);
       if (items.length > limit) {
         const more = el('button', 'ox-news-more', `載入更多（尚有 ${items.length - limit} 則）`); more.type = 'button';
         more.addEventListener('click', () => { state.limit += 12; render(); }); surface.append(more);

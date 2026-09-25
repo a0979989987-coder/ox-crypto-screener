@@ -30,7 +30,7 @@ const state = {
   period: "1D",
   currentTab: "t1",
   directionFilter: "long",
-  activeView: "radar",
+  activeView: "home",
   activeMarket: "crypto",
   
   tickers: [],

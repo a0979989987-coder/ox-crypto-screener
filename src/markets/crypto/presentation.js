@@ -69,6 +69,7 @@ function renderOxDetail() {
   document.getElementById("detail-side").textContent = scored.side;
   document.getElementById("detail-progress-text").textContent = `${scored.setupProgress ?? 0}%`;
   document.getElementById("detail-progress-bar").style.width = `${scored.setupProgress ?? 0}%`;
+  document.getElementById("detail-progress-bar").style.setProperty("--meter-color", (scored.setupProgress ?? 0) < 40 ? "var(--meter-weak)" : (scored.setupProgress ?? 0) < 70 ? "var(--meter-mid)" : "var(--meter-strong)");
   document.getElementById("detail-confidence").textContent = `${scored.signalConfidence ?? 0}%`;
   document.getElementById("detail-trigger").textContent = scored.triggerActive ? scored.triggerType : "等待確認";
 
@@ -83,8 +84,21 @@ function renderOxDetail() {
   updateAlertButtons();
 }
 
+function updateRadarMarketGlow(ticker) {
+  const radar = document.getElementById("view-radar");
+  if (!radar) return;
+  const raw = ticker?.change24h;
+  const change = raw === null || raw === undefined || raw === "" ? NaN : Number(raw);
+  if (ticker?.symbol !== state.symbol || !Number.isFinite(change) || change === 0) {
+    delete radar.dataset.priceDirection;
+    return;
+  }
+  radar.dataset.priceDirection = change > 0 ? "up" : "down";
+}
+
 function updateHeaderHUD() {
   const ticker = state.tickers.find(t => t.symbol === state.symbol);
+  updateRadarMarketGlow(ticker);
   if (!ticker) return;
 
   document.getElementById("ticker-pair").textContent = `${ticker.symbol} · Bitget 永續`;
@@ -98,7 +112,6 @@ function updateHeaderHUD() {
 
   document.getElementById("quote").textContent = `${fmtUsd(ticker.usdtVolume)} USDT`;
   document.getElementById("chart-head-title").children[0].textContent = `${ticker.symbol} 永續合約`;
-  document.getElementById("tv-ext-link").href = `https://www.tradingview.com/symbols/${ticker.symbol}.P/?exchange=BITGET`;
 
   const scored = state.analyzedCache.get(state.symbol);
   if (scored) {
