@@ -43,6 +43,7 @@
   <link rel="stylesheet" href="src/styles/markets/forex.css">
   <link rel="stylesheet" href="src/styles/markets/us.css">
   <link rel="stylesheet" href="src/styles/components/news-center.css?v=20260925d">
+  <link rel="stylesheet" href="src/styles/themes/editorial-terminal.css?v=20260925">
 
 <!-- CSS moved: ox-premium-glass-design-system -->
 
@@ -87,8 +88,14 @@
           <rect x="0" y="396" width="202" height="43"/><rect x="247" y="396" width="203" height="43"/>
         </g>
       </svg>
-      <span>OX 幣種篩選器</span>
+      <span>OXLOVE</span>
     </a>
+    <nav class="ox-market-nav" aria-label="切換市場">
+      <button type="button" class="ox-market-tab active" data-market-choice="crypto">Crypto</button>
+      <button type="button" class="ox-market-tab" data-market-choice="us">美股</button>
+      <button type="button" class="ox-market-tab" data-market-choice="tw">台股</button>
+      <button type="button" class="ox-market-tab" data-market-choice="forex">外匯</button>
+    </nav>
     <div class="nav-stats">
       <div class="live"><i class="dot" id="dot"></i><span id="scan-status">全市場輪巡佇列準備中…</span></div>
       <button class="btn-act" id="btn-force-rescan" title="重新掃描">重啟輪巡</button>
@@ -269,155 +276,76 @@
   </section>
 
 
-  <!-- ===== 首頁：OX Market Command Center ===== -->
-  <section class="app-view" id="view-home" data-app-view="home">
-    <div class="v33-home-page">
-      <section class="v33-section v34-home-market-section">
-        <div class="v33-section-head"><div><h2>BTC 市場主圖</h2><p>Crypto 首頁主視覺 · 與雷達共用 Bitget K 線資料來源</p></div><span class="v33-section-tag">LIVE</span></div>
-        <div class="v34-home-market-layout">
-          <article class="v33-card v34-home-btc-primary btc-premium-hero glass-strong liquid-interactive">
-            <span class="liquid-optics liquid-optics-gold" aria-hidden="true"></span>
-            <div class="btc-premium-visual btc-premium-visual-refined" aria-hidden="true">
-              <div class="btc-premium-orbit btc-premium-orbit-a"></div>
-              <div class="btc-premium-orbit btc-premium-orbit-b"></div>
-              <div class="btc-premium-emblem">
-                <span class="btc-emblem-lens"></span>
-                <span class="btc-emblem-ring btc-emblem-ring-a"></span>
-                <span class="btc-emblem-ring btc-emblem-ring-b"></span>
-                <span class="btc-emblem-mark">₿</span>
-              </div>
-              <div class="btc-visual-context" aria-hidden="true">
-                <span>BITCOIN</span>
-                <b>MARKET #1</b>
-                <small>LIVE · USDT PERP</small>
-              </div>
-              <div class="btc-visual-ledger" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  <!-- OX editorial market overview. Data IDs and action hooks remain connected to the existing runtime. -->
+  <section class="app-view active" id="view-home" data-app-view="home">
+    <div class="v33-home-page ox-editorial-home">
+      <section class="ox-home-quote" aria-label="BTC 核心行情">
+        <div class="ox-home-identity"><span class="ox-home-coin" aria-hidden="true">₿</span><div><span class="ox-home-ticker">BTC</span><small>BTCUSDT · Bitget USDT 永續</small></div></div>
+        <div class="ox-home-price"><strong id="home-btc-price">—</strong><small>USDT</small><span id="home-btc-change">—</span></div>
+        <div class="ox-home-quote-metrics">
+          <div><small>24H 最高</small><strong id="home-btc-high">—</strong></div>
+          <div><small>24H 最低</small><strong id="home-btc-low">—</strong></div>
+          <div><small>24H 成交額</small><strong id="home-btc-volume">—</strong></div>
+        </div>
+      </section>
+
+      <section class="ox-home-main" aria-label="市場主圖及市場分析">
+        <article class="ox-home-chart">
+          <div class="ox-chart-heading">
+            <div><span class="ox-eyebrow">PRIMARY MARKET / BITCOIN</span><h1>BTC <span>·</span> 市場主圖</h1></div>
+            <div class="v34-home-main-toolbar" aria-label="BTC 首頁主圖週期">
+              <button class="v34-home-mini-tf active" type="button" data-home-mini-tf="1H">1H</button>
+              <button class="v34-home-mini-tf" type="button" data-home-mini-tf="4H">4H</button>
+              <button class="v34-home-mini-tf" type="button" data-home-mini-tf="1D">1D</button>
+              <button class="v34-home-mini-tf" type="button" data-home-mini-tf="1W">1W</button>
             </div>
-
-            <div class="btc-premium-top">
-              <div class="btc-premium-copy">
-                <div class="btc-premium-title-row">
-                  <span class="btc-premium-icon">₿</span>
-                  <div>
-                    <div class="btc-premium-name">BTC <span>比特幣</span><em>#1</em></div>
-                    <div class="btc-premium-pair">BTC / BTCUSDT</div>
-                  </div>
-                </div>
-                <div class="v34-home-btc-price-line btc-premium-price">
-                  <strong id="home-btc-price">—</strong>
-                  <span id="home-btc-change">—</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="btc-premium-period-row">
-              <div class="v34-home-main-toolbar btc-premium-toolbar" aria-label="BTC 首頁主圖週期">
-                <button class="v34-home-mini-tf active" type="button" data-home-mini-tf="1H">1H</button>
-                <button class="v34-home-mini-tf" type="button" data-home-mini-tf="4H">4H</button>
-                <button class="v34-home-mini-tf" type="button" data-home-mini-tf="1D">1D</button>
-                <button class="v34-home-mini-tf" type="button" data-home-mini-tf="1W">1W</button>
-              </div>
-              <span class="btc-premium-note" id="home-btc-note">等待行情資料</span>
-
-              <div class="btc-premium-actions">
-                <span class="btc-premium-state" id="home-btc-market-state">資料整理中</span>
-                <button class="v34-home-open-radar btc-premium-radar-btn glass-button" type="button" data-home-symbol="BTCUSDT">打開雷達 ↗</button>
-              </div>
-            </div>
-
-            <div class="btc-premium-chart-wrap" data-home-symbol="BTCUSDT" role="button" tabindex="0" aria-label="打開 BTC 雷達">
-              <div id="home-btc-mini-chart" class="v34-home-main-chart btc-premium-chart" aria-label="BTC 首頁簡潔 K 線"></div>
-            </div>
-
-            <div class="btc-premium-stats">
-              <div><small>24H 最高</small><strong id="home-btc-high">—</strong></div>
-              <div><small>24H 最低</small><strong id="home-btc-low">—</strong></div>
-              <div><small>24H 成交額</small><strong id="home-btc-volume">—</strong></div>
-              <div><small>BTC 強度</small><strong id="home-btc-hero-strength">—</strong></div>
-            </div>
-          </article>
-
-          <div class="v34-home-side-stack">
-            <article class="v33-card v33-market-card v34-home-side-card glass liquid-tint-blue" data-home-symbol="ETHUSDT" role="button" tabindex="0">
-              <div class="v33-market-card-top"><span class="v33-market-name">ETH</span><span class="v33-market-badge">主流基準</span></div>
-              <div class="v33-market-value"><strong id="home-eth-price">—</strong><span id="home-eth-change">—</span></div>
-              <div class="v33-market-note" id="home-eth-note">等待行情資料</div><div class="v33-meter"><i id="home-eth-meter"></i></div>
-            </article>
-            <article class="v33-card v33-market-card v34-home-side-card glass liquid-tint-gold">
-              <div class="v33-market-card-top"><span class="v33-market-name">BTC 強度</span><span class="v33-market-badge">0–100</span></div>
-              <div class="v33-market-value"><strong id="home-btc-strength">—</strong><span id="home-btc-strength-label">等待</span></div>
-              <div class="v33-market-note" id="home-btc-strength-note">結構 / 資金 / 動能 / Trigger</div><div class="v33-meter"><i id="home-btc-strength-meter"></i></div>
-            </article>
-            <article class="v33-card v33-market-card v34-home-side-card glass liquid-tint-cyan">
-              <div class="v33-market-card-top"><span class="v33-market-name">小幣強度</span><span class="v33-market-badge">市場廣度</span></div>
-              <div class="v33-market-value"><strong id="home-alt-strength">—</strong><span id="home-alt-strength-label">等待</span></div>
-              <div class="v33-market-note" id="home-alt-note">等待全市場輪巡</div><div class="v33-meter"><i id="home-alt-meter"></i></div>
-            </article>
-            <article class="v33-card v33-market-card v34-home-side-card v34-home-market-snapshot glass liquid-tint-neutral">
-              <div class="v33-market-card-top"><span class="v33-market-name">市場摘要</span><span class="v33-market-badge">OX</span></div>
-              <div class="v33-market-value"><strong id="home-side-market-score">—</strong><span>Market Score</span></div>
-              <div class="v33-market-note" id="home-side-market-state">資料整理中</div>
-              <div class="v34-home-snapshot-row"><span>T1 <b id="home-side-t1">0</b></span><span>T2 <b id="home-side-t2">0</b></span><span>🔥 <b id="home-side-surge">0</b></span></div>
-            </article>
           </div>
-        </div>
-      </section>
-
-
-      <section class="v33-home-hero glass-strong liquid-interactive">
-        <span class="liquid-optics" aria-hidden="true"></span>
-        <div class="v33-home-hero-top">
-          <div>
-            <div class="page-kicker">OX Market Command Center</div>
-            <h1>市場總覽</h1>
-            <p>先整理市場環境、重要異動與值得打開 K 線的候選，再決定要不要進入雷達。</p>
+          <div class="btc-premium-chart-wrap" data-home-symbol="BTCUSDT" role="button" tabindex="0" aria-label="打開 BTC 雷達">
+            <div id="home-btc-mini-chart" class="v34-home-main-chart" aria-label="BTC 首頁 K 線"></div>
           </div>
-          <span class="v33-market-state" id="home-market-state">資料整理中</span>
-        </div>
-        <div class="v33-hero-stats">
-          <div class="v33-hero-stat glass-light"><label>OX 市場分數</label><strong id="home-market-score">—</strong><small>BTC 強度＋小幣強度綜合</small></div>
-          <div class="v33-hero-stat glass-light"><label>即戰力 T1</label><strong id="home-t1-count">0</strong><small>Trigger 已確認</small></div>
-          <div class="v33-hero-stat glass-light"><label>蹲點 T2</label><strong id="home-t2-count">0</strong><small>等待觸發</small></div>
-          <div class="v33-hero-stat glass-light"><label>異常活躍</label><strong id="home-surge-count">0</strong><small>資金 / 量能異動</small></div>
-        </div>
+          <div class="ox-chart-foot">
+            <span id="home-btc-note">等待行情資料</span>
+            <span id="home-btc-market-state">資料整理中</span>
+            <button type="button" data-home-symbol="BTCUSDT" class="v34-home-open-radar">打開完整雷達 ↗</button>
+          </div>
+        </article>
+
+        <aside class="ox-home-analysis" aria-label="市場強度與 OX 分析">
+          <div class="ox-analysis-heading"><span class="ox-eyebrow">MARKET INTELLIGENCE</span><h2>市場強度</h2></div>
+          <div class="ox-strength-duo">
+            <div class="ox-strength-reading"><small>BTC 強度</small><div><strong id="home-btc-strength">—</strong><span>/ 100</span></div><span id="home-btc-strength-label">等待</span><div class="ox-meter"><i id="home-btc-strength-meter"></i></div></div>
+            <div class="ox-strength-reading"><small>小幣強度</small><div><strong id="home-alt-strength">—</strong><span>/ 100</span></div><span id="home-alt-strength-label">等待</span><div class="ox-meter"><i id="home-alt-meter"></i></div></div>
+          </div>
+          <div class="ox-strength-context"><span id="home-btc-strength-note">結構 / 資金 / 動能 / Trigger</span><span id="home-alt-note">等待全市場輪巡</span></div>
+          <div class="ox-score-panel"><span class="ox-eyebrow">OX MARKET SCORE</span><div class="ox-score-reading"><strong id="home-market-score">—</strong><span>/ 100</span></div><span id="home-market-state">資料整理中</span><div class="ox-meter"><i id="home-market-meter"></i></div></div>
+          <div class="ox-analysis-benchmark" data-home-symbol="ETHUSDT" role="button" tabindex="0" aria-label="查看 ETH 雷達"><span>ETH <small>主流基準</small></span><strong id="home-eth-price">—</strong><span id="home-eth-change">—</span><span class="ox-analysis-eth-note" id="home-eth-note">等待行情資料</span><span class="ox-meter"><i id="home-eth-meter"></i></span></div>
+        </aside>
       </section>
 
-      <section class="v33-section v33-two-col">
-        <article class="v33-card glass"><div class="v33-list-head"><b>重要資訊</b><span>OX 系統事件</span></div><div id="home-events"><div class="v33-list-empty">全市場輪巡進行中</div></div></article>
-        <article class="v33-card glass"><div class="v33-list-head"><b>OX 重點觀察</b><span>T1 / T2 優先</span></div><div id="home-watchlist"><div class="v33-list-empty">等待候選標的</div></div></article>
+      <section class="ox-home-tiers" aria-label="雷達分級候選">
+        <article class="ox-tier-column"><div class="ox-tier-title"><span>T1</span><h2>強勢候選</h2><small>觸發確認</small><button type="button" data-view-target="radar">更多 ↗</button></div><div id="home-tier-t1" class="ox-tier-list"><div class="v33-list-empty">等待 T1 候選標的</div></div></article>
+        <article class="ox-tier-column"><div class="ox-tier-title"><span>T2</span><h2>觀察候選</h2><small>等待觸發</small><button type="button" data-view-target="radar">更多 ↗</button></div><div id="home-tier-t2" class="ox-tier-list"><div class="v33-list-empty">等待 T2 候選標的</div></div></article>
+        <article class="ox-tier-column"><div class="ox-tier-title"><span>T3</span><h2>潛力候選</h2><small>早期形成</small><button type="button" data-view-target="radar">更多 ↗</button></div><div id="home-tier-t3" class="ox-tier-list"><div class="v33-list-empty">等待 T3 候選標的</div></div></article>
       </section>
 
-      <section class="v33-section">
-        <div class="v33-section-head"><div><h2>今日強弱</h2><p>Bitget USDT 永續 24H 漲跌幅</p></div><span class="v33-section-tag">TOP 5</span></div>
-        <div class="v33-rank-panels">
-          <article class="v33-card glass"><div class="v33-list-head"><b>今日強勢</b><span>由高到低</span></div><div id="home-gainers"><div class="v33-list-empty">等待 Ticker</div></div></article>
-          <article class="v33-card glass"><div class="v33-list-head"><b>今日弱勢</b><span>由低到高</span></div><div id="home-losers"><div class="v33-list-empty">等待 Ticker</div></div></article>
-        </div>
+      <section class="ox-home-events" aria-label="重要市場動態">
+        <div class="ox-home-events-head"><div><span class="ox-eyebrow">MARKET EVENTS</span><h2>重要市場動態</h2></div><button type="button" data-view-target="data">查看數據 ↗</button></div>
+        <div id="home-events" class="ox-event-list"><div class="v33-list-empty">全市場輪巡進行中</div></div>
       </section>
 
-      <section class="v33-section">
-        <div class="v33-section-head"><div><h2>雷達摘要</h2><p>目前雷達裡有多少東西值得看</p></div><button class="btn-act" type="button" data-view-target="radar">進入雷達</button></div>
-        <div class="v33-radar-summary">
-          <div class="v33-radar-cell"><label>T1 觸發確認</label><strong id="home-radar-t1">0</strong><small>即戰力</small></div>
-          <div class="v33-radar-cell"><label>T2 蹲點準備</label><strong id="home-radar-t2">0</strong><small>等待 Trigger</small></div>
-          <div class="v33-radar-cell"><label>T3 早期跟蹤</label><strong id="home-radar-t3">0</strong><small>早期形成</small></div>
-          <div class="v33-radar-cell"><label>異常活躍</label><strong id="home-radar-surge">0</strong><small>量能 / 資金</small></div>
+      <details class="ox-home-more">
+        <summary>更多市場資訊與工具 <span>展開 ↘</span></summary>
+        <div class="ox-home-more-content">
+          <section><h2>市場摘要</h2><div class="ox-summary-inline"><div><small>綜合市場分數</small><strong id="home-side-market-score">—</strong><span id="home-side-market-state">資料整理中</span></div><div><small>BTC 強度</small><strong id="home-btc-hero-strength">—</strong></div><div><small>T1 / T2 / 活躍</small><strong><span id="home-side-t1">0</span> / <span id="home-side-t2">0</span> / <span id="home-side-surge">0</span></strong></div></div></section>
+          <section><h2>雷達摘要</h2><div class="ox-summary-inline"><div><small>T1 即戰力</small><strong id="home-t1-count">0</strong><span id="home-radar-t1">0</span></div><div><small>T2 蹲點</small><strong id="home-t2-count">0</strong><span id="home-radar-t2">0</span></div><div><small>T3 早期</small><strong id="home-radar-t3">0</strong></div><div><small>異常活躍</small><strong id="home-surge-count">0</strong><span id="home-radar-surge">0</span></div></div></section>
+          <section class="ox-home-detail-grid"><div><h2>OX 重點觀察</h2><div id="home-watchlist"><div class="v33-list-empty">等待候選標的</div></div></div><div><h2>今日強勢</h2><div id="home-gainers"><div class="v33-list-empty">等待 Ticker</div></div></div><div><h2>今日弱勢</h2><div id="home-losers"><div class="v33-list-empty">等待 Ticker</div></div></div></section>
+          <section class="ox-home-shortcuts"><h2>快捷入口</h2><div class="v33-actions"><button class="v33-action" type="button" data-view-target="radar"><b>雷達 ↗</b><small>候選與圖表</small></button><button class="v33-action" type="button" data-view-target="strength"><b>指標 ↗</b><small>市場 / 技術 / 籌碼</small></button><button class="v33-action" type="button" data-view-target="settings"><b>提醒 ↗</b><small>通知與主題</small></button><button class="v33-action" type="button" data-view-target="media"><b>媒體 ↗</b><small>YouTube / 社群</small></button></div></section>
         </div>
-      </section>
-
-      <section class="v33-section">
-        <div class="v33-section-head"><div><h2>快捷入口</h2><p>不開新頁，直接切換 OX 工作區</p></div></div>
-        <div class="v33-actions">
-          <button class="v33-action glass-button" type="button" data-view-target="radar"><span class="v33-action-icon">⌁</span><b>進入雷達</b><small>找幣＋看標的</small></button>
-          <button class="v33-action glass-button" type="button" data-view-target="strength"><span class="v33-action-icon">↗</span><b>指標中心</b><small>市場 / 技術 / 籌碼</small></button>
-          <button class="v33-action glass-button" type="button" data-view-target="settings"><span class="v33-action-icon">🔔</span><b>提醒設定</b><small>通知 / 主題</small></button>
-          <button class="v33-action glass-button" type="button" data-view-target="media"><span class="v33-action-icon">▶</span><b>OX 媒體</b><small>YouTube / 社群</small></button>
-        </div>
-      </section>
+      </details>
     </div>
   </section>
 
-  <section class="app-view active" id="view-radar" data-app-view="radar">
+  <section class="app-view" id="view-radar" data-app-view="radar">
 
 
 
@@ -692,7 +620,7 @@
 
   <section class="app-view" id="view-news" data-app-view="news">
     <div class="ox-news-page">
-      <header class="ox-news-heading"><button class="ox-news-open" id="ox-news-return" type="button" aria-label="關閉新聞並返回市場">×</button></header>
+      <header class="ox-news-heading"><button class="ox-news-open" id="ox-news-return" type="button" aria-label="關閉新聞並返回市場">←</button></header>
       <div data-news-surface="all"></div>
     </div>
   </section>
@@ -814,13 +742,13 @@
 
 
 <nav class="app-dock glass-nav" aria-label="主要功能">
-  <button class="dock-btn" type="button" data-view-target="home" aria-label="首頁">
+  <button class="dock-btn active" type="button" data-view-target="home" aria-label="首頁">
     <span class="dock-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.2 12 4l9 7.2v8.3a1.5 1.5 0 0 1-1.5 1.5H15v-6H9v6H4.5A1.5 1.5 0 0 1 3 19.5z"/></svg></span><span>首頁</span>
   </button>
   <button class="dock-btn" type="button" data-view-target="strength" aria-label="指標">
     <span class="dock-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 18v-5M10 18V8M16 18V4M22 18V11"/></svg></span><span>指標</span>
   </button>
-  <button class="dock-btn dock-radar active" type="button" data-view-target="radar" aria-label="雷達">
+  <button class="dock-btn dock-radar" type="button" data-view-target="radar" aria-label="雷達">
     <span class="dock-radar-orb glass-orb" aria-hidden="true">
       <svg class="dock-radar-logo" viewBox="0 0 450 439" aria-label="OX Radar Logo" role="img" focusable="false">
         <g fill="currentColor">
