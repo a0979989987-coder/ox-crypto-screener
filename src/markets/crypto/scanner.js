@@ -54,9 +54,11 @@ async function refreshMarketTickers() {
 
     try { LiquidationService?.NativeExchangeAdapter?.ensureStarted?.(); } catch (e) {}
     rebuildTierLists();
-    renderCurrentTab();
-    updateHeaderHUD();
-    renderBenchmarkBar();
+    if (state.activeView === 'radar') {
+      renderCurrentTab();
+      updateHeaderHUD();
+      renderBenchmarkBar();
+    }
     checkLevelAlerts();
 
     if (!state.isQueueRunning) {
@@ -69,8 +71,15 @@ async function refreshMarketTickers() {
   }
 }
 
+let lastRadarBatchPaint = 0;
 async function runScanQueueLoop() {
   while (true) {
+    // Keep the ranking data, but do not spend CPU scanning Crypto in the
+    // background while another market, page, or browser tab is visible.
+    if (document.hidden || state.activeMarket !== 'crypto' || !['home','strength','radar'].includes(state.activeView)) {
+      await new Promise(r => setTimeout(r, document.hidden ? 15000 : 8000));
+      continue;
+    }
     if (!state.scanQueue.length) {
       await new Promise(r => setTimeout(r, 1000));
       continue;
@@ -164,9 +173,15 @@ async function runScanQueueLoop() {
     }));
 
     rebuildTierLists();
-    renderCurrentTab();
-    updateHeaderHUD();
-    renderBenchmarkBar();
+    if (state.activeView === 'radar') {
+      const now = performance.now();
+      if (!lastRadarBatchPaint || now - lastRadarBatchPaint >= 8000) {
+        renderCurrentTab();
+        updateHeaderHUD();
+        renderBenchmarkBar();
+        lastRadarBatchPaint = now;
+      }
+    }
 
     await new Promise(r => setTimeout(r, CONFIG.batchIntervalMs));
   }
@@ -226,8 +241,8 @@ function rebuildTierLists() {
   state.tierMap = { ...combined, surge, gainers, losers };
   syncDirectionalBadges();
   syncWatchBadge();
-  renderMarketStrength();
-  renderHomeOverview();
+  if (state.activeView === 'strength') renderMarketStrength();
+  if (state.activeView === 'home') renderHomeOverview();
   renderOxLive();
 }
 
@@ -323,4 +338,3 @@ function renderCurrentTab() {
     </div>`;
   }).join('');
 }
-
