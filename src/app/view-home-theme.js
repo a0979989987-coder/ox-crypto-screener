@@ -142,6 +142,38 @@ function renderHomeOverview() {
   setText("home-side-t2", (state.tierMap.t2 || []).length);
   setText("home-side-surge", (state.tierMap.surge || []).length);
 
+  // The paired T1 board reads the radar's independent long and short rankings.
+  for (const [side, label] of [["long", "上漲"], ["short", "下跌"]]) {
+    const rows = state.tierMapBySide?.[side]?.t1 || [];
+    setText(`home-t1-${side}-count`, rows.length);
+    const box = document.getElementById(`home-t1-${side}-list`);
+    if (!box) continue;
+    box.replaceChildren();
+    if (!rows.length) {
+      const empty = document.createElement("span");
+      empty.className = "ox-home-t1-empty";
+      empty.textContent = `等待${label} T1 候選`;
+      box.append(empty);
+      continue;
+    }
+    for (const candidate of rows.slice(0, 3)) {
+      const row = document.createElement("button");
+      row.type = "button";
+      row.className = "ox-home-t1-row";
+      row.dataset.homeSymbol = candidate.symbol;
+      row.dataset.homeSide = side;
+      const symbol = document.createElement("strong");
+      symbol.textContent = String(candidate.symbol || "—").replace(/USDT$/, "");
+      const score = document.createElement("small");
+      score.textContent = `OX ${candidate.oxScore ?? "—"}`;
+      const change = document.createElement("em");
+      change.className = side === "long" ? "positive" : "negative";
+      change.textContent = fmtPct(candidate.change24h);
+      row.append(symbol, score, change);
+      box.append(row);
+    }
+  }
+
   setText("home-btc-price", btc ? fmtPrice(btc.lastPr) : "—"); setChange("home-btc-change", btc);
   setText("home-btc-volume", btc ? `${fmtUsd(btc.usdtVolume)} USDT` : "—");
   const btcHigh24 = btc ? num(btc.high24h ?? btc.high24H ?? btc.highPr ?? btc.highPrice24h) : NaN;

@@ -43,7 +43,7 @@
   <link rel="stylesheet" href="src/styles/markets/forex.css">
   <link rel="stylesheet" href="src/styles/markets/us.css">
   <link rel="stylesheet" href="src/styles/components/news-center.css?v=20260925d">
-  <link rel="stylesheet" href="src/styles/themes/editorial-terminal.css?v=20260926-btc-card">
+  <link rel="stylesheet" href="src/styles/themes/editorial-terminal.css?v=20260926-t1-board">
 
 <!-- CSS moved: ox-premium-glass-design-system -->
 
@@ -72,7 +72,7 @@
 
 <!-- CSS moved: ox-v381-ios-liquid-glass-max -->
 
-  <link rel="stylesheet" href="src/styles/themes/editorial-radar.css?v=20260926-market2">
+  <link rel="stylesheet" href="src/styles/themes/editorial-radar.css?v=20260926-red-edge">
 </head>
 <body class="ox-terminal">
 
@@ -89,8 +89,12 @@
     <div class="nav-stats">
       <div class="live"><i class="dot" id="dot"></i><span id="scan-status">全市場輪巡佇列準備中…</span></div>
       <button class="btn-act" id="btn-force-rescan" title="重新掃描">重啟輪巡</button>
+      <div class="ox-ui-mode" role="group" aria-label="首頁顯示版本">
+        <button type="button" data-ui-mode-choice="plus" aria-pressed="false">Plus</button>
+        <button type="button" data-ui-mode-choice="pro" aria-pressed="true">Pro</button>
+      </div>
       <button class="ox-menu-btn" id="ox-control-open" type="button" aria-label="開啟 OX 控制中心" aria-controls="ox-control-panel" aria-expanded="false">
-        <span></span><span></span><span></span><small>Menu</small>
+        <span class="ox-menu-glyph" aria-hidden="true">☰</span>
       </button>
     </div>
   </div>
@@ -292,6 +296,11 @@
             <button type="button" data-home-symbol="BTCUSDT" class="v34-home-open-radar">打開完整雷達 ↗</button>
           </div>
         </article>
+
+        <section class="ox-home-t1" aria-label="T1 上漲與下跌候選">
+          <div class="ox-home-t1-side"><div class="ox-home-t1-head"><span>T1 · 上漲</span><strong id="home-t1-long-count">0</strong></div><div id="home-t1-long-list" class="ox-home-t1-list"><span class="ox-home-t1-empty">等待上漲 T1 候選</span></div></div>
+          <div class="ox-home-t1-side"><div class="ox-home-t1-head"><span>T1 · 下跌</span><strong id="home-t1-short-count">0</strong></div><div id="home-t1-short-list" class="ox-home-t1-list"><span class="ox-home-t1-empty">等待下跌 T1 候選</span></div></div>
+        </section>
 
         <aside class="ox-home-analysis" aria-label="市場強度與 OX 分析">
           <div class="ox-analysis-heading"><div><span class="ox-eyebrow">MARKET INTELLIGENCE</span><h2>市場強度</h2></div><button type="button" data-view-target="strength" class="ox-text-button" aria-label="查看完整市場指標">↗</button></div>
