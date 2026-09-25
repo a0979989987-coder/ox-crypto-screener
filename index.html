@@ -43,7 +43,7 @@
   <link rel="stylesheet" href="src/styles/markets/forex.css">
   <link rel="stylesheet" href="src/styles/markets/us.css">
   <link rel="stylesheet" href="src/styles/components/news-center.css?v=20260925d">
-  <link rel="stylesheet" href="src/styles/themes/editorial-terminal.css?v=20260925-release10">
+  <link rel="stylesheet" href="src/styles/themes/editorial-terminal.css?v=20260926-market2">
 
 <!-- CSS moved: ox-premium-glass-design-system -->
 
@@ -72,7 +72,7 @@
 
 <!-- CSS moved: ox-v381-ios-liquid-glass-max -->
 
-  <link rel="stylesheet" href="src/styles/themes/editorial-radar.css?v=20260925-release10">
+  <link rel="stylesheet" href="src/styles/themes/editorial-radar.css?v=20260926-market2">
 </head>
 <body class="ox-terminal">
 
@@ -270,13 +270,8 @@
     <div class="v33-home-page ox-editorial-home">
       <div class="ox-page-caption"><span>CRYPTO / MARKET OVERVIEW</span><span>市場總覽 <span class="ox-caption-separator">/</span> USDT 永續</span></div>
       <section class="ox-home-quote" aria-label="BTC 核心行情">
-        <div class="ox-home-identity"><span class="ox-home-coin" aria-hidden="true">₿</span><div><span class="ox-home-ticker">BTC</span><small>BTCUSDT · Bitget USDT 永續</small></div></div>
+        <div class="ox-home-identity"><img class="ox-home-coin" src="src/assets/token-logos/btc.png" alt="Bitcoin" width="48" height="48"><div><span class="ox-home-ticker">BTC</span><small>BTCUSDT · Bitget USDT 永續</small></div></div>
         <div class="ox-home-price"><strong id="home-btc-price">—</strong><small>USDT</small><span id="home-btc-change">—</span></div>
-        <div class="ox-home-quote-metrics">
-          <div><small>24H 最高</small><strong id="home-btc-high">—</strong></div>
-          <div><small>24H 最低</small><strong id="home-btc-low">—</strong></div>
-          <div><small>24H 成交額</small><strong id="home-btc-volume">—</strong></div>
-        </div>
       </section>
 
       <section class="ox-home-main" aria-label="市場主圖及市場分析">
@@ -375,7 +370,6 @@
       <div class="panel-head">
         <h2 class="panel-title" id="chart-head-title">
           <span>BTCUSDT 永續合約</span>
-          <span class="pill" id="tf-pill">1D 日線</span>
         </h2>
         <div style="display:flex;gap:8px;align-items:center">
           <button class="btn-act" id="btn-chart-fullscreen" type="button" aria-label="展開圖表" aria-pressed="false" title="展開圖表"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3H3v6m12-6h6v6M3 15v6h6m6 0h6v-6"/></svg></button>
@@ -601,10 +595,6 @@
 
   <section class="app-view" id="view-data" data-app-view="data">
     <div class="media-page"><div class="media-card">
-      <div class="ox-section-heading ox-data-masthead"><div><span class="ox-eyebrow">DATA & EVENTS</span><h1>數據與事件</h1></div><button type="button" class="ox-text-button" data-open-cross-news>跨市場新聞 ↗</button></div>
-      <div class="ox-data-caption" id="ox-data-heading">加密 · 新聞與事件</div>
-      <div class="ox-data-caption" id="ox-data-source">資料來源待確認</div>
-      <p class="ox-data-caption" id="ox-data-availability">正在確認資料狀態…</p>
       <div data-news-surface="market"></div>
     </div></div>
   </section>

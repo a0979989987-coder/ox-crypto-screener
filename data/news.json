@@ -62,8 +62,7 @@
       "source": "European Central Bank",
       "sourceId": "ecb",
       "markets": [
-        "forex",
-        "us"
+        "forex"
       ],
       "kind": "news",
       "verified": "official-source",
@@ -82,6 +81,32 @@
       "translationStatus": "translated"
     },
     {
+      "id": "926d2b1d33c65484582a",
+      "title": "本週發行量加權股價指數漲幅約為1.79%，上市股票總市值達157.08兆元",
+      "link": "https://www.twse.com.tw/rwd/zh/news/newsDetail/8a8216d6a0bdcc0001a0d2b9f344006b",
+      "publishedAt": "2026-09-24T09:22:00.000Z",
+      "source": "臺灣證券交易所",
+      "sourceId": "twse",
+      "markets": [
+        "tw"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "impactImportance": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "twse"
+      },
+      "titleZh": "本週發行量加權股價指數漲幅約為1.79%，上市股票總市值達157.08兆元",
+      "translationStatus": "translated"
+    },
+    {
       "id": "059a1723ec41ace80fd5",
       "title": "Philip R. Lane: The outlook for the euro area economy",
       "link": "https://www.ecb.europa.eu//press/key/date/2026/html/ecb.sp260924~e0eceef02c.en.pdf",
@@ -89,8 +114,7 @@
       "source": "European Central Bank",
       "sourceId": "ecb",
       "markets": [
-        "forex",
-        "us"
+        "forex"
       ],
       "kind": "news",
       "verified": "official-source",
@@ -106,6 +130,58 @@
         "sourceId": "ecb"
       },
       "titleZh": "菲利普・連恩：歐元區經濟展望",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "0735a0fde9a7accd6867",
+      "title": "臺灣證券交易所針對正瀚生技股份有限公司違反重大訊息規定，處以新臺幣三萬元之違約金",
+      "link": "https://www.twse.com.tw/rwd/zh/news/newsDetail/8a8216d6a0bdcc0001a0d29b8a220064",
+      "publishedAt": "2026-09-24T08:49:00.000Z",
+      "source": "臺灣證券交易所",
+      "sourceId": "twse",
+      "markets": [
+        "tw"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "impactImportance": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "twse"
+      },
+      "titleZh": "臺灣證券交易所針對正瀚生技股份有限公司違反重大訊息規定，處以新臺幣三萬元之違約金",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "3b354611714721413686",
+      "title": "臺灣證券交易所訂於9月30日召開有價證券上市審議委員會第896次會議，將審議英屬開曼群島商科絡達股份有限公司之申請股票創新板上市案",
+      "link": "https://www.twse.com.tw/rwd/zh/news/newsDetail/8a8216d6a0bdcc0001a0d20f2289005d",
+      "publishedAt": "2026-09-24T06:30:00.000Z",
+      "source": "臺灣證券交易所",
+      "sourceId": "twse",
+      "markets": [
+        "tw"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "impactImportance": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "twse"
+      },
+      "titleZh": "臺灣證券交易所訂於9月30日召開有價證券上市審議委員會第896次會議，將審議英屬開曼群島商科絡達股份有限公司之申請股票創新板上市案",
       "translationStatus": "translated"
     },
     {
@@ -142,8 +218,7 @@
       "source": "European Central Bank",
       "sourceId": "ecb",
       "markets": [
-        "forex",
-        "us"
+        "forex"
       ],
       "kind": "news",
       "verified": "official-source",
@@ -169,8 +244,7 @@
       "source": "European Central Bank",
       "sourceId": "ecb",
       "markets": [
-        "forex",
-        "us"
+        "forex"
       ],
       "kind": "news",
       "verified": "official-source",
@@ -215,6 +289,32 @@
       "translationStatus": "translated"
     },
     {
+      "id": "86d6cec7cc96e7f3aa3d",
+      "title": "儒億(證券代號：6604)採競價拍賣方式辦理承銷，於9月23日順利完成",
+      "link": "https://www.twse.com.tw/rwd/zh/news/newsDetail/8a8216d6a0bdcc0001a0cd9d28730059",
+      "publishedAt": "2026-09-23T09:33:00.000Z",
+      "source": "臺灣證券交易所",
+      "sourceId": "twse",
+      "markets": [
+        "tw"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "impactImportance": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "twse"
+      },
+      "titleZh": "儒億(證券代號：6604)採競價拍賣方式辦理承銷，於9月23日順利完成",
+      "translationStatus": "translated"
+    },
+    {
       "id": "eee1f6575cc05cc42236",
       "title": "Almost ten million people took part in ECB survey on new euro banknotes",
       "link": "https://www.ecb.europa.eu//press/pr/date/2026/html/ecb.pr260923~6ebddaf01e.en.html",
@@ -222,8 +322,7 @@
       "source": "European Central Bank",
       "sourceId": "ecb",
       "markets": [
-        "forex",
-        "us"
+        "forex"
       ],
       "kind": "news",
       "verified": "official-source",
@@ -239,6 +338,58 @@
         "sourceId": "ecb"
       },
       "titleZh": "近千萬人參與歐洲央行新版歐元紙鈔調查",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "292b1938c8b286124927",
+      "title": "大台北區瓦斯股份有限公司等8家公司預計於115年10月份假證交所場地自行舉辦法人說明會",
+      "link": "https://www.twse.com.tw/rwd/zh/news/newsDetail/8a8216d6a0bdcc0001a0cd0c00d70050",
+      "publishedAt": "2026-09-23T06:54:00.000Z",
+      "source": "臺灣證券交易所",
+      "sourceId": "twse",
+      "markets": [
+        "tw"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "impactImportance": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "twse"
+      },
+      "titleZh": "大台北區瓦斯股份有限公司等8家公司預計於115年10月份假證交所場地自行舉辦法人說明會",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "feb2c54b6a2e5f160a82",
+      "title": "證交所「創新板」與文總攜手推出《創新辦桌》第四集 光影交織掌中乾坤 「新勝景掌中劇團」跨界硬實力 讓臺灣傳統技藝驚豔國際",
+      "link": "https://www.twse.com.tw/rwd/zh/news/newsDetail/8a8216d6a0bdcc0001a0c853cac60034",
+      "publishedAt": "2026-09-23T01:00:00.000Z",
+      "source": "臺灣證券交易所",
+      "sourceId": "twse",
+      "markets": [
+        "tw"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "impactImportance": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "twse"
+      },
+      "titleZh": "證交所「創新板」與文總攜手推出《創新辦桌》第四集 光影交織掌中乾坤 「新勝景掌中劇團」跨界硬實力 讓臺灣傳統技藝驚豔國際",
       "translationStatus": "translated"
     },
     {
@@ -294,6 +445,84 @@
       "translationStatus": "translated"
     },
     {
+      "id": "ddabc1b1e89c72054124",
+      "title": "Elixiron Immunotherapeutics (Cayman) Limited（安立璽榮醫藥(股)公司）於115年9月22日送件申請股票於臺灣創新板(tib-創)第一上市",
+      "link": "https://www.twse.com.tw/rwd/zh/news/newsDetail/8a8216d6a0bdcc0001a0c882a3240048",
+      "publishedAt": "2026-09-22T09:46:00.000Z",
+      "source": "臺灣證券交易所",
+      "sourceId": "twse",
+      "markets": [
+        "tw"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "impactImportance": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "twse"
+      },
+      "titleZh": "Elixiron Immunotherapeutics (Cayman) Limited（安立璽榮醫藥(股)公司）於115年9月22日送件申請股票於臺灣創新板(tib-創)第一上市",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "a1bb1e7b2429cb91c7f8",
+      "title": "讓數據說話！證交所「臺股儀表板」9月23日正式上線",
+      "link": "https://www.twse.com.tw/rwd/zh/news/newsDetail/8a8216d6a0bdcc0001a0c84d814a0020",
+      "publishedAt": "2026-09-22T08:45:00.000Z",
+      "source": "臺灣證券交易所",
+      "sourceId": "twse",
+      "markets": [
+        "tw"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "impactImportance": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "twse"
+      },
+      "titleZh": "讓數據說話！證交所「臺股儀表板」9月23日正式上線",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "eb93dded170550491dc7",
+      "title": "全體證券商115年8月稅後淨利274.22億元，累計稅後淨利1,824.73億元",
+      "link": "https://www.twse.com.tw/rwd/zh/news/newsDetail/8a8216d6a0bdcc0001a0c8131eaa0018",
+      "publishedAt": "2026-09-22T07:44:00.000Z",
+      "source": "臺灣證券交易所",
+      "sourceId": "twse",
+      "markets": [
+        "tw"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "impactImportance": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "twse"
+      },
+      "titleZh": "全體證券商115年8月稅後淨利274.22億元，累計稅後淨利1,824.73億元",
+      "translationStatus": "translated"
+    },
+    {
       "id": "90c1ae71a19fb7409882",
       "title": "Philip R. Lane: Interview with Le Temps",
       "link": "https://www.ecb.europa.eu//press/inter/date/2026/html/ecb.in260922~5f89d300ee.en.html",
@@ -301,8 +530,7 @@
       "source": "European Central Bank",
       "sourceId": "ecb",
       "markets": [
-        "forex",
-        "us"
+        "forex"
       ],
       "kind": "news",
       "verified": "official-source",
@@ -347,6 +575,32 @@
       "translationStatus": "translated"
     },
     {
+      "id": "12c0d13a13cbb69ed2ff",
+      "title": "證交所攜手富邦證券 共同舉辦推動優質企業啓航資本市場交流會",
+      "link": "https://www.twse.com.tw/rwd/zh/news/newsDetail/8a8216d6a0bdcc0001a0c3840ac9000d",
+      "publishedAt": "2026-09-21T10:29:00.000Z",
+      "source": "臺灣證券交易所",
+      "sourceId": "twse",
+      "markets": [
+        "tw"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "impactImportance": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "twse"
+      },
+      "titleZh": "證交所攜手富邦證券 共同舉辦推動優質企業啓航資本市場交流會",
+      "translationStatus": "translated"
+    },
+    {
       "id": "3be66ef6857dee63934e",
       "title": "ECB to invest part of own funds in tokenised securities, with settlement via Pontes",
       "link": "https://www.ecb.europa.eu//press/pr/date/2026/html/ecb.pr260921_1~5a011ecbea.en.html",
@@ -354,8 +608,7 @@
       "source": "European Central Bank",
       "sourceId": "ecb",
       "markets": [
-        "forex",
-        "us"
+        "forex"
       ],
       "kind": "news",
       "verified": "official-source",
@@ -381,8 +634,7 @@
       "source": "European Central Bank",
       "sourceId": "ecb",
       "markets": [
-        "forex",
-        "us"
+        "forex"
       ],
       "kind": "news",
       "verified": "official-source",
@@ -398,6 +650,32 @@
         "sourceId": "ecb"
       },
       "titleZh": "歐元體系將央行貨幣引入代幣化金融",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "7ad559e365e814f1f554",
+      "title": "上週外資在集中市場賣超184.63億元，賣超友達7.23萬張最多，另買超力積電8.82萬張最多",
+      "link": "https://www.twse.com.tw/rwd/zh/news/newsDetail/8a8216d6a0bdcc0001a0c1d914240009",
+      "publishedAt": "2026-09-21T04:00:00.000Z",
+      "source": "臺灣證券交易所",
+      "sourceId": "twse",
+      "markets": [
+        "tw"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "impactImportance": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "twse"
+      },
+      "titleZh": "上週外資在集中市場賣超184.63億元，賣超友達7.23萬張最多，另買超力積電8.82萬張最多",
       "translationStatus": "translated"
     },
     {
@@ -427,6 +705,84 @@
       "translationStatus": "translated"
     },
     {
+      "id": "ecc6fd88a0e23a5dc29f",
+      "title": "深化臺美資本市場鏈結 北美洲台灣商會聯合總會來訪證交所 攜手臺商回臺上市",
+      "link": "https://www.twse.com.tw/rwd/zh/news/newsDetail/8a8216d6a066696301a0b412d8cd0129",
+      "publishedAt": "2026-09-18T10:31:00.000Z",
+      "source": "臺灣證券交易所",
+      "sourceId": "twse",
+      "markets": [
+        "tw"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "impactImportance": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "twse"
+      },
+      "titleZh": "深化臺美資本市場鏈結 北美洲台灣商會聯合總會來訪證交所 攜手臺商回臺上市",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "db002c507c81441d65c4",
+      "title": "稜研科技股份有限公司股票自115年9月22日於臺灣創新板(tib-創)上市開始買賣",
+      "link": "https://www.twse.com.tw/rwd/zh/news/newsDetail/8a8216d6a066696301a0b3e56aae0125",
+      "publishedAt": "2026-09-18T09:41:00.000Z",
+      "source": "臺灣證券交易所",
+      "sourceId": "twse",
+      "markets": [
+        "tw"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "impactImportance": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "twse"
+      },
+      "titleZh": "稜研科技股份有限公司股票自115年9月22日於臺灣創新板(tib-創)上市開始買賣",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "68ac6db4b0f50a1aef7d",
+      "title": "本週發行量加權股價指數漲幅約為2.16%，上市股票總市值達154.32兆元",
+      "link": "https://www.twse.com.tw/rwd/zh/news/newsDetail/8a8216d6a066696301a0b3e196650121",
+      "publishedAt": "2026-09-18T09:38:00.000Z",
+      "source": "臺灣證券交易所",
+      "sourceId": "twse",
+      "markets": [
+        "tw"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "impactImportance": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "twse"
+      },
+      "titleZh": "本週發行量加權股價指數漲幅約為2.16%，上市股票總市值達154.32兆元",
+      "translationStatus": "translated"
+    },
+    {
       "id": "3df465f80a9c26c2410d",
       "title": "ECB Consumer Expectations Survey results – August 2026",
       "link": "https://www.ecb.europa.eu//press/pr/date/2026/html/ecb.pr260918~295b3ab978.en.html",
@@ -434,8 +790,7 @@
       "source": "European Central Bank",
       "sourceId": "ecb",
       "markets": [
-        "forex",
-        "us"
+        "forex"
       ],
       "kind": "news",
       "verified": "official-source",
@@ -461,8 +816,7 @@
       "source": "European Central Bank",
       "sourceId": "ecb",
       "markets": [
-        "forex",
-        "us"
+        "forex"
       ],
       "kind": "news",
       "verified": "official-source",
@@ -530,6 +884,58 @@
         "sourceId": "sec"
       },
       "titleZh": "美國證管會發布「創新豁免」，促進代幣化全國市場系統股票交易並徵詢意見",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "910c151ac2ac4843e371",
+      "title": "臺灣證券交易所針對世界健身股份有限公司（世界健身-KY，證券代號: 2762）違反重大訊息規定，處以新臺幣5萬元之違約金",
+      "link": "https://www.twse.com.tw/rwd/zh/news/newsDetail/8a8216d6a066696301a0aee99ab40111",
+      "publishedAt": "2026-09-17T10:28:00.000Z",
+      "source": "臺灣證券交易所",
+      "sourceId": "twse",
+      "markets": [
+        "tw"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "impactImportance": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "twse"
+      },
+      "titleZh": "臺灣證券交易所針對世界健身股份有限公司（世界健身-KY，證券代號: 2762）違反重大訊息規定，處以新臺幣5萬元之違約金",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "deab856b9029afea300c",
+      "title": "2026臺灣週「TiBOOST創新大步計畫」熱烈徵件中，500萬元總獎金，掌握與資本、產業對接機會",
+      "link": "https://www.twse.com.tw/rwd/zh/news/newsDetail/8a8216d6a066696301a0aee22e34010d",
+      "publishedAt": "2026-09-17T10:20:00.000Z",
+      "source": "臺灣證券交易所",
+      "sourceId": "twse",
+      "markets": [
+        "tw"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "impactImportance": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "twse"
+      },
+      "titleZh": "2026臺灣週「TiBOOST創新大步計畫」熱烈徵件中，500萬元總獎金，掌握與資本、產業對接機會",
       "translationStatus": "translated"
     },
     {
@@ -619,9 +1025,7 @@
       "sourceId": "fed",
       "markets": [
         "us",
-        "forex",
-        "crypto",
-        "tw"
+        "forex"
       ],
       "kind": "news",
       "verified": "official-source",
@@ -648,9 +1052,7 @@
       "sourceId": "fed",
       "markets": [
         "us",
-        "forex",
-        "crypto",
-        "tw"
+        "forex"
       ],
       "kind": "news",
       "verified": "official-source",
@@ -747,6 +1149,32 @@
       "translationStatus": "translated"
     },
     {
+      "id": "a1da402760b890327367",
+      "title": "富邦NASDAQ ETF(00662)將進行分割作業，115年11月17日為新受益憑證上市買賣日",
+      "link": "https://www.twse.com.tw/rwd/zh/news/newsDetail/8a8216d6a066696301a0a97449a70107",
+      "publishedAt": "2026-09-16T09:02:00.000Z",
+      "source": "臺灣證券交易所",
+      "sourceId": "twse",
+      "markets": [
+        "tw"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "impactImportance": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "twse"
+      },
+      "titleZh": "富邦NASDAQ ETF(00662)將進行分割作業，115年11月17日為新受益憑證上市買賣日",
+      "translationStatus": "translated"
+    },
+    {
       "id": "32d3cbc35db37bca19fe",
       "title": "ECB wage tracker at 2.7% in H1 2027, pointing to a modest uptick in negotiated wage growth",
       "link": "https://www.ecb.europa.eu//press/pr/date/2026/html/ecb.pr260916~7bc58ebef4.en.html",
@@ -754,8 +1182,7 @@
       "source": "European Central Bank",
       "sourceId": "ecb",
       "markets": [
-        "forex",
-        "us"
+        "forex"
       ],
       "kind": "news",
       "verified": "official-source",
@@ -771,6 +1198,136 @@
         "sourceId": "ecb"
       },
       "titleZh": "歐洲央行薪資追蹤指標：2027 年上半年為 2.7%，協商薪資成長略有回升",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "f99ba758387d160ad776",
+      "title": "臺灣全球金融中心排名兩年躍升31名 亞資政策國際能見度大幅提升",
+      "link": "https://www.twse.com.tw/rwd/zh/news/newsDetail/8a8216d6a066696301a0a8e012790103",
+      "publishedAt": "2026-09-16T06:20:00.000Z",
+      "source": "臺灣證券交易所",
+      "sourceId": "twse",
+      "markets": [
+        "tw"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "impactImportance": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "twse"
+      },
+      "titleZh": "臺灣全球金融中心排名兩年躍升31名 亞資政策國際能見度大幅提升",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "438d818489452ec3dfe3",
+      "title": "臺巴資本市場交流再深化：臺灣證券交易所與巴拉圭亞松森證券交易所簽署合作備忘錄",
+      "link": "https://www.twse.com.tw/rwd/zh/news/newsDetail/8a8216d6a066696301a0a7f37b2e00f7",
+      "publishedAt": "2026-09-16T02:06:00.000Z",
+      "source": "臺灣證券交易所",
+      "sourceId": "twse",
+      "markets": [
+        "tw"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "impactImportance": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "twse"
+      },
+      "titleZh": "臺巴資本市場交流再深化：臺灣證券交易所與巴拉圭亞松森證券交易所簽署合作備忘錄",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "f270cd061ab706749710",
+      "title": "臺灣證券交易所對揚智科技股份有限公司（代號3041）違反重大訊息規定，處以新台幣5萬元違約金",
+      "link": "https://www.twse.com.tw/rwd/zh/news/newsDetail/8a8216d6a066696301a0a44fc80200ea",
+      "publishedAt": "2026-09-15T09:04:00.000Z",
+      "source": "臺灣證券交易所",
+      "sourceId": "twse",
+      "markets": [
+        "tw"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "impactImportance": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "twse"
+      },
+      "titleZh": "臺灣證券交易所對揚智科技股份有限公司（代號3041）違反重大訊息規定，處以新台幣5萬元違約金",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "dfac0b1d45e6ca5de02a",
+      "title": "115年9月16日除息影響加權股價指數",
+      "link": "https://www.twse.com.tw/rwd/zh/news/newsDetail/8a8216d6a066696301a0a449b4df00e6",
+      "publishedAt": "2026-09-15T08:57:00.000Z",
+      "source": "臺灣證券交易所",
+      "sourceId": "twse",
+      "markets": [
+        "tw"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "impactImportance": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "twse"
+      },
+      "titleZh": "115年9月16日除息影響加權股價指數",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "8999af6c6e1870950e0b",
+      "title": "臺灣證券交易所推出「tibit全能應援貼圖」限時登場 以賽場拚搏呼應創新精神 讓「tib-創」走進大眾日常",
+      "link": "https://www.twse.com.tw/rwd/zh/news/newsDetail/8a8216d6a066696301a0a2f1cb5700db",
+      "publishedAt": "2026-09-15T03:00:00.000Z",
+      "source": "臺灣證券交易所",
+      "sourceId": "twse",
+      "markets": [
+        "tw"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "impactImportance": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "twse"
+      },
+      "titleZh": "臺灣證券交易所推出「tibit全能應援貼圖」限時登場 以賽場拚搏呼應創新精神 讓「tib-創」走進大眾日常",
       "translationStatus": "translated"
     },
     {
@@ -807,8 +1364,7 @@
       "source": "European Central Bank",
       "sourceId": "ecb",
       "markets": [
-        "forex",
-        "us"
+        "forex"
       ],
       "kind": "news",
       "verified": "official-source",
@@ -834,8 +1390,7 @@
       "source": "European Central Bank",
       "sourceId": "ecb",
       "markets": [
-        "forex",
-        "us"
+        "forex"
       ],
       "kind": "news",
       "verified": "official-source",
@@ -880,6 +1435,32 @@
       "translationStatus": "translated"
     },
     {
+      "id": "7e93a1f0663b9efb7d8e",
+      "title": "證交所規劃「臺股儀表板」 強化風險教育協助投資人穩健理財",
+      "link": "https://www.twse.com.tw/rwd/zh/news/newsDetail/8a8216d6a066696301a09f897cc100d5",
+      "publishedAt": "2026-09-14T10:49:00.000Z",
+      "source": "臺灣證券交易所",
+      "sourceId": "twse",
+      "markets": [
+        "tw"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "impactImportance": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "twse"
+      },
+      "titleZh": "證交所規劃「臺股儀表板」 強化風險教育協助投資人穩健理財",
+      "translationStatus": "translated"
+    },
+    {
       "id": "03676dec5d3fc835e6a8",
       "title": "Isabel Schnabel: Macroeconomic, fiscal and financial stability in a shock-prone world",
       "link": "https://www.ecb.europa.eu//press/key/date/2026/html/ecb.sp260914~0ffd556bc8.en.pdf",
@@ -887,8 +1468,7 @@
       "source": "European Central Bank",
       "sourceId": "ecb",
       "markets": [
-        "forex",
-        "us"
+        "forex"
       ],
       "kind": "news",
       "verified": "official-source",
@@ -907,6 +1487,32 @@
       "translationStatus": "translated"
     },
     {
+      "id": "a9c89616313e049116ba",
+      "title": "上週外資在集中市場賣超51.04億元，賣超仁寶9.82萬張最多，另買超友達22.36萬張最多",
+      "link": "https://www.twse.com.tw/rwd/zh/news/newsDetail/8a8216d6a066696301a09e8b9eb000a8",
+      "publishedAt": "2026-09-14T06:06:00.000Z",
+      "source": "臺灣證券交易所",
+      "sourceId": "twse",
+      "markets": [
+        "tw"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "impactImportance": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "twse"
+      },
+      "titleZh": "上週外資在集中市場賣超51.04億元，賣超仁寶9.82萬張最多，另買超友達22.36萬張最多",
+      "translationStatus": "translated"
+    },
+    {
       "id": "44be4f6a261f5c1d4596",
       "title": "Christine Lagarde: Interview with Ouest-France",
       "link": "https://www.ecb.europa.eu//press/inter/date/2026/html/ecb.in260912~3cc706f4d6.en.html",
@@ -914,8 +1520,7 @@
       "source": "European Central Bank",
       "sourceId": "ecb",
       "markets": [
-        "forex",
-        "us"
+        "forex"
       ],
       "kind": "news",
       "verified": "official-source",
@@ -1020,9 +1625,7 @@
       "sourceId": "bls-cpi",
       "markets": [
         "us",
-        "forex",
-        "crypto",
-        "tw"
+        "forex"
       ],
       "kind": "news",
       "verified": "official-source",
@@ -1038,6 +1641,136 @@
         "sourceId": "bls-cpi"
       },
       "titleZh": "8 月整體消費者物價指數上升 0.4%；汽油價格上漲",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "ebb813f378bd9a48a39e",
+      "title": "本週發行量加權股價指數跌幅約為0.79%，上市股票總市值達151.02兆元",
+      "link": "https://www.twse.com.tw/rwd/zh/news/newsDetail/8a8216d6a066696301a08ff5eac5009d",
+      "publishedAt": "2026-09-11T10:13:00.000Z",
+      "source": "臺灣證券交易所",
+      "sourceId": "twse",
+      "markets": [
+        "tw"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "impactImportance": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "twse"
+      },
+      "titleZh": "本週發行量加權股價指數跌幅約為0.79%，上市股票總市值達151.02兆元",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "15acffb042edd2003e0a",
+      "title": "漢測(證券代號：7856)採競價拍賣方式辦理承銷，於9月11日順利完成",
+      "link": "https://www.twse.com.tw/rwd/zh/news/newsDetail/8a8216d6a066696301a08fcdf1d80099",
+      "publishedAt": "2026-09-11T09:29:00.000Z",
+      "source": "臺灣證券交易所",
+      "sourceId": "twse",
+      "markets": [
+        "tw"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "impactImportance": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "twse"
+      },
+      "titleZh": "漢測(證券代號：7856)採競價拍賣方式辦理承銷，於9月11日順利完成",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "f2d1df62f4069b5f819d",
+      "title": "臺灣證券交易所有價證券上市審議委員會審議通過貝爾威勒電子股份有限公司初次申請股票上市案",
+      "link": "https://www.twse.com.tw/rwd/zh/news/newsDetail/8a8216d6a066696301a08fc4def40095",
+      "publishedAt": "2026-09-11T09:20:00.000Z",
+      "source": "臺灣證券交易所",
+      "sourceId": "twse",
+      "markets": [
+        "tw"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "impactImportance": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "twse"
+      },
+      "titleZh": "臺灣證券交易所有價證券上市審議委員會審議通過貝爾威勒電子股份有限公司初次申請股票上市案",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "3dd97faf7b4c6591c782",
+      "title": "全體上市公司(不含金融保險業及三商投資控股股份有限公司)115年8月份當月營收較114年同期成長54.20％，累計營業收入較115年同期成長37.01％",
+      "link": "https://www.twse.com.tw/rwd/zh/news/newsDetail/8a8216d6a066696301a08f972bf10091",
+      "publishedAt": "2026-09-11T08:30:00.000Z",
+      "source": "臺灣證券交易所",
+      "sourceId": "twse",
+      "markets": [
+        "tw"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "impactImportance": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "twse"
+      },
+      "titleZh": "全體上市公司(不含金融保險業及三商投資控股股份有限公司)115年8月份當月營收較114年同期成長54.20％，累計營業收入較115年同期成長37.01％",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "b9351a5feeb46542ef52",
+      "title": "國際投資人高度關注臺灣 證交所倫敦行深化引資與亞資合作",
+      "link": "https://www.twse.com.tw/rwd/zh/news/newsDetail/8a8216d6a066696301a08a4235bb0087",
+      "publishedAt": "2026-09-11T06:00:00.000Z",
+      "source": "臺灣證券交易所",
+      "sourceId": "twse",
+      "markets": [
+        "tw"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "impactImportance": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "twse"
+      },
+      "titleZh": "國際投資人高度關注臺灣 證交所倫敦行深化引資與亞資合作",
       "translationStatus": "translated"
     },
     {
@@ -1093,6 +1826,84 @@
       "translationStatus": "translated"
     },
     {
+      "id": "6b4ff881b20ab310334a",
+      "title": "臺灣證券交易所對南寶樹脂化學工廠股份有限公司違反重大訊息規定，處以新臺幣3萬元違約金",
+      "link": "https://www.twse.com.tw/rwd/zh/news/newsDetail/8a8216d6a066696301a0859f757a0083",
+      "publishedAt": "2026-09-09T10:02:00.000Z",
+      "source": "臺灣證券交易所",
+      "sourceId": "twse",
+      "markets": [
+        "tw"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "impactImportance": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "twse"
+      },
+      "titleZh": "臺灣證券交易所對南寶樹脂化學工廠股份有限公司違反重大訊息規定，處以新臺幣3萬元違約金",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "c9a4381d2fb3aa28f3b9",
+      "title": "Modernity Financial Holdings, Ltd. (英屬開曼群島商現代財富控股有限公司)於115年9月9日送件申請股票創新板第一上市",
+      "link": "https://www.twse.com.tw/rwd/zh/news/newsDetail/8a8216d6a066696301a0856c4c75007f",
+      "publishedAt": "2026-09-09T09:07:00.000Z",
+      "source": "臺灣證券交易所",
+      "sourceId": "twse",
+      "markets": [
+        "tw"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "impactImportance": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "twse"
+      },
+      "titleZh": "Modernity Financial Holdings, Ltd. (英屬開曼群島商現代財富控股有限公司)於115年9月9日送件申請股票創新板第一上市",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "07d9a2aa3955caf9ea66",
+      "title": "臺灣證券交易所訂於9月11日召開有價證券上市審議委員會第895次會議，將審議貝爾威勒電子(股)公司之申請股票上市案",
+      "link": "https://www.twse.com.tw/rwd/zh/news/newsDetail/8a8216d6a066696301a084f07542007a",
+      "publishedAt": "2026-09-09T06:51:00.000Z",
+      "source": "臺灣證券交易所",
+      "sourceId": "twse",
+      "markets": [
+        "tw"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "impactImportance": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "twse"
+      },
+      "titleZh": "臺灣證券交易所訂於9月11日召開有價證券上市審議委員會第895次會議，將審議貝爾威勒電子(股)公司之申請股票上市案",
+      "translationStatus": "translated"
+    },
+    {
       "id": "9d3ada0e5b894d5d968b",
       "title": "Join Us: EF Protocol Reddit AMA - September 16th, 2026",
       "link": "https://blog.ethereum.org/en/2026/09/09/reddit-ama",
@@ -1116,6 +1927,84 @@
         "sourceId": "ethereum"
       },
       "titleZh": "以太坊基金會協定團隊將於 2026 年 9 月 16 日舉辦線上問答",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "b3554861380b3edfc1a9",
+      "title": "SEMICON Taiwan聚焦半導體供應鏈新動能 7家關鍵供應鏈及創新板企業展現產業多元實力",
+      "link": "https://www.twse.com.tw/rwd/zh/news/newsDetail/8a8216d6a066696301a0802b90c60071",
+      "publishedAt": "2026-09-08T08:38:00.000Z",
+      "source": "臺灣證券交易所",
+      "sourceId": "twse",
+      "markets": [
+        "tw"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "impactImportance": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "twse"
+      },
+      "titleZh": "SEMICON Taiwan聚焦半導體供應鏈新動能 7家關鍵供應鏈及創新板企業展現產業多元實力",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "850aab2cc26f5f316250",
+      "title": "瑞宇國際(股)公司於115年9月8日送件申請股票創新板上市",
+      "link": "https://www.twse.com.tw/rwd/zh/news/newsDetail/8a8216d6a066696301a0800d1db9006d",
+      "publishedAt": "2026-09-08T08:05:00.000Z",
+      "source": "臺灣證券交易所",
+      "sourceId": "twse",
+      "markets": [
+        "tw"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "impactImportance": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "twse"
+      },
+      "titleZh": "瑞宇國際(股)公司於115年9月8日送件申請股票創新板上市",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "4f91e299338f51a5350b",
+      "title": "2026年8月集中市場相關數據",
+      "link": "https://www.twse.com.tw/rwd/zh/news/newsDetail/8a8216d6a066696301a07b4ef65c0064",
+      "publishedAt": "2026-09-07T09:58:00.000Z",
+      "source": "臺灣證券交易所",
+      "sourceId": "twse",
+      "markets": [
+        "tw"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "impactImportance": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "twse"
+      },
+      "titleZh": "2026年8月集中市場相關數據",
       "translationStatus": "translated"
     },
     {
@@ -1179,9 +2068,7 @@
       "sourceId": "bls-jobs",
       "markets": [
         "us",
-        "forex",
-        "crypto",
-        "tw"
+        "forex"
       ],
       "kind": "news",
       "verified": "official-source",
@@ -1494,9 +2381,7 @@
       "sourceId": "fed",
       "markets": [
         "us",
-        "forex",
-        "crypto",
-        "tw"
+        "forex"
       ],
       "kind": "news",
       "verified": "official-source",
@@ -1575,9 +2460,7 @@
       "sourceId": "fed",
       "markets": [
         "us",
-        "forex",
-        "crypto",
-        "tw"
+        "forex"
       ],
       "kind": "news",
       "verified": "official-source",
@@ -1761,9 +2644,7 @@
       "sourceId": "bls-cpi",
       "markets": [
         "us",
-        "forex",
-        "crypto",
-        "tw"
+        "forex"
       ],
       "kind": "news",
       "verified": "official-source",
@@ -1816,9 +2697,7 @@
       "sourceId": "bls-jobs",
       "markets": [
         "us",
-        "forex",
-        "crypto",
-        "tw"
+        "forex"
       ],
       "kind": "news",
       "verified": "official-source",
@@ -1923,9 +2802,7 @@
       "sourceId": "fed",
       "markets": [
         "us",
-        "forex",
-        "crypto",
-        "tw"
+        "forex"
       ],
       "kind": "news",
       "verified": "official-source",
@@ -2030,9 +2907,7 @@
       "sourceId": "fed",
       "markets": [
         "us",
-        "forex",
-        "crypto",
-        "tw"
+        "forex"
       ],
       "kind": "news",
       "verified": "official-source",
@@ -2059,9 +2934,7 @@
       "sourceId": "bls-cpi",
       "markets": [
         "us",
-        "forex",
-        "crypto",
-        "tw"
+        "forex"
       ],
       "kind": "news",
       "verified": "official-source",
@@ -2166,9 +3039,7 @@
       "sourceId": "fed",
       "markets": [
         "us",
-        "forex",
-        "crypto",
-        "tw"
+        "forex"
       ],
       "kind": "news",
       "verified": "official-source",
@@ -2221,9 +3092,7 @@
       "sourceId": "fed",
       "markets": [
         "us",
-        "forex",
-        "crypto",
-        "tw"
+        "forex"
       ],
       "kind": "news",
       "verified": "official-source",
@@ -2276,9 +3145,7 @@
       "sourceId": "bls-jobs",
       "markets": [
         "us",
-        "forex",
-        "crypto",
-        "tw"
+        "forex"
       ],
       "kind": "news",
       "verified": "official-source",
@@ -2435,9 +3302,7 @@
       "sourceId": "fed",
       "markets": [
         "us",
-        "forex",
-        "crypto",
-        "tw"
+        "forex"
       ],
       "kind": "news",
       "verified": "official-source",
@@ -2464,9 +3329,7 @@
       "sourceId": "fed",
       "markets": [
         "us",
-        "forex",
-        "crypto",
-        "tw"
+        "forex"
       ],
       "kind": "news",
       "verified": "official-source",
@@ -2493,9 +3356,7 @@
       "sourceId": "bls-cpi",
       "markets": [
         "us",
-        "forex",
-        "crypto",
-        "tw"
+        "forex"
       ],
       "kind": "news",
       "verified": "official-source",
@@ -2522,9 +3383,7 @@
       "sourceId": "bls-jobs",
       "markets": [
         "us",
-        "forex",
-        "crypto",
-        "tw"
+        "forex"
       ],
       "kind": "news",
       "verified": "official-source",
@@ -2551,9 +3410,7 @@
       "sourceId": "fed",
       "markets": [
         "us",
-        "forex",
-        "crypto",
-        "tw"
+        "forex"
       ],
       "kind": "news",
       "verified": "official-source",
@@ -2580,9 +3437,7 @@
       "sourceId": "fed",
       "markets": [
         "us",
-        "forex",
-        "crypto",
-        "tw"
+        "forex"
       ],
       "kind": "news",
       "verified": "official-source",
@@ -2609,9 +3464,7 @@
       "sourceId": "bls-cpi",
       "markets": [
         "us",
-        "forex",
-        "crypto",
-        "tw"
+        "forex"
       ],
       "kind": "news",
       "verified": "official-source",
@@ -2690,9 +3543,7 @@
       "sourceId": "bls-jobs",
       "markets": [
         "us",
-        "forex",
-        "crypto",
-        "tw"
+        "forex"
       ],
       "kind": "news",
       "verified": "official-source",
@@ -2771,9 +3622,7 @@
       "sourceId": "fed",
       "markets": [
         "us",
-        "forex",
-        "crypto",
-        "tw"
+        "forex"
       ],
       "kind": "news",
       "verified": "official-source",
@@ -2904,9 +3753,7 @@
       "sourceId": "fed",
       "markets": [
         "us",
-        "forex",
-        "crypto",
-        "tw"
+        "forex"
       ],
       "kind": "news",
       "verified": "official-source",
@@ -2933,9 +3780,7 @@
       "sourceId": "bls-cpi",
       "markets": [
         "us",
-        "forex",
-        "crypto",
-        "tw"
+        "forex"
       ],
       "kind": "news",
       "verified": "official-source",
@@ -2988,9 +3833,7 @@
       "sourceId": "fed",
       "markets": [
         "us",
-        "forex",
-        "crypto",
-        "tw"
+        "forex"
       ],
       "kind": "news",
       "verified": "official-source",
@@ -3017,9 +3860,7 @@
       "sourceId": "bls-jobs",
       "markets": [
         "us",
-        "forex",
-        "crypto",
-        "tw"
+        "forex"
       ],
       "kind": "news",
       "verified": "official-source",
@@ -3098,9 +3939,7 @@
       "sourceId": "bls-cpi",
       "markets": [
         "us",
-        "forex",
-        "crypto",
-        "tw"
+        "forex"
       ],
       "kind": "news",
       "verified": "official-source",
@@ -3127,9 +3966,7 @@
       "sourceId": "bls-jobs",
       "markets": [
         "us",
-        "forex",
-        "crypto",
-        "tw"
+        "forex"
       ],
       "kind": "news",
       "verified": "official-source",
@@ -3312,9 +4149,7 @@
       "sourceId": "bls-cpi",
       "markets": [
         "us",
-        "forex",
-        "crypto",
-        "tw"
+        "forex"
       ],
       "kind": "news",
       "verified": "official-source",
@@ -3393,9 +4228,7 @@
       "sourceId": "bls-jobs",
       "markets": [
         "us",
-        "forex",
-        "crypto",
-        "tw"
+        "forex"
       ],
       "kind": "news",
       "verified": "official-source",
@@ -3526,9 +4359,7 @@
       "sourceId": "bls-cpi",
       "markets": [
         "us",
-        "forex",
-        "crypto",
-        "tw"
+        "forex"
       ],
       "kind": "news",
       "verified": "official-source",
@@ -3555,9 +4386,7 @@
       "sourceId": "bls-jobs",
       "markets": [
         "us",
-        "forex",
-        "crypto",
-        "tw"
+        "forex"
       ],
       "kind": "news",
       "verified": "official-source",
@@ -3610,9 +4439,7 @@
       "sourceId": "bls-cpi",
       "markets": [
         "us",
-        "forex",
-        "crypto",
-        "tw"
+        "forex"
       ],
       "kind": "news",
       "verified": "official-source",
@@ -3639,9 +4466,7 @@
       "sourceId": "bls-jobs",
       "markets": [
         "us",
-        "forex",
-        "crypto",
-        "tw"
+        "forex"
       ],
       "kind": "news",
       "verified": "official-source",
@@ -3668,9 +4493,7 @@
       "sourceId": "bls-jobs",
       "markets": [
         "us",
-        "forex",
-        "crypto",
-        "tw"
+        "forex"
       ],
       "kind": "news",
       "verified": "official-source",
@@ -3697,9 +4520,7 @@
       "sourceId": "bls-cpi",
       "markets": [
         "us",
-        "forex",
-        "crypto",
-        "tw"
+        "forex"
       ],
       "kind": "news",
       "verified": "official-source",
@@ -3726,9 +4547,7 @@
       "sourceId": "bls-cpi",
       "markets": [
         "us",
-        "forex",
-        "crypto",
-        "tw"
+        "forex"
       ],
       "kind": "news",
       "verified": "official-source",
@@ -3755,9 +4574,7 @@
       "sourceId": "bls-jobs",
       "markets": [
         "us",
-        "forex",
-        "crypto",
-        "tw"
+        "forex"
       ],
       "kind": "news",
       "verified": "official-source",
@@ -4307,6 +5124,11 @@
       "id": "bitcoin-core",
       "status": "ready",
       "count": 10
+    },
+    {
+      "id": "twse",
+      "status": "ready",
+      "count": 35
     }
   ]
 }

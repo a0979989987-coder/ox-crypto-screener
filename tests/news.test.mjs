@@ -78,3 +78,20 @@ test('calendar translates reporting period without changing release time', () =>
   assert.equal(translated.occursAt, event.occursAt);
   assert.equal(localize({ ...event, title: 'Consumer Price Index for Invalid 2026' }).titleZh, null);
 });
+
+test('Taiwan official feed resolves relative links and keeps native Chinese titles', () => {
+  const feed = FEEDS.find(item => item.id === 'twse');
+  const [item] = normalizeFeed('<rss><channel><item><title>證交所公布市場統計</title><link>/rwd/zh/news/newsDetail/one</link><pubDate>Thu, 24 Sep 2026 09:22:00 GMT</pubDate></item></channel></rss>', feed);
+  assert.equal(item.link, 'https://www.twse.com.tw/rwd/zh/news/newsDetail/one');
+  assert.deepEqual(item.markets, ['tw']);
+  assert.equal(localize(item).titleZh, item.title);
+});
+
+test('market news does not reuse macro headlines as Taiwan or crypto news', async () => {
+  const snapshot = JSON.parse(await readFile(new URL('../data/news.json', import.meta.url)));
+  assert.ok(snapshot.news.some(item => item.sourceId === 'twse'));
+  for (const item of snapshot.news.filter(item => ['fed','bls-cpi','bls-jobs','ecb'].includes(item.sourceId))) {
+    assert.equal(item.markets.includes('crypto'), false);
+    assert.equal(item.markets.includes('tw'), false);
+  }
+});

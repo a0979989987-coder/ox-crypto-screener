@@ -2925,6 +2925,28 @@ export function renderTWHome(
   `;
 
 
+  // Keep the index and breadth in focus; secondary research remains accessible.
+  const shell = root.querySelector('.tw-home-shell');
+  const research = document.createElement('details');
+  research.className = 'tw-research';
+  const summary = document.createElement('summary');
+  summary.textContent = '題材、市場動態與我的觀察';
+  research.append(summary);
+  const researchBody = document.createElement('div');
+  researchBody.className = 'tw-research-grid';
+  for (const selector of ['.tw-theme', '.tw-opportunity', '.tw-myox']) {
+    const section = root.querySelector(selector);
+    if (section) researchBody.append(section);
+  }
+  research.append(researchBody);
+  shell.append(research);
+  const labels = {'.tw-xray':'市場廣度', '.tw-money':'資金流向', '.tw-theme':'題材追蹤', '.tw-opportunity':'市場動態', '.tw-myox':'我的觀察'};
+  for (const [selector, label] of Object.entries(labels)) {
+    const title = root.querySelector(`${selector} .tw-panel-head h3`);
+    if (title) title.textContent = label;
+  }
+
+
   /*
    * Use the existing bottom dock
    * as the single navigation source.

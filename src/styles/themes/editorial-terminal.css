@@ -1024,3 +1024,88 @@ body.ox-terminal .strength-compare-scale i.btc {background:var(--meter-mid)!impo
 body.ox-terminal .strength-compare-scale i.alt {background:var(--meter-strong)!important}
 body.ox-terminal #view-home .ox-gauge-value {stroke:var(--meter-color,var(--meter-mid))!important}
 body.ox-terminal #view-home .ox-meter i {background:var(--meter-color,var(--meter-mid))!important}
+
+/* Focus the cover on price; keep the existing candidate tier layout. */
+body.ox-terminal #view-home .ox-home-quote {grid-template-columns:minmax(180px,1fr) minmax(240px,2fr)!important}
+body.ox-terminal #view-home .ox-home-coin {object-fit:contain!important;background:#f7931a!important;border:0!important;box-shadow:none!important;padding:0!important;filter:none!important}
+@media(max-width:720px){
+ body.ox-terminal #view-home .ox-home-quote {grid-template-columns:1fr!important}
+}
+/* Market identity lives in navigation; keep only useful quote controls above data. */
+body.ox-terminal :is(.us-market-home-header,.tw-home-topbar,.fx-module-head)>div:first-child {display:none!important}
+body.ox-terminal :is(.us-market-home-header,.tw-home-topbar,.fx-module-head) {padding:12px 0!important;min-height:0!important;justify-content:flex-end!important;margin:0!important}
+
+/* Taiwan: primary index + breadth, capital ledger, expandable research. */
+body.ox-terminal .tw-home-root .tw-home-shell {grid-template-columns:minmax(0,1.5fr) minmax(300px,1fr)!important;gap:0 32px!important}
+body.ox-terminal .tw-home-root .tw-pulse {grid-column:1!important;grid-row:3!important}
+body.ox-terminal .tw-home-root .tw-xray {grid-column:2!important;grid-row:3!important;border-left:1px solid var(--line)!important;padding-left:26px!important}
+body.ox-terminal .tw-home-root .tw-pulse-grid {grid-template-columns:1fr 1fr!important}
+body.ox-terminal .tw-home-root .tw-pulse-card.primary {grid-column:1/-1!important;padding:0 0 24px!important;border-right:0!important;border-bottom:1px solid var(--line)!important;margin-bottom:12px}
+body.ox-terminal .tw-home-root .tw-pulse-card.primary .tw-pulse-price {font-size:clamp(50px,6vw,84px)!important}
+body.ox-terminal .tw-home-root .tw-pulse-card:not(.primary) {padding:14px 0!important}
+body.ox-terminal .tw-home-root .tw-pulse-card:last-child {padding-left:20px!important}
+body.ox-terminal .tw-home-root .tw-pulse-card:not(.primary) .tw-pulse-price {font-size:30px!important}
+body.ox-terminal .tw-home-root .tw-xray-grid {grid-template-columns:1fr 1fr!important}
+body.ox-terminal .tw-home-root .tw-xray-cell {padding:12px 0!important}
+body.ox-terminal .tw-home-root .tw-money {grid-column:1/-1!important;grid-row:4!important}
+body.ox-terminal .tw-home-root .tw-money-list {display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:0!important}
+body.ox-terminal .tw-home-root .tw-money-row {display:flex!important;flex-direction:column;align-items:flex-start!important;gap:8px!important;padding:10px 18px!important;border:0!important;border-left:1px solid var(--line)!important;background:none!important;border-radius:0!important}
+body.ox-terminal .tw-home-root .tw-money-row:first-child {padding-left:0!important;border-left:0!important}
+body.ox-terminal .tw-research {grid-column:1/-1;border-bottom:1px solid var(--line)}
+body.ox-terminal .tw-research>summary {padding:18px 0;font-size:14px;color:var(--ink);cursor:pointer}
+body.ox-terminal .tw-research-grid {display:grid;grid-template-columns:1fr 1fr;gap:0 30px}
+body.ox-terminal .tw-research-grid .tw-theme {grid-column:1/-1}
+/* FX: a selectable quote tape above the chart and a dense comparison ledger. */
+body.ox-terminal .fx-reference-date {font-size:11px;color:var(--muted);margin-right:auto}
+body.ox-terminal .fx-module-head {gap:16px!important}
+body.ox-terminal .fx-pulse-row {display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;margin:10px 0 0!important;border-bottom:1px solid var(--line)!important}
+body.ox-terminal .fx-pulse-row>button {display:grid;grid-template-columns:1fr auto;gap:8px;text-align:left;padding:16px 20px;background:none;color:var(--ink);border:0;border-right:1px solid var(--line);border-radius:0;cursor:pointer}
+body.ox-terminal .fx-pulse-row>button:first-child {padding-left:0}
+body.ox-terminal .fx-pulse-row>button:last-child {border-right:0}
+body.ox-terminal .fx-pulse-row>button[aria-pressed=true] {box-shadow:inset 0 -2px var(--ink)}
+body.ox-terminal .fx-pulse-row small {color:var(--muted);font-size:11px;grid-column:1/-1}
+body.ox-terminal .fx-pulse-row b {font:400 23px Georgia,serif}
+body.ox-terminal .fx-pulse-row em {font:400 13px var(--font-sans);align-self:end}
+body.ox-terminal .fx-chart-panel {background:linear-gradient(130deg,#ffffff0c,transparent 65%)!important;box-shadow:inset 0 1px #ffffff38,0 0 12px #ffffff08!important}
+body.ox-terminal .fx-radar-grid {display:block!important}
+body.ox-terminal .fx-ledger-head,body.ox-terminal .fx-pair-card {display:grid!important;grid-template-columns:minmax(150px,1.4fr) minmax(100px,1fr) 90px minmax(160px,1fr)!important;gap:16px!important;align-items:center!important}
+body.ox-terminal .fx-ledger-head {padding:12px 16px;color:var(--muted);font-size:11px;border-bottom:1px solid var(--line)}
+body.ox-terminal .fx-pair-card {width:100%;padding:16px!important;border:0!important;border-bottom:1px solid var(--line)!important;background:none!important;border-radius:0!important;text-align:left!important}
+body.ox-terminal .fx-pair-card.selected {background:#ffffff06!important;box-shadow:inset 2px 0 var(--ink)!important}
+body.ox-terminal .fx-pair-card>span {display:flex;flex-direction:column;gap:4px}
+body.ox-terminal .fx-pair-card i {grid-column:auto!important;margin:0!important;padding:0!important;border:0!important;font-size:11px!important}
+body.ox-terminal .fx-pair-card strong {font-size:22px!important}
+/* News begins with functional controls; the calendar opens only when requested. */
+body.ox-terminal #view-data .media-page {padding-top:8px!important}
+body.ox-terminal #view-data .media-card {padding-top:0!important}
+body.ox-terminal .ox-news-controls {margin-top:0!important}
+body.ox-terminal .ox-calendar-disclosure {border-bottom:1px solid var(--line);padding:10px 0;margin-bottom:18px}
+body.ox-terminal .ox-calendar-disclosure>summary {cursor:pointer;font-size:13px;color:var(--ink)}
+body.ox-terminal .ox-calendar-disclosure .ox-mini-calendar {max-width:330px;margin:14px 0!important}
+body.ox-terminal .ox-unlock-countdown {font:500 17px/1.5 var(--font-sans);color:#c5aa77!important;letter-spacing:.02em}
+@media(max-width:900px){
+ body.ox-terminal .tw-home-root .tw-home-shell {display:block!important}
+ body.ox-terminal .tw-home-root .tw-xray {border-left:0!important;padding-left:0!important}
+ body.ox-terminal .tw-home-root .tw-xray-grid {grid-template-columns:repeat(4,minmax(0,1fr))!important}
+ body.ox-terminal .tw-home-root .tw-money-list {grid-template-columns:repeat(3,minmax(0,1fr))!important;row-gap:16px!important}
+ body.ox-terminal .fx-ledger-head,body.ox-terminal .fx-pair-card {grid-template-columns:minmax(100px,1.3fr) minmax(80px,1fr) 70px!important;gap:10px!important}
+ body.ox-terminal .fx-ledger-head>span:last-child {display:none}
+ body.ox-terminal .fx-pair-card i {grid-column:1/-1!important;color:var(--muted)!important}
+}
+@media(max-width:540px){
+ body.ox-terminal .tw-home-root .tw-xray-grid {grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ body.ox-terminal .tw-home-root .tw-money-list {grid-template-columns:1fr 1fr!important}
+ body.ox-terminal .tw-research-grid {display:block}
+ body.ox-terminal .fx-pulse-row>button {padding:12px 9px;grid-template-columns:1fr}
+ body.ox-terminal .fx-pulse-row b {font-size:20px}
+ body.ox-terminal .fx-pulse-row em {font-size:12px}
+ body.ox-terminal .fx-reference-date {max-width:48%;line-height:1.6}
+}
+/* Remove repeated market mastheads while keeping status and working controls. */
+body.ox-terminal :is(.twi-header,.twr-header)>div:first-child,
+body.ox-terminal :is(.us-radar-title,.us-strength-head-copy)>h2,
+body.ox-terminal .us-radar-kicker,
+body.ox-terminal .us-strength-shell>.page-kicker {display:none!important}
+body.ox-terminal :is(.twi-header,.twr-header,.us-radar-head,.us-strength-head) {padding:10px 0!important;min-height:0!important;margin:0 0 14px!important}
+body.ox-terminal .twi-header-count {display:flex!important;align-items:baseline!important;gap:8px!important;background:none!important;border:0!important;padding:0!important}
+body.ox-terminal .twi-header-count strong {font-size:20px!important}
