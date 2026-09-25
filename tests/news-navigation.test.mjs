@@ -46,3 +46,13 @@ test('leaving news for settings restores market navigation and supports history'
   assert.equal(body.dataset.newsMode, '0');
   assert.equal(entries.length, 2, 'history navigation must not create extra entries');
 });
+
+test('date-only unlock count is stable across browser timezones', async () => {
+  const document = { body: { dataset: {} }, getElementById: () => null, querySelector: () => null, querySelectorAll: () => [], addEventListener() {} };
+  const window = { addEventListener() {} };
+  const context = vm.createContext({ document, window, location: { hash: '' }, localStorage: { getItem: () => null } });
+  vm.runInContext(await readFile(new URL('../src/components/news/center.js', import.meta.url), 'utf8'), context);
+  const countdown = window.OXNews.unlockCountdown;
+  assert.equal(countdown({status:'date-only',date:'2026-10-12'}, new Date('2026-09-25T17:00:00Z')), '距官方預估日期 16 天・時間待公布');
+  assert.equal(countdown({status:'confirmed',occursAt:'2026-09-26T17:00:00Z'}, new Date('2026-09-25T17:00:01Z')), '倒數 0 天 23:59:59');
+});
