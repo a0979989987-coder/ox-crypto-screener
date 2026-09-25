@@ -13,6 +13,8 @@
 .ox-news-section-title{font-size:19px;margin:23px 0 12px}
 .ox-news-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 .ox-news-card,.ox-news-empty{min-width:0;border:1px solid var(--line,rgba(150,174,205,.22));border-radius:16px;background:var(--panel,#172231);padding:16px}
+.ox-news-card.is-read{opacity:.76}
+.ox-news-card:focus-within{opacity:1}
 .ox-news-card h3{font-size:16px;line-height:1.45;margin:9px 0;overflow-wrap:anywhere}
 .ox-news-meta{display:flex;flex-wrap:wrap;align-items:center;gap:7px 12px;color:var(--muted,#a7b8cb);font-size:12px}
 .ox-news-source{font-weight:700;color:var(--ink,#ecf3fb)}
@@ -37,6 +39,6 @@ body[data-news-mode="1"] .ox-news-dock{position:fixed;z-index:1000;bottom:max(8p
   .ox-news-tabs button{min-width:0;padding:0 5px}
   .ox-news-control-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
   .ox-news-filter{min-width:0;padding:0 5px;font-size:12px}
-  .ox-news-options>*{flex:1 1 150px}
+  .ox-news-options>*{flex:1 1 150px;min-width:0}
   .ox-news-dock button{font-size:11px}
 }
