@@ -20,7 +20,7 @@ function setChartFocus(enabled) {
 
 function renderMarketDataStatus() {
   const descriptions = {
-    crypto: ['加密市場數據', 'Bitget USDT 永續合約', '行情、K 線與雷達使用既有 Crypto 模組；新聞與事件日曆尚未接入。'],
+    crypto: ['加密市場數據', 'Bitget USDT 永續合約', '行情、K 線與雷達使用既有加密市場模組；下方提供官方新聞與事件快照。'],
     us: ['美股市場數據', 'Twelve Data 後端', 'SPY／QQQ／IWM 及單筆個股查價已接入；全市場廣度、類股和股票池雷達目前無資料。'],
     tw: ['台股市場數據', 'TWSE／TPEx 官方日資料', '上市與上櫃使用最新共同完成交易日；請至雷達查個股官方收盤價。'],
     forex: ['外匯市場數據', 'Frankfurter／ECB 每日參考匯率', '已接入每日匯率與貨幣強弱；盤中報價、點差與成交量目前無資料。']
