@@ -173,8 +173,8 @@ const HomeChartVariant = (()=>{
       handleScale:{axisPressedMouseMove:false,mouseWheel:true,pinch:true}
     });
     series=chart.addCandlestickSeries({
-      upColor:"#e5e1d8",downColor:"#8d9490",
-      borderVisible:false,wickUpColor:"#e5e1d8",wickDownColor:"#8d9490",
+      upColor:theme()?"#00778a":"#00b8d4",downColor:theme()?"#b81550":"#ff3078",
+      borderVisible:false,wickUpColor:theme()?"#00778a":"#00b8d4",wickDownColor:theme()?"#b81550":"#ff3078",
       priceLineVisible:true,lastValueVisible:true
     });
     volumeSeries=chart.addHistogramSeries({
@@ -194,6 +194,8 @@ const HomeChartVariant = (()=>{
   const applyThemeHome=()=>{
     if(!chart) return;
     const c=chartColors();
+    const up=theme()?"#00778a":"#00b8d4",down=theme()?"#b81550":"#ff3078";
+    series?.applyOptions({upColor:up,downColor:down,wickUpColor:up,wickDownColor:down});
     chart.applyOptions({
       layout:{background:{type:"solid",color:c.bg},textColor:c.text,fontSize:9},
       grid:{vertLines:{color:c.grid},horzLines:{color:c.grid}},
@@ -214,7 +216,7 @@ const HomeChartVariant = (()=>{
         volumeSeries?.setData(data.map(c=>({
           time:c.time,
           value:num(c.quoteVolume || c.volume),
-          color:c.close>=c.open ? "rgba(56,201,155,.26)" : "rgba(238,97,124,.23)"
+          color:c.close>=c.open ? "rgba(0,184,212,.29)" : "rgba(255,48,120,.27)"
         })));
         const mobile = window.matchMedia("(max-width:720px)").matches;
         const compact = window.matchMedia("(max-width:430px)").matches;
