@@ -12,7 +12,7 @@
 .ox-live-shell{margin-top:5px!important;margin-bottom:var(--ox-live-gap)!important;padding-top:0!important;padding-bottom:0!important;}
 .ox-live-strip{min-height:31px!important;height:31px!important;}
 .ox-live-badge{padding-inline:10px!important;}
-.ox-live-window{padding-left:6px!important;min-width:0!important;overflow:hidden!important;}
+.ox-live-window{padding-left:6px!important;min-width:0!important;overflow:clip!important;}
 #ox-live-text{white-space:nowrap!important;}
 main.wrap{padding-top:0!important;}
 #view-home>.v33-home-page,#view-radar,#view-strength>.strength-page,#view-settings>.settings-page{margin-top:0!important;padding-top:0!important;}
