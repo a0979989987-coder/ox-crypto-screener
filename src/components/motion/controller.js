@@ -3,7 +3,8 @@
   const root = document.documentElement;
   const reducedMq = window.matchMedia?.('(prefers-reduced-motion: reduce)');
   const finePointerMq = window.matchMedia?.('(hover:hover) and (pointer:fine)');
-  const reduced = () => !!reducedMq?.matches;
+  // Scroll-linked glass repaints are especially costly on mobile Safari.
+  const reduced = () => !!reducedMq?.matches || !!window.matchMedia?.('(pointer:coarse)')?.matches;
   const isFinePointer = () => !!finePointerMq?.matches;
   const clamp = (v,min,max) => Math.max(min,Math.min(max,v));
   const esc = value => window.CSS?.escape ? CSS.escape(value) : String(value).replace(/[^a-zA-Z0-9_-]/g,'\$&');
@@ -35,7 +36,8 @@
     if (Math.abs(targetScroll - smoothScroll) > .25 || Math.abs(targetPointerX - smoothPointerX) > .15) scheduleFrame();
   }
   function scheduleFrame(){ if (!raf && !reduced()) raf = requestAnimationFrame(motionFrame); }
-  window.addEventListener('scroll', () => { targetScroll = window.scrollY || 0; scheduleFrame(); }, {passive:true});
+  // Keep the large background and glass surfaces static while scrolling.
+  // Repainting them on every scroll frame delayed gestures on every view.
   window.addEventListener('resize', () => { targetScroll = window.scrollY || 0; scheduleFrame(); syncDockIndicator(); syncScannerIndicator(); }, {passive:true});
   if (isFinePointer()) window.addEventListener('pointermove', e => { targetPointerX = 12 + (e.clientX / Math.max(1,innerWidth)) * 76; scheduleFrame(); }, {passive:true});
 
