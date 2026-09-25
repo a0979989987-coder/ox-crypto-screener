@@ -196,7 +196,6 @@ function initChart() {
 
   new ResizeObserver(() => {
     resizeChartToContainer();
-    updatePriceTimer();
   }).observe(container);
 }
 
@@ -404,9 +403,9 @@ function updatePriceTimer() {
   if (mobile) {
     // 手機價格軸已顯示即時價格，中央不再重複放大型價格卡；倒數固定在安全的右上角。
     const shortTime = h > 0 ? `${h}h ${String(m).padStart(2,"0")}m` : `${Math.max(1, m)}m`;
-    timerEl.innerHTML = `<small>${shortTime}</small>`;
-    timerEl.style.top = "7px";
-    timerEl.style.transform = "none";
+    if (timerEl.textContent !== shortTime) timerEl.innerHTML = `<small>${shortTime}</small>`;
+    if (timerEl.style.top !== "7px") timerEl.style.top = "7px";
+    if (timerEl.style.transform !== "none") timerEl.style.transform = "none";
     return;
   }
 
@@ -418,4 +417,3 @@ function updatePriceTimer() {
     timerEl.style.top = `${Math.max(16, Math.min(document.getElementById("chart").clientHeight - 24, y))}px`;
   }
 }
-
