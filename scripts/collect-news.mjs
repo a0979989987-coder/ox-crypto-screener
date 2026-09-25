@@ -58,6 +58,7 @@ export function normalizeFeed(xml, feed) {
     const link = safeUrl(typeof preferred === 'object' ? preferred?.['@_href'] ?? preferred?.['#text'] : preferred);
     const publishedAt = iso(entry.pubDate ?? entry.published ?? entry.updated);
     if (!title || !link || !verifiedForFeed(link, feed) || !publishedAt) return null;
+    if (feed.id === 'kraken' && /VIP château|APY on AUSD|Pre-IPO Challenge/i.test(title)) return null;
     const relevantMarkets = ['sec','cftc'].includes(feed.id) && !/bitcoin|crypto|digital asset|spot etf|exchange.traded fund/i.test(title) ? ['us'] : feed.markets;
     return { id: hash(link), title, link, publishedAt, source: feed.name, sourceId: feed.id,
       markets: relevantMarkets, kind: 'news', verified: 'official-source', impact: impact(title, feed.id, link) };
@@ -100,7 +101,7 @@ const retainEvent = item => ({ ...item, sourceUrl: item.sourceUrl ?? item.link ?
 // Preserve translations only while both the source identity and original title match.
 export function localize(item, previous = []) {
   const old = previous.find(entry => entry.id === item.id && entry.title === item.title);
-  let titleZh = old?.titleZh || null;
+  let titleZh = old?.titleZh || VERIFIED_TRANSLATIONS[item.title] || null;
   if (item.kind === 'event') {
     const match = item.title.match(/^(Consumer Price Index|Employment Situation|Producer Price Index|Job Openings and Labor Turnover Survey) for (\w+) (\d{4})$/);
     const names = { 'Consumer Price Index': '消費者物價指數', 'Employment Situation': '就業情勢報告', 'Producer Price Index': '生產者物價指數', 'Job Openings and Labor Turnover Survey': '職缺與勞動流動調查' };
@@ -110,6 +111,41 @@ export function localize(item, previous = []) {
   }
   return { ...item, titleZh, translationStatus: titleZh ? 'translated' : 'pending' };
 }
+
+// Reviewed headline translations are keyed by the exact original text; changed
+// headlines wait for a new review instead of inheriting an inaccurate title.
+const VERIFIED_TRANSLATIONS = {
+  'CFTC Staff Releases Updates to FAQs Concerning Registrants and Registered Entity Activities Relating to Crypto Assets and Blockchain Technologies': '美國 CFTC 更新加密資產與區塊鏈業務常見問答，涉及註冊機構及登記實體',
+  'Spend more than your cash balance: introducing Kraken Borrow for US customers': 'Kraken 推出面向美國用戶的借貸功能 Kraken Borrow',
+  'Inside Kraken&#8217;s VIP château retreat: a weekend in Saint-Émilion': 'Kraken 介紹其法國聖愛美濃貴賓活動',
+  'CFTC Releases Staff Advisory on Mention Markets': '美國 CFTC 發布 Mention Markets 相關工作人員指引',
+  'Earn up to 6% APY on AUSD with Kraken+': 'Kraken+ 宣布 AUSD 存放獎勵方案，標示最高年化 6%',
+  'CFTC Innovation Task Force to Host Frontier Forum Series on Innovative Financial Technologies': '美國 CFTC 創新工作小組將舉辦金融科技前沿論壇系列',
+  'v32.0rc2: Bitcoin Core 32.0 release candidate 2': '比特幣核心 32.0 第二版候選測試版本發布',
+  'The Anthropic Pre-IPO Challenge: compete for $20,000 USDG on Kraken Pro': 'Kraken Pro 宣布 Anthropic 上市前挑戰活動，獎勵標示為 20,000 USDG',
+  'CFTC Staff Issues No-Action Position to Providers of Passive Software': '美國 CFTC 工作人員就被動軟體提供者發布不採取執法行動立場',
+  'TREAD is available for trading!': 'Kraken 開放 TREAD 交易',
+  'GNOT is available for trading!': 'Kraken 開放 GNOT 交易',
+  'USDC on Arc deposits and withdrawals now available!': 'Kraken 開放 Arc 網路 USDC 充值與提領',
+  'Kraken is an official X Cashtag partner, with trading just a tap away from your timeline': 'Kraken 宣布成為 X Cashtag 合作夥伴，提供交易入口',
+  'USDCx on Aleo deposits and withdrawals now available!': 'Kraken 開放 Aleo 網路 USDCx 充值與提領',
+  'The new Kraken Wallet: self-custody, now with DeFi Earn': 'Kraken 推出新版自託管錢包，加入 DeFi 收益功能',
+  'v32.0rc1: Bitcoin Core 32.0 release candidate 1': '比特幣核心 32.0 第一版候選測試版本發布',
+  'CFTC Approves Final Rule Concerning Whistleblower Awards': '美國 CFTC 通過檢舉獎勵相關最終規則',
+  'Joint Readout of Principals’ Meeting of UK and U.S. Authorities Regarding Central Counterparty Resolution': '英美主管機關發布中央交易對手處置會議聯合摘要',
+  'CFTC Chairman Selig and Kansas State University Announce Agenda for October 22-23 AgCon Conference in Overland Park': '美國 CFTC 主席與堪薩斯州立大學公布 10 月 22 至 23 日農業會議議程',
+  'CFTC Staff Issues No-Action Position on Large Trader Reporting for Direct Participants': '美國 CFTC 工作人員就直接參與者的大額交易人申報發布不採取執法行動立場',
+  'CFTC Issues Final Rule to Modify Clearing Requirement for Canadian Dollar- and Mexican Peso-Denominated Interest Rate Swaps': '美國 CFTC 修訂加元與墨西哥披索利率交換交易的清算要求',
+  'CFTC Further Extends Compliance Date for Amendments to Form PF': '美國 CFTC 再延長 Form PF 修正規定的遵循期限',
+  'Bitcoin Core 29.4': '比特幣核心 29.4 正式版本發布',
+  'Bitcoin Core 30.3': '比特幣核心 30.3 正式版本發布',
+  'Bitcoin Core 31.1': '比特幣核心 31.1 正式版本發布',
+  'v29.4rc1: Bitcoin Core 29.4 release candidate 1': '比特幣核心 29.4 第一版候選測試版本發布',
+  'v30.3rc1: Bitcoin Core 30.3 release candidate 1': '比特幣核心 30.3 第一版候選測試版本發布',
+  'v31.1rc1: Bitcoin Core 31.1 release candidate 1': '比特幣核心 31.1 第一版候選測試版本發布',
+  'v27-final: Bitcoin Core 27.x Final': '比特幣核心 27.x 最終版本發布',
+  'v26-final: Bitcoin Core 25.x Final': '比特幣核心 25.x 最終版本發布'
+};
 
 export async function collect() {
   const old = await readFile(new URL('../data/news.json', import.meta.url), 'utf8').then(JSON.parse).catch(() => null);
@@ -125,13 +161,14 @@ export async function collect() {
   catch (error) { sources.push({ id: 'bls-calendar', status: 'error', message: String(error.message).slice(0,100) }); events = (old?.events ?? []).filter(item => safeUrl(item.link) && Date.parse(item.occursAt) >= Date.now()).map(retainEvent); }
   if (!news.length && !events.length) throw new Error('No verified source data; snapshot not replaced');
   const priorUnlocks = (old?.events || []).filter(item => item.kind === 'token-unlock' && item.sourceId === 'aptos' && item.date && item.sourceUrl && item.status === 'date-only');
-  const comparable = { schemaVersion: 1, news: news.map(item => localize({ ...item, impact: impact(item.title, item.sourceId, item.link) }, old?.news)), events: [...events.map(item => localize(item, old?.events)), ...priorUnlocks] };
+  const reviewed = news.map(item => localize({ ...item, impact: impact(item.title, item.sourceId, item.link) }, old?.news));
+  const comparable = { schemaVersion: 1, news: reviewed.filter(item => item.translationStatus === 'translated'), events: [...events.map(item => localize(item, old?.events)), ...priorUnlocks] };
   const oldComparable = old && { schemaVersion: old.schemaVersion, news: old.news, events: old.events };
   if (JSON.stringify(comparable) === JSON.stringify(oldComparable)) return { changed: false, sources };
   const snapshot = { ...comparable, generatedAt: new Date().toISOString(), sources };
   await mkdir(new URL('../data/', import.meta.url), { recursive: true });
   await writeFile(new URL('../data/news.json', import.meta.url), JSON.stringify(snapshot, null, 2) + '\n');
-  return { changed: true, news: news.length, events: events.length, sources };
+  return { changed: true, news: comparable.news.length, pendingTranslation: reviewed.length - comparable.news.length, events: comparable.events.length, sources };
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
