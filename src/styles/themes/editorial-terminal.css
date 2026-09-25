@@ -1112,7 +1112,7 @@ body.ox-terminal .twi-header-count strong {font-size:20px!important}
 
 /* BTC quote and chart share one compact surface and one live market edge. */
 body.ox-terminal #view-home .ox-home-main {margin-top:14px!important}
-body.ox-terminal #view-home .ox-home-chart {min-height:0!important;padding:17px 20px 12px!important;gap:0}
+body.ox-terminal #view-home .ox-home-chart {min-height:0!important;align-self:start!important;padding:17px 20px 12px!important;gap:0}
 body.ox-terminal #view-home .ox-home-chart .ox-home-quote {display:flex!important;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px 20px;min-height:0!important;padding:0 0 13px!important;margin:0 0 12px;border:0!important;border-bottom:1px solid var(--line)!important}
 body.ox-terminal #view-home .ox-home-chart .ox-home-price {justify-content:flex-end;gap:6px 9px}
 body.ox-terminal #view-home .ox-home-chart .ox-home-price strong {font-size:clamp(30px,3vw,43px)}
