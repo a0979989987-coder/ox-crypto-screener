@@ -7,17 +7,18 @@ import { XMLParser } from 'fast-xml-parser';
 // Public, first-party feeds only. Feed headlines and source links are republished;
 // article bodies and third-party summaries are never copied into the site.
 export const FEEDS = [
-  { id: 'fed', name: 'Federal Reserve', url: 'https://www.federalreserve.gov/feeds/press_monetary.xml', markets: ['us','forex','crypto','tw'] },
-  { id: 'bls-cpi', name: 'U.S. BLS · CPI', url: 'https://www.bls.gov/feed/cpi.rss', markets: ['us','forex','crypto','tw'] },
-  { id: 'bls-jobs', name: 'U.S. BLS · Employment', url: 'https://www.bls.gov/feed/empsit.rss', markets: ['us','forex','crypto','tw'] },
-  { id: 'ecb', name: 'European Central Bank', url: 'https://www.ecb.europa.eu/rss/press.html', markets: ['forex','us'] },
+  { id: 'twse', name: '臺灣證券交易所', url: 'https://www.twse.com.tw/rwd/zh/news/feed?type=rss', markets: ['tw'] },
+  { id: 'fed', name: 'Federal Reserve', url: 'https://www.federalreserve.gov/feeds/press_monetary.xml', markets: ['us','forex'] },
+  { id: 'bls-cpi', name: 'U.S. BLS · CPI', url: 'https://www.bls.gov/feed/cpi.rss', markets: ['us','forex'] },
+  { id: 'bls-jobs', name: 'U.S. BLS · Employment', url: 'https://www.bls.gov/feed/empsit.rss', markets: ['us','forex'] },
+  { id: 'ecb', name: 'European Central Bank', url: 'https://www.ecb.europa.eu/rss/press.html', markets: ['forex'] },
   { id: 'sec', name: 'U.S. SEC', url: 'https://www.sec.gov/news/pressreleases.rss', markets: ['us','crypto'] },
   { id: 'ethereum', name: 'Ethereum Foundation', url: 'https://blog.ethereum.org/feed.xml', markets: ['crypto'] },
   { id: 'kraken', name: 'Kraken', url: 'https://blog.kraken.com/feed', markets: ['crypto'] },
   { id: 'cftc', name: 'U.S. CFTC', url: 'https://www.cftc.gov/RSS/RSSGP/rssgp.xml', markets: ['us','crypto'] },
   { id: 'bitcoin-core', name: 'Bitcoin Core', url: 'https://github.com/bitcoin/bitcoin/releases.atom', markets: ['crypto'] }
 ];
-const OFFICIAL_HOSTS = new Set(['www.federalreserve.gov', 'www.bls.gov', 'www.ecb.europa.eu', 'www.sec.gov', 'blog.ethereum.org', 'blog.kraken.com', 'www.cftc.gov']);
+const OFFICIAL_HOSTS = new Set(['www.twse.com.tw', 'www.federalreserve.gov', 'www.bls.gov', 'www.ecb.europa.eu', 'www.sec.gov', 'blog.ethereum.org', 'blog.kraken.com', 'www.cftc.gov']);
 
 const parser = new XMLParser({ ignoreAttributes: false, processEntities: true, trimValues: true });
 const array = value => value == null ? [] : Array.isArray(value) ? value : [value];
@@ -55,7 +56,8 @@ export function normalizeFeed(xml, feed) {
     const title = plain(entry.title);
     const links = array(entry.link);
     const preferred = links.find(value => typeof value === 'object' && (!value['@_rel'] || value['@_rel'] === 'alternate')) ?? links[0];
-    const link = safeUrl(typeof preferred === 'object' ? preferred?.['@_href'] ?? preferred?.['#text'] : preferred);
+    const rawLink = plain(typeof preferred === 'object' ? preferred?.['@_href'] ?? preferred?.['#text'] : preferred);
+    const link = safeUrl(feed.id === 'twse' && /^\/rwd\/zh\/news\/newsDetail\//.test(rawLink) ? `https://www.twse.com.tw${rawLink}` : rawLink);
     const publishedAt = iso(entry.pubDate ?? entry.published ?? entry.updated);
     if (!title || !link || !verifiedForFeed(link, feed) || !publishedAt) return null;
     if (feed.id === 'kraken' && /VIP château|APY on AUSD|Pre-IPO Challenge/i.test(title)) return null;
@@ -101,7 +103,7 @@ const retainEvent = item => ({ ...item, sourceUrl: item.sourceUrl ?? item.link ?
 // Preserve translations only while both the source identity and original title match.
 export function localize(item, previous = []) {
   const old = previous.find(entry => entry.id === item.id && entry.title === item.title);
-  let titleZh = old?.titleZh || VERIFIED_TRANSLATIONS[item.title] || null;
+  let titleZh = old?.titleZh || (item.sourceId === 'twse' && /[\u4e00-\u9fff]/.test(item.title) ? item.title : null) || VERIFIED_TRANSLATIONS[item.title] || null;
   if (item.kind === 'event') {
     const match = item.title.match(/^(Consumer Price Index|Employment Situation|Producer Price Index|Job Openings and Labor Turnover Survey) for (\w+) (\d{4})$/);
     const names = { 'Consumer Price Index': '消費者物價指數', 'Employment Situation': '就業情勢報告', 'Producer Price Index': '生產者物價指數', 'Job Openings and Labor Turnover Survey': '職缺與勞動流動調查' };
@@ -161,7 +163,7 @@ export async function collect() {
   catch (error) { sources.push({ id: 'bls-calendar', status: 'error', message: String(error.message).slice(0,100) }); events = (old?.events ?? []).filter(item => safeUrl(item.link) && Date.parse(item.occursAt) >= Date.now()).map(retainEvent); }
   if (!news.length && !events.length) throw new Error('No verified source data; snapshot not replaced');
   const priorUnlocks = (old?.events || []).filter(item => item.kind === 'token-unlock' && item.sourceId === 'aptos' && item.date && item.sourceUrl && item.status === 'date-only');
-  const reviewed = news.map(item => localize({ ...item, impact: impact(item.title, item.sourceId, item.link) }, old?.news));
+  const reviewed = news.map(item => localize({ ...item, markets: ['fed','bls-cpi','bls-jobs'].includes(item.sourceId) ? ['us','forex'] : item.sourceId === 'ecb' ? ['forex'] : item.markets, impact: impact(item.title, item.sourceId, item.link) }, old?.news));
   const comparable = { schemaVersion: 1, news: reviewed.filter(item => item.translationStatus === 'translated'), events: [...events.map(item => localize(item, old?.events)), ...priorUnlocks] };
   const oldComparable = old && { schemaVersion: old.schemaVersion, news: old.news, events: old.events };
   if (JSON.stringify(comparable) === JSON.stringify(oldComparable)) return { changed: false, sources };
