@@ -47,22 +47,6 @@ function setChartFocus(enabled) {
   [0, 80, 180, 320].forEach(ms => setTimeout(() => { resizeChartToContainer(); updatePriceTimer(); }, ms));
 }
 
-function renderMarketDataStatus() {
-  const descriptions = {
-    crypto: ['加密市場數據', 'Bitget USDT 永續合約', '行情、K 線與雷達使用既有加密市場模組；下方提供官方新聞與事件快照。'],
-    us: ['美股市場數據', 'Twelve Data 後端', 'SPY／QQQ／IWM 及單筆個股查價已接入；全市場廣度、類股和股票池雷達目前無資料。'],
-    tw: ['台股市場數據', 'TWSE／TPEx 官方日資料', '上市與上櫃使用最新共同完成交易日；請至雷達查個股官方收盤價。'],
-    forex: ['外匯市場數據', 'Frankfurter／ECB 每日參考匯率', '已接入每日匯率與貨幣強弱；盤中報價、點差與成交量目前無資料。']
-  };
-  const [heading, source, availability] = descriptions[state.activeMarket] || descriptions.crypto;
-  document.getElementById('ox-data-heading').textContent = heading;
-  document.getElementById('ox-data-source').textContent = `來源：${source}`;
-  document.getElementById('ox-data-availability').textContent = availability;
-}
-document.addEventListener('ox:marketchange', () => {
-  if (state.activeView === 'data') renderMarketDataStatus();
-});
-
 function switchAppView(view) {
   if (!['home','strength','radar','data','media','settings','news'].includes(view)) return;
   if (document.body.classList.contains('chart-focus')) setChartFocus(false);
@@ -77,7 +61,6 @@ function switchAppView(view) {
   {
     state.activeView = view;
     document.body.dataset.view = view;
-    if (view === 'data') renderMarketDataStatus();
     document.querySelectorAll('[data-app-view]').forEach(el => el.classList.toggle('active', el.dataset.appView === view));
     document.querySelectorAll('[data-view-target]').forEach(btn => btn.classList.toggle('active', btn.dataset.viewTarget === view));
 
