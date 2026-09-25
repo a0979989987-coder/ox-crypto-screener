@@ -26,3 +26,30 @@ test('unmatched headline has no invented importance score', () => {
 test('rejects feed entries whose source link leaves the official domains', () => {
   assert.equal(normalizeFeed('<rss><channel><item><title>Claim</title><link>https://example.com/claim</link><pubDate>Thu, 24 Sep 2026 12:30:00 GMT</pubDate></item></channel></rss>', FEEDS[0]).length, 0);
 });
+
+import { localize } from '../scripts/collect-news.mjs';
+import { readFile } from 'node:fs/promises';
+
+test('published snapshot has Chinese titles and retains official originals', async () => {
+  const snapshot = JSON.parse(await readFile(new URL('../data/news.json', import.meta.url)));
+  for (const item of [...snapshot.news, ...snapshot.events]) {
+    assert.match(item.titleZh, /[\u4e00-\u9fff]/);
+    assert.ok(item.title && item.link.startsWith('https://'));
+    assert.equal(item.translationStatus, 'translated');
+  }
+});
+
+test('translation cannot survive a changed source title or identity', () => {
+  const old = { id: 'one', title: 'Original', titleZh: '原始標題' };
+  assert.equal(localize(old, [old]).titleZh, '原始標題');
+  assert.equal(localize({ ...old, title: 'Correction' }, [old]).translationStatus, 'pending');
+  assert.equal(localize({ ...old, id: 'two' }, [old]).titleZh, null);
+});
+
+test('calendar translates reporting period without changing release time', () => {
+  const event = { kind: 'event', title: 'Consumer Price Index for September 2026', occursAt: '2026-10-14T12:30:00.000Z' };
+  const translated = localize(event);
+  assert.equal(translated.titleZh, '美國 2026 年 9 月消費者物價指數');
+  assert.equal(translated.occursAt, event.occursAt);
+  assert.equal(localize({ ...event, title: 'Consumer Price Index for Invalid 2026' }).titleZh, null);
+});
