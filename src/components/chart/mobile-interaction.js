@@ -50,8 +50,7 @@
     if(!window.matchMedia('(max-width:720px)').matches||reduced()) return;
     const view=e.detail?.view || window.state?.activeView;
     const el=document.querySelector(`[data-app-view="${view}"]`); if(!el) return;
-    el.classList.remove('ox-mobile-view-in'); void el.offsetWidth; el.classList.add('ox-mobile-view-in');
-    setTimeout(()=>el.classList.remove('ox-mobile-view-in'),300);
+    // Avoid forced layout and page-wide transform during the first touch scroll.
     requestAnimationFrame(bindMobileGlass);
   });
 

@@ -44,3 +44,17 @@ test("market router activates one registered module", async () => {
   assert.equal(await router.activate("forex"), true);
   assert.deepEqual(calls, ["crypto:on", "crypto:off", "forex:on"]);
 });
+
+test("late market activation cannot leave the prior market visible", async () => {
+  let finishForex;
+  const calls = [];
+  const router = createMarketRouter();
+  router.register({ id: "forex", activate: () => new Promise(resolve => { finishForex = resolve; }), deactivate: () => calls.push("forex:hidden") });
+  router.register({ id: "crypto", activate: () => calls.push("crypto:visible") });
+  const first = router.activate("forex");
+  await router.activate("crypto");
+  finishForex();
+  await first;
+  assert.equal(router.current(), "crypto");
+  assert.ok(calls.includes("forex:hidden"));
+});

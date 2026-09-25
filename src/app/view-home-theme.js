@@ -27,7 +27,7 @@ function renderMarketDataStatus() {
   };
   const [heading, source, availability] = descriptions[state.activeMarket] || descriptions.crypto;
   document.getElementById('ox-data-heading').textContent = heading;
-  document.getElementById('ox-data-source').textContent = `資料來源：${source}`;
+  document.getElementById('ox-data-source').textContent = `來源：${source}`;
   document.getElementById('ox-data-availability').textContent = availability;
 }
 document.addEventListener('ox:marketchange', () => {
@@ -44,6 +44,7 @@ function switchAppView(view) {
   const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
   // Switch immediately: holding the old page for its exit animation blocks taps and scrolling.
   document.querySelectorAll('.app-view.ox-view-entering').forEach(el => el.classList.remove('ox-view-entering'));
+  document.querySelectorAll('.app-view.ox-mobile-view-in').forEach(el => el.classList.remove('ox-mobile-view-in'));
   {
     state.activeView = view;
     if (view === 'data') renderMarketDataStatus();
@@ -51,11 +52,8 @@ function switchAppView(view) {
     document.querySelectorAll('[data-view-target]').forEach(btn => btn.classList.toggle('active', btn.dataset.viewTarget === view));
 
     const incoming = document.querySelector(`[data-app-view="${view}"]`);
-    if (!reduced && previous !== view && incoming) {
-      incoming.style.setProperty('--ox-view-enter-x', `${direction > 0 ? 10 : direction < 0 ? -10 : 0}px`);
-      incoming.classList.add('ox-view-entering');
-      incoming.addEventListener('animationend', () => incoming.classList.remove('ox-view-entering'), { once: true });
-    }
+    // Whole-page transforms briefly hold the first pan gesture on iOS.
+    // Keep transitions on individual controls; page content is usable now.
 
     MarketController.syncPlaceholder();
     window.scrollTo({ top: 0, behavior: reduced ? 'auto' : 'auto' });

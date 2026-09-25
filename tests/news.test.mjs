@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { FEEDS, impact, normalizeFeed, parseBlsCalendar } from '../scripts/collect-news.mjs';
 
 test('news normalization retains only dated HTTPS source headlines', () => {
-  const feed = { id: 'bls-cpi', name: 'BLS', markets: ['us','forex'] };
+  const feed = { id: 'bls-cpi', name: 'BLS', url: 'https://www.bls.gov/feed/cpi.rss', markets: ['us','forex'] };
   const xml = '<feed><entry><title>Consumer Price Index released</title><link href="https://www.bls.gov/one"/><published>2026-09-24T12:30:00Z</published></entry><entry><title>Undated</title><link href="https://www.bls.gov/two"/></entry></feed>';
   const items = normalizeFeed(xml, feed);
   assert.equal(items.length, 1);
@@ -21,6 +21,25 @@ test('BLS calendar converts confirmed New York release time across daylight savi
 
 test('unmatched headline has no invented importance score', () => {
   assert.equal(impact('Routine agency publication', 'sec').stars, null);
+});
+
+test('major data stars require the matching official source and preserve neutral direction', () => {
+  const rated = impact('CPI for all items increases 0.4% in August; gasoline rises', 'bls-cpi', 'https://www.bls.gov/news.release/cpi.htm');
+  assert.equal(rated.stars, 5);
+  assert.equal(rated.direction, null);
+  assert.match(rated.reason, /不表示多空/);
+  assert.equal(rated.evidence, 'https://www.bls.gov/news.release/cpi.htm');
+  assert.equal(impact('CPI for all items increases', 'bls-cpi', 'https://example.com/news').stars, null);
+  assert.equal(impact('Election results announced', 'fed', 'https://www.federalreserve.gov/feeds/press_monetary.xml').stars, null);
+});
+
+test('new crypto providers require exact verified official links', () => {
+  const github = { id: 'bitcoin-core', name: 'Bitcoin Core', markets: ['crypto'] };
+  const entry = url => `<feed><entry><title>Bitcoin Core release</title><link href="${url}"/><published>2026-09-24T12:30:00Z</published></entry></feed>`;
+  assert.equal(normalizeFeed(entry('https://github.com/bitcoin/bitcoin/releases/tag/v31.0'), github).length, 1);
+  assert.equal(normalizeFeed(entry('https://github.com/fake/bitcoin/releases/tag/v31.0'), github).length, 0);
+  assert.equal(normalizeFeed('<feed><entry><title>Bitcoin Core v31.0</title><link rel="self" href="https://github.com/bitcoin/bitcoin/releases.atom"/><link rel="alternate" href="https://github.com/bitcoin/bitcoin/releases/tag/v31.0"/><updated>2026-09-24T12:30:00Z</updated></entry></feed>', github).length, 1);
+  assert.equal(normalizeFeed('<rss><channel><item><title>Crypto announcement</title><link>https://www.sec.gov/news/claim</link><pubDate>Thu, 24 Sep 2026 12:30:00 GMT</pubDate></item></channel></rss>', FEEDS.find(feed => feed.id === 'kraken')).length, 0);
 });
 
 test('rejects feed entries whose source link leaves the official domains', () => {
