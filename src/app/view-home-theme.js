@@ -35,7 +35,7 @@ document.addEventListener('ox:marketchange', () => {
 });
 
 function switchAppView(view) {
-  if (!['home','strength','radar','data','media','settings'].includes(view)) return;
+  if (!['home','strength','radar','data','media','settings','news'].includes(view)) return;
   if (document.body.classList.contains('chart-focus')) setChartFocus(false);
 
   const previous = state.activeView;

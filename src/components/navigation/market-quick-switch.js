@@ -51,11 +51,15 @@
     {
       id: "forex",
       label: "外匯"
+    },
+    {
+      id: "news",
+      label: "新聞"
     }
   ];
 
   const IDS =
-    MARKETS.map(
+    MARKETS.filter(item => item.id !== 'news').map(
       item => item.id
     );
 
@@ -476,7 +480,7 @@
 
   grid-template-columns:
     repeat(
-      4,
+      5,
       minmax(0,1fr)
     );
 
@@ -1134,7 +1138,7 @@ body.theme-light
 
   function setSelected(id) {
     const next =
-      valid(id)
+      (valid(id) || id === 'news')
         ? id
         : null;
 
@@ -1408,6 +1412,10 @@ body.theme-light
      ========================================================= */
 
   function switchMarket(id) {
+    if (id === 'news') {
+      window.OXNews?.open();
+      return true;
+    }
     if (
       !valid(id)
     ) {
