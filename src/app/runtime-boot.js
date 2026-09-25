@@ -14,8 +14,8 @@ window.addEventListener("DOMContentLoaded", () => {
   document.addEventListener("click", unlockAudioFromGesture, true);
   window.addEventListener("focus", syncNotificationPermissionUI);
   document.addEventListener("visibilitychange", () => { if (!document.hidden) syncNotificationPermissionUI(); });
-  const fullscreenBtn = document.getElementById("btn-chart-fullscreen");
-  if (fullscreenBtn && window.matchMedia("(max-width: 900px)").matches) fullscreenBtn.textContent = "展開圖表";
+  updateChartExpandButton();
+  document.addEventListener("fullscreenchange", updateChartExpandButton);
   initSettings();
   OXControlPanel.init();
   OXFeaturePack.init();
