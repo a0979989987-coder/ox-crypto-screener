@@ -1,7 +1,7 @@
 (() => {
   'use strict';
   const MARKET_NAMES = { crypto: '加密', us: '美股', tw: '台股', forex: '外匯' };
-  const SOURCE_NAMES = { fed: '美國聯準會', 'bls-cpi': '美國勞工統計局・物價', 'bls-jobs': '美國勞工統計局・就業', 'bls-calendar': '美國勞工統計局・行事曆', ecb: '歐洲央行', sec: '美國證券交易委員會', ethereum: '以太坊基金會' };
+  const SOURCE_NAMES = { fed: '美國聯準會', 'bls-cpi': '美國勞工統計局・物價', 'bls-jobs': '美國勞工統計局・就業', 'bls-calendar': '美國勞工統計局・行事曆', ecb: '歐洲央行', sec: '美國證券交易委員會', ethereum: '以太坊基金會', cftc: '美國商品期貨交易委員會', 'bitcoin-core': '比特幣核心開發團隊', kraken: 'Kraken 交易所', aptos: 'Aptos 基金會' };
   const sourceName = item => SOURCE_NAMES[item.sourceId || item.id] || '官方來源';
   const titleName = item => item.titleZh || '官方消息（繁體中文翻譯待補）';
   const TABS = { overview: '總覽', latest: '快訊', calendar: '行事曆', moves: '異動', following: '追蹤' };
@@ -13,6 +13,27 @@
   const el = (tag, className, content) => { const node = document.createElement(tag); if (className) node.className = className; if (content != null) node.textContent = content; return node; };
   const currentMarket = () => MARKET_NAMES[document.body.dataset.market] ? document.body.dataset.market : 'crypto';
   const normalized = data => data && data.schemaVersion === 1 && Array.isArray(data.news) && Array.isArray(data.events);
+  function unlockCountdown(item, now = new Date()) {
+    if (item.status === 'date-only' && /^\d{4}-\d{2}-\d{2}$/.test(item.date || '')) {
+      const today = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
+      const days = Math.round((Date.parse(`${item.date}T00:00:00Z`) - today) / 86400000);
+      return Number.isFinite(days) && days >= 0 ? `距官方預估日期 ${days} 天・時間待公布` : '預估日期已過，待官方更新';
+    }
+    if (item.status !== 'confirmed' || !item.occursAt || !Number.isFinite(Date.parse(item.occursAt))) return '解鎖時間待官方確認';
+    const seconds = Math.max(0, Math.floor((Date.parse(item.occursAt) - now.getTime()) / 1000));
+    if (!seconds) return '預定時間已到，待官方確認實際解鎖';
+    return `倒數 ${Math.floor(seconds / 86400)} 天 ${String(Math.floor(seconds / 3600) % 24).padStart(2,'0')}:${String(Math.floor(seconds / 60) % 60).padStart(2,'0')}:${String(seconds % 60).padStart(2,'0')}`;
+  }
+  let countdownTimer = null;
+  function syncCountdownTimer() {
+    clearInterval(countdownTimer); countdownTimer = null;
+    if (document.querySelector('.app-view.active .ox-unlock-countdown[data-exact="1"]')) {
+      countdownTimer = setInterval(() => document.querySelectorAll('.app-view.active .ox-unlock-countdown[data-exact="1"]').forEach(node => {
+        const item = state.snapshot?.events.find(event => event.id === node.dataset.eventId);
+        if (item) node.textContent = unlockCountdown(item);
+      }), 1000);
+    }
+  }
 
   function refresh(force = false) {
     if (state.pending) return state.pending;
@@ -43,7 +64,7 @@
     if (onlyFollowing) items = items.filter(item => (prefs.followedSources || []).includes(item.sourceId));
     if (kind === 'news' && prefs.majorOnly === true) items = items.filter(item => (score(item) ?? 0) >= 3);
     if (prefs.minimumStars) items = items.filter(item => (score(item) ?? 0) >= Number(prefs.minimumStars));
-    if (kind === 'event') items = [...items].filter(item => Date.parse(item.occursAt) >= Date.now()).sort((a,b) => a.occursAt.localeCompare(b.occursAt));
+    if (kind === 'event') { const now = new Date(); const localDay = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`; items = [...items].filter(item => item.status === 'date-only' && item.date ? item.date >= localDay : Date.parse(item.occursAt) >= now.getTime()).sort((a,b) => (a.occursAt || a.date).localeCompare(b.occursAt || b.date)); }
     else if (prefs.sort === 'impact' && kind === 'news') items = [...items].sort((a,b) => (score(b) ?? 0) - (score(a) ?? 0) || b.publishedAt.localeCompare(a.publishedAt));
     else items = [...items].sort((a,b) => (b.occursAt || b.publishedAt || '').localeCompare(a.occursAt || a.publishedAt || ''));
     return items;
@@ -51,18 +72,25 @@
 
   function card(item) {
     const article = el('article', 'ox-news-card');
-    const symbol = { fed: '央', 'bls-cpi': '物', 'bls-jobs': '職', 'bls-calendar': '曆', ecb: '歐', sec: '證', ethereum: '鏈' }[item.sourceId] || '訊';
+    const symbol = { fed: '央', 'bls-cpi': '物', 'bls-jobs': '職', 'bls-calendar': '曆', ecb: '歐', sec: '證', ethereum: '鏈', cftc: '監', 'bitcoin-core': '₿', kraken: 'K', aptos: 'A' }[item.sourceId] || '訊';
     const visual = el('span', `ox-news-visual ox-news-visual-${item.sourceId}`, symbol);
     visual.setAttribute('aria-hidden', 'true');
     article.append(visual);
     const prefs = store();
     const meta = el('div', 'ox-news-meta');
-    meta.append(el('span', 'ox-news-source', sourceName(item)), el('time', '', fmt(item.occursAt || item.publishedAt)));
+    meta.append(el('span', 'ox-news-source', sourceName(item)), el('time', '', item.status === 'date-only' && item.date ? `${item.date}・時間待公布` : fmt(item.occursAt || item.publishedAt)));
     const stars = score(item);
+    if (stars >= 4) meta.append(el('span', 'ox-news-major', item.sourceId === 'fed' ? '重大政策' : '重大數據'));
     meta.append(el('span', stars ? 'ox-news-impact' : 'ox-news-unrated', stars ? `${'★'.repeat(stars)}${'☆'.repeat(5-stars)}` : '待評估'));
     article.append(meta, el('h3', '', titleName(item)));
-    const detail = el('p', 'ox-news-detail', `${(item.markets || []).map(m => MARKET_NAMES[m]).filter(Boolean).join(' · ')} · ${item.kind === 'event' ? '官方預定時間' : '官方標題繁體中文翻譯'}`);
+    const detail = el('p', 'ox-news-detail', `${(item.markets || []).map(m => MARKET_NAMES[m]).filter(Boolean).join(' · ')} · ${item.kind === 'token-unlock' ? '官方預估排程，實際日期可能調整' : item.kind === 'event' ? '官方預定時間' : '官方標題繁體中文翻譯'}`);
     article.append(detail);
+    if (item.kind === 'token-unlock') {
+      const countdown = el('p', 'ox-unlock-countdown', unlockCountdown(item));
+      countdown.dataset.eventId = item.id;
+      if (item.status === 'confirmed' && item.occursAt) countdown.dataset.exact = '1';
+      article.append(countdown);
+    }
     if (state.snapshot?.sources?.some(source => source.id === item.sourceId && source.status === 'error') || (item.sourceId === 'bls-calendar' && state.snapshot?.sources?.some(source => source.id === 'bls-calendar' && source.status === 'error')))
       article.append(el('p', 'ox-news-status', '來源更新失敗 · 保留前次快照'));
     const reason = el('p', 'ox-news-reason', item.impact?.reason || '影響力尚待評估');
@@ -139,7 +167,11 @@
     surface.append(status);
     if (!snapshot) return;
     if (!isAll && market === 'crypto' && state.category === 'unlocks') {
-      surface.append(el('p', 'ox-news-empty', '幣種解鎖日曆目前尚無可核實的官方資料。完成來源接入後，才會顯示解鎖日期與數量。'));
+      const unlocks = snapshot.events.filter(item => item.kind === 'token-unlock' && item.sourceUrl && (item.date || item.occursAt));
+      surface.append(el('h2', 'ox-news-section-title', '幣種解鎖倒數'));
+      if (!unlocks.length) surface.append(el('p', 'ox-news-empty', '目前尚無可核實的官方解鎖日期。'));
+      else { const list = el('div','ox-news-list'); unlocks.forEach(item => list.append(card(item))); surface.append(list); }
+      syncCountdownTimer();
       return;
     }
     const tab = state.tab;
@@ -163,6 +195,7 @@
     else if (tab === 'following') add('追蹤來源', filtered('news', market, true), state.limit);
     else add('最新快訊', filtered('news', market), state.limit);
     if (snapshot.sources?.some(source => source.status === 'error')) surface.append(el('p', 'ox-news-status', `部分來源暫不可用：${snapshot.sources.filter(source => source.status === 'error').map(source => sourceName(source)).join('、')}`));
+    syncCountdownTimer();
   }
 
   function render() {
@@ -211,7 +244,7 @@
       if (event.state?.oxView) window.switchAppView?.(event.state.oxView);
     }
   });
-  window.OXNews = Object.freeze({ open, close, refresh, render });
+  window.OXNews = Object.freeze({ open, close, refresh, render, unlockCountdown });
   if (location.hash === '#news') document.addEventListener('DOMContentLoaded', () => open({ historyEntry: false, previous: history.state?.oxPrevious }), { once: true });
   else render();
 })();
