@@ -36,19 +36,8 @@
     }
   };
 
-  const scheduleAudit = () => {
-    clearTimeout(scheduleAudit._timer);
-    scheduleAudit._timer = setTimeout(() => {
-      if (window.requestIdleCallback) requestIdleCallback(auditOverflow, { timeout: 3000 });
-      else auditOverflow();
-    }, 1200);
-  };
-
-  window.addEventListener('resize', scheduleAudit, { passive: true });
-  window.addEventListener('orientationchange', scheduleAudit, { passive: true });
-  window.visualViewport?.addEventListener('resize', scheduleAudit, { passive: true });
-
-  // The full DOM geometry audit is a diagnostic. Running it during the first
-  // scroll forces layout on every element and stalls touch interaction.
+  // Diagnostic only. Safari resizes the visual viewport while its toolbar
+  // retracts on a swipe; a full computed-style and geometry walk at that
+  // point blocks the next gesture even when no layout change is needed.
   window.OXAuditMobileOverflow = auditOverflow;
 })();
