@@ -67,3 +67,13 @@
 2026-09-25 第二輪發布驗證：正式 `main` 已含本輪變更；Vercel 及 GitHub Pages 都確認載入 `pan-y pinch-zoom` 修正樣式。GitHub Pages 桌面瀏覽器完成 30 次首頁／指標／雷達／數據／媒體切換，沒有網站程式錯誤。`npm test` 28 項與 `npm run check` 通過。這不等同手機 Safari 實機首滑測試；持續等待使用者新錄影或實機回報。
 
 另外為本次更新的 CSS／JS 加上 `20260925c` 資產版本，讓舊手機瀏覽器快取不會繼續載入上一版程式；發布後須確認兩個正式網址的 HTML 皆包含這個版本。
+
+
+## 2026-09-25 OX Live 與全站捲動容器修正
+
+- 使用者 17:38 錄影仍顯示全站卡頓，並指出滑回頂部後 OX Live 需再滑一次。程式確認：OX Live 位於主 header 與 main 之間，沒有獨立直向列表；市場快捷選單卻在手機注入 `html,body overflow-x:hidden!important`，覆蓋原有 `clip`，使另一軸計算成 `auto`。已移除這組全站覆寫，並移除市場手勢中改寫 body overflow 的鎖定。
+- 手機頂欄改為隨頁面正常捲動；OX Live 裁切改為 `clip`，新聞返回列不再繼承全域 sticky header。保留圖表與榜單並排、Radar 長按 420ms 與放手保留 3 秒。
+- 移除市場程式全域 gesture 阻擋及禁縮放的 viewport 改寫；瀏覽器失焦或 pagehide 時清理未完成 Radar 觸控，避免留下攔截滑動的 document listener。
+- 新回歸測試在舊版重現兩項失敗（viewport 被改寫、blur 留下 touchmove），修正後全部通過；`npm test` 31 項、`npm run check` 61 資產／202 ID 通過。CSS／JS 快取版本更新為 `20260925d`。
+- 這是程式與手勢生命週期的驗證，並非 iPhone Safari 滑動延遲的量測；本地測試網址受瀏覽器限制，完整 E2E 和實機首滑仍未驗收，不宣稱完全根治。正式部署後另核對實際載入版本。
+- 無新增外部 API／Secret；保留遠端自動收集的 `data/news.json`。本輪正式回退點：`40ce7e6196980a69f44ca59373adf23c77e4ff85`。
