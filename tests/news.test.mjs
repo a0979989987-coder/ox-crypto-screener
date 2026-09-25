@@ -65,6 +65,12 @@ test('translation cannot survive a changed source title or identity', () => {
   assert.equal(localize({ ...old, id: 'two' }, [old]).titleZh, null);
 });
 
+test('reviewed Kraken and Bitcoin headlines have Traditional Chinese titles', () => {
+  assert.equal(localize({ id: 'new', title: 'TREAD is available for trading!', kind: 'news' }).titleZh, 'Kraken 開放 TREAD 交易');
+  assert.match(localize({ id: 'release', title: 'Bitcoin Core 31.1', kind: 'news' }).titleZh, /正式版本/);
+  assert.equal(localize({ id: 'unknown', title: 'Unreviewed new announcement', kind: 'news' }).translationStatus, 'pending');
+});
+
 test('calendar translates reporting period without changing release time', () => {
   const event = { kind: 'event', title: 'Consumer Price Index for September 2026', occursAt: '2026-10-14T12:30:00.000Z' };
   const translated = localize(event);
