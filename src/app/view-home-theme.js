@@ -5,6 +5,9 @@ function resizeChartToContainer() {
   const width = container.clientWidth;
   const height = container.clientHeight;
   if (width > 0 && height > 0) {
+    const last = state.lastChartContainerSize;
+    if (last?.chart === state.chart && last.width === width && last.height === height) return;
+    state.lastChartContainerSize = { chart: state.chart, width, height };
     state.chart.applyOptions({ width: Math.round(width), height: Math.round(height) });
     applyChartFutureSpace(false);
     requestAnimationFrame(updateKeyLevelVisualLabels);
@@ -63,7 +66,11 @@ function switchAppView(view) {
       if (state.activeView !== view) return;
       if (view === 'strength' && state.activeMarket === 'crypto') { renderMarketStrength(); LiquidationModule?.refresh?.(); }
       if (view === 'home' && state.activeMarket === 'crypto') { renderHomeOverview(); HomeMiniChart.ensureAndLoad(false); }
-      if (view === 'radar' && state.activeMarket === 'crypto') resizeChartToContainer();
+      if (view === 'radar' && state.activeMarket === 'crypto') {
+        resizeChartToContainer();
+        renderCurrentTab();
+        renderBenchmarkBar();
+      }
     }));
   }
 }
@@ -218,8 +225,9 @@ function renderOxLive() {
   parts.push("新聞功能預留");
 
   const liveText = parts.join("　｜　");
-  el.textContent = liveText || "正在整理市場即時資訊…";
-  el.title = liveText;
+  const next = liveText || "正在整理市場即時資訊…";
+  if (el.textContent !== next) el.textContent = next;
+  if (el.title !== liveText) el.title = liveText;
 }
 
 const systemThemeQuery = window.matchMedia("(prefers-color-scheme: light)");
