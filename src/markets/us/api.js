@@ -35,7 +35,9 @@ const DEFAULT_TIMEOUT_MS = 12000;
  * Vercel Environment Variables.
  */
 const DEFAULT_API_BASE =
-  "https://ox-crypto-screener.vercel.app/api";
+  typeof window !== "undefined" && window.location.hostname.endsWith(".vercel.app")
+    ? `${window.location.origin}/api`
+    : "https://ox-crypto-screener.vercel.app/api";
 
 const STORAGE_KEY = "ox-us-data-api-base";
 const META_NAME = "ox-us-data-api-base";
