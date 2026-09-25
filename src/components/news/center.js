@@ -6,7 +6,7 @@
   const titleName = item => item.titleZh || '官方消息（繁體中文翻譯待補）';
   const TABS = { overview: '總覽', latest: '快訊', calendar: '行事曆', moves: '異動', following: '追蹤' };
   const SAVED_KEY = 'ox-news-preferences-v1';
-  const state = { snapshot: null, lastError: null, pending: null, tab: 'overview', previous: null, request: 0, optionsOpen: false, marketFilter: '', sourceFilter: '', unreadOnly: false };
+  const state = { snapshot: null, lastError: null, pending: null, tab: 'overview', previous: null, request: 0, optionsOpen: false, marketFilter: '', sourceFilter: '', unreadOnly: false, category: 'news', limit: 12 };
   const store = () => { try { return JSON.parse(localStorage.getItem(SAVED_KEY) || '{}'); } catch { return {}; } };
   const save = patch => localStorage.setItem(SAVED_KEY, JSON.stringify({ ...store(), ...patch }));
   const fmt = value => value && Number.isFinite(Date.parse(value)) ? new Intl.DateTimeFormat('zh-TW', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value)) : '時間待確認';
@@ -51,6 +51,10 @@
 
   function card(item) {
     const article = el('article', 'ox-news-card');
+    const symbol = { fed: '央', 'bls-cpi': '物', 'bls-jobs': '職', 'bls-calendar': '曆', ecb: '歐', sec: '證', ethereum: '鏈' }[item.sourceId] || '訊';
+    const visual = el('span', `ox-news-visual ox-news-visual-${item.sourceId}`, symbol);
+    visual.setAttribute('aria-hidden', 'true');
+    article.append(visual);
     const prefs = store();
     const meta = el('div', 'ox-news-meta');
     meta.append(el('span', 'ox-news-source', sourceName(item)), el('time', '', fmt(item.occursAt || item.publishedAt)));
@@ -85,7 +89,7 @@
       const tabs = el('div', 'ox-news-tabs');
       for (const [id, name] of Object.entries(TABS)) {
         const button = el('button', state.tab === id ? 'active' : '', name); button.type = 'button'; button.setAttribute('aria-pressed', String(state.tab === id));
-        button.addEventListener('click', () => { state.tab = id; render(); }); tabs.append(button);
+        button.addEventListener('click', () => { state.tab = id; state.limit = 12; render(); }); tabs.append(button);
       }
       wrap.append(tabs);
     }
@@ -94,7 +98,11 @@
     const major = el('button', 'ox-news-filter', prefs.majorOnly === true ? '僅重大' : '全部新聞'); major.type = 'button'; major.setAttribute('aria-pressed', String(prefs.majorOnly === true));
     major.addEventListener('click', () => { save({ majorOnly: prefs.majorOnly !== true }); render(); }); row.append(major);
     const options = el('button', 'ox-news-filter', '排序與篩選'); options.type = 'button'; options.setAttribute('aria-expanded', 'false'); row.append(options);
-    const reload = el('button', 'ox-news-filter', '重讀快照'); reload.type = 'button'; reload.addEventListener('click', () => refresh(true)); row.append(reload);
+    const reload = el('button', 'ox-news-filter', '更新'); reload.type = 'button'; reload.setAttribute('aria-label', '重新讀取新聞快照'); reload.addEventListener('click', () => refresh(true)); row.append(reload);
+    if (!isAll && currentMarket() === 'crypto') {
+      const unlock = el('button', 'ox-news-filter', state.category === 'unlocks' ? '解鎖 ✓' : '幣種解鎖'); unlock.type = 'button'; unlock.setAttribute('aria-pressed', String(state.category === 'unlocks'));
+      unlock.addEventListener('click', () => { state.category = state.category === 'unlocks' ? 'news' : 'unlocks'; render(); }); row.append(unlock);
+    }
     wrap.append(row);
     const panel = el('div', 'ox-news-options'); panel.hidden = !state.optionsOpen;
     options.setAttribute('aria-expanded', String(state.optionsOpen));
@@ -130,6 +138,10 @@
     else status.textContent = '等待新聞資料';
     surface.append(status);
     if (!snapshot) return;
+    if (!isAll && market === 'crypto' && state.category === 'unlocks') {
+      surface.append(el('p', 'ox-news-empty', '幣種解鎖日曆目前尚無可核實的官方資料。完成來源接入後，才會顯示解鎖日期與數量。'));
+      return;
+    }
     const tab = state.tab;
     if (tab === 'moves') {
       surface.append(el('div', 'ox-news-empty', '目前尚無可核實的跨市場異動與原因對照資料。行情異動不會被當成已確認的新聞原因。'));
@@ -139,13 +151,17 @@
       surface.append(el('h2', 'ox-news-section-title', title));
       if (!items.length) { surface.append(el('p', 'ox-news-empty', store().majorOnly === true ? '目前沒有已核實影響星級的消息；可切回全部新聞查看官方標題。' : '目前沒有符合條件的官方來源資料。')); return; }
       const section = el('div', 'ox-news-list'); items.slice(0, limit).forEach(item => section.append(card(item))); surface.append(section);
+      if (items.length > limit) {
+        const more = el('button', 'ox-news-more', `載入更多（尚有 ${items.length - limit} 則）`); more.type = 'button';
+        more.addEventListener('click', () => { state.limit += 12; render(); }); surface.append(more);
+      }
     };
     if (tab === 'overview') {
-      add('近期官方消息', filtered('news', market), 12);
+      add('近期官方消息', filtered('news', market), state.limit);
       add('即將公布', filtered('event', market), 8);
-    } else if (tab === 'calendar') add('事件行事曆', filtered('event', market), 60);
-    else if (tab === 'following') add('追蹤來源', filtered('news', market, true), 60);
-    else add('最新快訊', filtered('news', market), 60);
+    } else if (tab === 'calendar') add('事件行事曆 · 美國官方公布時間', filtered('event', market), state.limit);
+    else if (tab === 'following') add('追蹤來源', filtered('news', market, true), state.limit);
+    else add('最新快訊', filtered('news', market), state.limit);
     if (snapshot.sources?.some(source => source.status === 'error')) surface.append(el('p', 'ox-news-status', `部分來源暫不可用：${snapshot.sources.filter(source => source.status === 'error').map(source => sourceName(source)).join('、')}`));
   }
 
@@ -177,7 +193,7 @@
   document.addEventListener('click', event => {
     if (event.target.closest('[data-open-cross-news], #ox-open-news')) { event.preventDefault(); open(); document.getElementById('ox-control-close')?.click(); }
     if (event.target.closest('#ox-news-return')) { event.preventDefault(); close({ useHistory: true }); }
-    const tab = event.target.closest('[data-news-tab]'); if (tab) { state.tab = tab.dataset.newsTab; render(); window.scrollTo(0,0); }
+    const tab = event.target.closest('[data-news-tab]'); if (tab) { state.tab = tab.dataset.newsTab; state.limit = 12; render(); window.scrollTo(0,0); }
   });
   document.addEventListener('ox:marketchange', () => { if (document.body.dataset.newsMode !== '1') render(); });
   document.addEventListener('ox:viewchange', event => {
