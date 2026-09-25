@@ -27,6 +27,8 @@
   const mobileTargets=()=>document.querySelectorAll('#view-home .btc-premium-hero,#view-home .v33-home-hero,.app-dock,.ox-control-panel');
   function bindMobileGlass(){
     if(!window.matchMedia('(max-width:720px)').matches) return;
+    // Touch-linked geometry reads on the fixed dock stall native scrolling.
+    if(window.matchMedia('(pointer:coarse)').matches) return;
     mobileTargets().forEach(el=>{
       if(el.dataset.mobileGlassBound==='1') return; el.dataset.mobileGlassBound='1';
       const update=t=>{
