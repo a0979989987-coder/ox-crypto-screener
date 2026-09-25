@@ -26,7 +26,6 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run news:collect
-      - run: node -e "const d=require('./data/news.json'); console.log(JSON.stringify(d.news.filter(x=>x.translationStatus==='pending').map(x=>({id:x.id,sourceId:x.sourceId,title:x.title}))))"
       - run: npm test
       - name: Publish changed snapshot
         run: |
