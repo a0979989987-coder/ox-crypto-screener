@@ -43,7 +43,7 @@
   <link rel="stylesheet" href="src/styles/markets/forex.css">
   <link rel="stylesheet" href="src/styles/markets/us.css">
   <link rel="stylesheet" href="src/styles/components/news-center.css?v=20260925d">
-  <link rel="stylesheet" href="src/styles/themes/editorial-terminal.css?v=20260926-market2">
+  <link rel="stylesheet" href="src/styles/themes/editorial-terminal.css?v=20260926-btc-card">
 
 <!-- CSS moved: ox-premium-glass-design-system -->
 
@@ -268,14 +268,12 @@
   <!-- OX editorial market overview. Data IDs and action hooks remain connected to the existing runtime. -->
   <section class="app-view active" id="view-home" data-app-view="home">
     <div class="v33-home-page ox-editorial-home">
-      <div class="ox-page-caption"><span>CRYPTO / MARKET OVERVIEW</span><span>市場總覽 <span class="ox-caption-separator">/</span> USDT 永續</span></div>
-      <section class="ox-home-quote" aria-label="BTC 核心行情">
-        <div class="ox-home-identity"><img class="ox-home-coin" src="src/assets/token-logos/btc.png" alt="Bitcoin" width="48" height="48"><div><span class="ox-home-ticker">BTC</span><small>BTCUSDT · Bitget USDT 永續</small></div></div>
-        <div class="ox-home-price"><strong id="home-btc-price">—</strong><small>USDT</small><span id="home-btc-change">—</span></div>
-      </section>
-
       <section class="ox-home-main" aria-label="市場主圖及市場分析">
-        <article class="ox-home-chart">
+        <article class="ox-home-chart" aria-label="BTC 價格與圖表">
+          <div class="ox-home-quote" aria-label="BTC 核心行情">
+            <div class="ox-home-identity"><img class="ox-home-coin" src="src/assets/token-logos/btc.png" alt="Bitcoin" width="48" height="48"><div><span class="ox-home-ticker">BTC</span><small>BTCUSDT · Bitget USDT 永續</small></div></div>
+            <div class="ox-home-price"><strong id="home-btc-price">—</strong><small>USDT</small><span id="home-btc-change">—</span></div>
+          </div>
           <div class="ox-chart-heading">
             <div><span class="ox-eyebrow">PRICE ACTION</span><h1>Bitcoin <span>/</span> USD</h1></div>
             <div class="v34-home-main-toolbar" aria-label="BTC 首頁主圖週期">

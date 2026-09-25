@@ -35,9 +35,9 @@
 
     // BTC main card: strong 24H move gets the edge glass state.
     setTone(
-      document.querySelector("#view-home .btc-premium-hero"),
+      document.querySelector("#view-home .ox-home-chart"),
       numberFrom(document.getElementById("home-btc-change")?.textContent),
-      2
+      0.001
     );
 
     // ETH market card.
