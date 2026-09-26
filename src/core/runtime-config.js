@@ -125,10 +125,8 @@ function setScannerTierFilter(tab) {
 function setScannerDirectionFilter(direction) {
   if (!["long","short"].includes(direction)) return;
   state.directionFilter = direction;
-  document.getElementById("view-radar")?.setAttribute("data-direction-chosen", "true");
   persistScannerFilters();
   syncScannerFilterUI();
-  updateRadarMarketGlow();
   renderCurrentTab();
 }
 
@@ -148,8 +146,8 @@ const num = v => Number(v) || 0;
 const fmtUsd = v => new Intl.NumberFormat("en-US", { notation: "compact", maximumFractionDigits: 2 }).format(num(v));
 const fmtCryptoVolume = v => {
   const value = num(v);
-  const format = amount => new Intl.NumberFormat("zh-TW", { maximumFractionDigits: 2 }).format(amount);
-  return value >= 1e8 ? `${format(value / 1e8)}億` : value >= 1e4 ? `${format(value / 1e4)}萬` : format(value);
+  const format = (amount, digits = 2) => new Intl.NumberFormat("zh-TW", { maximumFractionDigits: digits }).format(amount);
+  return value >= 1e8 ? `${format(value / 1e8)}億` : value >= 1e6 ? `${format(value / 1e4, 0)}萬` : value >= 1e4 ? `${format(value / 1e4, 1)}萬` : format(value);
 };
 const fmtPrice = v => {
   const x = num(v);
