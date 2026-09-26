@@ -43,7 +43,7 @@
   <link rel="stylesheet" href="src/styles/markets/forex.css">
   <link rel="stylesheet" href="src/styles/markets/us.css">
   <link rel="stylesheet" href="src/styles/components/news-center.css?v=20260925d">
-  <link rel="stylesheet" href="src/styles/themes/editorial-terminal.css?v=20260926-glow-tier7">
+  <link rel="stylesheet" href="src/styles/themes/editorial-terminal.css?v=20260927-home-radar9">
 
 <!-- CSS moved: ox-premium-glass-design-system -->
 
@@ -72,17 +72,17 @@
 
 <!-- CSS moved: ox-v381-ios-liquid-glass-max -->
 
-  <link rel="stylesheet" href="src/styles/themes/editorial-radar.css?v=20260926-exit-overlay8">
+  <link rel="stylesheet" href="src/styles/themes/editorial-radar.css?v=20260927-home-radar9">
 </head>
-<body class="ox-terminal">
+<body class="ox-terminal" data-view="radar">
 
 <header class="ox-shell-header">
   <div class="wrap nav">
-    <span class="ox-mobile-location" data-terminal-view>市場總覽</span>
+    <span class="ox-mobile-location" data-terminal-view>雷達工作區</span>
     <nav class="ox-desktop-nav" aria-label="桌面主要功能">
-      <button type="button" data-view-target="home" class="active">總覽</button>
+      <button type="button" data-view-target="home">總覽</button>
       <button type="button" data-view-target="strength">市場指標</button>
-      <button type="button" data-view-target="radar">雷達</button>
+      <button type="button" data-view-target="radar" class="active">雷達</button>
       <button type="button" data-view-target="data">數據與事件</button>
       <button type="button" data-view-target="media">OX Journal</button>
     </nav>
@@ -270,7 +270,7 @@
 
 
   <!-- OX editorial market overview. Data IDs and action hooks remain connected to the existing runtime. -->
-  <section class="app-view active" id="view-home" data-app-view="home">
+  <section class="app-view" id="view-home" data-app-view="home">
     <div class="v33-home-page ox-editorial-home">
       <section class="ox-home-main" aria-label="市場主圖及市場分析">
         <article class="ox-home-chart" aria-label="BTC 價格與圖表">
@@ -290,11 +290,7 @@
           <div class="btc-premium-chart-wrap" data-home-symbol="BTCUSDT" role="button" tabindex="0" aria-label="打開 BTC 雷達">
             <div id="home-btc-mini-chart" class="v34-home-main-chart" aria-label="BTC 首頁 K 線"></div>
           </div>
-          <div class="ox-chart-foot">
-            <span id="home-btc-note">等待行情資料</span>
-            <span id="home-btc-market-state">資料整理中</span>
-            <button type="button" data-home-symbol="BTCUSDT" class="v34-home-open-radar">打開完整雷達 ↗</button>
-          </div>
+
         </article>
 
         <section class="ox-home-t1" aria-label="T1 上漲與下跌候選">
@@ -331,7 +327,7 @@
     </div>
   </section>
 
-  <section class="app-view" id="view-radar" data-app-view="radar">
+  <section class="app-view active" id="view-radar" data-app-view="radar">
 
 
 
@@ -367,15 +363,7 @@
 
   <div class="workspace">
     <article class="panel chart-box">
-      <div class="panel-head">
-        <h2 class="panel-title" id="chart-head-title">
-          <span>BTCUSDT 永續合約</span>
-        </h2>
-        <div style="display:flex;gap:8px;align-items:center">
-          <button class="btn-act radar-scanner-reopen" id="radar-scanner-reopen" type="button" aria-label="展開幣種篩選" title="展開幣種篩選" aria-expanded="false" aria-controls="radar-scanner-panel"><span aria-hidden="true">‹</span></button>
-          <button class="btn-act" id="btn-chart-fullscreen" type="button" aria-label="展開圖表" aria-pressed="false" title="展開圖表"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3H3v6m12-6h6v6M3 15v6h6m6 0h6v-6"/></svg></button>
-        </div>
-      </div>
+      <h2 class="panel-title ox-chart-ghost-title" id="chart-head-title"><span>BTCUSDT 永續合約</span></h2>
 
       <button class="btn-act" id="btn-chart-exit-overlay" type="button" aria-label="收合圖表" title="收合圖表"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3v6H3m18 0h-6V3M3 15h6v6m6 0v-6h6"/></svg></button>
 
@@ -396,6 +384,8 @@
             <input type="checkbox" id="chk-key-levels">
             <span id="key-level-toggle-text">前高前低</span>
           </label>
+          <button class="btn-act radar-scanner-reopen" id="radar-scanner-reopen" type="button" aria-label="展開幣種篩選" title="展開幣種篩選" aria-expanded="false" aria-controls="radar-scanner-panel"><span aria-hidden="true">‹</span></button>
+          <button class="btn-act ox-chart-expand-dot" id="btn-chart-fullscreen" type="button" aria-label="展開圖表" aria-pressed="false" title="展開圖表"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3H3v6m12-6h6v6M3 15v6h6m6 0h6v-6"/></svg></button>
         </div>
       </div>
 
@@ -728,13 +718,13 @@
 
 
 <nav class="app-dock glass-nav" aria-label="主要功能">
-  <button class="dock-btn active" type="button" data-view-target="home" aria-label="首頁">
+  <button class="dock-btn" type="button" data-view-target="home" aria-label="首頁">
     <span class="dock-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.2 12 4l9 7.2v8.3a1.5 1.5 0 0 1-1.5 1.5H15v-6H9v6H4.5A1.5 1.5 0 0 1 3 19.5z"/></svg></span><span>首頁</span>
   </button>
   <button class="dock-btn" type="button" data-view-target="strength" aria-label="指標">
     <span class="dock-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 18v-5M10 18V8M16 18V4M22 18V11"/></svg></span><span>指標</span>
   </button>
-  <button class="dock-btn dock-radar" type="button" data-view-target="radar" aria-label="雷達">
+  <button class="dock-btn dock-radar active" type="button" data-view-target="radar" aria-label="雷達">
     <span class="dock-radar-orb glass-orb" aria-hidden="true">
       <svg class="dock-radar-logo" viewBox="0 0 450 439" aria-label="OX Radar Logo" role="img" focusable="false">
         <g fill="currentColor">
@@ -765,21 +755,21 @@
 
 <div id="toast" class="toast" role="status"></div>
 
-<script src="src/core/runtime-config.js?v=20260926-native-chart5"></script>
+<script src="src/core/runtime-config.js?v=20260927-home-radar9"></script>
 <script src="src/components/strength/snapshots.js"></script>
 <script src="src/components/alerts/level-alerts.js"></script>
 <script src="src/components/strength/market-strength.js"></script>
 <script src="src/app/token-logos.js"></script>
-<script src="src/app/view-home-theme.js?v=20260926-native-chart5"></script>
+<script src="src/app/view-home-theme.js?v=20260927-home-radar9"></script>
 <script src="src/markets/crypto/api.js?v=20260926-native-chart5"></script>
 <script src="src/markets/crypto/engine.js"></script>
 <script src="src/markets/crypto/scanner.js?v=20260926-native-chart5"></script>
 <script src="src/components/chart/workspace.js?v=20260926-native-chart5"></script>
-<script src="src/markets/crypto/presentation.js?v=20260926-glow-tier7"></script>
-<script src="src/components/account/store.js"></script>
+<script src="src/markets/crypto/presentation.js?v=20260927-home-radar9"></script>
+<script src="src/components/account/store.js?v=20260927-home-radar9"></script>
 <script src="src/components/control-panel/feature-pack.js"></script>
 <script src="src/services/liquidations.js"></script>
-<script src="src/app/runtime-boot.js?v=20260925-mobile7"></script>
+<script src="src/app/runtime-boot.js?v=20260927-home-radar9"></script>
 
 <script src="src/components/motion/controller.js?v=20260926-radar-fold3"></script>
 

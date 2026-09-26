@@ -62,8 +62,9 @@ function switchAppView(view) {
   const previous = state.activeView;
   if (view === 'radar' && previous !== 'radar' && state.activeMarket === 'crypto') {
     state.directionFilter = 'long';
+    state.currentTab = 't1';
     const radar = document.getElementById('view-radar');
-    if (radar) { delete radar.dataset.selectedSymbol; delete radar.dataset.priceDirection; }
+    if (radar) { delete radar.dataset.selectedSymbol; delete radar.dataset.priceDirection; delete radar.dataset.glowLevel; }
     syncScannerFilterUI();
   }
   const order = ['home','strength','radar','data','media','settings'];

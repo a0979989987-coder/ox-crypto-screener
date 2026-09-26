@@ -162,7 +162,7 @@ const HomeChartVariant = (()=>{
       },
       timeScale:{
         visible:true,borderVisible:false,timeVisible:true,secondsVisible:false,
-        rightOffset:window.matchMedia("(max-width:720px)").matches?5:7,fixRightEdge:false,barSpacing:window.matchMedia("(max-width:720px)").matches?4.15:5.8,minBarSpacing:window.matchMedia("(max-width:720px)").matches?2:2.6,lockVisibleTimeRangeOnResize:true
+        rightOffset:1,fixRightEdge:false,barSpacing:window.matchMedia("(max-width:720px)").matches?4.15:5.8,minBarSpacing:window.matchMedia("(max-width:720px)").matches?2:2.6,lockVisibleTimeRangeOnResize:true
       },
       crosshair:{
         mode:LightweightCharts.CrosshairMode.Normal,
@@ -220,8 +220,8 @@ const HomeChartVariant = (()=>{
         })));
         const mobile = window.matchMedia("(max-width:720px)").matches;
         const compact = window.matchMedia("(max-width:430px)").matches;
-        const visibleBars = compact ? 92 : mobile ? 108 : 118;
-        const rightOffset = mobile ? 5 : 7;
+        const visibleBars = compact ? 112 : mobile ? 126 : 136;
+        const rightOffset = 1;
         chart.timeScale().applyOptions({
           rightOffset,
           barSpacing: mobile ? 4.15 : 5.8,
