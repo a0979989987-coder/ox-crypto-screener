@@ -87,11 +87,12 @@ function renderOxDetail() {
 function updateRadarMarketGlow() {
   const radar = document.getElementById("view-radar");
   if (!radar) return;
-  if (radar.dataset.directionChosen !== "true") {
+  if (radar.dataset.selectedSymbol !== state.symbol) {
     delete radar.dataset.priceDirection;
     return;
   }
-  radar.dataset.priceDirection = state.directionFilter === "short" ? "down" : "up";
+  const ticker = state.tickers.find(t => t.symbol === state.symbol);
+  if (ticker) radar.dataset.priceDirection = num(ticker.change24h) < 0 ? "down" : "up";
 }
 
 function updateHeaderHUD() {
@@ -138,12 +139,14 @@ function updateHeaderHUD() {
 
 function switchSymbol(symbol) {
   if (state.activeView !== "radar") switchAppView("radar");
+  document.getElementById("view-radar")?.setAttribute("data-selected-symbol", symbol);
   if (symbol === state.symbol) { updateHeaderHUD(); return; }
   state.symbol = symbol;
   state.currentLevels = { high: 0, low: 0, sourcePeriod: getKeyLevelPeriod(), highTime: 0, lowTime: 0 };
   state.secondaryLevels = null;
   updateHeaderHUD();
   renderCurrentTab();
+  document.querySelector('#screener-list .coin-card.selected')?.classList.add('ox-coin-new-selection');
   updateAlertButtons();
   loadSymbolCandles(true);
 }

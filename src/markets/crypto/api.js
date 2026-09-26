@@ -98,7 +98,9 @@ const BitgetAPI = {
   },
 
   async fetchCandles(symbol, granularity, limit = 100, endTime = null) {
-    let url = `${CONFIG.apiBase}/candles?symbol=${symbol}&productType=${CONFIG.productType}&granularity=${granularity}&limit=${limit}`;
+    // Older pages use Bitget's history endpoint; recent candles only cover a short window.
+    const endpoint = endTime ? "history-candles" : "candles";
+    let url = `${CONFIG.apiBase}/${endpoint}?symbol=${encodeURIComponent(symbol)}&productType=${CONFIG.productType}&granularity=${granularity}&limit=${Math.min(200, limit)}`;
     if (endTime) url += `&endTime=${endTime}`;
     const res = await fetch(url, { cache: "no-store" });
     const json = await res.json();
@@ -120,4 +122,3 @@ const BitgetAPI = {
       .sort((a, b) => a.time - b.time);
   }
 };
-

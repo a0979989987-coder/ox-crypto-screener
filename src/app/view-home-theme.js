@@ -1,4 +1,4 @@
-function resizeChartToContainer() {
+function resizeChartToContainer(force = false) {
   const container = document.getElementById("chart");
   if (!state.chart || !container) return;
   // 手機旋轉的全圖模式使用 layout 尺寸，避免 transform 後 bounding rect 寬高互換造成只畫半屏。
@@ -6,10 +6,9 @@ function resizeChartToContainer() {
   const height = container.clientHeight;
   if (width > 0 && height > 0) {
     const last = state.lastChartContainerSize;
-    if (last?.chart === state.chart && last.width === width && last.height === height) return;
+    if (!force && last?.chart === state.chart && last.width === width && last.height === height) return;
     state.lastChartContainerSize = { chart: state.chart, width, height };
-    state.chart.applyOptions({ width: Math.round(width), height: Math.round(height) });
-    applyChartFutureSpace(false);
+    state.chart.resize(Math.round(width), Math.round(height), true);
     requestAnimationFrame(updateKeyLevelVisualLabels);
   }
 }
@@ -44,7 +43,16 @@ function createCoinLogo(symbol) {
 function setChartFocus(enabled) {
   document.body.classList.toggle("chart-focus", enabled);
   updateChartExpandButton();
-  [0, 80, 180, 320].forEach(ms => setTimeout(() => { resizeChartToContainer(); updatePriceTimer(); }, ms));
+  state.volumeSeries?.applyOptions({ visible: !enabled && !!document.getElementById("chk-vol")?.checked });
+  if (enabled) {
+    state.candleSeries?.setMarkers([]);
+    clearKeyLevelPriceLines();
+  } else {
+    renderKeyLevelPriceLinesFromState();
+    if (state.candleData?.length) renderChartData(state.candleData);
+  }
+  requestAnimationFrame(() => resizeChartToContainer(true));
+  [100, 300].forEach(ms => setTimeout(() => { resizeChartToContainer(true); updatePriceTimer(); }, ms));
 }
 
 function switchAppView(view) {
@@ -55,7 +63,7 @@ function switchAppView(view) {
   if (view === 'radar' && previous !== 'radar' && state.activeMarket === 'crypto') {
     state.directionFilter = 'long';
     const radar = document.getElementById('view-radar');
-    if (radar) { delete radar.dataset.directionChosen; delete radar.dataset.priceDirection; }
+    if (radar) { delete radar.dataset.selectedSymbol; delete radar.dataset.priceDirection; }
     syncScannerFilterUI();
   }
   const order = ['home','strength','radar','data','media','settings'];

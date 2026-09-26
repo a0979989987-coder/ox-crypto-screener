@@ -380,6 +380,62 @@ body.ox-terminal #view-radar .chart-controls .toggle-lbl:has(input:focus-visible
 body.ox-terminal.theme-light #view-radar .chart-controls .toggle-lbl:has(input:checked) {
  color:#171c25!important;border-color:#6a737d!important;background:#fff!important;box-shadow:0 0 7px #86929a70!important;
 }
+
+/* Full chart follows the device's real orientation. The chart canvas is never CSS-rotated. */
+@media(max-width:900px){
+ body.ox-terminal.chart-focus #view-radar .chart-box {
+  position:fixed!important;inset:0!important;left:0!important;top:0!important;
+  width:100vw!important;width:100dvw!important;height:100vh!important;height:100dvh!important;
+  min-width:0!important;min-height:0!important;max-width:none!important;max-height:none!important;
+  transform:none!important;transform-origin:center!important;
+  transition:none!important;animation:none!important;
+  display:flex!important;flex-direction:column!important;z-index:9999!important;
+ }
+ body.ox-terminal.chart-focus #view-radar .chart-box .panel-head {
+  min-height:46px!important;justify-content:flex-end!important;padding:5px 12px!important;
+ }
+ body.ox-terminal.chart-focus #view-radar .chart-box .panel-head .panel-title,
+ body.ox-terminal.chart-focus #view-radar .radar-scanner-reopen,
+ body.ox-terminal.chart-focus #view-radar .chart-controls>.ctrl-group:nth-child(2),
+ body.ox-terminal.chart-focus #view-radar :is(.ox-indicator-legend,.chart-benchmark-bar,.chart-quickbar,#chart-key-labels,#price-timer) {
+  display:none!important;
+ }
+ body.ox-terminal.chart-focus #view-radar .chart-controls {display:block!important;padding:4px 10px!important}
+ body.ox-terminal.chart-focus #view-radar .chart-controls>.ctrl-group:first-child {width:100%!important}
+ body.ox-terminal.chart-focus #view-radar .chart-container {flex:1 1 auto!important;min-height:0!important;height:auto!important}
+}
+
+/* Softer signal, just above the original frame shown in the reference. */
+body.ox-terminal:not(.theme-light) #view-radar[data-price-direction="up"] {--radar-price-rgb:102,178,202}
+body.ox-terminal:not(.theme-light) #view-radar[data-price-direction="down"] {--radar-price-rgb:201,113,135}
+body.ox-terminal:not(.theme-light) #view-radar[data-price-direction] .chart-box {
+ border-color:rgba(var(--radar-price-rgb),.55)!important;
+ box-shadow:inset 0 1px 0 rgba(var(--radar-price-rgb),.43),0 0 9px rgba(var(--radar-price-rgb),.16),0 0 20px rgba(var(--radar-price-rgb),.07)!important;
+}
+body.ox-terminal:not(.theme-light) #view-radar[data-price-direction]:has(#direction-toggle) .market-line-card,
+body.ox-terminal:not(.theme-light) #view-radar[data-price-direction] .workspace>aside.panel {
+ border-color:rgba(var(--radar-price-rgb),.55)!important;
+ box-shadow:inset 0 1px 0 rgba(var(--radar-price-rgb),.40),0 0 10px rgba(var(--radar-price-rgb),.13)!important;
+}
+body.ox-terminal:not(.theme-light) #view-radar #direction-toggle.is-long {
+ border-color:#69c7da85!important;background:#38bbde12!important;color:#89d6e6!important;
+ box-shadow:inset 0 1px 0 #b7f4ff38,0 0 7px #44ceef30!important;
+}
+body.ox-terminal:not(.theme-light) #view-radar #direction-toggle.is-short {
+ border-color:#e694a785!important;background:#e9517212!important;color:#e3a2b0!important;
+ box-shadow:inset 0 1px 0 #ffb6c138,0 0 7px #fa678430!important;
+}
+
+/* The newly selected row gives an immediate response without transforming the chart canvas. */
+body.ox-terminal #view-radar .coin-card.ox-coin-new-selection {animation:oxCoinSelected 420ms ease-out both}
+@keyframes oxCoinSelected {
+ from {background-color:#ffffff2b;outline:1px solid #ffffff6b;outline-offset:-1px}
+ to {background-color:transparent;outline:1px solid transparent;outline-offset:-1px}
+}
+@media(prefers-reduced-motion:reduce){body.ox-terminal #view-radar .coin-card.ox-coin-new-selection{animation:none}}
+@media(max-width:720px){
+ body.ox-terminal #view-radar .coin-mobile-bottom .coin-change.positive {font-size:12px!important}
+}
 @media(max-width:720px){
  body.ox-terminal #view-radar .coin-card {min-height:77px!important;padding-top:5px!important;padding-bottom:4px!important;row-gap:1px!important}
  body.ox-terminal #view-radar .coin-mobile-bottom {min-height:25px!important;padding-top:0!important}

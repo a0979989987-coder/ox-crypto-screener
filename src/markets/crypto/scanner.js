@@ -325,7 +325,7 @@ function renderCurrentTab() {
       </div>
       <div class="coin-mid">
         <span class="meta desktop-coin-meta">${status} · Fit ${fit ?? '—'} · 24H 量 ${fmtCryptoVolume(c.quoteVol)} USDT</span>
-        <span class="mobile-coin-volume" title="24H 成交量 ${fmtCryptoVolume(c.quoteVol)} USDT" aria-label="24 小時成交量 ${fmtCryptoVolume(c.quoteVol)} USDT"><span class="coin-volume-label">24H 量</span><span class="coin-volume-value">${fmtCryptoVolume(c.quoteVol)}</span></span>
+        <span class="mobile-coin-volume" title="24H 成交量 ${fmtCryptoVolume(c.quoteVol)} USDT" aria-label="24 小時成交量 ${fmtCryptoVolume(c.quoteVol)} USDT"><span class="coin-volume-label">24H 量</span><span class="coin-volume-value">${fmtCryptoVolume(c.quoteVol).replaceAll(",", "")}</span></span>
         <span class="coin-change desktop-coin-change ${c.change24h >= 0 ? 'positive' : 'negative'}" style="font-weight:700">${fmtPct(c.change24h)}</span>
       </div>
       <div class="coin-mobile-bottom">
