@@ -1248,6 +1248,14 @@ body.ox-terminal .app-dock .dock-radar.active,
 body.ox-terminal .app-dock .dock-radar.active .dock-radar-orb {
  background:transparent!important;border-color:transparent!important;box-shadow:none!important;
 }
+body.ox-terminal .app-dock .dock-radar-orb.glass-orb {animation:none!important}
+body.ox-terminal .app-dock .dock-radar-logo {
+ filter:drop-shadow(0 0 0 transparent) drop-shadow(0 0 0 transparent)!important;
+ transition:color 320ms ease,filter 360ms cubic-bezier(.22,.8,.22,1)!important;
+}
 body.ox-terminal .app-dock .dock-radar.active .dock-radar-logo {
  color:#fff!important;filter:drop-shadow(0 0 3px #ffffffa8) drop-shadow(0 0 6px #ffffff66)!important;
+}
+@media(prefers-reduced-motion:reduce){
+ body.ox-terminal .app-dock .dock-radar-logo {transition:none!important}
 }
