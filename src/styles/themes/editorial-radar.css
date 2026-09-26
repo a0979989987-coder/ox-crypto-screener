@@ -445,3 +445,45 @@ body.ox-terminal #view-radar .coin-card.ox-coin-new-selection {animation:oxCoinS
  body.ox-terminal #view-radar .watch-metric:nth-child(2) {min-height:25px!important}
  body.ox-terminal #view-radar .watch-card-main>.watch-star {height:25px!important;min-height:25px!important;width:25px!important;min-width:25px!important;padding:5px!important}
 }
+
+/* Selected coin's 24H move sets the signal strength. Level 1 uses the baseline above. */
+body.ox-terminal:not(.theme-light) #view-radar[data-price-direction="up"][data-glow-level="2"] {--radar-price-rgb:92,185,213}
+body.ox-terminal:not(.theme-light) #view-radar[data-price-direction="down"][data-glow-level="2"] {--radar-price-rgb:213,107,127}
+body.ox-terminal:not(.theme-light) #view-radar[data-price-direction="up"][data-glow-level="3"] {--radar-price-rgb:83,194,224}
+body.ox-terminal:not(.theme-light) #view-radar[data-price-direction="down"][data-glow-level="3"] {--radar-price-rgb:225,100,119}
+body.ox-terminal:not(.theme-light) #view-radar[data-price-direction][data-glow-level="2"] .chart-box {
+ border-color:rgba(var(--radar-price-rgb),.68)!important;
+ box-shadow:inset 0 1px 0 rgba(var(--radar-price-rgb),.60),0 0 10px rgba(var(--radar-price-rgb),.23),0 0 24px rgba(var(--radar-price-rgb),.12)!important;
+}
+body.ox-terminal:not(.theme-light) #view-radar[data-price-direction][data-glow-level="2"]:has(#direction-toggle) .market-line-card,
+body.ox-terminal:not(.theme-light) #view-radar[data-price-direction][data-glow-level="2"] .workspace>aside.panel {
+ border-color:rgba(var(--radar-price-rgb),.67)!important;
+ box-shadow:inset 0 1px 0 rgba(var(--radar-price-rgb),.54),0 0 11px rgba(var(--radar-price-rgb),.20),0 0 21px rgba(var(--radar-price-rgb),.09)!important;
+}
+body.ox-terminal:not(.theme-light) #view-radar[data-price-direction][data-glow-level="3"] .chart-box {
+ border-color:rgba(var(--radar-price-rgb),.84)!important;
+ box-shadow:inset 0 1px 0 rgba(var(--radar-price-rgb),.80),0 0 12px rgba(var(--radar-price-rgb),.35),0 0 28px rgba(var(--radar-price-rgb),.18)!important;
+}
+body.ox-terminal:not(.theme-light) #view-radar[data-price-direction][data-glow-level="3"]:has(#direction-toggle) .market-line-card,
+body.ox-terminal:not(.theme-light) #view-radar[data-price-direction][data-glow-level="3"] .workspace>aside.panel {
+ border-color:rgba(var(--radar-price-rgb),.78)!important;
+ box-shadow:inset 0 1px 0 rgba(var(--radar-price-rgb),.72),0 0 12px rgba(var(--radar-price-rgb),.29),0 0 24px rgba(var(--radar-price-rgb),.14)!important;
+}
+
+/* In full chart, float the exit over the plot and let the timeframe strip take the first row. */
+@media(max-width:900px){
+ body.ox-terminal.chart-focus #view-radar .chart-box>.panel-head {
+  position:static!important;flex:0 0 0!important;height:0!important;min-height:0!important;max-height:0!important;
+  padding:0!important;margin:0!important;border:0!important;overflow:visible!important;
+ }
+ body.ox-terminal.chart-focus #view-radar .chart-box>.panel-head>div {
+  height:0!important;min-height:0!important;overflow:visible!important;
+ }
+ body.ox-terminal.chart-focus #view-radar #btn-chart-fullscreen {
+  position:absolute!important;top:calc(52px + env(safe-area-inset-top))!important;
+  right:calc(10px + env(safe-area-inset-right))!important;z-index:20!important;
+  width:36px!important;height:34px!important;min-width:36px!important;
+  background:#181d25dc!important;border:1px solid #ffffff82!important;border-radius:10px!important;
+  box-shadow:inset 0 1px 0 #ffffff40,0 4px 12px #0009!important;
+ }
+}
