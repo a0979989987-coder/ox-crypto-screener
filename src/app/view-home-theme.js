@@ -185,7 +185,7 @@ function renderHomeOverview() {
   }
 
   setText("home-btc-price", btc ? fmtPrice(btc.lastPr) : "—"); setChange("home-btc-change", btc);
-  setText("home-btc-volume", btc ? `${fmtUsd(btc.usdtVolume)} USDT` : "—");
+  setText("home-btc-volume", btc ? `${fmtCryptoVolume(btc.usdtVolume)} USDT` : "—");
   const btcHigh24 = btc ? num(btc.high24h ?? btc.high24H ?? btc.highPr ?? btc.highPrice24h) : NaN;
   const btcLow24 = btc ? num(btc.low24h ?? btc.low24H ?? btc.lowPr ?? btc.lowPrice24h) : NaN;
   setText("home-btc-high", Number.isFinite(btcHigh24) && btcHigh24 > 0 ? fmtPrice(btcHigh24) : "—");
