@@ -164,7 +164,7 @@
     },
     applyTicker(t){
       if(!t)return;this.ticker=t;
-      updateRadarMarketGlow({symbol:state.symbol,change24h:t.change24h});
+      updateRadarMarketGlow();
       const price=q("#price"),chg=q("#change"),quote=q("#quote"),meta=q("#ticker-meta"),rank=q("#quote-rank");
       if(price)price.textContent=fmtPrice(t.price);
       if(chg){chg.textContent=fmtPct(t.change24h);chg.classList.toggle("positive",t.change24h>=0);chg.classList.toggle("negative",t.change24h<0)}

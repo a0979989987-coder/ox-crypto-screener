@@ -84,21 +84,19 @@ function renderOxDetail() {
   updateAlertButtons();
 }
 
-function updateRadarMarketGlow(ticker) {
+function updateRadarMarketGlow() {
   const radar = document.getElementById("view-radar");
   if (!radar) return;
-  const raw = ticker?.change24h;
-  const change = raw === null || raw === undefined || raw === "" ? NaN : Number(raw);
-  if (ticker?.symbol !== state.symbol || !Number.isFinite(change) || change === 0) {
+  if (radar.dataset.directionChosen !== "true") {
     delete radar.dataset.priceDirection;
     return;
   }
-  radar.dataset.priceDirection = change > 0 ? "up" : "down";
+  radar.dataset.priceDirection = state.directionFilter === "short" ? "down" : "up";
 }
 
 function updateHeaderHUD() {
   const ticker = state.tickers.find(t => t.symbol === state.symbol);
-  updateRadarMarketGlow(ticker);
+  updateRadarMarketGlow();
   if (!ticker) return;
 
   document.getElementById("ticker-pair").textContent = `${ticker.symbol} · Bitget 永續`;

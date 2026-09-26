@@ -118,7 +118,7 @@ body.ox-terminal:not(.theme-light) .ox-live-window {color:#c9ccd3!important}
 body.ox-terminal.chart-focus .app-dock.glass-nav {display:none!important}
 
 /* Market light follows the selected symbol's displayed 24h change, never the filter. */
-body.ox-terminal #view-radar[data-price-direction="up"] {--radar-price-rgb:113,155,190}
+body.ox-terminal #view-radar[data-price-direction="up"] {--radar-price-rgb:136,195,169}
 body.ox-terminal #view-radar[data-price-direction="down"] {--radar-price-rgb:190,117,145}
 body.ox-terminal #view-radar[data-price-direction="up"] .chart-box,
 body.ox-terminal #view-radar[data-price-direction="down"] .chart-box {
@@ -178,7 +178,7 @@ body.ox-terminal #view-radar .coin-ox-value {font-weight:500}
  body.ox-terminal #view-radar .watch-metric:nth-child(2) strong {font-size:13px!important;font-weight:600!important}
  body.ox-terminal #view-radar .watch-card-main>.watch-star {grid-column:2!important;grid-row:3!important;width:32px!important;min-width:32px!important;height:32px!important;min-height:32px!important;padding:8px!important;justify-self:end!important;margin-right:-6px!important}
  /* Mobile halo is a little bluer and lower in luminance; candle colors are unchanged. */
- body.ox-terminal:not(.theme-light) #view-radar[data-price-direction="up"] {--radar-price-rgb:99,145,186}
+ body.ox-terminal:not(.theme-light) #view-radar[data-price-direction="up"] {--radar-price-rgb:125,180,157}
  body.ox-terminal #view-radar[data-price-direction] .chart-box {border-color:rgba(var(--radar-price-rgb),.477)!important;box-shadow:inset 0 1px 0 rgba(var(--radar-price-rgb),.477),0 0 9px rgba(var(--radar-price-rgb),.136),0 0 22px rgba(var(--radar-price-rgb),.074)!important}
  body.ox-terminal #view-radar[data-price-direction]:has(#direction-toggle) .market-line-card {border-color:rgba(var(--radar-price-rgb),.431)!important;border-top-color:rgba(var(--radar-price-rgb),.51)!important;background:linear-gradient(100deg,rgba(var(--radar-price-rgb),.074),transparent 80%)!important;box-shadow:0 0 8px rgba(var(--radar-price-rgb),.113),0 0 20px rgba(var(--radar-price-rgb),.062)!important}
  body.ox-terminal #view-radar[data-price-direction] .chart-controls {border-top-color:rgba(var(--radar-price-rgb),.363)!important;border-bottom-color:rgba(var(--radar-price-rgb),.317)!important;background:linear-gradient(110deg,rgba(var(--radar-price-rgb),.085),#ffffff06 76%)!important;box-shadow:inset 0 1px 0 rgba(var(--radar-price-rgb),.363),0 0 11px rgba(var(--radar-price-rgb),.051)!important}
@@ -243,17 +243,25 @@ body.ox-terminal #view-radar .badge-long {color:var(--green)!important}
 body.ox-terminal #view-radar .badge-short {color:var(--red)!important}
 
 /* Give downward market edges the same legibility as the bright upward state. */
-body.ox-terminal:not(.theme-light) #view-radar[data-price-direction="down"] {--radar-price-rgb:241,85,109}
+body.ox-terminal:not(.theme-light) #view-radar[data-price-direction="down"] {--radar-price-rgb:225,100,119}
 body.ox-terminal:not(.theme-light) #view-radar[data-price-direction="down"] .chart-box {
- border-color:rgba(var(--radar-price-rgb),.9)!important;
- box-shadow:inset 0 1px 0 rgba(var(--radar-price-rgb),.88),0 0 12px rgba(var(--radar-price-rgb),.4),0 0 28px rgba(var(--radar-price-rgb),.23)!important;
+ border-color:rgba(var(--radar-price-rgb),.78)!important;
+ box-shadow:inset 0 1px 0 rgba(var(--radar-price-rgb),.75),0 0 12px rgba(var(--radar-price-rgb),.29),0 0 28px rgba(var(--radar-price-rgb),.16)!important;
 }
 body.ox-terminal:not(.theme-light) #view-radar[data-price-direction="down"]:has(#direction-toggle) .market-line-card {
- border-color:rgba(var(--radar-price-rgb),.85)!important;border-top-color:rgba(var(--radar-price-rgb),.91)!important;
- box-shadow:inset 0 1px 0 rgba(var(--radar-price-rgb),.75),0 0 12px rgba(var(--radar-price-rgb),.3),0 0 24px rgba(var(--radar-price-rgb),.16)!important;
+ border-color:rgba(var(--radar-price-rgb),.75)!important;border-top-color:rgba(var(--radar-price-rgb),.82)!important;
+ box-shadow:inset 0 1px 0 rgba(var(--radar-price-rgb),.66),0 0 12px rgba(var(--radar-price-rgb),.23),0 0 24px rgba(var(--radar-price-rgb),.12)!important;
 }
 
 /* The candidate panel carries the same selected-symbol signal as the chart. */
 body.ox-terminal #view-radar[data-price-direction] .workspace>aside.panel {border-color:rgba(var(--radar-price-rgb),.65)!important;box-shadow:inset 0 1px 0 rgba(var(--radar-price-rgb),.62),0 0 12px rgba(var(--radar-price-rgb),.18)!important}
 body.ox-terminal #view-radar[data-price-direction] .workspace>aside.panel>.panel-head {border-bottom-color:rgba(var(--radar-price-rgb),.38)!important}
-body.ox-terminal:not(.theme-light) #view-radar[data-price-direction="down"] .workspace>aside.panel {border-color:rgba(var(--radar-price-rgb),.79)!important;box-shadow:inset 0 1px 0 rgba(var(--radar-price-rgb),.74),0 0 12px rgba(var(--radar-price-rgb),.27),0 0 25px rgba(var(--radar-price-rgb),.13)!important}
+body.ox-terminal:not(.theme-light) #view-radar[data-price-direction="down"] .workspace>aside.panel {border-color:rgba(var(--radar-price-rgb),.7)!important;box-shadow:inset 0 1px 0 rgba(var(--radar-price-rgb),.64),0 0 12px rgba(var(--radar-price-rgb),.2),0 0 25px rgba(var(--radar-price-rgb),.1)!important}
+
+/* Entering Radar starts with a neutral white frame; chosen direction adds color. */
+body.ox-terminal:not(.theme-light) #view-radar:not([data-price-direction]) .chart-box,
+body.ox-terminal:not(.theme-light) #view-radar:not([data-price-direction]):has(#direction-toggle) .market-line-card,
+body.ox-terminal:not(.theme-light) #view-radar:not([data-price-direction]) .workspace>aside.panel {
+ border-color:#ffffffa3!important;
+ box-shadow:inset 0 1px 0 #ffffff8f,0 0 10px #ffffff2c,0 0 22px #ffffff16!important;
+}

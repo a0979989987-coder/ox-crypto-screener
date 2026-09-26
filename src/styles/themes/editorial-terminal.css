@@ -1206,21 +1206,38 @@ body.ox-terminal[data-ui-mode="plus"] #view-home .ox-strength-duo,body.ox-termin
   left:50%!important;right:auto!important;bottom:calc(9px + env(safe-area-inset-bottom))!important;
   width:min(440px,calc(100vw - 28px))!important;max-width:none!important;
   height:62px!important;min-height:62px!important;padding:4px 7px!important;
-  border:1px solid #ffffff42!important;border-radius:31px!important;
-  background:linear-gradient(165deg,#ffffff20,#12171cab 29%,#0b1015c9 78%,#ffffff12)!important;
-  box-shadow:inset 0 1px 0 #ffffff65,inset 0 -1px 0 #ffffff14,0 10px 26px #000a,0 0 15px #ffffff0c!important;
-  backdrop-filter:blur(22px) saturate(145%)!important;-webkit-backdrop-filter:blur(22px) saturate(145%)!important;
+  border:1px solid #ffffff57!important;border-radius:31px!important;
+  background:radial-gradient(ellipse 80% 75% at 26% -15%,#ffffff38,transparent 76%),linear-gradient(180deg,#ffffff16 0%,#141a209e 18%,#0a1014a8 76%,#ffffff12 100%)!important;
+  box-shadow:inset 0 1px 0 #ffffff9c,inset 0 -1px 0 #ffffff39,0 11px 28px #0009,0 0 17px #ffffff17!important;
+  backdrop-filter:blur(18px) saturate(138%)!important;-webkit-backdrop-filter:blur(18px) saturate(138%)!important;
   transform:translateX(-50%) translateY(0) scale(1)!important;
-  transform-origin:center bottom;transition:transform 220ms cubic-bezier(.2,.75,.2,1),background 220ms ease!important;
+  transform-origin:center bottom;transition:transform 420ms cubic-bezier(.22,.8,.22,1),background 360ms ease!important;
   will-change:transform;z-index:1000;
  }
- body.ox-terminal .app-dock.glass-nav.ox-dock-compact {transform:translateX(-50%) translateY(5px) scale(.87)!important}
+ body.ox-terminal .app-dock.glass-nav.ox-dock-compact {transform:translateX(-50%) translateY(3px) scale(.93)!important}
  body.ox-terminal .app-dock.glass-nav>.dock-btn {height:52px!important;min-height:52px!important;border-radius:25px!important;gap:3px!important}
- body.ox-terminal .app-dock.glass-nav>.dock-btn.active {background:#ffffff22!important;box-shadow:inset 0 1px 0 #ffffff21!important}
+ body.ox-terminal .app-dock.glass-nav>.dock-btn.active {background:transparent!important;box-shadow:none!important}
+ body.ox-terminal .app-dock .ox-dock-indicator {
+  display:block!important;top:4px!important;height:52px!important;
+  background:radial-gradient(ellipse at 24% 0,#ffffff35,transparent 75%),linear-gradient(180deg,#ffffff21,#ffffff13)!important;
+  border:1px solid #ffffff32!important;
+  box-shadow:inset 0 1px 0 #ffffff5c,inset 0 -1px 0 #ffffff1d,0 4px 12px #0005!important;
+  transition:transform 360ms cubic-bezier(.22,.8,.22,1),width 360ms cubic-bezier(.22,.8,.22,1),opacity 220ms ease!important;
+ }
  body.ox-terminal .app-dock .dock-radar-orb {width:24px!important;height:24px!important;border:0!important;border-radius:0!important;background:none!important;box-shadow:none!important}
  body.ox-terminal .app-dock .dock-radar-logo {width:23px!important;height:23px!important}
+ /* The quick-switch gesture's old translateX assumed an absolutely positioned orb. */
+ body.ox-terminal .app-dock .dock-radar.ox-mqs-pressing .dock-radar-orb,
+ body.ox-terminal.ox-mqs-open .app-dock .dock-radar .dock-radar-orb {
+  transform:none!important;
+ }
  body.ox-terminal.theme-light .app-dock.glass-nav {background:linear-gradient(165deg,#ffffffc4,#dce1e1ba 60%,#bbc5c5ce)!important;border-color:#ffffffb5!important}
+}
+@keyframes oxTerminalViewFade {from {opacity:.5} to {opacity:1}}
+@media(max-width:620px) and (prefers-reduced-motion:no-preference){
+ body.ox-terminal .app-view.active.ox-mobile-view-in {animation:oxTerminalViewFade 250ms ease-out both!important}
 }
 @media(max-width:620px) and (prefers-reduced-motion:reduce){
  body.ox-terminal .app-dock.glass-nav {transition:none!important;will-change:auto}
+ body.ox-terminal .app-dock .ox-dock-indicator {transition:none!important}
 }

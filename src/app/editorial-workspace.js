@@ -49,13 +49,24 @@
   if (dock) {
     let lastY = Math.max(0, window.scrollY);
     let pending = false;
+    let travel = 0;
+    let lastToggle = 0;
     window.addEventListener('scroll', () => {
       if (pending) return;
       pending = true;
       requestAnimationFrame(() => {
         const y = Math.max(0, window.scrollY);
-        if (y < 35) dock.classList.remove('ox-dock-compact');
-        else if (Math.abs(y - lastY) > 4) dock.classList.toggle('ox-dock-compact', y > lastY);
+        const delta = y - lastY;
+        if (y < 35) { dock.classList.remove('ox-dock-compact'); travel = 0; }
+        else if (!document.body.classList.contains('ox-mqs-open') && Math.abs(delta) < 90) {
+          if (Math.sign(delta) !== Math.sign(travel)) travel = 0;
+          travel += delta;
+          if (Math.abs(travel) >= 26 && performance.now() - lastToggle > 260) {
+            dock.classList.toggle('ox-dock-compact', travel > 0);
+            lastToggle = performance.now();
+            travel = 0;
+          }
+        }
         lastY = y;
         pending = false;
       });

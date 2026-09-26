@@ -124,8 +124,10 @@ function setScannerTierFilter(tab) {
 function setScannerDirectionFilter(direction) {
   if (!["long","short"].includes(direction)) return;
   state.directionFilter = direction;
+  document.getElementById("view-radar")?.setAttribute("data-direction-chosen", "true");
   persistScannerFilters();
   syncScannerFilterUI();
+  updateRadarMarketGlow();
   renderCurrentTab();
 }
 
