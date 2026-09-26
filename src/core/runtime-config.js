@@ -30,7 +30,7 @@ const state = {
   period: "1D",
   currentTab: "t1",
   directionFilter: "long",
-  activeView: "home",
+  activeView: "radar",
   activeMarket: "crypto",
   
   tickers: [],
@@ -74,8 +74,11 @@ try {
   const savedTier = localStorage.getItem("ox-scanner-tier-filter");
   const savedDirection = localStorage.getItem("ox-scanner-direction-filter");
   if (["t1","t2","t3","surge","watch"].includes(savedTier)) state.currentTab = savedTier;
-  state.directionFilter = ["long","short"].includes(savedDirection) ? savedDirection : "long";
-  localStorage.setItem("ox-scanner-direction-filter", state.directionFilter);
+  // A new visit always opens at the first bullish Radar tier.
+  state.currentTab = "t1";
+  state.directionFilter = "long";
+  localStorage.setItem("ox-scanner-tier-filter", "t1");
+  localStorage.setItem("ox-scanner-direction-filter", "long");
 } catch (e) { state.directionFilter = "long"; }
 
 function syncDirectionalBadges() {
