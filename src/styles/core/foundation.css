@@ -2,6 +2,15 @@
 
 /* ===== inline-style-1 ===== */
 :root {
+      --ox-font-ui: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang TC", "PingFang SC", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+      --ox-font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "PingFang TC", "PingFang SC", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+      --ox-radius-xs: 8px;
+      --ox-radius-sm: 10px;
+      --ox-radius-md: 14px;
+      --ox-radius-lg: 18px;
+      --ox-radius-xl: 22px;
+      --ox-radius-2xl: 26px;
+      --ox-radius-pill: 999px;
       --bg: #080c14;
       --panel: #0f1724;
       --panel-alt: #141e2e;
@@ -26,9 +35,12 @@
       margin: 0;
       background: radial-gradient(1200px 500px at 15% -10%, #1c2b4535, transparent), var(--bg);
       color: var(--ink);
-      font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      font: 15px/1.5 var(--ox-font-ui);
+      font-variant-numeric: tabular-nums lining-nums;
+      font-feature-settings: "tnum" 1, "lnum" 1;
     }
     button, input, select { font: inherit; }
+    :where(button,input,select,textarea,strong,b,output,td,th,time) { font-variant-numeric: tabular-nums lining-nums; }
     button { cursor: pointer; }
     button:focus-visible, a:focus-visible, input:focus-visible {
       outline: 2px solid var(--gold);
@@ -53,7 +65,7 @@
     .metric-card {
       background: var(--panel);
       border: 1px solid var(--line);
-      border-radius: 12px;
+      border-radius: var(--ox-radius-md);
       padding: 14px 18px;
     }
     .metric-card label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 4px; }
@@ -71,7 +83,7 @@
     .panel {
       background: var(--panel);
       border: 1px solid var(--line);
-      border-radius: 14px;
+      border-radius: var(--ox-radius-md);
       overflow: hidden;
     }
     .panel-head {
@@ -87,7 +99,7 @@
     .pill {
       font-size: 11px;
       padding: 3px 8px;
-      border-radius: 6px;
+      border-radius: var(--ox-radius-xs);
       border: 1px solid var(--line);
       background: #111a28;
       color: var(--muted);
@@ -109,7 +121,7 @@
       background: #111a28;
       border: 1px solid var(--line);
       color: var(--muted);
-      border-radius: 6px;
+      border-radius: var(--ox-radius-xs);
       padding: 5px 9px;
       font-size: 12px;
       font-weight: 600;
@@ -155,7 +167,7 @@
       pointer-events: none;
       min-width: 90px;
       padding: 3px 6px;
-      border-radius: 3px;
+      border-radius: var(--ox-radius-xs);
       background: #06090e;
       color: #fff;
       font: 700 11px/1.2 ui-monospace, monospace;
@@ -178,14 +190,14 @@
       border: 1px solid transparent;
       color: var(--muted);
       padding: 6px 11px;
-      border-radius: 7px;
+      border-radius: var(--ox-radius-xs);
       font-size: 12px;
       font-weight: 700;
       white-space: nowrap;
     }
     .tab-btn:hover { color: var(--ink); }
     .tab-btn.active { background: var(--panel-alt); color: var(--gold); border-color: #3b4e69; }
-    .tab-badge { font-size: 10px; padding: 1px 5px; border-radius: 10px; background: #23354d; color: #fff; margin-left: 4px; }
+    .tab-badge { font-size: 10px; padding: 1px 5px; border-radius: var(--ox-radius-sm); background: #23354d; color: #fff; margin-left: 4px; }
 
     .scanner-body {
       
@@ -212,14 +224,14 @@
       font-size: 11px;
       color: #9cb1cc;
       background: #0a1019;
-      border-radius: 5px;
+      border-radius: var(--ox-radius-xs);
       padding: 6px 9px;
       line-height: 1.45;
       border-left: 2px solid #2e435f;
     }
     .coin-reason .setup-head { font-weight: 700; color: var(--ink); margin-bottom: 3px; }
     .score-pills { display: flex; gap: 4px; margin-top: 6px; flex-wrap: wrap; }
-    .score-pill { font-size: 10px; padding: 1px 5px; border-radius: 4px; background: #182436; color: #a5b7ce; }
+    .score-pill { font-size: 10px; padding: 1px 5px; border-radius: var(--ox-radius-xs); background: #182436; color: #a5b7ce; }
 
     .trad-row {
       display: grid;
@@ -236,7 +248,7 @@
       display: inline-flex;
       align-items: center;
       padding: 2px 6px;
-      border-radius: 4px;
+      border-radius: var(--ox-radius-xs);
       font-size: 10.5px;
       font-weight: 750;
       letter-spacing: .02em;
@@ -258,7 +270,7 @@
       border: 1px solid #364e6f;
       border-left: 4px solid var(--gold);
       padding: 12px 16px;
-      border-radius: 8px;
+      border-radius: var(--ox-radius-xs);
       box-shadow: 0 10px 30px #000a;
       transform: translateY(18px);
       opacity: 0;
@@ -269,5 +281,4 @@
       font-size: 13px;
     }
     .toast.show { transform: translateY(0); opacity: 1; visibility: visible; }
-
 

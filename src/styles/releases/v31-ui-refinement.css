@@ -72,7 +72,7 @@
     }
     .strength-dial .strength-needle {
       position: absolute; left: 50%; bottom: 0; top: auto; z-index: 3;
-      width: 3px; height: 47%; border-radius: 4px; background: #fff;
+      width: 3px; height: 47%; border-radius: var(--ox-radius-xs); background: #fff;
       transform-origin: 50% 100%; transform: translateX(-50%) rotate(0deg);
       box-shadow: 0 0 0 2px #07101a, 0 0 10px #fff6;
       transition: transform .35s ease;
@@ -90,14 +90,14 @@
     .media-social-links { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px; }
     .media-social-links a {
       text-decoration: none; border: 1px solid #354861; background: #0a121d;
-      border-radius: 9px; padding: 9px 12px; color: #e2ebf7; font-size: 11px; font-weight: 800;
+      border-radius: var(--ox-radius-sm); padding: 9px 12px; color: #e2ebf7; font-size: 11px; font-weight: 800;
     }
 
     .settings-page { max-width: 1050px; margin: 0 auto; padding: 10px 0 40px; }
     .settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
     .settings-card {
       background: linear-gradient(180deg,#101a29,#0b121d);
-      border: 1px solid var(--line); border-radius: 16px; padding: 18px;
+      border: 1px solid var(--line); border-radius: var(--ox-radius-lg); padding: 18px;
     }
     .settings-card h2 { margin: 0 0 12px; font-size: 15px; color: var(--gold); }
     .settings-wide { grid-column: 1 / -1; }
@@ -108,7 +108,7 @@
     .settings-field:last-child, .settings-switch:last-child { border-bottom: 0; }
     .settings-field input, .settings-field select {
       width: min(230px,55%); border: 1px solid var(--line); background: #0a121d;
-      color: var(--ink); border-radius: 8px; padding: 8px 9px;
+      color: var(--ink); border-radius: var(--ox-radius-xs); padding: 8px 9px;
     }
     .settings-switch input { width: 18px; height: 18px; accent-color: var(--gold); }
     .settings-switch small { color: var(--muted); }
@@ -154,7 +154,7 @@
 
       .compact-summary { display:block; margin: 0 0 5px; }
       .summary-mini { display:none !important; }
-      .market-line-card { grid-template-columns: 1.34fr .72fr .86fr; border-radius: 9px; }
+      .market-line-card { grid-template-columns: 1.34fr .72fr .86fr; border-radius: var(--ox-radius-sm); }
       .market-line-item { padding: 5px 6px; }
       .market-line-item label { font-size: 6px; }
       .market-line-item strong { font-size: 9px; }
@@ -163,7 +163,7 @@
 
       .chart-benchmark-bar { padding: 4px 5px; }
       .chart-benchmark-bar .benchmark-bar { display:flex; gap:4px; }
-      .chart-benchmark-bar .benchmark-card { min-width: 0; min-height: 26px; padding: 4px 9px; border-radius:999px; }
+      .chart-benchmark-bar .benchmark-card { min-width: 0; min-height: 26px; padding: 4px 9px; border-radius:var(--ox-radius-pill); }
       .chart-benchmark-bar .benchmark-card label { font-size: 8px; }
       .chart-benchmark-bar .benchmark-card strong,
       .chart-benchmark-bar .benchmark-sub,
@@ -181,7 +181,7 @@
         min-height:26px;
         padding:4px 6px;
         font-size:7px;
-        border-radius:999px;
+        border-radius:var(--ox-radius-pill);
         max-width:none;
       }
 

@@ -11,7 +11,7 @@
       min-width:48px;
       padding:0 8px;
       border:1px solid #2b425a;
-      border-radius:999px;
+      border-radius:var(--ox-radius-pill);
       display:inline-flex;
       align-items:center;
       justify-content:center;
@@ -40,7 +40,7 @@
       .workspace > aside .panel-head { min-height:38px !important; padding:6px 5px !important; gap:3px !important; }
       .workspace > aside .panel-title { font-size:9.5px !important; white-space:nowrap; }
       .scanner-head-actions { gap:3px; }
-      .direction-toggle-btn { height:20px; min-width:38px; padding:0 5px; gap:2px; font-size:7px; border-radius:999px; }
+      .direction-toggle-btn { height:20px; min-width:38px; padding:0 5px; gap:2px; font-size:7px; border-radius:var(--ox-radius-pill); }
       .direction-toggle-icon { font-size:8px; }
       #pool-count { display:none !important; }
 

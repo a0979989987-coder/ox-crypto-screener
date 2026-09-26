@@ -98,7 +98,7 @@ body.ox-control-open{overflow:hidden!important;overflow-x:hidden!important;}
 .chart-controls .toggle-lbl input{
   appearance:none!important;-webkit-appearance:none!important;
   width:28px!important;height:16px!important;min-width:28px!important;margin:0!important;
-  border:1px solid rgba(112,151,196,.32)!important;border-radius:999px!important;
+  border:1px solid rgba(112,151,196,.32)!important;border-radius:var(--ox-radius-pill)!important;
   background:#182638!important;position:relative!important;box-shadow:inset 0 1px 3px rgba(0,0,0,.28)!important;
   transition:.18s ease!important;
 }

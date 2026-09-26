@@ -38,7 +38,7 @@
 .btc-premium-radar-btn{padding:6px 9px!important;font-size:7px!important;}
 .btc-premium-period-row{min-height:32px!important;padding:0 13px 4px!important;}
 .btc-premium-toolbar{min-height:28px!important;padding:3px 4px!important;gap:4px!important;background:transparent!important;border:0!important;}
-.btc-premium-toolbar .v34-home-mini-tf{height:22px!important;min-width:34px!important;border-radius:999px!important;font-size:7px!important;}
+.btc-premium-toolbar .v34-home-mini-tf{height:22px!important;min-width:34px!important;border-radius:var(--ox-radius-pill)!important;font-size:7px!important;}
 .btc-premium-note{font-size:7px!important;opacity:.72;}
 .btc-premium-chart-wrap{min-height:0!important;height:var(--btc-chart-h)!important;margin:0 10px!important;border-radius:10px!important;overflow:hidden!important;border:1px solid rgba(115,160,210,.10)!important;background:rgba(3,10,18,.38)!important;}
 .btc-premium-chart{height:var(--btc-chart-h)!important;min-height:0!important;background:transparent!important;}
@@ -123,11 +123,11 @@
 
 /* Strength 2.0 reason list */
 .strength-compare-note{display:flex!important;flex-wrap:wrap;gap:5px 8px!important;align-items:center;}
-.strength-reason-chip{display:inline-flex;align-items:center;min-height:20px;padding:3px 7px;border:1px solid rgba(112,151,197,.16);border-radius:999px;background:rgba(85,118,154,.075);color:var(--muted);font-size:8px;line-height:1.2;}
+.strength-reason-chip{display:inline-flex;align-items:center;min-height:20px;padding:3px 7px;border:1px solid rgba(112,151,197,.16);border-radius:var(--ox-radius-pill);background:rgba(85,118,154,.075);color:var(--muted);font-size:8px;line-height:1.2;}
 .strength-reason-chip strong{color:var(--ink);font-weight:800;}
 
 /* Liquidation source status */
-.ox-liq-source-badge{display:inline-flex;align-items:center;justify-content:center;height:25px;padding:0 8px;border:1px solid rgba(93,144,199,.24);border-radius:999px;background:rgba(75,112,151,.08);color:var(--muted);font-size:7px;font-weight:900;letter-spacing:.06em;white-space:nowrap;}
+.ox-liq-source-badge{display:inline-flex;align-items:center;justify-content:center;height:25px;padding:0 8px;border:1px solid rgba(93,144,199,.24);border-radius:var(--ox-radius-pill);background:rgba(75,112,151,.08);color:var(--muted);font-size:7px;font-weight:900;letter-spacing:.04em;white-space:nowrap;}
 .ox-liq-source-badge[data-source="COINGLASS"]{color:var(--gold);border-color:rgba(245,191,85,.32);background:rgba(245,191,85,.08);}
 .ox-liq-source-badge[data-source="NATIVE"]{color:#7edfc0;border-color:rgba(56,201,155,.28);background:rgba(56,201,155,.08);}
 .ox-liq-source-badge[data-source="OFFLINE"]{color:var(--muted);}
