@@ -1277,3 +1277,10 @@ body.ox-terminal #ox-control-open>.ox-menu-glyph svg {
  stroke-linecap:round;stroke-linejoin:round;overflow:visible;
 }
 body.ox-terminal #ox-control-open:focus-visible {outline:2px solid currentColor!important;outline-offset:3px}
+
+/* The removed BTC footer releases height to the T1 pair below it. */
+body.ox-terminal #view-home .ox-home-chart {padding-bottom:5px!important}
+body.ox-terminal #view-home .btc-premium-chart-wrap {margin-bottom:2px!important}
+@media(max-width:620px) {
+ body.ox-terminal #view-home .ox-home-main {gap:8px!important}
+}
