@@ -101,7 +101,11 @@ function updateRadarMarketGlow() {
   const change = num(ticker.change24h);
   const magnitude = Math.abs(change);
   radar.dataset.priceDirection = change < 0 ? "down" : "up";
-  radar.dataset.glowLevel = magnitude >= 0.25 ? "3" : magnitude >= 0.10 ? "2" : "1";
+  // Down moves are typically smaller than upside spikes; use calibrated
+  // bearish thresholds so all three red strengths occur in live candidates.
+  radar.dataset.glowLevel = change < 0
+    ? (magnitude >= 0.08 ? "3" : magnitude >= 0.03 ? "2" : "1")
+    : (magnitude >= 0.25 ? "3" : magnitude >= 0.10 ? "2" : "1");
 }
 
 function updateHeaderHUD() {
