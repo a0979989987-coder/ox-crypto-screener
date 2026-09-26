@@ -5,8 +5,8 @@
   const center = $('#ox-account-center');
   const status = $('#ox-account-auth-status');
   let priorFocus = null;
-  const open = (view='auth') => {
-    priorFocus = document.activeElement;
+  const open = (view='auth', returnFocus=null) => {
+    priorFocus = returnFocus || document.activeElement;
     overlay?.classList.add('is-open'); overlay?.setAttribute('aria-hidden','false');
     document.body.classList.add('ox-account-open');
     authView.hidden = view !== 'auth'; center.hidden = view !== 'center';
@@ -30,8 +30,19 @@
     $('#ox-account-lead')?.remove();
     status.textContent = 'Google 與 Email 驗證服務尚未連接，現在不會提交或保存你的資料。';
   };
+  // The control panel stops click bubbling, so its account CTA must open the
+  // account surface on the button itself instead of relying on document delegation.
+  document.querySelectorAll('[data-ox-account-open]').forEach(trigger => {
+    trigger.addEventListener('click', e => {
+      e.preventDefault();
+      const controlOverlay = $('#ox-control-overlay');
+      const controlWasOpen = controlOverlay?.classList.contains('is-open');
+      if (controlWasOpen) $('#ox-control-close')?.click();
+      open('auth', controlWasOpen ? $('#ox-control-open') : trigger);
+    });
+  });
   document.addEventListener('click', e => {
-    if (e.target.closest('#ox-account-trigger,[data-ox-account-open]')) open();
+    if (e.target.closest('#ox-account-trigger')) open();
     if (e.target.closest('#ox-account-close,#ox-account-skip')) close();
     if (e.target.closest('[data-ox-account-login]')) open();
     if (e.target.closest('#ox-account-tab-login')) mode(false);
