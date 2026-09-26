@@ -43,7 +43,7 @@
   <link rel="stylesheet" href="src/styles/markets/forex.css">
   <link rel="stylesheet" href="src/styles/markets/us.css">
   <link rel="stylesheet" href="src/styles/components/news-center.css?v=20260925d">
-  <link rel="stylesheet" href="src/styles/themes/editorial-terminal.css?v=20260926-t1-logo">
+  <link rel="stylesheet" href="src/styles/themes/editorial-terminal.css?v=20260926-glass-dock">
 
 <!-- CSS moved: ox-premium-glass-design-system -->
 
@@ -72,7 +72,7 @@
 
 <!-- CSS moved: ox-v381-ios-liquid-glass-max -->
 
-  <link rel="stylesheet" href="src/styles/themes/editorial-radar.css?v=20260926-red-edge2">
+  <link rel="stylesheet" href="src/styles/themes/editorial-radar.css?v=20260926-red-mid">
 </head>
 <body class="ox-terminal">
 
@@ -298,8 +298,8 @@
         </article>
 
         <section class="ox-home-t1" aria-label="T1 上漲與下跌候選">
-          <div class="ox-home-t1-side"><div class="ox-home-t1-head"><span>T1 · 上漲</span><strong id="home-t1-long-count">0</strong></div><div id="home-t1-long-list" class="ox-home-t1-list"><span class="ox-home-t1-empty">等待上漲 T1 候選</span></div></div>
-          <div class="ox-home-t1-side"><div class="ox-home-t1-head"><span>T1 · 下跌</span><strong id="home-t1-short-count">0</strong></div><div id="home-t1-short-list" class="ox-home-t1-list"><span class="ox-home-t1-empty">等待下跌 T1 候選</span></div></div>
+          <div class="ox-home-t1-side"><div class="ox-home-t1-head"><span>T1 · 上漲</span></div><div id="home-t1-long-list" class="ox-home-t1-list"><span class="ox-home-t1-empty">等待上漲 T1 候選</span></div></div>
+          <div class="ox-home-t1-side"><div class="ox-home-t1-head"><span>T1 · 下跌</span></div><div id="home-t1-short-list" class="ox-home-t1-list"><span class="ox-home-t1-empty">等待下跌 T1 候選</span></div></div>
         </section>
 
         <aside class="ox-home-analysis" aria-label="市場強度與 OX 分析">
@@ -312,13 +312,6 @@
           <div class="ox-score-panel"><span class="ox-eyebrow">OX SCORE <span class="ox-score-index">市場環境評分</span></span><div class="ox-score-reading"><strong id="home-market-score">—</strong><span>/ 100</span></div><span id="home-market-state">資料整理中</span><div class="ox-meter"><i id="home-market-meter"></i></div></div>
           <div class="ox-analysis-benchmark" data-home-symbol="ETHUSDT" role="button" tabindex="0" aria-label="查看 ETH 雷達"><span>ETH <small>主流基準</small></span><strong id="home-eth-price">—</strong><span id="home-eth-change">—</span><span class="ox-analysis-eth-note" id="home-eth-note">等待行情資料</span><span class="ox-meter"><i id="home-eth-meter"></i></span></div>
         </aside>
-      </section>
-
-      <div class="ox-section-heading"><div><span class="ox-eyebrow">THE SHORTLIST</span><h2>值得觀察的行情</h2></div><span>依即時輪巡結果分級</span></div>
-      <section class="ox-home-tiers" aria-label="雷達分級候選">
-        <article class="ox-tier-column"><div class="ox-tier-title"><span>T1</span><h2>強勢候選</h2><small>觸發確認</small><button type="button" data-home-tier="t1">更多 ↗</button></div><div id="home-tier-t1" class="ox-tier-list"><div class="v33-list-empty">等待 T1 候選標的</div></div></article>
-        <article class="ox-tier-column"><div class="ox-tier-title"><span>T2</span><h2>觀察候選</h2><small>等待觸發</small><button type="button" data-home-tier="t2">更多 ↗</button></div><div id="home-tier-t2" class="ox-tier-list"><div class="v33-list-empty">等待 T2 候選標的</div></div></article>
-        <article class="ox-tier-column"><div class="ox-tier-title"><span>T3</span><h2>潛力候選</h2><small>早期形成</small><button type="button" data-home-tier="t3">更多 ↗</button></div><div id="home-tier-t3" class="ox-tier-list"><div class="v33-list-empty">等待 T3 候選標的</div></div></article>
       </section>
 
       <section class="ox-home-events" aria-label="重要市場動態">
@@ -774,7 +767,7 @@
 <script src="src/components/alerts/level-alerts.js"></script>
 <script src="src/components/strength/market-strength.js"></script>
 <script src="src/app/token-logos.js"></script>
-<script src="src/app/view-home-theme.js?v=20260926-t1-logo"></script>
+<script src="src/app/view-home-theme.js?v=20260926-t1-five"></script>
 <script src="src/markets/crypto/api.js"></script>
 <script src="src/markets/crypto/engine.js"></script>
 <script src="src/markets/crypto/scanner.js?v=20260925-mobile7"></script>
@@ -828,7 +821,7 @@
 
 <script src="src/components/search/provider-switch.js"></script>
 <script type="module" src="src/app/app.js"></script>
-<script src="src/app/editorial-workspace.js"></script>
+<script src="src/app/editorial-workspace.js?v=20260926-glass-dock"></script>
 
 </body>
 </html>
