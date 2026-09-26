@@ -23,7 +23,7 @@ function clearKeyLevelPriceLines() {
 
 function renderKeyLevelPriceLinesFromState() {
   clearKeyLevelPriceLines();
-  if (!state.keyLevelsVisible || !state.candleSeries) return;
+  if (!state.keyLevelsVisible || !state.candleSeries || document.body.classList.contains("chart-focus")) return;
 
   const primary = state.currentLevels;
   if (primary?.high) {
@@ -191,8 +191,8 @@ function initChart() {
 
   state.chart.timeScale().subscribeVisibleLogicalRangeChange(range => {
     requestAnimationFrame(() => { updatePriceTimer(); updateKeyLevelVisualLabels(); });
-    if (!range || state.isLoadingOlder || !state.hasMoreHistory) return;
-    if (range.from <= 2) loadMoreHistoricalCandles();
+    if (!range || state.isLoadingOlder || !state.hasMoreHistory || !state.candleData.length) return;
+    if (range.from <= 12) loadMoreHistoricalCandles();
   });
 
   new ResizeObserver(() => {
@@ -204,11 +204,13 @@ async function loadSymbolCandles(isInitial = true) {
   if (state.activeMarket && state.activeMarket !== "crypto") return;
   state.abortCtrl?.abort();
   state.abortCtrl = new AbortController();
+  const symbol = state.symbol, period = state.period;
   const overlay = document.getElementById("chart-loading");
   if (isInitial) overlay.classList.add("show");
 
   try {
-    const raw = await BitgetAPI.fetchCandles(state.symbol, state.period, window.matchMedia("(max-width:720px)").matches ? 160 : 100);
+    const raw = await BitgetAPI.fetchCandles(symbol, period, window.matchMedia("(max-width:720px)").matches ? 160 : 100);
+    if (state.symbol !== symbol || state.period !== period) return;
     if (!raw.length) throw new Error("無可用 K 線");
 
     state.candleData = raw;
@@ -225,20 +227,27 @@ async function loadSymbolCandles(isInitial = true) {
 async function loadMoreHistoricalCandles() {
   if (state.isLoadingOlder || !state.hasMoreHistory) return;
   state.isLoadingOlder = true;
+  const symbol = state.symbol, period = state.period, oldest = state.oldestCandleTime;
   const overlay = document.getElementById("chart-loading");
   overlay.classList.add("show");
 
   try {
-    const older = await BitgetAPI.fetchCandles(state.symbol, state.period, 100, (state.oldestCandleTime - 1) * 1000);
-    if (!older.length) {
+    const older = await BitgetAPI.fetchCandles(symbol, period, 200, (oldest - (periods[period] || 60)) * 1000);
+    if (state.symbol !== symbol || state.period !== period || state.oldestCandleTime !== oldest) return;
+    const previous = state.candleData;
+    const genuinelyOlder = older.filter(c => c.time < oldest);
+    if (!genuinelyOlder.length) {
       state.hasMoreHistory = false;
       return;
     }
-
-    state.oldestCandleTime = older[0].time;
-    const combined = [...older, ...state.candleData].filter((c, i, a) => !i || c.time !== a[i - 1].time);
+    const visible = state.chart.timeScale().getVisibleLogicalRange();
+    state.oldestCandleTime = genuinelyOlder[0].time;
+    const combined = [...genuinelyOlder, ...previous];
     state.candleData = combined;
-    renderChartData(combined, false);
+    renderChartData(combined, false, visible && {
+      from: visible.from + genuinelyOlder.length,
+      to: visible.to + genuinelyOlder.length
+    });
   } catch (e) {
   } finally {
     state.isLoadingOlder = false;
@@ -246,7 +255,7 @@ async function loadMoreHistoricalCandles() {
   }
 }
 
-function renderChartData(candles, fitContent = false) {
+function renderChartData(candles, fitContent = false, preservedLogicalRange = null) {
   state.candleSeries.setData(candles);
 
   const volData = candles.map(c => ({
@@ -258,7 +267,7 @@ function renderChartData(candles, fitContent = false) {
 
   void refreshKeyLevels(candles);
 
-  if (document.getElementById("chk-ox-markers").checked) {
+  if (!document.body.classList.contains("chart-focus") && document.getElementById("chk-ox-markers").checked) {
     const markers = [];
     for (let i = 20; i < candles.length - 1; i++) {
       const c = candles[i];
@@ -281,8 +290,8 @@ function renderChartData(candles, fitContent = false) {
   if (fitContent) {
     state.chart.timeScale().fitContent();
     applyChartFutureSpace(true);
-  } else {
-    applyChartFutureSpace(false);
+  } else if (preservedLogicalRange) {
+    state.chart.timeScale().setVisibleLogicalRange(preservedLogicalRange);
   }
   updatePriceTimer();
   requestAnimationFrame(updateKeyLevelVisualLabels);
