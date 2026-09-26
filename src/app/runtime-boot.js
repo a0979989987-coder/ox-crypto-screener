@@ -26,7 +26,7 @@ window.addEventListener("DOMContentLoaded", () => {
   setKeyLevelsVisible(false, { persist: true });
   initChart();
   applyTheme(getSavedThemeMode());
-  switchAppView("home");
+  switchAppView("radar");
   if (state.activeMarket === "crypto") {
     loadSymbolCandles(true);
     refreshMarketTickers();
