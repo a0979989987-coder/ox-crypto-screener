@@ -625,7 +625,7 @@ body.ox-terminal :where(.us-market-home-content,.tw-home-shell,.fx-module) {colo
 body.ox-terminal :where(.us-market-home-header,.tw-home-topbar,.fx-module-head) {position:static!important;padding:28px 0 25px!important;border:0!important;border-bottom:1px solid var(--line)!important;background:none!important;box-shadow:none!important;border-radius:0!important;display:flex!important;align-items:flex-end!important;justify-content:space-between!important;gap:25px}
 body.ox-terminal :where(.us-market-home-header h2,.tw-home-topbar h2,.fx-module-head h1) {font:600 42px/1.2 var(--ox-font-display)!important;color:var(--ink)!important;letter-spacing:-.03em!important;margin:10px 0!important}
 body.ox-terminal :where(.us-market-home-header p,.tw-home-topbar p,.fx-module-head p) {color:var(--muted)!important;font-size:11px!important;line-height:1.7!important;margin:0!important}
-body.ox-terminal :where(.us-market-refresh,.tw-home-refresh,.tw-home-action) {background:none!important;color:var(--ink)!important;border:1px solid var(--line)!important;border-radius:0!important;box-shadow:none!important;font-size:11px!important;padding:8px 12px!important}
+body.ox-terminal :where(.us-market-refresh,.tw-home-refresh,.tw-home-action) {background:none!important;color:var(--ink)!important;border:1px solid var(--line)!important;border-radius:var(--ox-radius-md)!important;box-shadow:none!important;font-size:11px!important;padding:8px 12px!important}
 body.ox-terminal .ox-us-workspace {display:grid;grid-template-columns:minmax(0,1.8fr) minmax(280px,1fr);gap:48px;padding:36px 0 28px}
 body.ox-terminal .ox-us-benchmark>.ox-section-heading {padding:0 0 22px;border-bottom:1px solid var(--line)}
 body.ox-terminal .us-market-pulse-item {border:0!important;border-radius:0!important;background:none!important;box-shadow:none!important;padding:20px 0!important;color:var(--ink)!important}
@@ -694,7 +694,7 @@ body.ox-terminal .tw-home-root .tw-myox {border-left:1px solid var(--line)!impor
 /* Forex: more canvas, a compact session column, then a border-led quote list. */
 body.ox-terminal #ox-forex-module {margin-top:0!important;padding:0!important}
 body.ox-terminal .fx-module-head label {font-size:10px!important;color:var(--muted)!important}
-body.ox-terminal .fx-module-head select {border:1px solid var(--line)!important;border-radius:0!important;background:var(--panel)!important;color:var(--ink)!important;min-width:150px;padding:10px}
+body.ox-terminal .fx-module-head select {border:1px solid var(--line)!important;border-radius:var(--ox-radius-lg)!important;background:var(--panel)!important;color:var(--ink)!important;min-width:150px;padding:10px}
 body.ox-terminal .fx-hero-grid {grid-template-columns:minmax(0,1.95fr) minmax(280px,1fr)!important;gap:35px!important;padding:30px 0 0}
 body.ox-terminal .fx-panel {border:0!important;border-radius:0!important;background:none!important;box-shadow:none!important;padding:0!important}
 body.ox-terminal .fx-chart-panel {padding:22px 24px!important;border:1px solid var(--line)!important;background:linear-gradient(145deg,#1b2120a0,#101413)!important;border-radius:var(--ox-radius-xl)!important}
@@ -861,13 +861,13 @@ body.ox-terminal #ox-market-quick-switch .ox-mqs-item.is-current .ox-mqs-dot {ba
   body.ox-terminal .app-dock .dock-radar-orb::before,body.ox-terminal .app-dock .dock-radar-orb::after {display:none!important}
   body.ox-terminal .strength-page {display:block;padding-top:25px!important}
   body.ox-terminal .strength-page>.page-hero {margin-bottom:25px}
-  body.ox-terminal .page-hero h1 {font-size:31px!important}
+  body.ox-terminal .page-hero h1 {font-size:24px!important}
   body.ox-terminal .strength-compare-panel {padding:22px 0!important;margin-bottom:20px!important}
   body.ox-terminal .strength-compare-side strong {font-size:48px!important}
   body.ox-terminal .strength-grid {grid-template-columns:1fr!important;gap:0!important}
   body.ox-terminal .strength-card {padding:24px 0!important}
   body.ox-terminal .ox-news-masthead {display:block;padding-bottom:24px}
-  body.ox-terminal .ox-news-masthead h1 {font-size:37px!important}
+  body.ox-terminal .ox-news-masthead h1 {font-size:25px!important}
   body.ox-terminal .ox-news-masthead p {margin:14px 0 0;font-size:10px}
   body.ox-terminal .ox-news-section-nav {gap:24px;margin-bottom:17px}
   body.ox-terminal .ox-news-section-nav button {font-size:11px}
@@ -878,24 +878,24 @@ body.ox-terminal #ox-market-quick-switch .ox-mqs-item.is-current .ox-mqs-dot {ba
   body.ox-terminal .ox-news-list.is-featured>.ox-news-card:first-child {grid-row:auto;min-height:0;padding:25px 0!important}
   body.ox-terminal .ox-news-list.is-featured>.ox-news-card:first-child h3 {font-size:27px!important}
   body.ox-terminal .ox-news-card h3 {font-size:20px!important}
-  body.ox-terminal .ox-data-masthead h1 {font-size:34px}
+  body.ox-terminal .ox-data-masthead h1 {font-size:24px}
   body.ox-terminal #view-media .media-intro {grid-template-columns:1fr!important;gap:20px!important;padding:0 0 30px!important}
   body.ox-terminal #view-media .media-logo {width:54px!important;height:54px!important}
-  body.ox-terminal #view-media .media-intro h1 {font-size:40px!important}
+  body.ox-terminal #view-media .media-intro h1 {font-size:26px!important}
   body.ox-terminal #view-media .media-sections {display:block!important}
   body.ox-terminal #view-media .media-section,body.ox-terminal #view-media .media-section:nth-child(2) {padding:26px 0!important}
   body.ox-terminal #view-media .media-section.full {display:block}
   body.ox-terminal .media-function-list {grid-template-columns:1fr!important}
   body.ox-terminal .settings-grid {display:block!important}
   body.ox-terminal :where(.us-market-home-header,.tw-home-topbar,.fx-module-head) {padding:25px 0 21px!important;align-items:flex-start!important;gap:15px!important;flex-wrap:wrap}
-  body.ox-terminal :where(.us-market-home-header h2,.tw-home-topbar h2,.fx-module-head h1) {font-size:35px!important}
+  body.ox-terminal :where(.us-market-home-header h2,.tw-home-topbar h2,.fx-module-head h1) {font-size:25px!important}
   body.ox-terminal .ox-us-workspace {display:block;padding:25px 0 0}
-  body.ox-terminal .us-market-pulse-primary .us-market-pulse-price b {font-size:66px!important}
+  body.ox-terminal .us-market-pulse-primary .us-market-pulse-price b {font-size:42px!important}
   body.ox-terminal .us-market-pulse-primary .us-market-pulse-price span {font-size:17px!important}
   body.ox-terminal .ox-us-context {border:0;border-top:1px solid var(--line);padding:24px 0;margin-top:15px}
   body.ox-terminal .ox-us-context h3 {margin-bottom:20px}
   body.ox-terminal .ox-us-breadth {float:right;padding:0 0 15px 20px}
-  body.ox-terminal .ox-us-breadth strong {font-size:65px}
+  body.ox-terminal .ox-us-breadth strong {font-size:42px}
   body.ox-terminal .ox-us-context p {margin:16px 0 25px}
   body.ox-terminal .ox-us-research {grid-template-columns:1fr 1fr;gap:22px}
   body.ox-terminal .ox-us-research>div:first-child {grid-column:1/-1}
@@ -906,7 +906,7 @@ body.ox-terminal #ox-market-quick-switch .ox-mqs-item.is-current .ox-mqs-dot {ba
   body.ox-terminal .tw-home-root .tw-pulse-card.primary {grid-column:1/-1;border:0!important;border-bottom:1px solid var(--line)!important;padding:0 0 23px!important}
   body.ox-terminal .tw-home-root .tw-pulse-card {padding:20px 15px!important}
   body.ox-terminal .tw-home-root .tw-pulse-card:nth-child(2) {padding-left:0!important}
-  body.ox-terminal .tw-home-root .tw-pulse-card.primary .tw-pulse-price {font-size:59px!important}
+  body.ox-terminal .tw-home-root .tw-pulse-card.primary .tw-pulse-price {font-size:42px!important}
   body.ox-terminal .tw-home-root .tw-money,body.ox-terminal .tw-home-root .tw-myox {border-left:0!important;padding-left:0!important}
   body.ox-terminal .tw-home-root .tw-theme-list {grid-template-columns:1fr!important}
   body.ox-terminal .fx-hero-grid {grid-template-columns:1fr!important;gap:27px!important;padding-top:24px}
@@ -1145,10 +1145,34 @@ body.ox-terminal.theme-light #view-home .ox-home-chart.ox-market-down {border-co
 
 /* T1 takes the space beside BTC; the existing strength and OX readings follow below. */
 body.ox-terminal #view-home .ox-home-t1 {
- display:grid;grid-template-columns:repeat(2,minmax(0,1fr));min-width:0;border:1px solid #ffffff88;border-radius:var(--ox-radius-xs);
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));min-width:0;border:1px solid #ffffff88;border-radius:var(--ox-radius-xl);
  background:linear-gradient(145deg,#ffffff10,#25292f55 55%,#16191f77);
  box-shadow:inset 0 1px 0 #ffffffbd,inset 0 -1px 0 #ffffff56,0 0 9px #ffffff35,0 0 26px #ffffff2c;
  overflow:hidden;
+}
+
+/* Market modules render some styles after the base stylesheet. Keep their
+   typography and surface corners on the same tokens without changing layout. */
+body.ox-terminal #market-unavailable-card :is(.us-radar-title h2,.us-strength-head h2),
+body.ox-terminal :is(.twi-header h2,.twr-header h2) {
+ font-family:var(--ox-font-display)!important;font-weight:600!important;letter-spacing:.01em!important;
+}
+body.ox-terminal #market-unavailable-card :is(.us-radar-price,.us-radar-score,.us-strength-total),
+body.ox-terminal :is(.twi-reading,.twr-price,.twr-score) {
+ font-family:var(--ox-font-display)!important;font-variant-numeric:tabular-nums lining-nums!important;
+}
+body.ox-terminal #market-unavailable-card :is(.us-radar-snapshot-card,.us-strength-score-card),
+body.ox-terminal :is(.twi-card,.twr-summary-card,.twi-header-count) {border-radius:var(--ox-radius-lg)!important}
+body.ox-terminal :is(.twi-panel,.twr-panel) {border-radius:var(--ox-radius-xl)!important}
+body.ox-terminal #market-unavailable-card :is(.us-radar-tier-btn,.us-radar-search),
+body.ox-terminal :is(.twi-preset,.twi-category,.twi-add,.twi-clear,.twr-tab,.twr-reset,.twr-watch,.twr-sort) {border-radius:var(--ox-radius-md)!important}
+body.ox-terminal #market-unavailable-card :is(.us-lookup input,.us-radar-search input),
+body.ox-terminal :is(.twi-search input,.twr-search input,.twr-filter-field select) {border-radius:var(--ox-radius-lg)!important}
+@media(max-width:720px){
+ body.ox-terminal #market-unavailable-card :is(.us-radar-title h2,.us-strength-head h2),
+ body.ox-terminal :is(.twi-header h2,.twr-header h2) {font-size:24px!important;line-height:1.16!important}
+ body.ox-terminal #market-unavailable-card .us-radar-price,
+ body.ox-terminal .twr-price {font-size:clamp(30px,9vw,42px)!important}
 }
 body.ox-terminal #view-home .ox-home-t1-side {min-width:0;padding:19px 14px 16px;display:flex;flex-direction:column;gap:16px}
 body.ox-terminal #view-home .ox-home-t1-side+ .ox-home-t1-side {border-left:1px solid #ffffff8a;box-shadow:inset 1px 0 0 #ffffff23}
