@@ -5,14 +5,13 @@ import { runInNewContext } from 'node:vm';
 
 test('Safari toolbar resizes do not repeatedly redraw an unchanged chart', () => {
   const source = readFileSync(new URL('../src/app/view-home-theme.js', import.meta.url), 'utf8');
-  const fn = source.slice(source.indexOf('function resizeChartToContainer()'), source.indexOf('\nfunction setChartFocus('));
+  const fn = source.slice(source.indexOf('function resizeChartToContainer('), source.indexOf('\nfunction updateChartExpandButton('));
   const sizes = [];
   const container = { clientWidth: 320, clientHeight: 440 };
-  const state = { chart: { applyOptions: size => sizes.push(size) } };
+  const state = { chart: { resize: (width, height, force) => sizes.push({ width, height, force }) } };
   const resize = runInNewContext(`${fn}\nresizeChartToContainer`, {
     state,
     document: { getElementById: () => container },
-    applyChartFutureSpace() {},
     requestAnimationFrame() {},
     updateKeyLevelVisualLabels() {}
   });
@@ -26,6 +25,9 @@ test('Safari toolbar resizes do not repeatedly redraw an unchanged chart', () =>
   assert.equal(sizes.at(-1).width, 320);
   assert.equal(sizes.at(-1).height, 460);
   assert.equal(sizes.length, 2);
+  resize(true);
+  assert.equal(sizes.length, 3, 'focus changes redraw at the final canvas size');
+  assert.equal(sizes.at(-1).force, true);
 });
 
 function quickSwitchHarness() {
