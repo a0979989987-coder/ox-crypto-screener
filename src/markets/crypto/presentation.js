@@ -89,10 +89,19 @@ function updateRadarMarketGlow() {
   if (!radar) return;
   if (radar.dataset.selectedSymbol !== state.symbol) {
     delete radar.dataset.priceDirection;
+    delete radar.dataset.glowLevel;
     return;
   }
   const ticker = state.tickers.find(t => t.symbol === state.symbol);
-  if (ticker) radar.dataset.priceDirection = num(ticker.change24h) < 0 ? "down" : "up";
+  if (!ticker) {
+    delete radar.dataset.priceDirection;
+    delete radar.dataset.glowLevel;
+    return;
+  }
+  const change = num(ticker.change24h);
+  const magnitude = Math.abs(change);
+  radar.dataset.priceDirection = change < 0 ? "down" : "up";
+  radar.dataset.glowLevel = magnitude >= 0.25 ? "3" : magnitude >= 0.10 ? "2" : "1";
 }
 
 function updateHeaderHUD() {
