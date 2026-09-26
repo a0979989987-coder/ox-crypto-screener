@@ -5,7 +5,7 @@ function getChartRightOffset() {
 function applyChartFutureSpace(snapToLatest = false) {
   if (!state.chart) return;
   const ts = state.chart.timeScale();
-  ts.applyOptions({ rightOffset: getChartRightOffset(), fixRightEdge: false, lockVisibleTimeRangeOnResize: true });
+  ts.applyOptions({ rightOffset: getChartRightOffset(), fixRightEdge: false, lockVisibleTimeRangeOnResize: false });
   if (snapToLatest) requestAnimationFrame(() => {
     try { ts.scrollToPosition(getChartRightOffset(), false); } catch (e) {}
   });
