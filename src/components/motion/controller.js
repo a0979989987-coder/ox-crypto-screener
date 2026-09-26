@@ -101,10 +101,11 @@
     const indicator = ensureDockIndicator();
     const active = dock?.querySelector('.dock-btn.active');
     if (!dock || !indicator || !active) return;
-    if (active.classList.contains('dock-radar')) { indicator.style.opacity='0'; return; }
     const dr = dock.getBoundingClientRect(), br = active.getBoundingClientRect();
-    const width = Math.max(38, Math.min(br.width * .76, 86));
-    const x = br.left - dr.left + (br.width - width)/2;
+    const scale = dr.width / Math.max(1, dock.offsetWidth);
+    const buttonWidth = br.width / scale;
+    const width = Math.max(38, Math.min(buttonWidth * .94, 86));
+    const x = (br.left - dr.left) / scale + (buttonWidth - width)/2;
     indicator.style.width = `${width.toFixed(1)}px`;
     indicator.style.transform = `translate3d(${x.toFixed(1)}px,0,0)`;
     indicator.style.opacity='1';
