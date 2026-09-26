@@ -337,3 +337,55 @@ body.ox-terminal:not(.theme-light) #view-radar[data-price-direction="up"] .works
  border-color:rgba(var(--radar-price-rgb),.78)!important;
  box-shadow:inset 0 1px 0 rgba(var(--radar-price-rgb),.72),0 0 14px rgba(var(--radar-price-rgb),.26),0 0 26px rgba(var(--radar-price-rgb),.12)!important;
 }
+
+/* The direction is one button with one visible state. */
+body.ox-terminal #view-radar #direction-toggle,
+body.ox-terminal.theme-light #view-radar #direction-toggle {
+ display:inline-flex!important;justify-content:center!important;align-items:center!important;gap:4px!important;
+ flex:0 0 auto!important;width:54px!important;min-width:54px!important;max-width:54px!important;
+ border-radius:999px!important;transition:color .28s,border-color .28s,background .28s,box-shadow .28s!important;
+}
+body.ox-terminal:not(.theme-light) #view-radar #direction-toggle.is-long {
+ color:#66daf4!important;border-color:#69dbf4!important;background:#38bbde24!important;
+ box-shadow:inset 0 1px 0 #b7f4ff8c,0 0 8px #44ceef9c,0 0 16px #44ceef46!important;
+}
+body.ox-terminal:not(.theme-light) #view-radar #direction-toggle.is-short {
+ color:#ff879b!important;border-color:#ff8297!important;background:#e9517224!important;
+ box-shadow:inset 0 1px 0 #ffb6c18c,0 0 8px #fa67849c,0 0 16px #fa678446!important;
+}
+body.ox-terminal #view-radar #direction-toggle .direction-toggle-icon {color:inherit!important;font-size:13px!important}
+body.ox-terminal #view-radar #direction-toggle .direction-toggle-text {font-size:11px!important;font-weight:700!important}
+body.ox-terminal #view-radar :is(.radar-scanner-collapse,.radar-scanner-reopen) {width:30px!important;min-width:30px!important;padding:0!important;gap:0!important}
+body.ox-terminal #view-radar :is(.radar-scanner-collapse,.radar-scanner-reopen) span {display:block!important;font:24px/1 Arial,sans-serif!important;transform:none!important;translate:0 -1px!important}
+body.ox-terminal #view-radar .chart-controls>.ctrl-group:nth-child(2) {
+ border-top:1px solid #ffffff55!important;padding-top:7px!important;
+}
+body.ox-terminal #view-radar .chart-controls .toggle-lbl,
+body.ox-terminal #view-radar .chart-controls .toggle-lbl:has(input:checked) {
+ justify-content:center!important;min-height:29px!important;padding:4px 3px!important;
+ border:1px solid #ffffff36!important;border-radius:999px!important;
+ background:#ffffff08!important;box-shadow:none!important;color:var(--muted)!important;
+ font-weight:600!important;cursor:pointer;transition:border-color .2s,box-shadow .2s,color .2s,background .2s!important;
+}
+body.ox-terminal:not(.theme-light) #view-radar .chart-controls .toggle-lbl:has(input:checked) {
+ border-color:#ffffffcb!important;color:#fff!important;background:#ffffff1c!important;
+ box-shadow:inset 0 1px 0 #ffffffa6,0 0 7px #ffffff7a,0 0 15px #ffffff3b!important;
+}
+body.ox-terminal #view-radar .chart-controls .toggle-lbl input {
+ position:absolute!important;opacity:0!important;width:1px!important;height:1px!important;min-width:1px!important;
+ pointer-events:none!important;
+}
+body.ox-terminal #view-radar .chart-controls .toggle-lbl input::after {display:none!important}
+body.ox-terminal #view-radar .chart-controls .toggle-lbl:has(input:focus-visible) {outline:2px solid var(--ink)!important;outline-offset:2px}
+body.ox-terminal.theme-light #view-radar .chart-controls .toggle-lbl:has(input:checked) {
+ color:#171c25!important;border-color:#6a737d!important;background:#fff!important;box-shadow:0 0 7px #86929a70!important;
+}
+@media(max-width:720px){
+ body.ox-terminal #view-radar .coin-card {min-height:77px!important;padding-top:5px!important;padding-bottom:4px!important;row-gap:1px!important}
+ body.ox-terminal #view-radar .coin-mobile-bottom {min-height:25px!important;padding-top:0!important}
+ body.ox-terminal #view-radar .watch-star-mobile {height:25px!important;min-height:25px!important;width:25px!important;min-width:25px!important;padding:5px!important}
+ body.ox-terminal #view-radar .coin-card.watch-list-card {min-height:77px!important}
+ body.ox-terminal #view-radar .watch-card-main {row-gap:1px!important}
+ body.ox-terminal #view-radar .watch-metric:nth-child(2) {min-height:25px!important}
+ body.ox-terminal #view-radar .watch-card-main>.watch-star {height:25px!important;min-height:25px!important;width:25px!important;min-width:25px!important;padding:5px!important}
+}
