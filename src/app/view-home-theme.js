@@ -52,6 +52,12 @@ function switchAppView(view) {
   if (document.body.classList.contains('chart-focus')) setChartFocus(false);
 
   const previous = state.activeView;
+  if (view === 'radar' && previous !== 'radar' && state.activeMarket === 'crypto') {
+    state.directionFilter = 'long';
+    const radar = document.getElementById('view-radar');
+    if (radar) { delete radar.dataset.directionChosen; delete radar.dataset.priceDirection; }
+    syncScannerFilterUI();
+  }
   const order = ['home','strength','radar','data','media','settings'];
   const direction = Math.sign(order.indexOf(view) - order.indexOf(previous));
   const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
@@ -65,8 +71,8 @@ function switchAppView(view) {
     document.querySelectorAll('[data-view-target]').forEach(btn => btn.classList.toggle('active', btn.dataset.viewTarget === view));
 
     const incoming = document.querySelector(`[data-app-view="${view}"]`);
-    // Whole-page transforms briefly hold the first pan gesture on iOS.
-    // Keep transitions on individual controls; page content is usable now.
+    // A brief opacity entrance leaves touch and scrolling available immediately.
+    if (incoming && previous !== view && !reduced) incoming.classList.add('ox-mobile-view-in');
 
     MarketController.syncPlaceholder();
     window.scrollTo({ top: 0, behavior: reduced ? 'auto' : 'auto' });
