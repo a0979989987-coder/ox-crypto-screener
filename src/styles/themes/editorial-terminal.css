@@ -1241,3 +1241,13 @@ body.ox-terminal[data-ui-mode="plus"] #view-home .ox-strength-duo,body.ox-termin
  body.ox-terminal .app-dock.glass-nav {transition:none!important;will-change:auto}
  body.ox-terminal .app-dock .ox-dock-indicator {transition:none!important}
 }
+
+/* Radar lights the mark itself, without the moving glass selection tile. */
+body.ox-terminal[data-view="radar"] .app-dock .ox-dock-indicator {opacity:0!important;visibility:hidden!important}
+body.ox-terminal .app-dock .dock-radar.active,
+body.ox-terminal .app-dock .dock-radar.active .dock-radar-orb {
+ background:transparent!important;border-color:transparent!important;box-shadow:none!important;
+}
+body.ox-terminal .app-dock .dock-radar.active .dock-radar-logo {
+ color:#fff!important;filter:drop-shadow(0 0 4px #fff) drop-shadow(0 0 9px #ffffffb8)!important;
+}

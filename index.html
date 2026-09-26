@@ -43,7 +43,7 @@
   <link rel="stylesheet" href="src/styles/markets/forex.css">
   <link rel="stylesheet" href="src/styles/markets/us.css">
   <link rel="stylesheet" href="src/styles/components/news-center.css?v=20260925d">
-  <link rel="stylesheet" href="src/styles/themes/editorial-terminal.css?v=20260926-radar-fold3">
+  <link rel="stylesheet" href="src/styles/themes/editorial-terminal.css?v=20260926-radar-controls4">
 
 <!-- CSS moved: ox-premium-glass-design-system -->
 
@@ -72,7 +72,7 @@
 
 <!-- CSS moved: ox-v381-ios-liquid-glass-max -->
 
-  <link rel="stylesheet" href="src/styles/themes/editorial-radar.css?v=20260926-radar-fold3">
+  <link rel="stylesheet" href="src/styles/themes/editorial-radar.css?v=20260926-radar-controls4">
 </head>
 <body class="ox-terminal">
 
@@ -372,7 +372,7 @@
           <span>BTCUSDT 永續合約</span>
         </h2>
         <div style="display:flex;gap:8px;align-items:center">
-          <button class="btn-act radar-scanner-reopen" id="radar-scanner-reopen" type="button" aria-label="展開幣種篩選" title="展開幣種篩選" aria-expanded="false" aria-controls="radar-scanner-panel">篩選 <span aria-hidden="true">‹</span></button>
+          <button class="btn-act radar-scanner-reopen" id="radar-scanner-reopen" type="button" aria-label="展開幣種篩選" title="展開幣種篩選" aria-expanded="false" aria-controls="radar-scanner-panel"><span aria-hidden="true">‹</span></button>
           <button class="btn-act" id="btn-chart-fullscreen" type="button" aria-label="展開圖表" aria-pressed="false" title="展開圖表"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3H3v6m12-6h6v6M3 15v6h6m6 0h6v-6"/></svg></button>
         </div>
       </div>
@@ -392,7 +392,7 @@
           <label class="toggle-lbl"><input type="checkbox" id="chk-ox-markers">OX 指標</label>
           <label class="toggle-lbl key-level-visibility-toggle" title="只切換圖表顯示，不停止前高前低計算與提醒">
             <input type="checkbox" id="chk-key-levels">
-            <span id="key-level-toggle-text">前高前低 ON</span>
+            <span id="key-level-toggle-text">前高前低</span>
           </label>
         </div>
       </div>
@@ -442,7 +442,7 @@
     <aside class="panel" id="radar-scanner-panel">
       <div class="panel-head">
         <button class="direction-toggle-btn is-long" id="direction-toggle" type="button" aria-label="切換多空方向" aria-pressed="false" title="目前：多頭模式；點擊切換空頭">
-          <span class="radar-direction-thumb" aria-hidden="true"></span><span class="radar-direction-choice">↑ 多</span><span class="radar-direction-choice">↓ 空</span>
+          <span class="direction-toggle-icon" aria-hidden="true">↑</span><span class="direction-toggle-text">多</span>
         </button>
         <div class="scanner-head-actions">
           <button class="radar-scanner-collapse" id="radar-scanner-collapse" type="button" aria-label="收起幣種篩選，展開圖表" title="收起篩選，展開圖表" aria-expanded="true" aria-controls="radar-scanner-panel"><span aria-hidden="true">›</span></button>

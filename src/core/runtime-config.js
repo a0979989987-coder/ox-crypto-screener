@@ -146,6 +146,11 @@ const periods = {
 
 const num = v => Number(v) || 0;
 const fmtUsd = v => new Intl.NumberFormat("en-US", { notation: "compact", maximumFractionDigits: 2 }).format(num(v));
+const fmtCryptoVolume = v => {
+  const value = num(v);
+  const format = amount => new Intl.NumberFormat("zh-TW", { maximumFractionDigits: 2 }).format(amount);
+  return value >= 1e8 ? `${format(value / 1e8)}億` : value >= 1e4 ? `${format(value / 1e4)}萬` : format(value);
+};
 const fmtPrice = v => {
   const x = num(v);
   if (!Number.isFinite(x) || x === 0) return "—";

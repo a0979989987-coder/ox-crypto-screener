@@ -25,7 +25,7 @@ function updateQuickStats() {
   if (!ticker) return;
   const chg = document.getElementById("quick-change");
   chg.textContent = fmtPct(ticker.change24h); chg.className = num(ticker.change24h) >= 0 ? "positive" : "negative";
-  document.getElementById("quick-volume").textContent = `${fmtUsd(ticker.usdtVolume)} USDT`;
+  document.getElementById("quick-volume").textContent = `${fmtCryptoVolume(ticker.usdtVolume)} USDT`;
   const secondaryHigh = state.secondaryLevels?.high ? ` / ${fmtPrice(state.secondaryLevels.high)} · ${state.secondaryLevels.sourcePeriod}` : "";
   const secondaryLow = state.secondaryLevels?.low ? ` / ${fmtPrice(state.secondaryLevels.low)} · ${state.secondaryLevels.sourcePeriod}` : "";
   document.getElementById("quick-high").textContent = state.currentLevels.high ? `${fmtPrice(state.currentLevels.high)} · ${state.currentLevels.sourcePeriod || getKeyLevelPeriod()}${secondaryHigh}` : "—";
@@ -38,7 +38,7 @@ function renderOxDetail() {
   const scored = state.analyzedCache.get(symbol);
   const isBenchmark = benchmarkSymbols.has(symbol);
   document.getElementById("detail-symbol").textContent = symbol;
-  document.getElementById("detail-volume").textContent = ticker ? `${fmtUsd(ticker.usdtVolume)} USDT` : "—";
+  document.getElementById("detail-volume").textContent = ticker ? `${fmtCryptoVolume(ticker.usdtVolume)} USDT` : "—";
   const primaryLevelText = `${state.currentLevels.sourcePeriod || getKeyLevelPeriod()}｜${state.currentLevels.high ? fmtPrice(state.currentLevels.high) : '—'} / ${state.currentLevels.low ? fmtPrice(state.currentLevels.low) : '—'}`;
   const secondaryLevelText = state.secondaryLevels
     ? ` · ${state.secondaryLevels.sourcePeriod}｜${state.secondaryLevels.high ? fmtPrice(state.secondaryLevels.high) : '—'} / ${state.secondaryLevels.low ? fmtPrice(state.secondaryLevels.low) : '—'}`
@@ -74,7 +74,7 @@ function renderOxDetail() {
   document.getElementById("detail-trigger").textContent = scored.triggerActive ? scored.triggerType : "等待確認";
 
   const reasons = [
-    { ok: scored.liqScore >= 55, text: `24H USDT 成交量 ${fmtUsd(scored.quoteVol)}，市場前 ${scored.liqPercentile}%` },
+    { ok: scored.liqScore >= 55, text: `24H USDT 成交量 ${fmtCryptoVolume(scored.quoteVol)}，市場前 ${scored.liqPercentile}%` },
     { ok: scored.volRatio1h >= 1.25, text: `1H Volume Ratio ${scored.volRatio1h ?? '—'}x` },
     { ok: scored.structScore >= 60, text: `結構 ${scored.structureLabel || scored.side}` },
     { ok: scored.rsScore >= 55, text: `Relative Strength ${scored.rsScore}` },
@@ -108,7 +108,7 @@ function updateHeaderHUD() {
   chgEl.textContent = fmtPct(ticker.change24h);
   chgEl.className = num(ticker.change24h) >= 0 ? "positive" : "negative";
 
-  document.getElementById("quote").textContent = `${fmtUsd(ticker.usdtVolume)} USDT`;
+  document.getElementById("quote").textContent = `${fmtCryptoVolume(ticker.usdtVolume)} USDT`;
   document.getElementById("chart-head-title").children[0].textContent = `${ticker.symbol} 永續合約`;
 
   const scored = state.analyzedCache.get(state.symbol);

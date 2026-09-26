@@ -126,7 +126,7 @@ async function runScanQueueLoop() {
         );
 
         const reasons = [
-          `24H 成交額市場前 ${liq.percentileStr}% (${fmtUsd(liq.quoteVol)} USDT)`,
+          `24H 成交額市場前 ${liq.percentileStr}% (${fmtCryptoVolume(liq.quoteVol)} USDT)`,
           `1H 放量比率: ${moneyFlow.volRatio1h}x`,
           ...setup.reasons
         ];
@@ -324,8 +324,8 @@ function renderCurrentTab() {
         <span class="coin-top-right"><span class="coin-ox" aria-label="OX 分數 ${c.oxScore}"><span class="coin-ox-label">OX</span> <strong class="coin-ox-value">${c.oxScore}</strong></span>${allowStar ? `<button class="watch-star watch-star-desktop ${starred?'is-starred':''}" type="button" data-watch-symbol="${c.symbol}" aria-pressed="${starred}" aria-label="${starred?'移除':'加入'} ${c.symbol} 收藏">${WATCH_STAR_SVG}</button>` : ''}</span>
       </div>
       <div class="coin-mid">
-        <span class="meta desktop-coin-meta">${status} · Fit ${fit ?? '—'} · 24H Vol ${fmtUsd(c.quoteVol)} USDT</span>
-        <span class="mobile-coin-volume" title="24H 成交量 ${fmtUsd(c.quoteVol)} USDT" aria-label="24 小時成交量 ${fmtUsd(c.quoteVol)} USDT"><span class="coin-volume-label">24H 量</span><span class="coin-volume-value">${fmtUsd(c.quoteVol)}</span></span>
+        <span class="meta desktop-coin-meta">${status} · Fit ${fit ?? '—'} · 24H 量 ${fmtCryptoVolume(c.quoteVol)} USDT</span>
+        <span class="mobile-coin-volume" title="24H 成交量 ${fmtCryptoVolume(c.quoteVol)} USDT" aria-label="24 小時成交量 ${fmtCryptoVolume(c.quoteVol)} USDT"><span class="coin-volume-label">24H 量</span><span class="coin-volume-value">${fmtCryptoVolume(c.quoteVol)}</span></span>
         <span class="coin-change desktop-coin-change ${c.change24h >= 0 ? 'positive' : 'negative'}" style="font-weight:700">${fmtPct(c.change24h)}</span>
       </div>
       <div class="coin-mobile-bottom">
