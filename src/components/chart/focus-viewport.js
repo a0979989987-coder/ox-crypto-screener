@@ -11,7 +11,7 @@
     root.style.setProperty('--ox-focus-vw', `${w}px`);
     root.style.setProperty('--ox-focus-vh', `${h}px`);
     requestAnimationFrame(() => {
-      try { resizeChartToContainer?.(); } catch (_) {}
+      try { resizeChartToContainer?.(true); } catch (_) {}
     });
   }
   function schedule(){ if(raf) return; raf=requestAnimationFrame(sync); }
