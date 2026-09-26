@@ -62,7 +62,7 @@ function syncKeyLevelVisibilityUI() {
   const checkbox = document.getElementById("chk-key-levels");
   const textEl = document.getElementById("key-level-toggle-text");
   if (checkbox) checkbox.checked = !!state.keyLevelsVisible;
-  if (textEl) textEl.textContent = `前高前低 ${state.keyLevelsVisible ? "ON" : "OFF"}`;
+  if (textEl) textEl.textContent = "前高前低";
 }
 
 function setKeyLevelsVisible(visible, { persist = true } = {}) {
