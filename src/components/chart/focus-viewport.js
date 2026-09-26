@@ -20,6 +20,11 @@
   window.addEventListener('orientationchange', () => { schedule(); setTimeout(schedule,120); setTimeout(schedule,320); }, {passive:true});
   window.visualViewport?.addEventListener('resize', schedule, {passive:true});
   document.addEventListener('click', e => {
+    if (e.target.closest('#btn-chart-exit-overlay')) {
+      e.preventDefault();
+      document.getElementById('btn-chart-fullscreen')?.click();
+      return;
+    }
     if (e.target.closest('#btn-chart-fullscreen')) {
       requestAnimationFrame(schedule);
       setTimeout(schedule,80);
