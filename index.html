@@ -73,6 +73,7 @@
 <!-- CSS moved: ox-v381-ios-liquid-glass-max -->
 
   <link rel="stylesheet" href="src/styles/themes/editorial-radar.css?v=20260927-home-radar9">
+  <link rel="stylesheet" href="src/styles/account/account.css">
 </head>
 <body class="ox-terminal" data-view="radar">
 
@@ -93,6 +94,9 @@
         <button type="button" data-ui-mode-choice="plus" aria-pressed="false">Plus</button>
         <button type="button" data-ui-mode-choice="pro" aria-pressed="true">Pro</button>
       </div>
+      <button class="ox-account-trigger" id="ox-account-trigger" type="button" aria-label="開啟 OX 帳號" aria-haspopup="dialog">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c.7-4.2 3-6.3 7-6.3s6.3 2.1 7 6.3"/></svg><span>OX 帳號</span>
+      </button>
       <button class="ox-menu-btn" id="ox-control-open" type="button" aria-label="開啟 OX 控制中心" aria-controls="ox-control-panel" aria-expanded="false">
         <span class="ox-menu-glyph" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" focusable="false"><path d="M4 6h16M4 12h16M4 18h16"/></svg></span>
       </button>
@@ -210,38 +214,8 @@
       </div>
 
       <div class="ox-control-view" data-control-view="account">
-        <div class="ox-feedback-head">
-          <button class="ox-control-back" id="ox-control-account-back" type="button" aria-label="返回控制中心">‹</button>
-          <div><h3>帳號</h3><small>LOCAL ACCOUNT · FIRST VERSION</small></div>
-        </div>
-        <div class="ox-auth-card" id="ox-auth-logged-out">
-          <label class="ox-feedback-field"><span>Email</span><input id="ox-auth-email" type="email" autocomplete="username" placeholder="you@example.com"></label>
-          <label class="ox-feedback-field"><span>密碼</span><input id="ox-auth-password" type="password" autocomplete="current-password" minlength="6" placeholder="至少 6 碼"></label>
-          <div class="ox-auth-actions"><button type="button" id="ox-auth-login">登入</button><button type="button" id="ox-auth-register">註冊</button></div>
-          <div class="ox-feedback-status" id="ox-auth-status">帳號資料只存在這台裝置；密碼只儲存 SHA-256 雜湊，不會建立雲端帳號。</div>
-        </div>
-        <div class="ox-auth-card" id="ox-auth-logged-in" hidden>
-          <div class="ox-auth-user"><span class="ox-auth-avatar">OX</span><div><b id="ox-auth-current-email">—</b><small>已保持登入 · 個人偏好已綁定</small></div></div>
-
-          <div class="ox-account-summary" id="ox-account-summary">
-            <div class="ox-account-summary-head">
-              <span><b>LOCAL PROFILE</b><small>此裝置本機帳號</small></span>
-              <span class="ox-account-status-dot"><i></i>已登入</span>
-            </div>
-            <div class="ox-account-pref-grid">
-              <div><small>收藏</small><b id="ox-account-watch-count">0</b></div>
-              <div><small>主題</small><b id="ox-account-theme">自動</b></div>
-              <div><small>通知</small><b id="ox-account-notify">關閉</b></div>
-              <div><small>市場</small><b id="ox-account-market">加密</b></div>
-              <div><small>雷達</small><b id="ox-account-radar">T1 · 多</b></div>
-              <div><small>頻率</small><b id="ox-account-frequency">每 1 小時</b></div>
-            </div>
-            <div class="ox-account-sync-line"><span>偏好狀態</span><b id="ox-account-pref-state">已綁定本機設定</b></div>
-          </div>
-
-          <button class="ox-feedback-submit ox-auth-logout" id="ox-auth-logout" type="button">登出</button>
-          <div class="ox-feedback-status">目前同步範圍：⭐觀察列表、通知設定、鈴聲、主題、前高前低顯示。僅限此裝置。</div>
-        </div>
+        <div class="ox-feedback-head"><button class="ox-control-back" id="ox-control-account-back" type="button" aria-label="返回控制中心">‹</button><div><h3>OX 帳號</h3><small>OX ACCOUNT</small></div></div>
+        <div class="ox-auth-card"><p>使用一個 OX 帳號，連接未來的 OX 服務。</p><button class="ox-account-open-login" type="button" data-ox-account-open>登入 / 註冊 OX 帳號</button><small class="ox-account-provider-note">帳號服務尚未連接驗證供應商。此頁不會建立假帳號或保存密碼。</small></div>
       </div>
 
       <div class="ox-control-view" data-control-view="feedback">
@@ -260,6 +234,33 @@
     </div>
   </aside>
 </div>
+
+<div class="ox-account-overlay" id="ox-account-overlay" aria-hidden="true">
+  <section class="ox-account-shell" role="dialog" aria-modal="true" aria-labelledby="ox-account-title-main">
+    <button class="ox-account-close" id="ox-account-close" type="button" aria-label="關閉 OX 帳號">×</button>
+    <div class="ox-account-brand"><span class="ox-account-mark">OX</span><span>OXLOVE</span></div>
+    <div class="ox-account-layout">
+      <div class="ox-account-intro"><p class="ox-account-eyebrow">ONE OX ACCOUNT</p><h1>一個帳號，<br>連接你的 OX 服務。</h1><p>為 OX 市場工具與未來服務準備的統一帳號。</p><div class="ox-account-lightwave" aria-hidden="true"></div></div>
+      <div class="ox-account-card" id="ox-account-auth-view">
+        <div class="ox-account-tabs" role="tablist" aria-label="登入或建立帳號"><button type="button" role="tab" id="ox-account-tab-login" aria-selected="true">登入</button><button type="button" role="tab" id="ox-account-tab-register" aria-selected="false">建立帳號</button></div>
+        <h2 id="ox-account-title-main">登入 OX</h2><p class="ox-account-lead">一個帳號，連接你的 OX 服務。</p>
+        <button class="ox-account-google" type="button" id="ox-account-google"><span class="ox-google-g" aria-hidden="true">G</span>使用 Google 繼續</button>
+        <div class="ox-account-divider"><span>或使用電子郵件</span></div>
+        <form id="ox-account-email-form" novalidate><label for="ox-account-email">電子郵件</label><input id="ox-account-email" type="email" autocomplete="email" placeholder="name@example.com" required><div class="ox-account-password-wrap" hidden><label for="ox-account-password">密碼</label><input id="ox-account-password" type="password" autocomplete="new-password" minlength="8" placeholder="至少 8 個字元"></div><button class="ox-account-submit" type="submit" id="ox-account-email-submit">繼續</button></form>
+        <p class="ox-account-status" id="ox-account-auth-status" role="status" aria-live="polite">Google 與 Email 驗證服務尚未連接，現在不會提交或保存你的資料。</p>
+        <button class="ox-account-skip" type="button" id="ox-account-skip">繼續使用基礎版</button>
+      </div>
+      <div class="ox-account-card ox-account-center" id="ox-account-center" hidden>
+        <p class="ox-account-eyebrow">OX ACCOUNT</p><h2>帳號中心</h2><p>登入服務尚未連接。</p>
+        <h3>連結服務</h3><div class="ox-service-row"><span>OX Market</span><b>目前產品</b></div><div class="ox-service-row"><span>Bitget</span><b>尚未連結</b></div><button class="ox-account-submit" type="button" id="ox-account-bitget-info">了解完整 Crypto 資格</button>
+        <div class="ox-account-entitlements" data-entitlement-schema='{"guest":true,"ox_member":false,"crypto_full":false}'><small>權限架構預留</small><span>GUEST</span><span>OX_MEMBER</span><span>CRYPTO_FULL</span></div>
+        <button class="ox-account-skip" type="button" data-ox-account-login>返回登入</button>
+      </div>
+    </div>
+    <footer class="ox-account-footer"><span>OX Account · 統一 OX 身份</span><span id="ox-account-preferences">主題沿用目前網站設定</span></footer>
+  </section>
+</div>
+<div class="ox-account-modal" id="ox-account-info-modal" aria-hidden="true"><div role="dialog" aria-modal="true" aria-labelledby="ox-account-info-title"><button type="button" aria-label="關閉" id="ox-account-info-close">×</button><h2 id="ox-account-info-title">完整 Crypto 資格</h2><p>完整 Crypto 會員功能未開放驗證。未來將依 Bitget 合作帳號資格與 KYC 狀態判定。</p></div></div>
 
 <main class="wrap" style="padding-top:10px;padding-bottom:40px">
 
@@ -788,6 +789,9 @@
 
 
 <script src="src/components/account/summary.js"></script>
+<script src="src/components/account/auth.js"></script>
+<script src="src/components/account/session.js"></script>
+<script src="src/components/account/account.js"></script>
 
 <!-- CSS moved: ox-v37-last-mile-fixes -->
 

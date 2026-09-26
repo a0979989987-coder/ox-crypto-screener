@@ -5,9 +5,9 @@ const OXFeaturePack = (()=>{
     document.querySelectorAll("[data-market-choice]").forEach(b=>b.addEventListener("click",()=>MarketController.setMarket(b.dataset.marketChoice)));
     document.getElementById("ox-control-account-open")?.addEventListener("click",()=>document.querySelectorAll("[data-control-view]").forEach(v=>v.classList.toggle("active",v.dataset.controlView==="account")));
     document.getElementById("ox-control-account-back")?.addEventListener("click",()=>document.querySelectorAll("[data-control-view]").forEach(v=>v.classList.toggle("active",v.dataset.controlView==="main")));
-    document.getElementById("ox-auth-register")?.addEventListener("click",async()=>{ const st=document.getElementById("ox-auth-status"); try{ const e=await AccountStore.register(document.getElementById("ox-auth-email").value,document.getElementById("ox-auth-password").value); if(st)st.textContent=`已註冊並登入 ${e}。這是本機帳號，不會上傳伺服器。`; }catch(err){if(st)st.textContent=err.message;} });
-    document.getElementById("ox-auth-login")?.addEventListener("click",async()=>{ const st=document.getElementById("ox-auth-status"); try{ const e=await AccountStore.login(document.getElementById("ox-auth-email").value,document.getElementById("ox-auth-password").value); if(st)st.textContent=`已登入 ${e}，已載入此帳號的個人偏好。`; }catch(err){if(st)st.textContent=err.message;} });
-    document.getElementById("ox-auth-logout")?.addEventListener("click",()=>{AccountStore.logout(); showToast("已登出本機帳號");});
+
+
+
     document.getElementById("ox-control-test-notification")?.addEventListener("click",async()=>{ await primeAlertAudio(true); let p=notificationPlatformInfo().permission; if(p==="default")p=await maybeRequestNotificationPermission({interactive:true}); const soundOk=await playAlertTone("high"); const notifyOk=p==="granted"?await sendBrowserNotification("OX 測試通知",{body:"OX 通知與鈴聲測試已執行。",icon:"ox-logo.png",tag:"ox-control-test"},{bypassMaster:true}):false; showToast(`${notifyOk?"通知✓":"通知×"} · ${soundOk?"鈴聲✓":"鈴聲×"}`); syncNotificationPermissionUI(); });
     document.addEventListener("change",e=>{ if(e.target.matches("#chk-key-levels,[data-setting-key],#ox-control-notify-toggle,#setting-email,#setting-phone,#setting-frequency")) setTimeout(AccountStore.capturePrefs,0); });
     document.addEventListener("click",e=>{ if(e.target.closest("[data-theme-choice],[data-control-theme]")) setTimeout(AccountStore.capturePrefs,0); });

@@ -1,11 +1,5 @@
-const OX_GUEST_PREFS_KEY = "ox-guest-prefs-v1";
-const OX_USERS_KEY = "ox-local-users-v1";
-const OX_SESSION_KEY = "ox-local-session-v1";
-
-function normalizeEmail(v) { return String(v || "").trim().toLowerCase(); }
-function safeAccountToken(email) { try { return btoa(unescape(encodeURIComponent(email))).replace(/=+$/g, "").replace(/\+/g,"-").replace(/\//g,"_"); } catch { return email.replace(/[^a-z0-9]/gi,"_"); } }
-function currentLocalAccountEmail() { return normalizeEmail(localStorage.getItem(OX_SESSION_KEY) || ""); }
-function watchStorageKey() { const e = currentLocalAccountEmail(); return e ? `ox-user-watchlist:${safeAccountToken(e)}` : "ox-watchlist"; }
+function currentLocalAccountEmail() { return ""; }
+function watchStorageKey() { return "ox-watchlist"; }
 function getWatchlistRecords() { try { const v = JSON.parse(localStorage.getItem(watchStorageKey()) || "[]"); return Array.isArray(v) ? v.filter(x => x && x.symbol) : []; } catch { return []; } }
 function isWatchlisted(symbol) { return getWatchlistRecords().some(x => x.symbol === symbol); }
 function syncWatchBadge() { const el = document.getElementById("badge-watch"); if (el) el.textContent = getWatchlistRecords().length; }
@@ -24,86 +18,19 @@ function toggleWatchSymbol(symbol) {
   renderCurrentTab();
 }
 
-const AccountStore = (() => {
-  const loadUsers = () => { try { const v = JSON.parse(localStorage.getItem(OX_USERS_KEY) || "{}"); return v && typeof v === "object" ? v : {}; } catch { return {}; } };
-  const saveUsers = users => localStorage.setItem(OX_USERS_KEY, JSON.stringify(users));
-  const sha256 = async value => { const bytes = new TextEncoder().encode(value); const digest = await crypto.subtle.digest("SHA-256", bytes); return Array.from(new Uint8Array(digest)).map(b=>b.toString(16).padStart(2,"0")).join(""); };
-  const collectPrefs = () => {
-    const settings = {};
-    ["breakout","tiers","alt50","alt75","btc50","btc75","btcAnalysis","news"].forEach(k => settings[k] = localStorage.getItem(`ox-setting-${k}`));
-    return {
-      theme: localStorage.getItem("ox-ui-theme") || "system",
-      keyLevels: localStorage.getItem("ox-chart-key-levels-visible") !== "0",
-      notifications: localStorage.getItem("ox-control-notifications-enabled") === "1",
-      sound: localStorage.getItem("ox-alert-sound-enabled") !== "0",
-      settings,
-      emailSetting: localStorage.getItem("ox-setting-email") || "",
-      phoneSetting: localStorage.getItem("ox-setting-phone") || "",
-      frequency: localStorage.getItem("ox-setting-frequency") || "1h",
-      filters: {
-        tier: localStorage.getItem("ox-scanner-tier-filter") || state.currentTab || "t1",
-        direction: ["long","short"].includes(localStorage.getItem("ox-scanner-direction-filter")) ? localStorage.getItem("ox-scanner-direction-filter") : (state.directionFilter || "long")
-      },
-      market: localStorage.getItem("ox-active-market") || state.activeMarket || "crypto",
-      levelAlerts: Object.fromEntries(Object.keys(localStorage).filter(k => k.startsWith("ox-level-alert:")).map(k => [k, localStorage.getItem(k)]))
-    };
-  };
-  const applyPrefs = prefs => {
-    if (!prefs) return;
-    if (prefs.theme) localStorage.setItem("ox-ui-theme", prefs.theme);
-    localStorage.setItem("ox-chart-key-levels-visible", prefs.keyLevels === false ? "0" : "1");
-    localStorage.setItem("ox-control-notifications-enabled", prefs.notifications ? "1" : "0");
-    localStorage.setItem("ox-alert-sound-enabled", prefs.sound === false ? "0" : "1");
-    Object.entries(prefs.settings || {}).forEach(([k,v]) => { if (v !== null && v !== undefined) localStorage.setItem(`ox-setting-${k}`, String(v)); });
-    if (prefs.emailSetting !== undefined) localStorage.setItem("ox-setting-email", prefs.emailSetting);
-    if (prefs.phoneSetting !== undefined) localStorage.setItem("ox-setting-phone", prefs.phoneSetting);
-    if (prefs.frequency) localStorage.setItem("ox-setting-frequency", prefs.frequency);
-    if (prefs.filters?.tier && ["t1","t2","t3","surge","watch"].includes(prefs.filters.tier)) { state.currentTab = prefs.filters.tier; localStorage.setItem("ox-scanner-tier-filter", prefs.filters.tier); }
-    if (prefs.filters?.direction) { const dir = ["long","short"].includes(prefs.filters.direction) ? prefs.filters.direction : "long"; state.directionFilter = dir; localStorage.setItem("ox-scanner-direction-filter", dir); }
-    Object.keys(localStorage).filter(k => k.startsWith("ox-level-alert:")).forEach(k => localStorage.removeItem(k));
-    Object.entries(prefs.levelAlerts || {}).forEach(([k,v]) => { if (k.startsWith("ox-level-alert:") && v !== null) localStorage.setItem(k, String(v)); });
-
-    applyTheme(getSavedThemeMode());
-    setKeyLevelsVisible(localStorage.getItem("ox-chart-key-levels-visible") !== "0");
-    const notify = document.getElementById("ox-control-notify-toggle"); if (notify) notify.checked = localStorage.getItem("ox-control-notifications-enabled") === "1";
-    const sound = document.getElementById("ox-control-sound-toggle"); if (sound) sound.checked = localStorage.getItem("ox-alert-sound-enabled") !== "0";
-    const email = document.getElementById("setting-email"); if (email) email.value = localStorage.getItem("ox-setting-email") || "";
-    const phone = document.getElementById("setting-phone"); if (phone) phone.value = localStorage.getItem("ox-setting-phone") || "";
-    const freq = document.getElementById("setting-frequency"); if (freq) freq.value = localStorage.getItem("ox-setting-frequency") || "1h";
-    document.querySelectorAll("[data-setting-key]").forEach(input => { const v=localStorage.getItem(`ox-setting-${input.dataset.settingKey}`); if(v!==null) input.checked = v === "1"; });
-    syncScannerFilterUI();
-    // Account preferences must not override the startup Crypto Radar default.
-    syncNotificationPermissionUI(); syncWatchBadge(); renderCurrentTab();
-  };
-  const capturePrefs = () => {
-    const email = currentLocalAccountEmail(); if (!email) return;
-    const users = loadUsers(); if (!users[email]) return;
-    users[email].prefs = collectPrefs(); users[email].updatedAt = Date.now(); saveUsers(users);
-  };
-  const saveGuest = () => localStorage.setItem(OX_GUEST_PREFS_KEY, JSON.stringify(collectPrefs()));
-  const restoreGuest = () => { try { const p=JSON.parse(localStorage.getItem(OX_GUEST_PREFS_KEY)||"null"); if(p) applyPrefs(p); } catch{} };
-  const register = async (email, password) => {
-    email=normalizeEmail(email); if(!/^\S+@\S+\.\S+$/.test(email)) throw new Error("請輸入有效 Email"); if(String(password).length<6) throw new Error("密碼至少 6 碼");
-    const users=loadUsers(); if(users[email]) throw new Error("這個 Email 已在此裝置註冊"); saveGuest();
-    const guestWatch = getWatchlistRecords();
-    const passwordHash=await sha256(`${email}::${password}`); users[email]={passwordHash,createdAt:Date.now(),updatedAt:Date.now(),prefs:collectPrefs()}; saveUsers(users); localStorage.setItem(OX_SESSION_KEY,email);
-    localStorage.setItem(watchStorageKey(), JSON.stringify(guestWatch));
-    updateAccountUI(); syncWatchBadge(); renderCurrentTab(); return email;
-  };
-  const login = async (email,password) => {
-    email=normalizeEmail(email); const users=loadUsers(); const u=users[email]; if(!u) throw new Error("此裝置找不到這個帳號"); const h=await sha256(`${email}::${password}`); if(h!==u.passwordHash) throw new Error("密碼不正確"); saveGuest(); localStorage.setItem(OX_SESSION_KEY,email); applyPrefs(u.prefs); updateAccountUI(); return email;
-  };
-  const logout = () => { capturePrefs(); localStorage.removeItem(OX_SESSION_KEY); restoreGuest(); updateAccountUI(); syncWatchBadge(); renderCurrentTab(); };
-  return { loadUsers, collectPrefs, applyPrefs, capturePrefs, register, login, logout, currentEmail:currentLocalAccountEmail };
-})();
-
+// OX Account V1 has no Auth provider yet. Preserve legacy hooks without
+// creating a client-side identity, password store, or session.
+const AccountStore = Object.freeze({
+  loadUsers: () => ({}), collectPrefs: () => ({}), applyPrefs: () => {}, capturePrefs: () => {},
+  register: async () => { throw new Error("OX Account 驗證服務尚未連接"); },
+  login: async () => { throw new Error("OX Account 驗證服務尚未連接"); },
+  logout: () => {}, currentEmail: currentLocalAccountEmail
+});
 function updateAccountUI() {
-  const email = currentLocalAccountEmail();
-  const title = document.getElementById("ox-account-title"), sub=document.getElementById("ox-account-sub"), tag=document.getElementById("ox-account-action-tag");
-  const out=document.getElementById("ox-auth-logged-out"), inn=document.getElementById("ox-auth-logged-in"), cur=document.getElementById("ox-auth-current-email");
-  if (email) { if(title) title.textContent=email; if(sub) sub.textContent="本機帳號已登入 · 個人偏好綁定中"; if(tag) tag.textContent="SIGNED IN"; if(out) out.hidden=true; if(inn) inn.hidden=false; if(cur) cur.textContent=email; }
-  else { if(title) title.textContent="登入 / 註冊"; if(sub) sub.textContent="第一版本機帳號，可保持登入並綁定個人偏好。"; if(tag) tag.textContent="LOCAL"; if(out) out.hidden=false; if(inn) inn.hidden=true; }
-  try { window.syncAccountSummary?.(); } catch (e) {}
+  const title=document.getElementById("ox-account-title"), sub=document.getElementById("ox-account-sub"), tag=document.getElementById("ox-account-action-tag");
+  if(title) title.textContent="登入 / 註冊";
+  if(sub) sub.textContent="建立你的 OX 統一帳號。";
+  if(tag) tag.textContent="OX ACCOUNT";
 }
 
 const MarketController = (() => {
