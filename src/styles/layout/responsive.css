@@ -191,7 +191,7 @@ img, svg, canvas {
     
     grid-template-columns: minmax(0, 1fr) !important;
     
-    border-radius: 16px !important;
+    border-radius: var(--ox-radius-lg) !important;
     overflow: hidden !important;
   }
 

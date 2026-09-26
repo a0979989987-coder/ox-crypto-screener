@@ -2,7 +2,7 @@
     .ox-menu-btn {
       width: 38px; height: 36px; flex: 0 0 38px; padding: 0;
       display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
-      color: var(--muted); background: #0c1522; border: 1px solid #283a53; border-radius: 10px;
+      color: var(--muted); background: #0c1522; border: 1px solid #283a53; border-radius: var(--ox-radius-sm);
       box-shadow: inset 0 1px 0 #ffffff08; transition: border-color .18s ease, color .18s ease, background .18s ease, transform .18s ease;
     }
     .ox-menu-btn span { width: 16px; height: 1.5px; border-radius: 999px; background: currentColor; display: block; }
@@ -27,12 +27,12 @@
       background: linear-gradient(180deg, #101b2a, #0b1420);
     }
     .ox-control-title { min-width: 0; flex: 1; }
-    .ox-control-kicker { color: var(--gold); font-size: 9px; font-weight: 900; letter-spacing: .22em; text-transform: uppercase; }
+    .ox-control-kicker { color: var(--gold); font-size: 9px; font-weight: 900; letter-spacing: .04em; text-transform: uppercase; }
     .ox-control-title h2 { margin: 3px 0 0; font-size: 19px; letter-spacing: .04em; }
     .ox-control-system-state { margin-top: 5px; display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 9px; }
     .ox-control-system-state i { width: 6px; height: 6px; border-radius: 50%; background: var(--green); box-shadow: 0 0 9px #38d3a66b; }
     .ox-control-close, .ox-control-back {
-      width: 34px; height: 34px; border-radius: 9px; border: 1px solid #2b3d56; background: #0b1420; color: #b6c3d5;
+      width: 34px; height: 34px; border-radius: var(--ox-radius-sm); border: 1px solid #2b3d56; background: #0b1420; color: #b6c3d5;
       display: grid; place-items: center; font-size: 18px; line-height: 1; padding: 0;
     }
     .ox-control-close:hover, .ox-control-back:hover { color: var(--ink); border-color: #4b607d; background: #111d2b; }
@@ -40,7 +40,7 @@
     .ox-control-view { display: none; }
     .ox-control-view.active { display: block; }
     .ox-control-group {
-      margin-bottom: 10px; background: #0c1522; border: 1px solid #26374e; border-radius: 13px; overflow: hidden;
+      margin-bottom: 10px; background: #0c1522; border: 1px solid #26374e; border-radius: var(--ox-radius-md); overflow: hidden;
       box-shadow: inset 0 1px 0 #ffffff06;
     }
     .ox-control-row {
@@ -51,7 +51,7 @@
     button.ox-control-row { width: 100%; color: inherit; text-align: left; background: transparent; border-top: 0; border-left: 0; border-right: 0; }
     button.ox-control-row:hover { background: #ffffff04; }
     .ox-control-icon {
-      width: 32px; height: 32px; border-radius: 9px; display: grid; place-items: center; color: #a7b6ca; background: #111d2b; border: 1px solid #2c4059;
+      width: 32px; height: 32px; border-radius: var(--ox-radius-sm); display: grid; place-items: center; color: #a7b6ca; background: #111d2b; border: 1px solid #2c4059;
     }
     .ox-control-icon svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
     .ox-control-copy { min-width: 0; }
@@ -61,10 +61,10 @@
     .ox-control-live-tag { color: var(--green); border: 1px solid #2b7d6b; background: #1da98410; border-radius: 999px; padding: 3px 6px; font-size: 7.5px; font-weight: 800; }
     .ox-control-ui-tag { color: #91a2b8; border: 1px solid #354860; border-radius: 999px; padding: 3px 6px; font-size: 7.5px; }
     .ox-control-arrow { font-size: 16px; line-height: 1; color: #6f829a; }
-    .ox-control-section-label { margin: 13px 4px 6px; color: #71859e; font-size: 8px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
+    .ox-control-section-label { margin: 13px 4px 6px; color: #71859e; font-size: 8px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; }
 
-    .ox-theme-segment { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; width: 152px; padding: 3px; border-radius: 9px; background: #09111c; border: 1px solid #263950; }
-    .ox-theme-segment button { min-height: 27px; padding: 0 6px; border: 0; border-radius: 6px; background: transparent; color: #8395ad; font-size: 8px; font-weight: 800; }
+    .ox-theme-segment { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; width: 152px; padding: 3px; border-radius: var(--ox-radius-sm); background: #09111c; border: 1px solid #263950; }
+    .ox-theme-segment button { min-height: 27px; padding: 0 6px; border: 0; border-radius: var(--ox-radius-xs); background: transparent; color: #8395ad; font-size: 8px; font-weight: 800; }
     .ox-theme-segment button.active { color: #16120b; background: var(--gold); box-shadow: 0 1px 7px #f7bd522d; }
 
     .ox-control-toggle { position: relative; width: 36px; height: 20px; flex: 0 0 36px; }
@@ -74,7 +74,7 @@
     .ox-control-toggle input:checked + span { background: #a87417; border-color: #c18b25; }
     .ox-control-toggle input:checked + span::after { transform: translateX(16px); background: #fff4d6; }
 
-    .ox-control-refresh { padding: 6px 8px; border-radius: 7px; border: 1px solid #3a4c64; background: #111c2a; color: #b7c3d3; font-size: 8px; font-weight: 800; }
+    .ox-control-refresh { padding: 6px 8px; border-radius: var(--ox-radius-xs); border: 1px solid #3a4c64; background: #111c2a; color: #b7c3d3; font-size: 8px; font-weight: 800; }
     .ox-control-refresh:hover { color: var(--ink); border-color: #637590; }
     .ox-market-segment { display: flex; gap: 5px; flex-wrap: wrap; justify-content: flex-end; }
     .ox-market-chip { border: 1px solid #35475e; border-radius: 999px; padding: 4px 7px; color: #8192a8; background: #0a1320; font-size: 7.5px; }
@@ -89,16 +89,16 @@
     .ox-feedback-head { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
     .ox-feedback-head h3 { margin: 0; font-size: 16px; }
     .ox-feedback-head small { color: var(--muted); font-size: 8px; }
-    .ox-feedback-form { padding: 14px; border-radius: 13px; background: #0c1522; border: 1px solid #26374e; }
+    .ox-feedback-form { padding: 14px; border-radius: var(--ox-radius-md); background: #0c1522; border: 1px solid #26374e; }
     .ox-feedback-field { display: block; margin-bottom: 12px; }
     .ox-feedback-field span { display: block; margin-bottom: 5px; color: #9eafc3; font-size: 9px; font-weight: 700; }
     .ox-feedback-field input, .ox-feedback-field select, .ox-feedback-field textarea {
-      width: 100%; color: var(--ink); background: #09121d; border: 1px solid #2b3f58; border-radius: 9px; padding: 9px 10px; font-size: 10px; outline: 0;
+      width: 100%; color: var(--ink); background: #09121d; border: 1px solid #2b3f58; border-radius: var(--ox-radius-sm); padding: 9px 10px; font-size: 10px; outline: 0;
     }
     .ox-feedback-field textarea { min-height: 120px; resize: vertical; line-height: 1.5; }
     .ox-feedback-field input:focus, .ox-feedback-field select:focus, .ox-feedback-field textarea:focus { border-color: #8d6a28; box-shadow: 0 0 0 2px #f7bd5212; }
-    .ox-feedback-submit { width: 100%; min-height: 38px; border: 1px solid #9a7126; border-radius: 9px; background: #f7bd5212; color: var(--gold); font-size: 10px; font-weight: 850; }
-    .ox-feedback-status { min-height: 32px; margin-top: 9px; padding: 8px 9px; border-radius: 8px; background: #111b28; border: 1px dashed #32455e; color: #8fa1b8; font-size: 8.5px; line-height: 1.45; }
+    .ox-feedback-submit { width: 100%; min-height: 38px; border: 1px solid #9a7126; border-radius: var(--ox-radius-sm); background: #f7bd5212; color: var(--gold); font-size: 10px; font-weight: 850; }
+    .ox-feedback-status { min-height: 32px; margin-top: 9px; padding: 8px 9px; border-radius: var(--ox-radius-xs); background: #111b28; border: 1px dashed #32455e; color: #8fa1b8; font-size: 8.5px; line-height: 1.45; }
 
     body.theme-light .ox-menu-btn { color: #52677f; background: #f6f9fc; border-color: #b9c8d8; box-shadow: inset 0 1px 0 #fff; }
     body.theme-light .ox-menu-btn:hover, body.theme-light .ox-menu-btn[aria-expanded="true"] { color: #172033; background: #edf3f8; border-color: #8fa3b8; }
@@ -133,13 +133,13 @@
       .ox-control-panel { width: min(86vw, 390px); min-width: 0; }
     }
     @media (max-width: 720px) {
-      .ox-menu-btn { width: 32px; height: 30px; flex-basis: 32px; border-radius: 8px; gap: 3px; }
+      .ox-menu-btn { width: 32px; height: 30px; flex-basis: 32px; border-radius: var(--ox-radius-xs); gap: 3px; }
       .ox-menu-btn span { width: 13px; height: 1.25px; }
       .ox-control-panel { width: 86vw; max-width: 370px; }
       .ox-control-panel-head { padding: 15px 13px 12px; }
       .ox-control-scroll { padding: 9px 9px 22px; }
       .ox-control-row { min-height: 57px; grid-template-columns: 31px minmax(0,1fr) auto; gap: 8px; padding: 8px 9px; }
-      .ox-control-icon { width: 29px; height: 29px; border-radius: 8px; }
+      .ox-control-icon { width: 29px; height: 29px; border-radius: var(--ox-radius-xs); }
       .ox-control-copy b { font-size: 10px; }
       .ox-control-copy small { font-size: 7.7px; }
       .ox-theme-segment { width: 132px; }

@@ -185,14 +185,14 @@ body.theme-light .ox-live-strip{
 .app-dock{
   isolation:isolate!important;
   overflow:visible!important;
-  border-radius:22px!important;
+  border-radius:var(--ox-radius-xl)!important;
   backdrop-filter:blur(28px) saturate(150%)!important;
   -webkit-backdrop-filter:blur(28px) saturate(150%)!important;
 }
 .app-dock .ox-dock-indicator{
   top:5px!important;
   height:calc(100% - 10px)!important;
-  border-radius:16px!important;
+  border-radius:var(--ox-radius-lg)!important;
   background:
     radial-gradient(85% 120% at 24% -28%,rgba(255,255,255,.24),transparent 48%),
     linear-gradient(180deg,rgba(255,255,255,.095),rgba(95,146,196,.045)),
@@ -347,7 +347,7 @@ body.theme-light #view-radar .coin-card.selected.ox-market-down{
   .app-dock .ox-dock-indicator{
     top:4px!important;
     height:calc(100% - 8px)!important;
-    border-radius:14px!important;
+    border-radius:var(--ox-radius-md)!important;
   }
   #view-radar .coin-card.ox-side-short,
   #view-radar .coin-card.ox-market-down{

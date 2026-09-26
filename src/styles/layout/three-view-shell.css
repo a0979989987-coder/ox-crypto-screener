@@ -15,14 +15,14 @@
       width:min(430px, calc(100vw - 28px));
       padding:6px;
       border:1px solid #30415a;
-      border-radius:16px;
+      border-radius:var(--ox-radius-lg);
       background:#0a111dec;
       box-shadow:0 14px 38px #000a;
       backdrop-filter:blur(16px);
     }
     .dock-btn {
       border:0;
-      border-radius:11px;
+      border-radius:var(--ox-radius-md);
       background:transparent;
       color:var(--muted);
       min-height:44px;
@@ -45,14 +45,14 @@
       border-bottom:1px solid var(--line);
       margin-bottom:18px;
     }
-    .page-kicker { color:var(--gold); font-size:11px; font-weight:800; letter-spacing:.14em; text-transform:uppercase; }
+    .page-kicker { color:var(--gold); font-size:11px; font-weight:800; letter-spacing:.04em; text-transform:uppercase; }
     .page-hero h1 { margin:5px 0 6px; font-size:28px; line-height:1.1; }
     .page-hero p { margin:0; color:var(--muted); max-width:700px; font-size:13px; }
     .strength-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
     .strength-card {
       background:linear-gradient(180deg,#101a29,#0b121d);
       border:1px solid var(--line);
-      border-radius:18px;
+      border-radius:var(--ox-radius-lg);
       padding:22px;
       min-height:280px;
     }
@@ -62,7 +62,7 @@
     .strength-state {
       border:1px solid #344b69;
       background:#111d2c;
-      border-radius:999px;
+      border-radius:var(--ox-radius-pill);
       padding:5px 9px;
       font-size:10px;
       font-weight:800;
@@ -72,7 +72,7 @@
     .strength-meter { position:relative; margin-top:2px; }
     .strength-track {
       height:12px;
-      border-radius:999px;
+      border-radius:var(--ox-radius-pill);
       background:linear-gradient(90deg,#ee617c 0%,#d7a84e 50%,#38c99b 100%);
       box-shadow:inset 0 0 0 1px #ffffff10;
       position:relative;
@@ -82,7 +82,7 @@
       top:-6px;
       width:3px;
       height:24px;
-      border-radius:3px;
+      border-radius:var(--ox-radius-xs);
       background:#fff;
       box-shadow:0 0 0 2px #07101a, 0 0 10px #fff6;
       transform:translateX(-50%);
@@ -105,7 +105,7 @@
       margin-top:16px;
       background:#0d1522;
       border:1px solid var(--line);
-      border-radius:14px;
+      border-radius:var(--ox-radius-md);
       padding:16px 18px;
       color:var(--muted);
       font-size:12px;
@@ -116,7 +116,7 @@
     .media-card {
       background:linear-gradient(145deg,#101a29,#0b121d 58%,#111827);
       border:1px solid var(--line);
-      border-radius:22px;
+      border-radius:var(--ox-radius-xl);
       overflow:hidden;
     }
     .media-intro {
@@ -148,13 +148,13 @@
     .media-section h2 { margin:0 0 10px; font-size:16px; color:var(--gold); }
     .media-section p { margin:0; color:#bcc9d9; font-size:13px; line-height:1.85; }
     .media-function-list { display:grid; gap:9px; margin-top:4px; }
-    .media-function-item { padding:10px 12px; border-radius:9px; background:#0a121d; border:1px solid #1e2c40; }
+    .media-function-item { padding:10px 12px; border-radius:var(--ox-radius-sm); background:#0a121d; border:1px solid #1e2c40; }
     .media-function-item b { display:block; font-size:12px; margin-bottom:2px; }
     .media-function-item span { color:var(--muted); font-size:11px; }
     .story-quote {
       font-size:18px !important;
       color:#e8f0fb !important;
-      font-family:Georgia,"Times New Roman",serif;
+      font-family:var(--ox-font-display);
       line-height:1.75 !important;
     }
     .media-links-placeholder {
@@ -165,7 +165,7 @@
       color:var(--muted);
       font-size:11px;
       border:1px dashed #354861;
-      border-radius:9px;
+      border-radius:var(--ox-radius-sm);
       padding:9px 11px;
     }
 
@@ -249,7 +249,7 @@
         min-width:48px;
         min-height:28px;
         padding:4px 8px;
-        border-radius:999px;
+        border-radius:var(--ox-radius-pill);
       }
       #view-radar > .benchmark-bar button.benchmark-card strong,
       #view-radar > .benchmark-bar button.benchmark-card .benchmark-sub { display:none !important; }
@@ -261,7 +261,7 @@
       .page-hero h1 { font-size:21px; }
       .page-hero p { font-size:10px; line-height:1.55; }
       .strength-grid { grid-template-columns:1fr; gap:9px; }
-      .strength-card { padding:15px 14px; min-height:220px; border-radius:13px; }
+      .strength-card { padding:15px 14px; min-height:220px; border-radius:var(--ox-radius-md); }
       .strength-head h2 { font-size:14px; }
       .strength-head p { font-size:9px; }
       .strength-state { font-size:8px; padding:4px 7px; }

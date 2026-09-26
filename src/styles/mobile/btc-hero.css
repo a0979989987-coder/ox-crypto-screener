@@ -58,7 +58,7 @@
 #view-home .btc-premium-price strong{font-size:31px!important;line-height:.98!important;}
 #view-home .btc-premium-price span{font-size:10px!important;}
 #view-home .btc-premium-actions{}
-#view-home .btc-premium-radar-btn{min-height:27px!important;padding:0 10px!important;border-radius:999px!important;}
+#view-home .btc-premium-radar-btn{min-height:27px!important;padding:0 10px!important;border-radius:var(--ox-radius-pill)!important;}
 #view-home .btc-premium-state{min-height:22px!important;padding:0 8px!important;display:inline-flex!important;align-items:center!important;}
 
 /* Right visual = understated Bitcoin intelligence emblem, never a tacky gold coin. */
@@ -99,7 +99,7 @@
 #view-home .btc-visual-context{
   position:absolute;left:0;top:16px;width:calc(100% - 96px);
   display:flex;flex-direction:column;align-items:flex-end;gap:1px;text-align:right;
-  color:rgba(221,232,244,.68);letter-spacing:.08em;
+  color:rgba(221,232,244,.68);letter-spacing:.04em;
 }
 #view-home .btc-visual-context span{font-size:7px;font-weight:800;color:rgba(245,191,85,.66);}
 #view-home .btc-visual-context b{font-size:9px;color:rgba(232,239,247,.82);font-weight:850;}
@@ -107,7 +107,7 @@
 #view-home .btc-visual-ledger{
   position:absolute;left:2%;right:96px;bottom:13px;height:20px;display:flex;align-items:flex-end;gap:4px;opacity:.65;
 }
-#view-home .btc-visual-ledger i{display:block;flex:1;min-width:8px;border-radius:999px;background:linear-gradient(90deg,rgba(245,191,85,.20),rgba(92,165,255,.16));}
+#view-home .btc-visual-ledger i{display:block;flex:1;min-width:8px;border-radius:var(--ox-radius-pill);background:linear-gradient(90deg,rgba(245,191,85,.20),rgba(92,165,255,.16));}
 #view-home .btc-visual-ledger i:nth-child(1){height:35%} #view-home .btc-visual-ledger i:nth-child(2){height:72%} #view-home .btc-visual-ledger i:nth-child(3){height:50%} #view-home .btc-visual-ledger i:nth-child(4){height:88%}
 
 #view-home .btc-premium-period-row{min-height:30px!important;padding:0 11px 3px!important;align-items:center!important;}
@@ -153,7 +153,7 @@
   #view-home .btc-premium-hero{
     
     
-    border-radius:16px!important;
+    border-radius:var(--ox-radius-lg)!important;
   }
   #view-home .btc-premium-top{height:92px!important;min-height:92px!important;padding:11px 10px 4px!important;}
   #view-home .btc-premium-copy{max-width:70%!important;}
@@ -181,7 +181,7 @@
   #view-home .btc-premium-stats>div{padding:4px 6px!important;}
   #view-home .btc-premium-stats small{font-size:6px!important;} #view-home .btc-premium-stats strong{font-size:8.5px!important;}
   #view-home .v34-home-side-stack{}
-  #view-home .v34-home-side-card{padding:9px!important;border-radius:13px!important;}
+  #view-home .v34-home-side-card{padding:9px!important;border-radius:var(--ox-radius-md)!important;}
   #view-home .v34-home-side-card .v33-market-value strong{font-size:18px!important;}
 
   /* Stronger but still economical touch/scroll glass feedback on mobile. */

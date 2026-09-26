@@ -27,7 +27,7 @@
       padding: 2px 0 3px !important;
       gap: 0 !important;
       justify-content: center !important;
-      border-radius: 10px !important;
+      border-radius: var(--ox-radius-sm) !important;
       color: #c0cce0 !important;
       background: transparent !important;
       box-shadow: none !important;
@@ -112,7 +112,7 @@
         height: 52px !important;
         bottom: calc(6px + env(safe-area-inset-bottom)) !important;
         padding: 0 5px !important;
-        border-radius: 17px !important;
+        border-radius: var(--ox-radius-lg) !important;
       }
       .dock-btn {
         font-size: 8.5px !important;

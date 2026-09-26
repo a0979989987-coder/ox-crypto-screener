@@ -15,7 +15,7 @@
     .chart-key-label.secondary { opacity:.72; font-size:8px; }
     .price-timer { right:64px; }
     .notification-health {
-      margin-top:10px; padding:11px 12px; border:1px solid var(--line); border-radius:10px;
+      margin-top:10px; padding:11px 12px; border:1px solid var(--line); border-radius:var(--ox-radius-sm);
       background:#0b1420;
     }
     .notification-health-head { display:flex; align-items:center; justify-content:space-between; gap:10px; font-size:11px; }
