@@ -1175,12 +1175,13 @@ body.ox-terminal.theme-light #view-home .ox-home-t1 {background:var(--panel);bor
 body.ox-terminal.theme-light #view-home .ox-home-t1-side+ .ox-home-t1-side {border-left-color:var(--line);box-shadow:none}
 body.ox-terminal.theme-light #view-home .ox-home-t1-head,body.ox-terminal.theme-light #view-home .ox-home-t1-row {border-bottom-color:var(--line)}
 @media(max-width:620px){
- body.ox-terminal #view-home .ox-home-main {gap:25px!important}
+ body.ox-terminal #view-home .ox-home-main {gap:12px!important}
  body.ox-terminal #view-home .ox-home-t1-side {padding:14px 10px 15px;gap:13px}
  body.ox-terminal #view-home .ox-home-t1-head {font-size:11px}
  body.ox-terminal #view-home .ox-home-t1-head strong {font-size:21px}
  body.ox-terminal #view-home .ox-home-t1-row strong {font-size:12px}
  body.ox-terminal #view-home .ox-home-t1-row em {font-size:10px}
+ body.ox-terminal #view-home .ox-home-t1 {margin-bottom:12px}
 }
 
 /* A small persistent homepage density switch beside the icon-only menu. */
@@ -1197,4 +1198,29 @@ body.ox-terminal[data-ui-mode="plus"] #view-home .ox-strength-duo,body.ox-termin
  body.ox-terminal .nav-stats {gap:7px!important}
  body.ox-terminal .ox-ui-mode button {padding:7px 7px;font-size:10px}
  body.ox-terminal #ox-control-open {padding:3px!important}
+}
+
+/* Floating mobile glass navigation, with a restrained scroll response. */
+@media(max-width:620px){
+ body.ox-terminal .app-dock.glass-nav {
+  left:50%!important;right:auto!important;bottom:calc(9px + env(safe-area-inset-bottom))!important;
+  width:min(440px,calc(100vw - 28px))!important;max-width:none!important;
+  height:62px!important;min-height:62px!important;padding:4px 7px!important;
+  border:1px solid #ffffff42!important;border-radius:31px!important;
+  background:linear-gradient(165deg,#ffffff20,#12171cab 29%,#0b1015c9 78%,#ffffff12)!important;
+  box-shadow:inset 0 1px 0 #ffffff65,inset 0 -1px 0 #ffffff14,0 10px 26px #000a,0 0 15px #ffffff0c!important;
+  backdrop-filter:blur(22px) saturate(145%)!important;-webkit-backdrop-filter:blur(22px) saturate(145%)!important;
+  transform:translateX(-50%) translateY(0) scale(1)!important;
+  transform-origin:center bottom;transition:transform 220ms cubic-bezier(.2,.75,.2,1),background 220ms ease!important;
+  will-change:transform;z-index:1000;
+ }
+ body.ox-terminal .app-dock.glass-nav.ox-dock-compact {transform:translateX(-50%) translateY(5px) scale(.87)!important}
+ body.ox-terminal .app-dock.glass-nav>.dock-btn {height:52px!important;min-height:52px!important;border-radius:25px!important;gap:3px!important}
+ body.ox-terminal .app-dock.glass-nav>.dock-btn.active {background:#ffffff22!important;box-shadow:inset 0 1px 0 #ffffff21!important}
+ body.ox-terminal .app-dock .dock-radar-orb {width:24px!important;height:24px!important;border:0!important;border-radius:0!important;background:none!important;box-shadow:none!important}
+ body.ox-terminal .app-dock .dock-radar-logo {width:23px!important;height:23px!important}
+ body.ox-terminal.theme-light .app-dock.glass-nav {background:linear-gradient(165deg,#ffffffc4,#dce1e1ba 60%,#bbc5c5ce)!important;border-color:#ffffffb5!important}
+}
+@media(max-width:620px) and (prefers-reduced-motion:reduce){
+ body.ox-terminal .app-dock.glass-nav {transition:none!important;will-change:auto}
 }

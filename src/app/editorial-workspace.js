@@ -44,5 +44,22 @@
   document.addEventListener('ox:viewchange',updateContext);
   document.addEventListener('ox:marketchange',updateContext);
   document.addEventListener('DOMContentLoaded',updateContext);
+  // Respond to scroll direction without measuring layout or intercepting gestures.
+  const dock = document.querySelector('.app-dock.glass-nav');
+  if (dock) {
+    let lastY = Math.max(0, window.scrollY);
+    let pending = false;
+    window.addEventListener('scroll', () => {
+      if (pending) return;
+      pending = true;
+      requestAnimationFrame(() => {
+        const y = Math.max(0, window.scrollY);
+        if (y < 35) dock.classList.remove('ox-dock-compact');
+        else if (Math.abs(y - lastY) > 4) dock.classList.toggle('ox-dock-compact', y > lastY);
+        lastY = y;
+        pending = false;
+      });
+    }, {passive:true});
+  }
   updateContext();
 })();
