@@ -117,7 +117,7 @@ body.ox-terminal:not(.theme-light) .ox-live-window {color:#c9ccd3!important}
 /* The dock must not cover the return icon in the rotated mobile chart. */
 body.ox-terminal.chart-focus .app-dock.glass-nav {display:none!important}
 
-/* Market light follows the selected symbol's displayed 24h change, never the filter. */
+/* Market light follows the direction explicitly selected in the Radar. */
 body.ox-terminal #view-radar[data-price-direction="up"] {--radar-price-rgb:136,195,169}
 body.ox-terminal #view-radar[data-price-direction="down"] {--radar-price-rgb:190,117,145}
 body.ox-terminal #view-radar[data-price-direction="up"] .chart-box,
@@ -264,4 +264,76 @@ body.ox-terminal:not(.theme-light) #view-radar:not([data-price-direction]):has(#
 body.ox-terminal:not(.theme-light) #view-radar:not([data-price-direction]) .workspace>aside.panel {
  border-color:#ffffffa3!important;
  box-shadow:inset 0 1px 0 #ffffff8f,0 0 10px #ffffff2c,0 0 22px #ffffff16!important;
+}
+
+/* The scanner header pairs a sliding direction switch with the chart expander. */
+body.ox-terminal #view-radar #radar-scanner-panel>.panel-head {gap:6px!important}
+body.ox-terminal #view-radar #direction-toggle {
+ position:relative!important;display:grid!important;grid-template-columns:1fr 1fr!important;align-items:center!important;
+ flex:1 1 auto!important;width:auto!important;min-width:0!important;height:34px!important;padding:3px!important;
+ border:1px solid #ffffff55!important;border-radius:10px!important;
+ background:linear-gradient(160deg,#ffffff16,#ffffff06)!important;
+ box-shadow:inset 0 1px 0 #ffffff27,0 2px 8px #0003!important;
+ overflow:hidden!important;isolation:isolate;
+}
+body.ox-terminal #view-radar #direction-toggle .radar-direction-thumb {
+ position:absolute;left:3px;top:3px;bottom:3px;width:calc(50% - 3px);z-index:-1;
+ border:1px solid #ffffff8a;border-radius:7px;
+ background:linear-gradient(155deg,#ffffff35,#ffffff13 50%,#ffffff24);
+ box-shadow:inset 0 1px 0 #ffffffa1,0 2px 8px #0004,0 0 9px #ffffff24;
+ transform:translateX(0);transition:transform 350ms cubic-bezier(.22,.8,.22,1),border-color 350ms,box-shadow 350ms;
+}
+body.ox-terminal #view-radar #direction-toggle.is-short .radar-direction-thumb {transform:translateX(100%);border-color:#e5a2af;box-shadow:inset 0 1px 0 #ffffff7b,0 2px 8px #0004,0 0 10px #de89965e}
+body.ox-terminal #view-radar #direction-toggle .radar-direction-choice {z-index:1;text-align:center;color:var(--muted);font:600 11px/1 system-ui,sans-serif;white-space:nowrap;transition:color 320ms ease}
+body.ox-terminal #view-radar #direction-toggle.is-long .radar-direction-choice:nth-child(2),
+body.ox-terminal #view-radar #direction-toggle.is-short .radar-direction-choice:nth-child(3) {color:var(--ink)}
+body.ox-terminal #view-radar #radar-scanner-panel .scanner-head-actions {flex:none;gap:0!important}
+body.ox-terminal #view-radar .radar-scanner-collapse,
+body.ox-terminal #view-radar .radar-scanner-reopen {
+ display:inline-flex!important;align-items:center;justify-content:center;gap:3px;
+ min-width:28px;height:34px;padding:0 6px;border:1px solid #ffffff57;border-radius:8px;
+ color:var(--ink);background:linear-gradient(150deg,#ffffff21,#ffffff08);
+ box-shadow:inset 0 1px 0 #ffffff65,0 0 8px #ffffff16;cursor:pointer;
+ transition:background 220ms,border-color 220ms,box-shadow 220ms;
+}
+body.ox-terminal #view-radar .radar-scanner-collapse span {font:26px/1 Georgia,serif;transform:translateY(-1px)}
+body.ox-terminal #view-radar .radar-scanner-reopen {display:none!important;font-size:11px;white-space:nowrap}
+body.ox-terminal #view-radar .radar-scanner-reopen span {font:23px/1 Georgia,serif}
+body.ox-terminal #view-radar.ox-scanner-collapsed .radar-scanner-reopen {display:inline-flex!important}
+body.ox-terminal #view-radar .radar-scanner-collapse:hover,
+body.ox-terminal #view-radar .radar-scanner-reopen:hover {border-color:#ffffffb3;background:#ffffff28;box-shadow:inset 0 1px 0 #ffffff99,0 0 12px #ffffff3b}
+body.ox-terminal #view-radar .workspace {transition:grid-template-columns 340ms cubic-bezier(.22,.8,.22,1),gap 340ms cubic-bezier(.22,.8,.22,1)}
+body.ox-terminal #view-radar.ox-scanner-collapsed .workspace {grid-template-columns:minmax(0,1fr) 0px!important;gap:0!important}
+body.ox-terminal #view-radar.ox-scanner-collapsed #radar-scanner-panel {min-width:0!important;width:0!important;opacity:0;visibility:hidden;pointer-events:none;overflow:hidden;transition:opacity 180ms,visibility 0s 180ms}
+body.ox-terminal #view-radar #radar-scanner-panel {transition:opacity 180ms;min-width:0}
+body.ox-terminal #view-radar #radar-scanner-panel #pool-count {display:none!important}
+body.ox-terminal.theme-light #view-radar #direction-toggle {background:#e6e9ef!important;border-color:#b9c0c9!important}
+body.ox-terminal.theme-light #view-radar #direction-toggle .radar-direction-thumb {background:#fff;box-shadow:0 1px 5px #253a5a30}
+body.ox-terminal.theme-light #view-radar :is(.radar-scanner-collapse,.radar-scanner-reopen) {border-color:#a8b0ba;background:#fff;color:#202832}
+@media(max-width:720px){
+ body.ox-terminal #view-radar.ox-scanner-collapsed .workspace {grid-template-columns:minmax(0,1fr) 0px!important}
+ body.ox-terminal #view-radar #radar-scanner-panel>.panel-head {padding:5px!important}
+ body.ox-terminal #view-radar #direction-toggle {height:30px!important;padding:2px!important;border-radius:7px!important}
+ body.ox-terminal #view-radar #direction-toggle .radar-direction-thumb {left:2px;top:2px;bottom:2px;width:calc(50% - 2px);border-radius:5px}
+ body.ox-terminal #view-radar #direction-toggle .radar-direction-choice {font-size:9px}
+ body.ox-terminal #view-radar .radar-scanner-collapse {min-width:24px;height:30px;padding:0 3px;border-radius:6px}
+ body.ox-terminal #view-radar .radar-scanner-reopen {min-width:50px;height:30px;padding:0 5px;font-size:10px}
+}
+@media(prefers-reduced-motion:reduce){
+ body.ox-terminal #view-radar .workspace,body.ox-terminal #view-radar #direction-toggle .radar-direction-thumb {transition:none!important}
+}
+
+/* Restore the luminous blue selected-up frame after the subdued mobile pass. */
+body.ox-terminal:not(.theme-light) #view-radar[data-price-direction="up"] {--radar-price-rgb:83,194,224}
+body.ox-terminal:not(.theme-light) #view-radar[data-price-direction="up"] .chart-box {
+ border-color:rgba(var(--radar-price-rgb),.88)!important;
+ box-shadow:inset 0 1px 0 rgba(var(--radar-price-rgb),.83),0 0 12px rgba(var(--radar-price-rgb),.37),0 0 28px rgba(var(--radar-price-rgb),.20)!important;
+}
+body.ox-terminal:not(.theme-light) #view-radar[data-price-direction="up"]:has(#direction-toggle) .market-line-card {
+ border-color:rgba(var(--radar-price-rgb),.78)!important;border-top-color:rgba(var(--radar-price-rgb),.9)!important;
+ box-shadow:inset 0 1px 0 rgba(var(--radar-price-rgb),.71),0 0 12px rgba(var(--radar-price-rgb),.29),0 0 24px rgba(var(--radar-price-rgb),.14)!important;
+}
+body.ox-terminal:not(.theme-light) #view-radar[data-price-direction="up"] .workspace>aside.panel {
+ border-color:rgba(var(--radar-price-rgb),.78)!important;
+ box-shadow:inset 0 1px 0 rgba(var(--radar-price-rgb),.72),0 0 14px rgba(var(--radar-price-rgb),.26),0 0 26px rgba(var(--radar-price-rgb),.12)!important;
 }
