@@ -151,15 +151,6 @@
         pendingStarSymbol='';
       },0);
     }
-    const dir=e.target.closest?.('#direction-toggle');
-    if (dir) {
-      setTimeout(() => {
-        dir.classList.remove('ox-direction-swap');
-        void dir.offsetWidth;
-        dir.classList.add('ox-direction-swap');
-        setTimeout(()=>dir.classList.remove('ox-direction-swap'),250);
-      },0);
-    }
   }, true);
 
   /* ---- first-time page card stagger ---- */
