@@ -506,3 +506,42 @@ body.ox-terminal #view-radar .chart-box>#btn-chart-exit-overlay {display:none!im
  }
  body.ox-terminal.chart-focus #view-radar .chart-box>#btn-chart-exit-overlay:focus-visible {outline:2px solid #fff!important;outline-offset:2px}
 }
+
+/* Keep the symbol in the data model, but reclaim its redundant chart-title row. */
+body.ox-terminal #view-radar .chart-box>.ox-chart-ghost-title {display:none!important}
+body.ox-terminal #view-radar .chart-controls>.ctrl-group:nth-child(2) {
+ display:flex!important;align-items:center!important;gap:4px!important;min-width:0!important;
+}
+body.ox-terminal #view-radar .chart-controls>.ctrl-group:nth-child(2)>.toggle-lbl {
+ flex:1 1 0!important;width:auto!important;min-width:0!important;
+ overflow:hidden!important;white-space:nowrap!important;padding:3px 1px!important;
+}
+body.ox-terminal #view-radar .chart-controls #btn-chart-fullscreen.ox-chart-expand-dot {
+ display:inline-grid!important;place-items:center!important;flex:0 0 28px!important;
+ width:28px!important;min-width:28px!important;height:28px!important;min-height:28px!important;
+ padding:5px!important;border:1px solid #ffffff73!important;border-radius:50%!important;
+ background:#ffffff13!important;box-shadow:inset 0 1px 0 #ffffff48!important;
+}
+body.ox-terminal #view-radar .chart-controls #btn-chart-fullscreen.ox-chart-expand-dot svg {width:15px;height:15px}
+body.ox-terminal #view-radar .chart-controls .radar-scanner-reopen {
+ flex:0 0 28px!important;width:28px!important;min-width:28px!important;height:28px!important;
+ border-radius:50%!important;padding:0!important;
+}
+@media(max-width:720px) {
+ body.ox-terminal #view-radar .chart-controls>.ctrl-group:nth-child(2)>.toggle-lbl {font-size:8px!important;letter-spacing:-.02em}
+ body.ox-terminal #view-radar .chart-controls #btn-chart-fullscreen.ox-chart-expand-dot,
+ body.ox-terminal #view-radar .chart-controls .radar-scanner-reopen {
+  flex-basis:25px!important;width:25px!important;min-width:25px!important;height:25px!important;min-height:25px!important;
+ }
+}
+/* The toggle indicates the active scan side immediately, including on first paint. */
+body.ox-terminal:not(.theme-light) #view-radar #direction-toggle.is-long {
+ color:#8bd3e3!important;border-color:#6abbd0a8!important;background:#38bbde1b!important;
+ box-shadow:inset 0 1px 0 #b7f4ff4a,0 0 7px #44ceef32!important;
+}
+body.ox-terminal:not(.theme-light) #view-radar #direction-toggle.is-short {
+ color:#e8a1b0!important;border-color:#df8299a8!important;background:#e951721b!important;
+ box-shadow:inset 0 1px 0 #ffb6c14a,0 0 7px #fa678432!important;
+}
+body.ox-terminal.theme-light #view-radar #direction-toggle.is-long {color:#086f89!important;border-color:#78b8c9!important;background:#d9eff5!important}
+body.ox-terminal.theme-light #view-radar #direction-toggle.is-short {color:#a42e50!important;border-color:#d991a7!important;background:#fbe4eb!important}
