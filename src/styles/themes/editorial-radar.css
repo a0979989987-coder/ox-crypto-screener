@@ -8,7 +8,7 @@ body.ox-terminal #view-radar:has(#direction-toggle) .market-line-card {
 body.ox-terminal #view-radar .market-line-item {background:none!important;border-color:var(--line)!important;box-shadow:none!important}
 body.ox-terminal #view-radar .market-line-item label {color:var(--muted)!important}
 body.ox-terminal #view-radar #price {color:var(--ink)!important;font-family:var(--ox-font-display)!important;font-weight:400!important}
-body.ox-terminal #view-radar .panel {background:var(--bg)!important;border:1px solid var(--line)!important;border-radius:var(--ox-radius-xl)!important;box-shadow:none!important}
+body.ox-terminal #view-radar .panel {background:var(--bg)!important;border:1px solid var(--line)!important;border-radius:var(--ox-radius-xs)!important;box-shadow:none!important}
 body.ox-terminal #view-radar .panel-head,body.ox-terminal #view-radar .chart-controls,body.ox-terminal #view-radar .scanner-tabs {background:var(--bg)!important;border-color:var(--line)!important}
 body.ox-terminal #view-radar .chart-controls>.ctrl-group {background:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;padding:0!important}
 body.ox-terminal #view-radar .chart-controls .btn-tf {

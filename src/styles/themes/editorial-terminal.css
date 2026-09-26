@@ -518,7 +518,7 @@ body.ox-terminal #view-home :where(.v33-watch-row,.v33-rank-row) small {color:va
 body.ox-terminal #view-home .ox-home-shortcuts .v33-action {border:0!important;border-right:1px solid var(--line)!important;border-radius:0!important;padding:0 25px 0 0;flex:1;min-width:140px}
 body.ox-terminal #view-home .ox-home-shortcuts .v33-action:last-child {border-right:0!important}
 /* Radar: presentation only. Never reorder the chart, controls, tiers or symbols. */
-body.ox-terminal #view-radar .panel {border-radius:var(--ox-radius-xl)!important;background:var(--panel)!important}
+body.ox-terminal #view-radar .panel {border-radius:var(--ox-radius-xs)!important;background:var(--panel)!important}
 body.ox-terminal #view-radar :where(.panel-head,.chart-controls,.scanner-tabs,.chart-quickbar,.benchmark-bar) {background:transparent!important;border-color:var(--line)!important;box-shadow:none!important}
 body.ox-terminal #view-radar .coin-card {border:0!important;border-bottom:1px solid var(--line)!important;border-left:2px solid transparent!important;border-radius:0!important;margin:0!important;background:transparent!important;box-shadow:none!important}
 body.ox-terminal #view-radar .coin-card.selected {border-left-color:var(--ink)!important;background:var(--panel-alt)!important}
