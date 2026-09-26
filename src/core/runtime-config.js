@@ -96,6 +96,7 @@ function syncScannerFilterUI() {
     toggle.classList.toggle("is-long", isLong);
     toggle.classList.toggle("is-short", !isLong);
     toggle.setAttribute("aria-pressed", isLong ? "false" : "true");
+    toggle.setAttribute("aria-label", isLong ? "目前多頭，點擊切換空頭" : "目前空頭，點擊切換多頭");
     toggle.title = isLong ? "目前：多頭模式；點擊切換空頭" : "目前：空頭模式；點擊切換多頭";
     const icon = toggle.querySelector(".direction-toggle-icon");
     const text = toggle.querySelector(".direction-toggle-text");

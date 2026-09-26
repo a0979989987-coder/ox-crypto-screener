@@ -36,6 +36,18 @@
       document.querySelector(`#view-radar .tab-btn[data-tab="${tier.dataset.homeTier}"]`)?.click();
     }
   });
+  document.addEventListener('click',event => {
+    const collapse = event.target.closest('#radar-scanner-collapse');
+    const reopen = event.target.closest('#radar-scanner-reopen');
+    if (!collapse && !reopen) return;
+    const radar = document.getElementById('view-radar');
+    const hidden = !!collapse;
+    radar?.classList.toggle('ox-scanner-collapsed', hidden);
+    document.getElementById('radar-scanner-panel')?.setAttribute('aria-hidden', String(hidden));
+    document.getElementById('radar-scanner-reopen')?.setAttribute('aria-expanded', String(!hidden));
+    document.getElementById('radar-scanner-collapse')?.setAttribute('aria-expanded', String(!hidden));
+    requestAnimationFrame(() => window.resizeChartToContainer?.());
+  });
   document.addEventListener('keydown',event => {
     if (!['Enter',' '].includes(event.key)) return;
     const action = event.target.closest('[data-home-symbol][role="button"]');
