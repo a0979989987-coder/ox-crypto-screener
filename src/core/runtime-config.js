@@ -28,7 +28,7 @@ const CONFIG = {
 const state = {
   symbol: "BTCUSDT",
   period: "1D",
-  currentTab: "t1",
+  currentTab: "all",
   directionFilter: "long",
   activeView: "radar",
   activeMarket: "crypto",
@@ -73,11 +73,11 @@ try { localStorage.setItem("ox-chart-key-levels-visible", "0"); } catch (e) {}
 try {
   const savedTier = localStorage.getItem("ox-scanner-tier-filter");
   const savedDirection = localStorage.getItem("ox-scanner-direction-filter");
-  if (["t1","t2","t3","surge","watch"].includes(savedTier)) state.currentTab = savedTier;
-  // A new visit always opens at the first bullish Radar tier.
-  state.currentTab = "t1";
+  if (["all","t1","t2","t3","surge","watch"].includes(savedTier)) state.currentTab = savedTier;
+  // A new visit always opens at the combined bullish Radar list.
+  state.currentTab = "all";
   state.directionFilter = "long";
-  localStorage.setItem("ox-scanner-tier-filter", "t1");
+  localStorage.setItem("ox-scanner-tier-filter", "all");
   localStorage.setItem("ox-scanner-direction-filter", "long");
 } catch (e) { state.directionFilter = "long"; }
 
@@ -89,7 +89,18 @@ function syncDirectionalBadges() {
 }
 
 function syncScannerFilterUI() {
-  document.querySelectorAll(".tab-btn[data-tab]").forEach(btn => btn.classList.toggle("active", btn.dataset.tab === state.currentTab));
+  document.querySelectorAll(".tab-btn[data-tab]").forEach(btn => btn.classList.toggle("active", btn.dataset.tab === state.currentTab || (btn.classList.contains("radar-combined-tab") && ["all", "t1", "t2", "t3"].includes(state.currentTab))));
+  const radarTab = document.querySelector(".radar-combined-tab");
+  if (radarTab) {
+    const tier = ["t1", "t2", "t3"].includes(state.currentTab) ? state.currentTab.toUpperCase() : "全部";
+    radarTab.setAttribute("aria-label", `雷達：${tier}；短按右下角切換，長按三秒選擇分級`);
+    radarTab.title = `雷達：${tier}`;
+    const label = radarTab.querySelector(".radar-tier-current");
+    if (label) label.textContent = tier === "全部" ? "" : tier;
+  }
+  document.querySelectorAll("[data-radar-tier]").forEach(button => {
+    button.setAttribute("aria-checked", String(button.dataset.radarTier === state.currentTab));
+  });
   /* STEP 4.5 REGRESSION FIX START */
   document.getElementById("view-radar")?.classList.toggle("ox-filter-short", state.directionFilter === "short");
   /* STEP 4.5 REGRESSION FIX END */
@@ -118,7 +129,7 @@ function persistScannerFilters() {
 }
 
 function setScannerTierFilter(tab) {
-  if (!["t1","t2","t3","surge","watch"].includes(tab)) return;
+  if (!["all","t1","t2","t3","surge","watch"].includes(tab)) return;
   state.currentTab = tab;
   persistScannerFilters();
   syncScannerFilterUI();

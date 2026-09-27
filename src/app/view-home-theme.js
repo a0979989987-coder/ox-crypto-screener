@@ -8,7 +8,9 @@ function resizeChartToContainer(force = false) {
     const last = state.lastChartContainerSize;
     if (!force && last?.chart === state.chart && last.width === width && last.height === height) return;
     state.lastChartContainerSize = { chart: state.chart, width, height };
+    const range = state.chart.timeScale().getVisibleLogicalRange();
     state.chart.resize(Math.round(width), Math.round(height), true);
+    if (range) state.chart.timeScale().setVisibleLogicalRange(range);
     requestAnimationFrame(updateKeyLevelVisualLabels);
   }
 }
@@ -41,6 +43,7 @@ function createCoinLogo(symbol) {
 }
 
 function setChartFocus(enabled) {
+  const range = state.chart?.timeScale().getVisibleLogicalRange();
   const chartBox = document.querySelector('#view-radar .chart-box');
   const prefersReducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
   document.body.classList.toggle("chart-focus", enabled);
@@ -51,7 +54,7 @@ function setChartFocus(enabled) {
     clearKeyLevelPriceLines();
   } else {
     renderKeyLevelPriceLinesFromState();
-    if (state.candleData?.length) renderChartData(state.candleData);
+    if (state.candleData?.length) renderChartData(state.candleData, false, range);
   }
   requestAnimationFrame(() => {
     resizeChartToContainer(true);
@@ -75,7 +78,7 @@ function switchAppView(view) {
   const previous = state.activeView;
   if (view === 'radar' && previous !== 'radar' && state.activeMarket === 'crypto') {
     state.directionFilter = 'long';
-    state.currentTab = 't1';
+    state.currentTab = 'all';
     const radar = document.getElementById('view-radar');
     if (radar) { delete radar.dataset.selectedSymbol; delete radar.dataset.priceDirection; delete radar.dataset.glowLevel; }
     syncScannerFilterUI();

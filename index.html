@@ -77,7 +77,7 @@
   <link rel="stylesheet" href="src/styles/components/radar-detail-neon.css?v=20260927-detail1">
   <link rel="stylesheet" href="src/styles/components/chart-toolbar.css?v=20260927-toolbar8">
   <link rel="stylesheet" href="src/styles/components/radar-turnover.css?v=20260927-turnover1">
-  <link rel="stylesheet" href="src/styles/components/radar-combined.css?v=20260927-step1">
+  <link rel="stylesheet" href="src/styles/components/radar-combined.css?v=20260927-radar-controls1">
   <link rel="stylesheet" href="src/styles/components/live-visibility.css?v=20260927-oxlive-setting1">
   <link rel="stylesheet" href="src/styles/components/control-menu-compact.css?v=20260927-menu4">
   <link rel="stylesheet" href="src/styles/account/account.css">
@@ -392,8 +392,8 @@
           </div>
         </div>
         <div class="ctrl-group chart-tool-actions">
-          <button class="btn-act radar-scanner-reopen" id="radar-scanner-reopen" type="button" aria-label="展開幣種篩選" title="展開幣種篩選" aria-expanded="false" aria-controls="radar-scanner-panel"><span aria-hidden="true">‹</span></button>
           <button class="chart-tool-icon indicator-open-button" id="chart-indicator-open" type="button" aria-label="指標與篩選設定" aria-haspopup="dialog" title="指標與篩選設定"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h4m4 0h8M4 12h10m4 0h2M4 18h2m4 0h10"/><circle cx="10" cy="6" r="2"/><circle cx="16" cy="12" r="2"/><circle cx="8" cy="18" r="2"/></svg></button>
+          <button class="chart-tool-icon" id="radar-scanner-toggle" type="button" aria-label="收起右側雷達" title="收起右側雷達" aria-expanded="true" aria-controls="radar-scanner-panel"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 4v16M4 4h16v16H4zM7 9l3 3-3 3"/></svg></button>
           <button class="btn-act ox-chart-expand-dot" id="btn-chart-fullscreen" type="button" aria-label="展開圖表" aria-pressed="false" title="展開圖表"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3H3v6m12-6h6v6M3 15v6h6m6 0h6v-6"/></svg></button>
         </div>
       </div>
@@ -412,18 +412,8 @@
     </article>
 
     <aside class="panel" id="radar-scanner-panel">
-      <div class="panel-head">
-        <button class="direction-toggle-btn is-long" id="direction-toggle" type="button" aria-label="切換多空方向" aria-pressed="false" title="目前：多頭模式；點擊切換空頭">
-          <span class="direction-toggle-icon" aria-hidden="true">↑</span><span class="direction-toggle-text">多</span>
-        </button>
-        <div class="scanner-head-actions">
-          <button class="radar-scanner-collapse" id="radar-scanner-collapse" type="button" aria-label="收起幣種篩選，展開圖表" title="收起篩選，展開圖表" aria-expanded="true" aria-controls="radar-scanner-panel"><span aria-hidden="true">›</span></button>
-          <span class="pill" id="pool-count">掃描中…</span>
-        </div>
-      </div>
-
       <div class="scanner-tabs" role="tablist" aria-label="雷達分級">
-        <button class="tab-btn radar-combined-tab active" data-tab="t1" type="button" aria-label="雷達：依序顯示 T1、T2、T3" title="T1 / T2 / T3 雷達">
+        <button class="tab-btn radar-combined-tab active" data-tab="all" aria-haspopup="menu" aria-expanded="false" aria-controls="radar-tier-menu" type="button" aria-label="雷達：依序顯示 T1、T2、T3" title="T1 / T2 / T3 雷達">
           <span class="radar-combined-mark">
       <svg class="radar-combined-logo" viewBox="0 0 450 439" aria-hidden="true" focusable="false">
         <g fill="currentColor">
@@ -435,11 +425,20 @@
           <rect x="0" y="396" width="202" height="43"/><rect x="247" y="396" width="203" height="43"/>
         </g>
       </svg>
-            <span class="radar-combined-chevron" aria-hidden="true">▼</span>
+            <span class="radar-tier-current" aria-hidden="true"></span>
+            <span class="radar-combined-chevron" data-radar-tier-cycle aria-hidden="true">▼</span>
           </span>
         </button>
+        <button class="direction-toggle-btn is-long chart-tool-icon" id="direction-toggle" type="button" aria-label="目前多頭，點擊切換空頭" aria-pressed="false" title="目前：多頭模式；點擊切換空頭"><span class="direction-toggle-icon" aria-hidden="true">↑</span></button>
         <button class="tab-btn" data-tab="surge" aria-label="合約 24H 成交額前 15 名" title="合約 24H 成交額前 15 名"><svg class="radar-tab-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M13 3c1 5-4 6-3 10 2-1 3-3 3-3 4 3 5 5 4 8-1 3-7 4-10 0-3-5 2-8 6-15Z"/></svg> <span class="tab-badge" id="badge-surge">0</span></button>
         <button class="tab-btn" data-tab="watch" aria-label="自選清單" title="自選清單"><span class="watch-tab-desktop">自選</span><span class="watch-tab-mobile"><svg class="radar-tab-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9Z"/></svg></span> <span class="tab-badge" id="badge-watch">0</span></button>
+      </div>
+      <span id="pool-count" hidden aria-live="polite">掃描中…</span>
+      <div id="radar-tier-menu" role="menu" aria-label="雷達分級" hidden>
+        <button type="button" role="menuitemradio" data-radar-tier="all" aria-checked="true">全部</button>
+        <button type="button" role="menuitemradio" data-radar-tier="t1" aria-checked="false">T1</button>
+        <button type="button" role="menuitemradio" data-radar-tier="t2" aria-checked="false">T2</button>
+        <button type="button" role="menuitemradio" data-radar-tier="t3" aria-checked="false">T3</button>
       </div>
       <div id="screener-list" class="scanner-body">
         <div style="padding:24px;text-align:center;color:var(--muted)">正在初始化 Bitget 全市場資料…</div>
@@ -784,16 +783,16 @@
   </section>
 </div>
 
-<script src="src/core/runtime-config.js?v=20260927-turnover1"></script>
+<script src="src/core/runtime-config.js?v=20260927-radar-controls1"></script>
 <script src="src/components/strength/snapshots.js"></script>
 <script src="src/components/alerts/level-alerts.js?v=20260927-turnover1"></script>
 <script src="src/components/strength/market-strength.js"></script>
 <script src="src/app/token-logos.js"></script>
-<script src="src/app/view-home-theme.js?v=20260927-menu1"></script>
+<script src="src/app/view-home-theme.js?v=20260927-radar-controls1"></script>
 <script src="src/markets/crypto/api.js?v=20260926-native-chart5"></script>
 <script src="src/markets/crypto/engine.js"></script>
-<script src="src/markets/crypto/scanner.js?v=20260927-combined-step1"></script>
-<script src="src/components/chart/workspace.js?v=20260926-native-chart5"></script>
+<script src="src/markets/crypto/scanner.js?v=20260927-radar-controls1"></script>
+<script src="src/components/chart/workspace.js?v=20260927-radar-controls1"></script>
 <script src="src/markets/crypto/presentation.js?v=20260927-turnover1"></script>
 <script src="src/components/account/store.js?v=20260927-menu1"></script>
 <script src="src/components/control-panel/feature-pack.js?v=20260927-menu2"></script>
@@ -839,7 +838,7 @@
 
 
 <!-- CSS moved: ox-v383-fullscreen-lightglass-fix -->
-<script src="src/components/chart/focus-viewport.js?v=20260926-exit-overlay8"></script>
+<script src="src/components/chart/focus-viewport.js?v=20260927-radar-controls1"></script>
 
 
 <!-- OX v3.8.4 — OX CONTROL 功能搜尋 + 真實交易所 Data Provider 切換 -->
@@ -847,7 +846,8 @@
 
 <script src="src/components/search/provider-switch.js?v=20260927-picker2"></script>
 <script type="module" src="src/app/app.js"></script>
-<script src="src/app/editorial-workspace.js?v=20260927-market-label1"></script>
+<script src="src/app/editorial-workspace.js?v=20260927-radar-controls1"></script>
+<script src="src/components/radar/controls.js?v=20260927-radar-controls1"></script>
 
 </body>
 </html>

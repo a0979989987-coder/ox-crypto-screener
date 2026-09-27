@@ -8,7 +8,19 @@ test('Safari toolbar resizes do not repeatedly redraw an unchanged chart', () =>
   const fn = source.slice(source.indexOf('function resizeChartToContainer('), source.indexOf('\nfunction updateChartExpandButton('));
   const sizes = [];
   const container = { clientWidth: 320, clientHeight: 440 };
-  const state = { chart: { resize: (width, height, force) => sizes.push({ width, height, force }) } };
+  const originalRange = { from: 60, to: 110 };
+  let range = originalRange;
+  const scale = {
+    getVisibleLogicalRange: () => range,
+    setVisibleLogicalRange: value => { range = value; }
+  };
+  const state = { chart: {
+    timeScale: () => scale,
+    resize: (width, height, force) => {
+      sizes.push({ width, height, force });
+      range = { from: 20, to: 110 };
+    }
+  } };
   const resize = runInNewContext(`${fn}\nresizeChartToContainer`, {
     state,
     document: { getElementById: () => container },
@@ -28,6 +40,7 @@ test('Safari toolbar resizes do not repeatedly redraw an unchanged chart', () =>
   resize(true);
   assert.equal(sizes.length, 3, 'focus changes redraw at the final canvas size');
   assert.equal(sizes.at(-1).force, true);
+  assert.deepEqual(range, originalRange, 'layout resize preserves the visible candle range');
 });
 
 function quickSwitchHarness() {

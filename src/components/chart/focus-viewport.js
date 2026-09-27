@@ -29,5 +29,5 @@
       requestAnimationFrame(schedule);
       setTimeout(schedule,80);
     }
-  }, {passive:true});
+  }, {passive:false});
 })();

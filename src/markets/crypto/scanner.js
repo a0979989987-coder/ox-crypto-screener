@@ -313,9 +313,9 @@ function renderCurrentTab() {
   }
 
   const isTierTab = ["t1","t2","t3"].includes(tab);
-  // The existing t1 entry now opens the combined radar. Reuse the already
+  // The all entry opens the combined radar. Reuse the already
   // ranked directional results; never rebuild, sort or mutate them here.
-  const combinedRadar = tab === "t1";
+  const combinedRadar = tab === "all";
   const sideTiers = state.tierMapBySide?.[state.directionFilter] || {};
   const tierGroups = combinedRadar ? ["t1", "t2", "t3"].map(tier => sideTiers[tier] || []) : [];
   const sourceList = combinedRadar ? tierGroups.flat() : isTierTab
@@ -335,7 +335,7 @@ function renderCurrentTab() {
     const displayTier = tab === "surge" ? (c.tier !== "none" ? c.tier : "t3") : (c.displayTier || c.tier || "t3");
     const status = tab === "surge" ? "SURGE" : (c.rankStatus || c.statusText || "WATCH");
     const fit = displayTier === "t1" ? c.t1Fit : displayTier === "t2" ? c.t2Fit : c.t3Fit;
-    const allowStar = ["t1","t2","t3"].includes(tab);
+    const allowStar = combinedRadar || isTierTab;
     const starred = isWatchlisted(c.symbol);
     // Follow real group boundaries even while a scan or custom filter has fewer results.
     const separator = combinedRadar && idx > 0 && groupByCoin.get(c) !== groupByCoin.get(list[idx - 1])

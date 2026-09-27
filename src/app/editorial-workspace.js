@@ -38,16 +38,25 @@
     }
   });
   document.addEventListener('click',event => {
-    const collapse = event.target.closest('#radar-scanner-collapse');
-    const reopen = event.target.closest('#radar-scanner-reopen');
-    if (!collapse && !reopen) return;
+    const toggle = event.target.closest('#radar-scanner-toggle');
+    if (!toggle) return;
     const radar = document.getElementById('view-radar');
-    const hidden = !!collapse;
-    radar?.classList.toggle('ox-scanner-collapsed', hidden);
-    document.getElementById('radar-scanner-panel')?.setAttribute('aria-hidden', String(hidden));
-    document.getElementById('radar-scanner-reopen')?.setAttribute('aria-expanded', String(!hidden));
-    document.getElementById('radar-scanner-collapse')?.setAttribute('aria-expanded', String(!hidden));
-    requestAnimationFrame(() => window.resizeChartToContainer?.());
+    const hidden = !radar.classList.contains('ox-scanner-collapsed');
+    radar.classList.toggle('ox-scanner-collapsed', hidden);
+    const panel = document.getElementById('radar-scanner-panel');
+    panel.setAttribute('aria-hidden', String(hidden));
+    panel.inert = hidden;
+    toggle.setAttribute('aria-expanded', String(!hidden));
+    toggle.setAttribute('aria-label', hidden ? '展開右側雷達' : '收起右側雷達');
+    toggle.title = toggle.getAttribute('aria-label');
+    toggle.querySelector('path').setAttribute('d', hidden
+      ? 'M14 4v16M4 4h16v16H4zM10 9l-3 3 3 3'
+      : 'M14 4v16M4 4h16v16H4zM7 9l3 3-3 3');
+    document.dispatchEvent(new CustomEvent('ox:radarvisibilitychange'));
+    requestAnimationFrame(() => window.resizeChartToContainer?.(true));
+  });
+  document.querySelector('#view-radar .workspace')?.addEventListener('transitionend', event => {
+    if (event.target === event.currentTarget) window.resizeChartToContainer?.(true);
   });
   document.addEventListener('keydown',event => {
     if (!['Enter',' '].includes(event.key)) return;

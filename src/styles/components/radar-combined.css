@@ -1,4 +1,4 @@
-/* Combined T1 / T2 / T3 display only. The chevron has no separate action yet. */
+/* Combined T1 / T2 / T3 display and existing toolbar controls. */
 body.ox-terminal #view-radar #radar-scanner-panel .scanner-tabs {
   grid-template-columns:repeat(3,minmax(0,1fr))!important;
 }
@@ -36,4 +36,124 @@ body.ox-terminal #view-radar #screener-list > .radar-tier-separator {
   background:linear-gradient(90deg,transparent,#ffffffb3 12%,#fff 50%,#ffffffb3 88%,transparent);
   box-shadow:0 0 5px #ffffffb3,0 0 12px #ffffff66;
   pointer-events:none;
+}
+
+/* Existing toolbar treatment, scoped to the radar controls. */
+body.ox-terminal #view-radar #radar-scanner-panel .scanner-tabs {
+  grid-template-columns:34px 28px repeat(2,minmax(24px,1fr))!important;
+  min-height:36px!important;
+  align-items:center!important;
+}
+body.ox-terminal #view-radar #radar-scanner-panel .radar-combined-tab {
+  height:36px!important;
+  min-height:36px!important;
+  padding:0!important;
+  touch-action:pan-y;
+  user-select:none;
+  -webkit-user-select:none;
+  -webkit-touch-callout:none;
+}
+body.ox-terminal #view-radar .radar-combined-chevron {
+  pointer-events:auto;
+}
+body.ox-terminal #view-radar .radar-combined-chevron::before {
+  content:"";
+  position:absolute;
+  width:24px;
+  height:30px;
+  bottom:-4px;
+  right:-3px;
+}
+body.ox-terminal #view-radar .radar-tier-current {
+  position:absolute;
+  right:-2px;
+  top:-2px;
+  font:600 7px/1 system-ui,sans-serif;
+  color:var(--ink);
+  text-shadow:0 0 5px #ffffff66;
+  pointer-events:none;
+}
+body.ox-terminal #view-radar #radar-scanner-panel .scanner-tabs #direction-toggle {
+  width:28px!important;
+  min-width:28px!important;
+  max-width:28px!important;
+  height:36px!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  overflow:visible!important;
+}
+body.ox-terminal #view-radar #direction-toggle .direction-toggle-icon {
+  font-size:16px!important;
+  transition:color .28s ease,text-shadow .28s ease,translate .28s ease;
+}
+body.ox-terminal #view-radar #direction-toggle.is-long .direction-toggle-icon {translate:0 -1px}
+body.ox-terminal #view-radar #direction-toggle.is-short .direction-toggle-icon {translate:0 1px}
+body.ox-terminal #view-radar #direction-toggle:is(:hover,:focus-visible,:active) .direction-toggle-icon {
+  text-shadow:0 0 6px currentColor;
+}
+body.ox-terminal #view-radar #direction-toggle:focus-visible,
+body.ox-terminal #view-radar #radar-scanner-toggle:focus-visible {
+  outline:1px solid var(--ink)!important;
+  outline-offset:-2px;
+}
+body.ox-terminal #view-radar #radar-scanner-toggle {flex:none}
+body.ox-terminal #view-radar:not(.ox-scanner-collapsed) .chart-controls #btn-chart-fullscreen.ox-chart-expand-dot {
+  display:none!important;
+}
+body.ox-terminal #view-radar.ox-scanner-collapsed .workspace {
+  grid-template-columns:minmax(0,1fr)!important;
+  gap:0!important;
+}
+body.ox-terminal #view-radar.ox-scanner-collapsed #radar-scanner-panel {display:none!important}
+body.ox-terminal #radar-tier-menu {
+  position:fixed;
+  z-index:12001;
+  display:grid;
+  min-width:88px;
+  padding:4px;
+  border:0;
+  border-radius:8px;
+  background:#171b20f5;
+  color:#eeece7;
+  box-shadow:0 6px 22px #0008,inset 0 0 0 1px #ffffff2b,0 0 8px #ffffff1c;
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+  animation:radar-tier-menu-in .18s ease-out;
+}
+body.ox-terminal #radar-tier-menu[hidden] {display:none}
+body.ox-terminal #radar-tier-menu button {
+  min-height:36px;
+  padding:6px 12px;
+  border:0;
+  border-radius:4px;
+  background:transparent;
+  color:inherit;
+  text-align:left;
+  font:500 12px/1.3 system-ui,sans-serif;
+  cursor:pointer;
+}
+body.ox-terminal #radar-tier-menu button:is(:hover,:focus-visible) {background:#ffffff0d;outline:none}
+body.ox-terminal #radar-tier-menu button[aria-checked="true"] {color:#fff;text-shadow:0 0 6px #ffffff85;background:#ffffff0a}
+body.ox-terminal #radar-tier-menu button[aria-checked="true"]::after {content:"·";float:right}
+body.ox-terminal.theme-light #radar-tier-menu {background:#f3f4f6f5;color:#202832;box-shadow:0 6px 22px #0002,inset 0 0 0 1px #0002}
+body.ox-terminal.theme-light #radar-tier-menu button[aria-checked="true"] {color:#111;background:#0000000a;text-shadow:none}
+@keyframes radar-tier-menu-in {from {opacity:0;transform:translateY(-4px)} to {opacity:1;transform:translateY(0)}}
+@media(prefers-reduced-motion:reduce) {
+  body.ox-terminal #radar-tier-menu {animation:none}
+  body.ox-terminal #view-radar #direction-toggle .direction-toggle-icon {transition:none}
+}
+/* Let the existing native fullscreen chart fill its available height too. */
+body.ox-terminal #view-radar .chart-box:fullscreen {
+  display:flex!important;
+  flex-direction:column!important;
+}
+body.ox-terminal #view-radar .chart-box:fullscreen .chart-controls {flex:0 0 auto!important}
+body.ox-terminal #view-radar .chart-box:fullscreen #chart {
+  flex:1 1 0!important;
+  height:0!important;
+  min-height:0!important;
+  max-height:none!important;
 }
