@@ -42,7 +42,7 @@
   function renderPreferences() {
     const root = $('#chart-timeframe-preferences');
     if (!root) return;
-    root.innerHTML = intervals.map(([id,label]) => `<label><input type="checkbox" value="${id}" ${selectedIntervals.includes(id)?'checked':''}><span>${label}</span></label>`).join('');
+    root.innerHTML = intervals.map(([id,label]) => `<label class="chart-choice"><input type="checkbox" value="${id}" ${selectedIntervals.includes(id)?'checked':''}><span>${label}</span></label>`).join('');
   }
   function openDialog(panel = 'indicators') {
     if (!overlay) return;
