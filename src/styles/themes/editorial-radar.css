@@ -445,7 +445,8 @@ body.ox-terminal #view-radar .coin-card.ox-coin-new-selection {animation:oxCoinS
  body.ox-terminal #view-radar .coin-card:not(.watch-list-card) .coin-ox-label {font-size:7px!important;line-height:1!important}
  body.ox-terminal #view-radar .coin-card:not(.watch-list-card) .coin-ox-value {font-size:12px!important;line-height:1!important}
  body.ox-terminal #view-radar .coin-card:not(.watch-list-card) .coin-top-right {padding-bottom:4px!important}
- body.ox-terminal #view-radar .coin-card:not(.watch-list-card) .mobile-coin-volume {line-height:1.2!important}
+ body.ox-terminal #view-radar .coin-card:not(.watch-list-card) .mobile-coin-volume {justify-content:flex-start!important;gap:5px!important;line-height:1.2!important}
+ body.ox-terminal #view-radar .coin-card:not(.watch-list-card) .coin-volume-value {text-align:left!important}
  body.ox-terminal #view-radar .coin-card:not(.watch-list-card) .coin-mobile-bottom .coin-change {font-size:11px!important;line-height:1.2!important}
  body.ox-terminal #view-radar .coin-card:not(.watch-list-card) .watch-star-icon {width:13px!important;height:13px!important}
  body.ox-terminal #view-radar .coin-mobile-bottom {min-height:23px!important;padding-top:0!important}
