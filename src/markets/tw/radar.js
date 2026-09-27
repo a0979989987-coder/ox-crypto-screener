@@ -2903,6 +2903,9 @@ function refreshRadarDataUI(
       "#twr-list"
     );
 
+  const marketScan = root.querySelector("#twr-market-scan");
+  const marketScanList = root.querySelector("#twr-market-scan-list");
+
 
   if (
     totalEl
@@ -3042,6 +3045,9 @@ function refreshRadarDataUI(
   pageObserver?.disconnect();
   resetTWMiniCandles();
 
+  if (marketScan) marketScan.hidden = true;
+  if (marketScanList) marketScanList.innerHTML = "";
+
 
   /*
    * No provider data yet.
@@ -3067,7 +3073,22 @@ function refreshRadarDataUI(
     0
   ) {
 
-    list.innerHTML = `<div class="twr-empty"><b>${activeMode === "classic" ? "沒有符合目前條件的股票" : "此模式資料待更新"}</b>${activeMode === "classic" ? "請調整篩選條件。" : "目前尚未接入官方分類資料，沒有推測或示範股票。"}</div>`;
+    list.innerHTML = `<div class="twr-empty"><b>${activeMode === "classic" ? "沒有符合目前條件的股票" : state?.status === "loading" ? "分類資料載入中" : state?.status === "error" ? "分類資料載入失敗" : "分類資料待更新"}</b>${activeMode === "classic" ? "請調整篩選條件。" : "目前尚無經官方分類的股票名單。"}</div>`;
+
+    // Keep the mode result honest, but show a separate, clearly labeled
+    // official daily-market browse list so a missing disposition feed does
+    // not leave the whole mobile Radar empty.
+    if (activeMode !== "classic" && rows.length && marketScan && marketScanList) {
+      const browseRows = [...rows]
+        .filter(row => row.price !== null && row.symbol)
+        .sort((a, b) => (b.turnoverTwd ?? -1) - (a.turnoverTwd ?? -1))
+        .slice(0, 24);
+      if (browseRows.length) {
+        marketScanList.innerHTML = browseRows.map(row => renderTWStockCard(row, watchlist)).join("");
+        marketScan.hidden = false;
+        observeTWMiniCandles(marketScanList);
+      }
+    }
 
     return;
   }
@@ -3237,70 +3258,7 @@ export function renderTWRadar(
     >
 
 
-      <!-- ============================================================ -->
-      <!-- HEADER                                                       -->
-      <!-- ============================================================ -->
-
-      <header
-        class="twr-header"
-      >
-
-        <div>
-
-          <div
-            class="twr-eyebrow"
-          >
-            OX · TAIWAN RADAR
-          </div>
-
-          <h2
-            id="market-unavailable-title"
-          >
-            台股雷達
-          </h2>
-
-          <p
-            id="market-unavailable-copy"
-          >
-            從整個台股市場縮小到真正值得打開 K 線的候選：
-            強度、價量、突破、法人、題材與籌碼一起篩。
-          </p>
-
-        </div>
-
-
-        <div
-          class="
-            twr-status
-            ${
-              hasError
-                ? "error"
-                : hasData
-                  ? "ready"
-                  : ""
-            }
-          "
-        >
-
-          <i></i>
-
-          <span>
-            ${
-              hasError
-                ? "DATA ERROR"
-                : hasData
-                  ? "RADAR ONLINE"
-                  : "DATA PENDING"
-            }
-          </span>
-
-        </div>
-
-      </header>
-
       <nav class="twr-mode-viewport" aria-label="台股雷達模式"><div class="twr-mode-rail" role="tablist"><span class="twr-mode-indicator" aria-hidden="true"></span>${TW_RADAR_MODES.map(mode => `<button type="button" role="tab" data-twr-mode="${mode.id}" aria-selected="${mode.id === activeMode}">${mode.label}</button>`).join("")}</div></nav>
-
-      ${renderTWLookup()}
 
 
       <!-- ============================================================ -->
@@ -3995,6 +3953,13 @@ export function renderTWRadar(
 
       </section>
 
+      <section class="twr-market-scan" id="twr-market-scan" hidden aria-label="台股官方日行情">
+        <div class="twr-market-scan-head"><strong>台股行情</strong><span>官方日收盤資料 · 非處置分類名單</span></div>
+        <div class="twr-list" id="twr-market-scan-list"></div>
+      </section>
+
+      ${renderTWLookup()}
+
 
     </div>
   `;
@@ -4416,7 +4381,7 @@ export function renderTWRadar(
 
         const stock = event.target.closest("[data-twr-symbol]");
         if (stock) {
-          const row = rowsForTWMode(state, activeMode, getRadarRows(state))
+          const row = [...rowsForTWMode(state, activeMode, getRadarRows(state)), ...getRadarRows(state)]
             .find(item => item.symbol === stock.dataset.twrSymbol);
           openTWStockDetail(root, row);
           return;
@@ -4518,7 +4483,7 @@ export function renderTWRadar(
   shell?.addEventListener("keydown", event => {
     if ((event.key === "Enter" || event.key === " ") && event.target.matches(".tw-stock-card")) {
       event.preventDefault();
-      const row = rowsForTWMode(state, activeMode, getRadarRows(state)).find(item => item.symbol === event.target.dataset.twrSymbol);
+      const row = [...rowsForTWMode(state, activeMode, getRadarRows(state)), ...getRadarRows(state)].find(item => item.symbol === event.target.dataset.twrSymbol);
       openTWStockDetail(root, row);
     }
   });

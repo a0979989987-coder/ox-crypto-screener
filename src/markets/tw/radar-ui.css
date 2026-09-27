@@ -67,6 +67,16 @@
 .tw-radar-root .twr-mode-rail button { transition:color 320ms,text-shadow 320ms; }
 .tw-radar-root .twr-mode-rail button.active { color:#fffaf0; text-shadow:0 0 8px #ffffff50; }
 .tw-radar-root .twr-empty { grid-column: 1/-1; min-height: 150px; display: grid; align-content: center; gap: 6px; }
+.tw-radar-root .twr-mode-rail { padding: 3px; gap: 2px; }
+.tw-radar-root .twr-mode-indicator { top: 3px; bottom: 3px; }
+.tw-radar-root .twr-mode-rail button { padding: 7px 4px; line-height: 1.2; }
+.tw-radar-root .twr-empty { min-height: 0; padding: 6px 2px; font-size: 11px; line-height: 1.4; color: #ece9e08c; }
+.tw-radar-root .twr-empty b { font-size: 12px; color: #ece9e0b8; }
+.tw-radar-root .twr-market-scan[hidden] { display: none !important; }
+.tw-radar-root .twr-market-scan { padding: 0 3px; }
+.tw-radar-root .twr-market-scan-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 3px 9px; margin: 0 0 9px; color: #f2eee4d9; font-size: 12px; }
+.tw-radar-root .twr-market-scan-head span { color: #ece9e087; font-size: 10px; }
+.tw-radar-root .tw-lookup { margin-top: 22px; }
 .tw-stock-detail { position: fixed; z-index: 9999; inset: 0; display: grid; place-items: center; opacity: 0; transition: opacity .19s ease; }
 .tw-stock-detail.visible { opacity: 1; }
 .tw-stock-detail-scrim { position: absolute; inset: 0; background: rgba(4,5,7,.76); }
@@ -79,6 +89,6 @@
 .tw-stock-detail-chart { display: grid; place-items: center; min-height: 210px; color: rgba(245,242,236,.55); }
 .tw-stock-detail-chart svg { width: 100%; max-height: 330px; }
 @media (max-width: 1000px) { .tw-radar-root .twr-list { grid-template-columns: repeat(3,minmax(0,1fr)); } }
-@media (max-width: 700px) { .tw-radar-root .twr-list { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 7px; } .tw-radar-root .twr-panel { padding: 9px; } .tw-radar-root .tw-stock-card { min-height: 168px; padding: 8px; border-radius: var(--ox-radius-sm,12px); } .tw-radar-root .twr-mode-rail button { padding: 10px 12px; } }
+@media (max-width: 700px) { .tw-radar-root .twr-list { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 7px; } .tw-radar-root .twr-panel { padding: 9px; } .tw-radar-root .tw-stock-card { min-height: 168px; padding: 8px; border-radius: var(--ox-radius-sm,12px); } .tw-radar-root .twr-mode-rail button { padding: 7px 3px; } }
 @media (max-width: 360px) { .tw-radar-root .twr-list { gap: 5px; } .tw-radar-root .tw-stock-card { padding: 8px; }  }
 @media (prefers-reduced-motion: reduce) { .tw-radar-root .twr-mode-indicator,.tw-radar-root .tw-stock-card,.tw-stock-detail,.tw-stock-detail-panel { transition-duration: .01ms; } }
