@@ -48,7 +48,9 @@ body.ox-terminal #view-radar #radar-scanner-panel .radar-combined-tab {
   height:44px!important;
   min-height:44px!important;
   padding:0!important;
-  touch-action:pan-y!important;
+  /* Keep Safari from taking over a stationary hold as a native pan/selection.
+     This affects only the toolbar button; the radar list still scrolls. */
+  touch-action:none!important;
   user-select:none;
   -webkit-user-select:none;
   -webkit-touch-callout:none;
