@@ -70,7 +70,7 @@ body.ox-terminal .chart-tools-save {width:100%;border-color:#ffffff85;background
 body.ox-terminal #view-radar .chart-timeframe-group {position:relative!important}
 body.ox-terminal .chart-tools-panel[hidden],body.ox-terminal .chart-custom-filters[hidden] {display:none!important}
 body.ox-terminal #view-radar .market-line-price label#ticker-pair {color:#f2f4f7!important;font-size:11px!important;font-weight:500!important;line-height:1.2!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;max-width:100%!important}
-body.ox-terminal #view-radar .market-line-price label#ticker-pair {cursor:pointer;display:block;padding-right:10px;position:relative}
+body.ox-terminal #view-radar .market-line-price label#ticker-pair {cursor:pointer;display:block;padding-right:10px;position:relative;touch-action:manipulation;-webkit-user-select:none;user-select:none}
 body.ox-terminal #view-radar .market-line-price label#ticker-pair::after {content:'▾';position:absolute;right:0;top:0;color:var(--muted);font-size:9px}
 body.ox-terminal #view-radar .market-line-price label#ticker-pair:focus-visible {outline:2px solid var(--ink);outline-offset:2px}
 body.ox-terminal #view-radar .ox-indicator-legend {display:none!important}

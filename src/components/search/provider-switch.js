@@ -153,12 +153,47 @@
 
   const ProviderController={
     active:(localStorage.getItem("ox-chart-data-provider")||"bitget").toLowerCase(),
-    ticker:null,timer:0,requestId:0,
+    ticker:null,timer:0,requestId:0,tickerClickTimer:0,lastTickerClick:0,lastExternalOpen:0,
     adapter(){return OXChartDataAdapters[this.active]||OXChartDataAdapters.bitget},
     label(){return this.adapter().name},
+    contractUrl(){
+      const symbol=String(state.symbol||"").toUpperCase();
+      if(!/^[A-Z0-9]{2,30}USDT$/.test(symbol))return null;
+      const routes={
+        bitget:"https://www.bitget.com/futures/usdt/",
+        binance:"https://www.binance.com/en/futures/",
+        bybit:"https://www.bybit.com/trade/usdt/"
+      };
+      return routes[this.active] ? routes[this.active]+encodeURIComponent(symbol) : null;
+    },
+    openContract(){
+      const url=this.contractUrl();
+      if(!url){showToast("目前幣種沒有可用的合約連結");return}
+      this.lastExternalOpen=performance.now();
+      // Official HTTPS contract pages can hand off to the installed exchange app.
+      // Keep the web contract page as the fallback when the app is unavailable.
+      if(window.matchMedia("(pointer:coarse)").matches)window.location.assign(url);
+      else window.open(url,"_blank","noopener");
+    },
+    onTickerClick(){
+      const now=performance.now();
+      if(this.tickerClickTimer && now-this.lastTickerClick<=360){
+        clearTimeout(this.tickerClickTimer);this.tickerClickTimer=0;this.lastTickerClick=0;
+        this.closePicker();this.openContract();return;
+      }
+      clearTimeout(this.tickerClickTimer);
+      this.lastTickerClick=now;
+      this.tickerClickTimer=setTimeout(()=>{
+        this.tickerClickTimer=0;this.lastTickerClick=0;this.openPicker();
+      },360);
+    },
     applyLabels(){
       const p=this.adapter(),pair=q("#ticker-pair");
-      if(pair)pair.textContent=state.symbol+" · "+p.name;
+      if(pair){
+        pair.textContent=state.symbol+" · "+p.name;
+        pair.setAttribute("aria-label",`${state.symbol} · ${p.name}；單點切換交易所，快速雙點開啟合約頁`);
+        pair.title=`單點切換交易所；快速雙點開啟 ${p.name} ${state.symbol} 合約`;
+      }
       const trigger=q("#chart-provider-trigger");
       if(trigger)trigger.textContent=state.symbol+" · "+p.name+" 永續合約";
     },
@@ -211,8 +246,13 @@
       if(pair&&!pair.dataset.providerBound){
         pair.dataset.providerBound="true";
         pair.setAttribute("role","button");pair.tabIndex=0;
-        pair.setAttribute("aria-label","切換交易所與合約資料源");
-        pair.addEventListener("click",()=>this.openPicker());
+        pair.addEventListener("click",()=>this.onTickerClick());
+        pair.addEventListener("dblclick",event=>{
+          event.preventDefault();
+          if(performance.now()-this.lastExternalOpen<600)return;
+          clearTimeout(this.tickerClickTimer);this.tickerClickTimer=0;this.lastTickerClick=0;
+          this.closePicker();this.openContract();
+        });
         pair.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();this.openPicker()}});
       }
       let trigger=q("#chart-provider-trigger");
