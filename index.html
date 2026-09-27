@@ -39,7 +39,7 @@
   <link rel="stylesheet" href="src/styles/releases/v38-fluid-refinement.css">
   <link rel="stylesheet" href="src/styles/components/radar-light-tune.css">
   <link rel="stylesheet" href="src/styles/components/fullscreen-lightglass.css">
-  <link rel="stylesheet" href="src/styles/components/feature-search-provider.css">
+  <link rel="stylesheet" href="src/styles/components/feature-search-provider.css?v=20260927-picker2">
   <link rel="stylesheet" href="src/styles/markets/forex.css">
   <link rel="stylesheet" href="src/styles/markets/us.css">
   <link rel="stylesheet" href="src/styles/components/news-center.css?v=20260925d">
@@ -73,7 +73,7 @@
 <!-- CSS moved: ox-v381-ios-liquid-glass-max -->
 
   <link rel="stylesheet" href="src/styles/themes/editorial-radar.css?v=20260927-home-radar9">
-  <link rel="stylesheet" href="src/styles/components/chart-toolbar.css?v=20260927-toolbar7">
+  <link rel="stylesheet" href="src/styles/components/chart-toolbar.css?v=20260927-toolbar8">
   <link rel="stylesheet" href="src/styles/account/account.css">
 </head>
 <body class="ox-terminal" data-view="radar">
@@ -746,13 +746,8 @@
 <div id="toast" class="toast" role="status"></div>
 
 <div class="chart-tools-overlay" id="chart-tools-overlay" aria-hidden="true">
-  <section class="chart-tools-dialog" role="dialog" aria-modal="true" aria-labelledby="chart-tools-title" tabindex="-1">
-    <header class="chart-tools-head">
-      <div><small>CHART SETTINGS</small><h2 id="chart-tools-title">指標與篩選</h2></div>
-      <button class="chart-tools-close" type="button" data-chart-tools-close aria-label="關閉">×</button>
-    </header>
+  <section class="chart-tools-dialog" role="dialog" aria-modal="true" aria-label="指標與篩選" tabindex="-1">
     <div class="chart-tools-panel" data-chart-tools-panel="indicators">
-      <h3>圖表指標</h3>
       <div class="chart-indicator-options">
         <label class="chart-indicator-option"><input type="checkbox" id="chk-vol" checked><span class="chart-indicator-check" aria-hidden="true"></span><span>成交量</span></label>
         <label class="chart-indicator-option"><input type="checkbox" id="chk-ox-markers"><span class="chart-indicator-check" aria-hidden="true"></span><span>OX 指標</span></label>
@@ -760,7 +755,6 @@
       </div>
       <div class="chart-filter-mode-section">
         <h3>篩選模式</h3>
-        <p>經典模式保留目前 OX 雷達規則；自訂模式會依開啟的條件縮小列表。</p>
         <div class="chart-filter-mode" role="group" aria-label="篩選模式">
           <button type="button" data-filter-mode="classic" aria-pressed="true">經典</button>
           <button type="button" data-filter-mode="custom" aria-pressed="false">自訂</button>
@@ -779,6 +773,7 @@
       <div class="chart-timeframe-preferences" id="chart-timeframe-preferences"></div>
       <button class="chart-tools-save" type="button" id="chart-timeframe-save">儲存時間級別</button>
     </div>
+    <button class="chart-tools-close" type="button" data-chart-tools-close aria-label="關閉指標設定">×</button>
   </section>
 </div>
 
@@ -843,7 +838,7 @@
 <!-- OX v3.8.4 — OX CONTROL 功能搜尋 + 真實交易所 Data Provider 切換 -->
 <!-- CSS moved: ox-v384-feature-search-provider-switch-styles -->
 
-<script src="src/components/search/provider-switch.js?v=20260927-toolbar6"></script>
+<script src="src/components/search/provider-switch.js?v=20260927-picker2"></script>
 <script type="module" src="src/app/app.js"></script>
 <script src="src/app/editorial-workspace.js?v=20260926-radar-fold3"></script>
 
