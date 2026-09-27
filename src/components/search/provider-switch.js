@@ -156,24 +156,11 @@
     ticker:null,timer:0,requestId:0,tickerClickTimer:0,lastTickerClick:0,lastExternalOpen:0,
     adapter(){return OXChartDataAdapters[this.active]||OXChartDataAdapters.bitget},
     label(){return this.adapter().name},
-    contractUrl(){
-      const symbol=String(state.symbol||"").toUpperCase();
-      if(!/^[A-Z0-9]{2,30}USDT$/.test(symbol))return null;
-      const routes={
-        bitget:"https://www.bitget.com/futures/usdt/",
-        binance:"https://www.binance.com/en/futures/",
-        bybit:"https://www.bybit.com/trade/usdt/"
-      };
-      return routes[this.active] ? routes[this.active]+encodeURIComponent(symbol) : null;
-    },
     openContract(){
-      const url=this.contractUrl();
-      if(!url){showToast("目前幣種沒有可用的合約連結");return}
+      // Contract web URLs do not guarantee an app handoff. An exchange's
+      // verified native deep-link format is required before navigation.
       this.lastExternalOpen=performance.now();
-      // Official HTTPS contract pages can hand off to the installed exchange app.
-      // Keep the web contract page as the fallback when the app is unavailable.
-      if(window.matchMedia("(pointer:coarse)").matches)window.location.assign(url);
-      else window.open(url,"_blank","noopener");
+      showToast("尚未取得此交易所的 App 合約連結，未開啟網頁");
     },
     onTickerClick(){
       const now=performance.now();
@@ -191,8 +178,8 @@
       const p=this.adapter(),pair=q("#ticker-pair");
       if(pair){
         pair.textContent=state.symbol+" · "+p.name;
-        pair.setAttribute("aria-label",`${state.symbol} · ${p.name}；單點切換交易所，快速雙點開啟合約頁`);
-        pair.title=`單點切換交易所；快速雙點開啟 ${p.name} ${state.symbol} 合約`;
+        pair.setAttribute("aria-label",`${state.symbol} · ${p.name}；單點切換交易所`);
+        pair.title="單點切換交易所";
       }
       const trigger=q("#chart-provider-trigger");
       if(trigger)trigger.textContent=state.symbol+" · "+p.name+" 永續合約";
