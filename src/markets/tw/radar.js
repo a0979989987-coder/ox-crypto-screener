@@ -2431,7 +2431,7 @@ function ensureStyles() {
   );
   const ui = document.createElement("link");
   ui.rel = "stylesheet";
-  ui.href = "src/markets/tw/radar-ui.css?v=20260927c";
+  ui.href = "src/markets/tw/radar-ui.css?v=20260927d";
   document.head.appendChild(ui);
 }
 
