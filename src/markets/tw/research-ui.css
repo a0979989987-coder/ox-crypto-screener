@@ -54,3 +54,31 @@ body.theme-light .twx-bubble-value{fill:#38433e}
 .twx-energy-track .down{background:var(--tx-down)}
 .twx-vote-status{min-height:15px}
 @media(max-width:480px){.twx-energy-label{font-size:10px}.twx-energy-label>span:nth-child(2){font-size:9px}}
+
+/* The controls sit inside the chart like the reference's compact pill toolbar. */
+.twx-chart-panel{padding-bottom:55px}
+.twx-chart-tools{align-items:center;gap:7px}
+.twx-chart-main,.twx-chart-utility{display:flex;align-items:center;gap:6px}
+.twx-chart-main{flex:1}
+.twx-chart-tools .twx-segments{min-width:0;min-height:38px;border-radius:20px;padding:2px}
+.twx-chart-tools .twx-segments>i{left:2px;top:2px;bottom:2px;width:calc((100% - 4px)/var(--count));border-radius:18px}
+.twx-chart-tools .twx-segments button{padding:5px 10px;font-size:12px}
+.twx-chart-main select,.twx-chart-utility button,.twx-expand{border:1px solid #ffffff2a;background:linear-gradient(140deg,#ffffff0c,#ffffff03);border-radius:22px;color:var(--tx-ink)}
+.twx-chart-main select{max-width:83px;height:38px;padding:0 6px;font-size:12px}
+.twx-chart-utility button{height:38px;min-width:38px;padding:0 9px;font-size:12px;white-space:nowrap}
+.twx-chart-utility button[data-help]{font-size:17px}
+.twx-chart-utility button[aria-pressed="true"],.twx-chart-utility button[aria-expanded="true"]{border-color:#ffffff99;background:#ffffff20}
+.twx-chart-help{position:relative;z-index:2;margin:10px 2px;padding:11px 12px;border:1px solid #ffffff35;border-radius:11px;background:#1e2223;color:#c8cecb;font-size:11px;line-height:1.6}
+.twx-chart-mode{display:flex;margin-top:10px}
+.twx-chart-mode .twx-segments{min-height:33px}
+.twx-chart-mode .twx-segments button{font-size:11px;padding:3px 9px}
+.twx-replay{display:flex;align-items:center;gap:8px;margin:9px 2px;color:var(--tx-muted)}
+.twx-replay button{border:1px solid #ffffff30;border-radius:9px;background:#ffffff10;padding:5px 9px;white-space:nowrap}
+.twx-replay input{flex:1;min-width:60px;accent-color:#d9dedb}
+.twx-replay time{font-size:10px;white-space:nowrap}
+.twx-expand{position:absolute;left:12px;bottom:11px;width:34px;height:34px;font-size:20px}
+.twx-chart-panel.expanded .twx-expand{position:sticky;bottom:8px;left:0}
+.twx-bubbles{touch-action:pan-y}
+.twx-bubbles.is-zoomed{touch-action:none}
+body.theme-light .twx-chart-main select,body.theme-light .twx-chart-utility button,body.theme-light .twx-expand{background:#f2f4f4;color:#252b2c}
+@media(max-width:480px){.twx-chart-tools .twx-segments button{padding:5px 8px}.twx-chart-main select{max-width:68px}.twx-chart-utility button{min-width:33px;height:36px;padding:0 7px}.twx-chart-mode{margin-top:7px}}
