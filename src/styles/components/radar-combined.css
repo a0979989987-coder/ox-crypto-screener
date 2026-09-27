@@ -41,12 +41,12 @@ body.ox-terminal #view-radar #screener-list > .radar-tier-separator {
 /* Existing toolbar treatment, scoped to the radar controls. */
 body.ox-terminal #view-radar #radar-scanner-panel .scanner-tabs {
   grid-template-columns:repeat(4,minmax(0,1fr))!important;
-  min-height:36px!important;
+  min-height:44px!important;
   align-items:center!important;
 }
 body.ox-terminal #view-radar #radar-scanner-panel .radar-combined-tab {
-  height:36px!important;
-  min-height:36px!important;
+  height:44px!important;
+  min-height:44px!important;
   padding:0!important;
   touch-action:pan-y!important;
   user-select:none;
@@ -61,8 +61,8 @@ body.ox-terminal #view-radar #radar-scanner-panel .scanner-tabs > button {
   position:relative;
   width:100%!important;
   min-width:0!important;
-  height:36px!important;
-  min-height:36px!important;
+  height:44px!important;
+  min-height:44px!important;
   padding:0!important;
   line-height:1!important;
   border:0!important;
@@ -71,6 +71,12 @@ body.ox-terminal #view-radar #radar-scanner-panel .scanner-tabs > button {
   backdrop-filter:none!important;
   -webkit-backdrop-filter:none!important;
   -webkit-tap-highlight-color:transparent;
+}
+@media(max-width:720px) {
+  /* The full first cell is the Radar hit target, including its upper half. */
+  body.ox-terminal #view-radar #radar-scanner-panel .scanner-tabs {
+    grid-template-columns:40px repeat(3,minmax(0,1fr))!important;
+  }
 }
 /* The active underline must not shift the content's vertical center. */
 body.ox-terminal #view-radar #radar-scanner-panel .scanner-tabs > .tab-btn.active::after {
