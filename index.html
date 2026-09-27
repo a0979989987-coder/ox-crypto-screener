@@ -77,7 +77,7 @@
   <link rel="stylesheet" href="src/styles/components/chart-toolbar.css?v=20260927-toolbar8">
   <link rel="stylesheet" href="src/styles/components/radar-turnover.css?v=20260927-turnover1">
   <link rel="stylesheet" href="src/styles/components/live-visibility.css?v=20260927-oxlive-setting1">
-  <link rel="stylesheet" href="src/styles/components/control-menu-compact.css?v=20260927-menu1">
+  <link rel="stylesheet" href="src/styles/components/control-menu-compact.css?v=20260927-menu2">
   <link rel="stylesheet" href="src/styles/account/account.css">
 </head>
 <body class="ox-terminal" data-view="radar">
@@ -115,9 +115,7 @@
 <!-- ===== OX CONTROL：右側控制中心（v3.6 isolated UI module） ===== -->
 <div class="ox-control-overlay" id="ox-control-overlay" aria-hidden="true">
   <aside class="ox-control-panel" id="ox-control-panel" role="dialog" aria-modal="true" aria-label="OX 控制中心">
-    <div class="ox-control-panel-head">
-      <button class="ox-control-close" id="ox-control-close" type="button" aria-label="關閉控制中心">×</button>
-    </div>
+    <button class="ox-control-edge-close" id="ox-control-close" type="button" aria-label="收起選單"><span aria-hidden="true">›</span></button>
 
     <div class="ox-control-scroll">
       <div class="ox-control-view active" data-control-view="main">
@@ -125,8 +123,8 @@
         <div class="ox-control-group">
           <button class="ox-control-row" id="ox-control-account-open" type="button">
             <span class="ox-control-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c.7-4.2 3-6.3 7-6.3s6.3 2.1 7 6.3"/></svg></span>
-            <span class="ox-control-copy"><b id="ox-account-title">登入 / 註冊</b><small id="ox-account-sub">第一版本機帳號，可保持登入並綁定個人偏好。</small></span>
-            <span class="ox-control-side"><span class="ox-control-ui-tag" id="ox-account-action-tag">LOCAL</span><span class="ox-control-arrow">›</span></span>
+            <span class="ox-control-copy"><b id="ox-account-title">登入 / 註冊</b></span>
+            <span class="ox-control-side"><span class="ox-control-ui-tag" id="ox-account-action-tag">OX</span><span class="ox-control-arrow">›</span></span>
           </button>
         </div>
 
@@ -139,7 +137,7 @@
           </div>
           <div class="ox-control-row">
             <span class="ox-control-icon"><svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 9 9 7 7 0 0 1-9-9Z"/></svg></span>
-            <span class="ox-control-copy"><b>主題切換</b><small>沿用穩定的黑 / 白 / 隨系統邏輯。</small></span>
+            <span class="ox-control-copy"><b>主題</b></span>
             <span class="ox-control-side">
               <span class="ox-theme-segment" aria-label="主題切換">
                 <button type="button" data-control-theme="dark">深色</button>
@@ -150,6 +148,28 @@
           </div>
         </div>
 
+        <div class="ox-control-section-label">Market</div>
+        <div class="ox-control-group">
+          <div class="ox-control-row">
+            <span class="ox-control-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.6 2.7 4 5.7 4 9s-1.4 6.3-4 9c-2.6-2.7-4-5.7-4-9s1.4-6.3 4-9Z"/></svg></span>
+            <span class="ox-control-copy"><b>市場</b><small id="ox-market-status-text" hidden>Crypto</small></span>
+            <span class="ox-control-side ox-market-segment">
+              <button class="ox-market-chip active" type="button" data-market-choice="crypto">加密</button><button class="ox-market-chip" type="button" data-market-choice="us">美股</button><button class="ox-market-chip" type="button" data-market-choice="tw">台股</button><button class="ox-market-chip" type="button" data-market-choice="forex">外匯</button>
+            </span>
+          </div>
+        </div>
+
+        <div class="ox-control-group">
+          <button class="ox-control-row" id="ox-control-advanced-open" type="button">
+            <span class="ox-control-icon" aria-hidden="true">⚙</span>
+            <span class="ox-control-copy"><b>進階設定</b></span>
+            <span class="ox-control-side"><span class="ox-control-arrow">›</span></span>
+          </button>
+        </div>
+      </div>
+
+      <div class="ox-control-view" data-control-view="advanced">
+        <button class="ox-control-advanced-back" id="ox-control-advanced-back" type="button">‹ <span>進階設定</span></button>
         <div class="ox-control-section-label">System</div>
         <div class="ox-control-group">
           <div class="ox-control-row">
@@ -161,39 +181,28 @@
           </div>
           <button class="ox-control-row" id="ox-control-open-notifications" type="button">
             <span class="ox-control-icon"><svg viewBox="0 0 24 24"><path d="M4 12h16M12 4v16"/></svg></span>
-            <span class="ox-control-copy"><b>通知詳細設定</b><small>前高 / 前低、T1 / T2 / T3、BTC 強度等現有設定。</small></span>
-            <span class="ox-control-side"><span>設定</span><span class="ox-control-arrow">›</span></span>
+            <span class="ox-control-copy"><b>通知設定</b></span>
+            <span class="ox-control-side"><span class="ox-control-arrow">›</span></span>
           </button>
           <button class="ox-control-row" id="ox-control-open-settings" type="button">
             <span class="ox-control-icon" aria-hidden="true">⚙</span>
-            <span class="ox-control-copy"><b>完整設定</b><small>通知、帳號與主題</small></span>
+            <span class="ox-control-copy"><b>完整設定</b></span>
             <span class="ox-control-side"><span class="ox-control-arrow">›</span></span>
           </button>
           <button class="ox-control-row" id="ox-control-test-notification" type="button">
             <span class="ox-control-icon"><svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M12 5v14"/></svg></span>
-            <span class="ox-control-copy"><b>測試通知＋鈴聲</b><small>直接驗證瀏覽器通知與 OX 鈴聲，不必等待市場訊號。</small></span>
-            <span class="ox-control-side"><span class="ox-control-live-tag">TEST</span><span class="ox-control-arrow">›</span></span>
+            <span class="ox-control-copy"><b>測試通知</b></span>
+            <span class="ox-control-side"><span class="ox-control-arrow">›</span></span>
           </button>
           <div class="ox-control-row">
             <span class="ox-control-icon"><svg viewBox="0 0 24 24"><path d="M5 9v6h4l5 4V5L9 9Z"/><path d="M17 9c1 .8 1.5 1.8 1.5 3S18 14.2 17 15"/></svg></span>
-            <span class="ox-control-copy"><b>通知鈴聲</b><small>關閉後仍可保留瀏覽器通知，只停止 OX 頁面鈴聲。</small></span>
+            <span class="ox-control-copy"><b>通知鈴聲</b></span>
             <span class="ox-control-side"><label class="ox-control-toggle"><input id="ox-control-sound-toggle" type="checkbox" checked><span></span></label></span>
           </div>
           <div class="ox-control-row">
             <span class="ox-control-icon"><svg viewBox="0 0 24 24"><path d="M20 6v5h-5"/><path d="M18.4 15A7 7 0 1 1 19 8"/></svg></span>
-            <span class="ox-control-copy"><b>資料更新</b><small id="ox-control-data-status">即時 / 自動更新</small></span>
-            <span class="ox-control-side"><span class="ox-control-live-tag">LIVE</span><button class="ox-control-refresh" id="ox-control-refresh" type="button">重新整理</button></span>
-          </div>
-        </div>
-
-        <div class="ox-control-section-label">Market</div>
-        <div class="ox-control-group">
-          <div class="ox-control-row">
-            <span class="ox-control-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.6 2.7 4 5.7 4 9s-1.4 6.3-4 9c-2.6-2.7-4-5.7-4-9s1.4-6.3 4-9Z"/></svg></span>
-            <span class="ox-control-copy"><b>市場設定</b><small id="ox-market-status-text">Crypto 已接資料；Forex 使用獨立標準模組。</small></span>
-            <span class="ox-control-side ox-market-segment">
-              <button class="ox-market-chip active" type="button" data-market-choice="crypto">加密</button><button class="ox-market-chip" type="button" data-market-choice="us">美股</button><button class="ox-market-chip" type="button" data-market-choice="tw">台股</button><button class="ox-market-chip" type="button" data-market-choice="forex">外匯</button>
-            </span>
+            <span class="ox-control-copy"><b>資料更新</b><small id="ox-control-data-status" hidden>即時 / 自動更新</small></span>
+            <span class="ox-control-side"><button class="ox-control-refresh" id="ox-control-refresh" type="button">重新整理</button></span>
           </div>
         </div>
 
@@ -201,18 +210,16 @@
         <div class="ox-control-group">
           <button class="ox-control-row" id="ox-control-feedback-open" type="button">
             <span class="ox-control-icon"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H8l-4 4Z"/><path d="M8 9h8M8 12h5"/></svg></span>
-            <span class="ox-control-copy"><b>意見回饋</b><small>在控制中心內填寫；目前尚未接 Email / 表單後端。</small></span>
-            <span class="ox-control-side"><span class="ox-control-ui-tag">UI</span><span class="ox-control-arrow">›</span></span>
+            <span class="ox-control-copy"><b>意見回饋</b></span>
+            <span class="ox-control-side"><span class="ox-control-arrow">›</span></span>
           </button>
           <button class="ox-control-row" id="ox-control-about-toggle" type="button" aria-expanded="false">
             <span class="ox-control-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.2"/></svg></span>
-            <span class="ox-control-copy"><b>關於 / 版本</b><small>OX Crypto Screener · Stable</small></span>
-            <span class="ox-control-side"><b style="color:var(--gold)">v4.0</b><span class="ox-control-arrow">›</span></span>
+            <span class="ox-control-copy"><b>關於 / 版本</b></span>
+            <span class="ox-control-side"><span class="ox-control-arrow">›</span></span>
           </button>
           <div class="ox-control-changelog" id="ox-control-changelog">v4.0 RC1 · 漸進式模組化基礎、外部 CSS / JS、Forex 標準模組與 rollback 檢查。</div>
         </div>
-
-        <p class="ox-control-note">帳號與偏好僅儲存在此裝置，尚未支援跨裝置同步。Email／簡訊、背景推送及意見回饋寄送尚未開放。</p>
       </div>
 
       <div class="ox-control-view" data-control-view="account">
@@ -775,7 +782,7 @@
 <script src="src/components/chart/workspace.js?v=20260926-native-chart5"></script>
 <script src="src/markets/crypto/presentation.js?v=20260927-turnover1"></script>
 <script src="src/components/account/store.js?v=20260927-menu1"></script>
-<script src="src/components/control-panel/feature-pack.js"></script>
+<script src="src/components/control-panel/feature-pack.js?v=20260927-menu2"></script>
 <script src="src/services/liquidations.js"></script>
 <script src="src/components/chart/toolbar.js?v=20260927-toolbar7"></script>
 <script src="src/app/runtime-boot.js?v=20260927-home-radar9"></script>
