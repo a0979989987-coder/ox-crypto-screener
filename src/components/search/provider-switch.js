@@ -189,7 +189,11 @@
     async select(id){
       id=String(id||"").toLowerCase();
       const ad=OXChartDataAdapters[id];if(!ad)return;
-      try{await ad.ticker(state.symbol)}catch(e){showToast(ad.name+" 此標的目前 unavailable");return}
+      const picker=q("#ox-provider-picker"),option=picker?.querySelector('[data-provider-id="'+id+'"]');
+      option?.classList.add("is-selecting");
+      const started=performance.now();
+      try{await ad.ticker(state.symbol)}catch(e){option?.classList.remove("is-selecting");showToast(ad.name+" 此標的目前 unavailable");return}
+      await new Promise(resolve=>setTimeout(resolve,Math.max(0,240-(performance.now()-started))));
       this.active=id;
       localStorage.setItem("ox-chart-data-provider",id);
       this.closePicker();
@@ -227,41 +231,42 @@
       backdrop.className="ox-provider-backdrop";backdrop.id="ox-provider-backdrop";
       const picker=document.createElement("div");
       picker.className="ox-provider-picker";picker.id="ox-provider-picker";
-      picker.innerHTML='<div class="ox-provider-head"><div><b id="ox-provider-title">交易所 / 合約</b><small>真正切換 K 線與行情 Data Provider</small></div><button type="button" class="ox-provider-close" aria-label="關閉">×</button></div><div class="ox-provider-list" id="ox-provider-list"><div class="ox-provider-loading">正在確認可用資料源…</div></div>';
+      picker.setAttribute("role","group");picker.setAttribute("aria-label","選擇交易所");
+      picker.innerHTML='<div class="ox-provider-list" id="ox-provider-list"><div class="ox-provider-loading">正在確認交易所…</div></div>';
       document.body.append(backdrop,picker);
       backdrop.addEventListener("click",()=>this.closePicker());
-      picker.querySelector(".ox-provider-close").addEventListener("click",()=>this.closePicker());
       picker.addEventListener("click",e=>{const b=e.target.closest("[data-provider-id]");if(b&&!b.disabled)this.select(b.dataset.providerId)});
     },
     positionPicker(){
       const picker=q("#ox-provider-picker"),trigger=q("#ticker-pair")||q("#chart-provider-trigger");
       if(!picker||!trigger)return;
-      if(window.matchMedia("(max-width:720px)").matches){picker.style.left="";picker.style.top="";return}
-      const r=trigger.getBoundingClientRect(),width=Math.min(390,window.innerWidth-24);
-      const left=Math.max(12,Math.min(window.innerWidth-width-12,r.left));
-      picker.style.left=left+"px";picker.style.top=(r.bottom+8)+"px";
+      const r=trigger.getBoundingClientRect(),card=trigger.closest(".market-line-card")?.getBoundingClientRect();
+      const width=Math.min(232,window.innerWidth-24),left=Math.max(12,Math.min(window.innerWidth-width-12,r.left));
+      picker.style.left=left+"px";picker.style.top=((card?.bottom||r.bottom)+6)+"px";
     },
     async openPicker(){
       this.ensurePicker();this.ensureTitleTrigger();
       const picker=q("#ox-provider-picker"),backdrop=q("#ox-provider-backdrop"),list=q("#ox-provider-list");
       if(!picker||!list)return;
-      q("#ox-provider-title").textContent=state.symbol+" · 交易所 / 合約";
       this.positionPicker();picker.classList.add("show");
-      if(window.matchMedia("(max-width:720px)").matches)backdrop.classList.add("show");
-      list.innerHTML='<div class="ox-provider-loading">正在讀取 Bitget / Binance / Bybit…</div>';
+      backdrop.classList.add("show");
+      q("#ticker-pair")?.setAttribute("aria-expanded","true");
+      list.innerHTML='<div class="ox-provider-loading">正在讀取交易所…</div>';
       const ids=["bitget","binance","bybit"];
       const checks=await Promise.all(ids.map(async id=>{
         const ad=OXChartDataAdapters[id];
         try{return{id,ok:true,t:await ad.ticker(state.symbol)}}catch(e){return{id,ok:false,t:null}}
       }));
+      if(!picker.classList.contains("show"))return;
       list.innerHTML=checks.map(x=>{
-        const ad=OXChartDataAdapters[x.id],t=x.t;
-        return '<button type="button" class="ox-provider-option'+(this.active===x.id?' active':'')+'" data-provider-id="'+x.id+'" '+(!x.ok?'disabled':'')+'><span><span class="ox-provider-name">'+ad.name+'</span><span class="ox-provider-meta">'+state.symbol+' · '+ad.contractType+'</span></span><span class="ox-provider-stats">'+(x.ok?'<b>'+fmtPrice(t.price)+'</b><small>'+compact(t.quoteVolume)+' USDT · '+fmtPct(t.change24h)+'</small>':'<b class="ox-provider-unavailable">unavailable</b><small>無可用即時資料</small>')+'</span></button>';
+        const ad=OXChartDataAdapters[x.id];
+        return '<button type="button" class="ox-provider-option'+(this.active===x.id?' active':'')+'" data-provider-id="'+x.id+'" aria-pressed="'+(this.active===x.id)+'" '+(!x.ok?'disabled title="此幣種目前無可用資料"':'')+'><span class="ox-provider-name">'+ad.name+'</span></button>';
       }).join("");
     },
     closePicker(){
       q("#ox-provider-picker")?.classList.remove("show");
       q("#ox-provider-backdrop")?.classList.remove("show");
+      q("#ticker-pair")?.setAttribute("aria-expanded","false");
     },
     boot(){
       this.ensureTitleTrigger();
