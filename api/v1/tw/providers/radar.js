@@ -60,7 +60,7 @@ const TWSE_QUOTES_FALLBACK_URL =
 
 
 const TPEX_QUOTES_FALLBACK_URL =
-  "https://www.tpex.org.tw/openapi/v1/tpex_mainboard_daily_close_quotes";
+  "https://www.tpex.org.tw/openapi/v1/tpex_mainboard_quotes";
 
 
 const TWSE_INDUSTRY_URL =

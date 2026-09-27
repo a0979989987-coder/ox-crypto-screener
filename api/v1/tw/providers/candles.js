@@ -45,7 +45,7 @@ const TWSE_STOCK_DAY_URL =
 
 
 const TPEX_STOCK_DAY_URL =
-  "https://www.tpex.org.tw/web/stock/aftertrading/daily_trading_info/st43_result.php";
+  "https://www.tpex.org.tw/www/zh-tw/afterTrading/tradingStock";
 
 
 const DEFAULT_TIMEOUT_MS =
@@ -1167,24 +1167,9 @@ async function fetchTPEXMonth(
     );
 
 
-  url.searchParams.set(
-    "l",
-    "zh-tw"
-  );
-
-
-  url.searchParams.set(
-    "d",
-    formatROCMonth(
-      month
-    )
-  );
-
-
-  url.searchParams.set(
-    "stkno",
-    symbol
-  );
+  url.searchParams.set("response", "json");
+  url.searchParams.set("date", formatISODate(month).replaceAll("-", "/"));
+  url.searchParams.set("code", symbol);
 
 
   const payload =
@@ -1197,12 +1182,12 @@ async function fetchTPEXMonth(
     );
 
 
-  const rows =
-    Array.isArray(
-      payload?.aaData
-    )
-      ? payload.aaData
-      : [];
+  const rows = payload?.tables?.find(table => Array.isArray(table.data))?.data ?? payload?.aaData;
+  if (!Array.isArray(rows)) {
+    throw new TWCandleProviderError("TPEx historical response is unavailable.", {
+      code: "TW_CANDLES_INVALID_RESPONSE", source: "TPEX", symbol
+    });
+  }
 
 
   return rows
