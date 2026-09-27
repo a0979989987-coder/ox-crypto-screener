@@ -1,5 +1,7 @@
 import { officialJSON, reportTables, numeric, loadInstitutional, joinResearchStocks, aggregateSectors } from './research.js';
 export function normalizeHistoricalQuotes(payload, market, date, companies) {
+  const returnedDate = String(payload.date || '').replace(/[^0-9]/g, '');
+  if (returnedDate && returnedDate !== date.replaceAll('-', '')) throw new Error('Historical quote date mismatch');
   const table = reportTables(payload).find(t => t.fields.some(f => ['收盤價','收盤'].includes(f)) && t.fields.some(f => ['證券代號','代號'].includes(f)));
   if (!table) return [];
   const at = names => table.fields.findIndex(f => names.includes(f));

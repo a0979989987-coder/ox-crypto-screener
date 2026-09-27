@@ -43,20 +43,20 @@ export function toggleWatch(symbol) {
 }
 export function selectSectors(data, { scope = 'all', market = 'ALL', query = '' } = {}) {
   const watches = readWatchlist();
-  const stocks = (data?.stocks || []).filter(s => (market === 'ALL' || s.market === market) && (scope !== 'watch' || watches.has(s.symbol)));
+  const stocks = (data?.stocks || []).filter(s => market === 'ALL' || s.market === market);
   const groups = new Map();
   stocks.forEach(s => { if (!groups.has(s.industry)) groups.set(s.industry, []); groups.get(s.industry).push(s); });
   const q = query.trim().toLowerCase();
-  return [...groups].map(([name, rows]) => {
+  return [...groups].filter(([, rows]) => scope !== 'watch' || rows.some(s => watches.has(s.symbol))).map(([name, rows]) => {
     const flows = rows.filter(r => Number.isFinite(r.netTwd));
     const prices = rows.filter(r => Number.isFinite(r.changePct));
-    const whole = market === 'ALL' && scope === 'all';
+    const whole = market === 'ALL';
     const source = whole ? data?.sectors?.find(s => s.name === name) : null;
     return { name, rows, count: rows.length, covered: flows.length,
       flow: flows.length ? flows.reduce((n, r) => n + r.netTwd, 0) : null,
       changePct: prices.length ? prices.reduce((n, r) => n + r.changePct, 0) / prices.length : null,
       turnoverTwd: rows.reduce((n, r) => n + (r.turnoverTwd || 0), 0), buyCount: flows.filter(r => r.netTwd > 0).length,
-      flow5: source?.flow5 ?? null, momentum: source?.momentum ?? null };
+      flow5: source?.flow5 ?? null, flow20: source?.flow20 ?? null, momentum: source?.momentum ?? null };
   }).filter(s => !q || s.name.toLowerCase().includes(q) || s.rows.some(r => `${r.symbol} ${r.name}`.toLowerCase().includes(q)));
 }
 export const quadrant = (x, y) => x >= 0 ? (y >= 0 ? 0 : 1) : (y >= 0 ? 2 : 3);

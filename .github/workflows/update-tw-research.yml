@@ -2,7 +2,7 @@ name: Update TW research
 on:
   workflow_dispatch:
   push:
-    branches: [feat/tw-home-flow]
+    branches: [main]
     paths: ['server/markets/tw/research*.js', 'scripts/collect-tw-research.mjs', '.github/workflows/update-tw-research.yml']
   schedule:
     - cron: '35 10 * * 1-5'
