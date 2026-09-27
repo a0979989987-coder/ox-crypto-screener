@@ -313,15 +313,21 @@ function renderCurrentTab() {
   }
 
   const isTierTab = ["t1","t2","t3"].includes(tab);
-  const sourceList = isTierTab
-    ? (state.tierMapBySide?.[state.directionFilter]?.[tab] || [])
+  // The existing t1 entry now opens the combined radar. Reuse the already
+  // ranked directional results; never rebuild, sort or mutate them here.
+  const combinedRadar = tab === "t1";
+  const sideTiers = state.tierMapBySide?.[state.directionFilter] || {};
+  const tierGroups = combinedRadar ? ["t1", "t2", "t3"].map(tier => sideTiers[tier] || []) : [];
+  const sourceList = combinedRadar ? tierGroups.flat() : isTierTab
+    ? (sideTiers[tab] || [])
     : (state.tierMap[tab] || []).filter(c => passesDirectionFilter(c.side));
+  const groupByCoin = new Map(tierGroups.flatMap((group, index) => group.map(coin => [coin, index])));
   const list = window.OXChartToolbar?.filterList(sourceList) || sourceList;
   const directionLabel = state.directionFilter === "long" ? "多頭" : "空頭";
   document.getElementById("pool-count").textContent = `${list.length} 檔${directionLabel}`;
   syncWatchBadge();
   if (!list.length) {
-    container.innerHTML = `<div style="padding:30px 16px;text-align:center;color:var(--muted)"><b>目前仍在輪巡 ${directionLabel} 標的</b><p style="font-size:11px">符合條件後會依目前 T${["t1","t2","t3"].includes(tab)?tab.slice(1):""} 排名顯示。</p></div>`;
+    container.innerHTML = `<div style="padding:30px 16px;text-align:center;color:var(--muted)"><b>目前仍在輪巡 ${directionLabel} 標的</b><p style="font-size:11px">符合條件後會依${combinedRadar ? " T1 → T2 → T3 順序" : `目前 T${isTierTab ? tab.slice(1) : ""} 排名`}顯示。</p></div>`;
     return;
   }
 
@@ -331,7 +337,10 @@ function renderCurrentTab() {
     const fit = displayTier === "t1" ? c.t1Fit : displayTier === "t2" ? c.t2Fit : c.t3Fit;
     const allowStar = ["t1","t2","t3"].includes(tab);
     const starred = isWatchlisted(c.symbol);
-    return `<div class="coin-card ${c.symbol === state.symbol ? 'selected' : ''}" data-symbol="${c.symbol}" role="button" tabindex="0">
+    // Follow real group boundaries even while a scan or custom filter has fewer results.
+    const separator = combinedRadar && idx > 0 && groupByCoin.get(c) !== groupByCoin.get(list[idx - 1])
+      ? '<div class="radar-tier-separator" role="separator" aria-label="雷達分級分隔"></div>' : '';
+    return `${separator}<div class="coin-card ${c.symbol === state.symbol ? 'selected' : ''}" data-symbol="${c.symbol}" role="button" tabindex="0">
       <div class="coin-top">
         <span class="coin-title">
           <span class="coin-rank">#${idx + 1}</span>

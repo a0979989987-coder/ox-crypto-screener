@@ -1,0 +1,39 @@
+/* Combined T1 / T2 / T3 display only. The chevron has no separate action yet. */
+body.ox-terminal #view-radar #radar-scanner-panel .scanner-tabs {
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+}
+body.ox-terminal #view-radar .radar-combined-mark {
+  position:relative;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:28px;
+  height:25px;
+}
+body.ox-terminal #view-radar .radar-combined-logo {
+  display:block;
+  width:19px;
+  height:19px;
+  color:inherit;
+}
+body.ox-terminal #view-radar .radar-combined-chevron {
+  position:absolute;
+  right:-1px;
+  bottom:0;
+  font-size:6px;
+  line-height:1;
+  pointer-events:none;
+}
+body.ox-terminal #view-radar #screener-list > .radar-tier-separator {
+  display:block;
+  grid-column:1 / -1;
+  flex:0 0 100%;
+  height:2px;
+  min-height:2px;
+  margin:13px 8px;
+  border:0;
+  border-radius:2px;
+  background:linear-gradient(90deg,transparent,#ffffffb3 12%,#fff 50%,#ffffffb3 88%,transparent);
+  box-shadow:0 0 5px #ffffffb3,0 0 12px #ffffff66;
+  pointer-events:none;
+}
