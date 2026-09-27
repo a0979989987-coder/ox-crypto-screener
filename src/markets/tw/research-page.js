@@ -1,5 +1,5 @@
 import { savedResearch, loadResearch, selectSectors, readWatchlist, quadrant } from './research-data.js';
-import { escape, number, pct, money, direction, segments, mountResearch, statusLine, stockRows } from './research-ui.js';
+import { escape, number, pct, money, direction, segments, mountResearch, stockRows } from './research-ui.js';
 import { bubbleChart, bubblePoints } from './research-bubbles.js';
 import { closeResearchDetails, showSector, showStock, watchClick } from './research-detail.js';
 const prefs = { tab: 'bubble', scope: 'all', market: 'ALL', mode: 'auto', density: 'top', zoom: 1, panX: 0, panY: 0, sort: 'buy', query: '', quadrant: null };
@@ -13,7 +13,7 @@ async function loadOutlook(s) {
     const result = await response.json();
     if (!response.ok) throw new Error(result.error === 'POLL_NOT_CONFIGURED' ? '多空投票尚未啟用' : '多空投票暫時無法連線');
     outlook = { ...result, status: result.mine ? '已記錄，可修改 · 每個瀏覽器一票' : '每個瀏覽器一票', ready: true, checkedAt: Date.now(), pending: false };
-  } catch (e) { outlook.ready = false; outlook.status = e.message || '多空投票暫時無法連線'; outlook.pending = false; }
+  } catch (e) { outlook.ready = false; outlook.status = e.message === '多空投票尚未啟用' ? e.message : '多空投票暫時無法連線'; outlook.pending = false; }
   if (current(s)) paint(s);
 }
 async function submitOutlook(s, side) {
@@ -24,7 +24,7 @@ async function submitOutlook(s, side) {
     const result = await response.json();
     if (!response.ok) throw new Error(result.error === 'TRADING_DAY_CHANGED' ? '交易日已更新，請再投一次' : '送出失敗，請稍後再試');
     outlook = { ...result, status: '已記錄，可修改 · 每個瀏覽器一票', ready: true, checkedAt: Date.now(), pending: false };
-  } catch (e) { outlook.status = e.message; outlook.pending = false; outlook.checkedAt = 0; }
+  } catch (e) { outlook.status = e.message === '交易日已更新，請再投一次' ? e.message : '送出失敗，請稍後再試'; outlook.pending = false; outlook.checkedAt = 0; }
   if (current(s)) paint(s);
 }
 export function stopResearch() { session?.controller.abort(); session = null; closeResearchDetails(); }
@@ -80,7 +80,7 @@ function indicatorContent() {
 function paint(s) {
   if (session !== s) return;
   const content = s.view === 'home' ? homeContent(s.state) : indicatorContent();
-  s.root.innerHTML = `<div class="twx" data-twx-view="${s.view}">${statusLine(data, loading, error)}${error && !data ? '<div class="twx-empty" role="status">資料暫時無法載入，請點右上角重試。</div>' : ''}${content}</div>`;
+  s.root.innerHTML = `<div class="twx" data-twx-view="${s.view}">${error && !data ? '<div class="twx-empty" role="status">資料暫時無法載入，請重新整理頁面。</div>' : ''}${content}</div>`;
 }
 async function refresh(s, force) {
   if (loading) return;
@@ -97,7 +97,6 @@ export function renderResearch(view, state) {
   root.addEventListener('click', event => {
     if (Date.now() < (s.suppressClickUntil || 0) && event.target.closest('.twx-bubble')) return;
     const button = event.target.closest('button, [data-sector]'); if (!button) return;
-    if (button.hasAttribute('data-refresh')) { refresh(s, true); window.OXModules?.router?.get('tw')?.reload?.(); return; }
     if (button.dataset.watch) { event.stopPropagation(); watchClick(button); return; }
     if (button.dataset.stock) { showStock(data?.stocks.find(stock => stock.symbol === button.dataset.stock)); return; }
     if (button.dataset.sector) { const sector = selectSectors(data, prefs).find(x => x.name === button.dataset.sector) || selectSectors(data).find(x => x.name === button.dataset.sector); if (sector) showSector(sector); return; }
