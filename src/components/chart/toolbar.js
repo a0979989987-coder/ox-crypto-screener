@@ -14,12 +14,10 @@
   let filterMode = localStorage.getItem('ox-radar-filter-mode') || 'classic';
   let customFilters = store('ox-radar-custom-filters', []);
   const strip = $('#chart-timeframe-strip');
-  const moreButton = $('#tf-more');
-  const picker = $('#tf-picker-popover');
   const overlay = $('#chart-tools-overlay');
   const dialog = $('.chart-tools-dialog', overlay || document);
   const panels = $$('[data-chart-tools-panel]', overlay || document);
-  const supported = new Map(intervals);
+  let returnFocusElement = null;
 
   function activeTf() { return $('.btn-tf.active', strip)?.dataset.tf || '1D'; }
   function addGlassMarker() {
@@ -37,12 +35,9 @@
     if (!strip) return;
     const current = activeTf();
     const visible = selectedIntervals.includes(current) ? selectedIntervals : [...selectedIntervals, current];
-    strip.innerHTML = `${visible.map(id => `<button class="btn-tf${id === current ? ' active' : ''}" type="button" data-tf="${id}" aria-pressed="${id === current}">${id}</button>`).join('')}<span class="tf-glass-indicator" aria-hidden="true"></span>`;
+    const last = visible.at(-1);
+    strip.innerHTML = `${visible.map(id => `<button class="btn-tf${id === current ? ' active' : ''}" type="button" data-tf="${id}" aria-pressed="${id === current}"${id === last ? ' title="再次點擊設定時間級別" aria-description="切換後再次點擊可設定時間級別"' : ''}>${id}</button>`).join('')}<span class="tf-glass-indicator" aria-hidden="true"></span>`;
     requestAnimationFrame(addGlassMarker);
-  }
-  function renderPicker() {
-    if (!picker) return;
-    picker.innerHTML = `${intervals.map(([id,label]) => `<button type="button" data-pick-tf="${id}" aria-current="${id === activeTf()}">${label}</button>`).join('')}<button type="button" class="tf-customize" data-open-timeframes>自訂時間級別…</button>`;
   }
   function renderPreferences() {
     const root = $('#chart-timeframe-preferences');
@@ -51,17 +46,16 @@
   }
   function openDialog(panel = 'indicators') {
     if (!overlay) return;
+    returnFocusElement = document.activeElement;
     panels.forEach(el => { el.hidden = el.dataset.chartToolsPanel !== panel; });
     overlay.classList.add('is-open'); overlay.setAttribute('aria-hidden','false');
     document.body.classList.add('chart-tools-open');
-    $('#tf-picker-popover')?.setAttribute('hidden','');
-    moreButton?.setAttribute('aria-expanded','false');
     dialog?.focus({preventScroll:true});
   }
   function closeDialog() {
     overlay?.classList.remove('is-open'); overlay?.setAttribute('aria-hidden','true');
     document.body.classList.remove('chart-tools-open');
-    $('#chart-indicator-open')?.focus({preventScroll:true});
+    (returnFocusElement?.isConnected ? returnFocusElement : $('#chart-indicator-open'))?.focus({preventScroll:true});
   }
   function setMode(mode) {
     filterMode = mode === 'custom' ? 'custom' : 'classic';
@@ -94,7 +88,7 @@
     localStorage.setItem('ox-chart-indicators', JSON.stringify(Object.fromEntries(indicatorInputs.map(item => [item.id,item.checked]))));
   }));
 
-  renderTimeframes(); renderPicker(); renderPreferences();
+  renderTimeframes(); renderPreferences();
   setMode(filterMode);
   $$('[data-custom-filter]').forEach(input => { input.checked = customFilters.includes(input.dataset.customFilter); });
   $$('[data-custom-filter]').forEach(input => input.addEventListener('change', updateCustomFilters));
@@ -102,29 +96,26 @@
   window.addEventListener('resize', () => requestAnimationFrame(addGlassMarker), {passive:true});
   strip?.addEventListener('click', event => {
     const button = event.target.closest('.btn-tf'); if (!button) return;
+    const lastButton = $$('.btn-tf', strip).at(-1);
+    if (button === lastButton && button.classList.contains('active')) {
+      event.preventDefault(); event.stopPropagation();
+      openDialog('timeframes');
+      return;
+    }
     $$('.btn-tf', strip).forEach(item => { const active = item === button; item.classList.toggle('active',active); item.setAttribute('aria-pressed',String(active)); });
     requestAnimationFrame(() => { button.scrollIntoView({block:'nearest',inline:'nearest',behavior:'smooth'}); addGlassMarker(); });
-  });
-  moreButton?.addEventListener('click', () => {
-    const opening = picker.hidden;
-    picker.hidden = !opening; moreButton.setAttribute('aria-expanded',String(opening));
-  });
-  picker?.addEventListener('click', event => {
-    const pick = event.target.closest('[data-pick-tf]');
-    if (pick) { const tf = pick.dataset.pickTf; const visibleButton = $(`.btn-tf[data-tf="${tf}"]`,strip); if (visibleButton) visibleButton.click(); else { selectedIntervals = [...selectedIntervals,tf]; renderTimeframes(); requestAnimationFrame(() => $(`.btn-tf[data-tf="${tf}"]`,strip)?.click()); } picker.hidden = true; moreButton.setAttribute('aria-expanded','false'); renderPicker(); return; }
-    if (event.target.closest('[data-open-timeframes]')) openDialog('timeframes');
   });
   $('#chart-indicator-open')?.addEventListener('click', () => openDialog('indicators'));
   $$('[data-chart-tools-close]').forEach(button => button.addEventListener('click', closeDialog));
   overlay?.addEventListener('click', event => { if (event.target === overlay) closeDialog(); });
-  document.addEventListener('keydown', event => { if (event.key === 'Escape') { if (overlay?.classList.contains('is-open')) closeDialog(); if (picker && !picker.hidden) { picker.hidden=true; moreButton?.setAttribute('aria-expanded','false'); } } });
+  document.addEventListener('keydown', event => { if (event.key === 'Escape' && overlay?.classList.contains('is-open')) closeDialog(); });
   $$('[data-filter-mode]').forEach(button => button.addEventListener('click', () => setMode(button.dataset.filterMode)));
   $('#chart-timeframe-save')?.addEventListener('click', () => {
     const checked = $$('#chart-timeframe-preferences input:checked').map(input => input.value);
     if (!checked.length) return;
     selectedIntervals = intervals.map(([id]) => id).filter(id => checked.includes(id));
     localStorage.setItem('ox-chart-timeframes',JSON.stringify(selectedIntervals));
-    renderTimeframes(); renderPicker(); closeDialog();
+    renderTimeframes(); closeDialog();
   });
   document.addEventListener('ox:radar-filter-change', () => {
     if (typeof renderCurrentTab === 'function') renderCurrentTab();
