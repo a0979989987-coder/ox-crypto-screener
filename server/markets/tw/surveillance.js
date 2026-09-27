@@ -7,6 +7,8 @@ const SOURCES = {
   tpexDisposal: `${TPEX}/tpex_disposal_information`,
   twseRisk: `${TWSE}/announcement/notetrans`,
   tpexRisk: `${TPEX}/tpex_trading_warning_note`,
+  twseAttention: `${TWSE}/announcement/notice`,
+  tpexAttention: `${TPEX}/tpex_trading_warning_information`,
   calendar: `${TWSE}/holidaySchedule/holidaySchedule`,
   twseMargin: `${TWSE}/exchangeReport/MI_MARGN`,
   tpexMargin: `${TPEX}/tpex_mainboard_margin_balance`,
@@ -176,7 +178,7 @@ export function buildTWSurveillance(feeds, quotes = [], { now = new Date(), data
       const current = active.get(symbol);
       const risk = {
         ...(current?.disposition || {}), status: current ? 'active' : 'risk',
-        riskLabel: '再注意 1 次可能' + (current ? '再次處置' : '進入處置'),
+        riskLabel: '最快 1 個交易日後可能' + (current ? '再次處置' : '進入處置'),
         riskProgress: progress ? progress.current / progress.target * 100 : null,
         riskLevel: progress?.label || '官方注意累計預警',
         riskBasis: condition, noticeDate,
@@ -188,13 +190,42 @@ export function buildTWSurveillance(feeds, quotes = [], { now = new Date(), data
     }
   }
   modes.risk.push(...future.values());
+  // Daily attention announcements widen the scan. They are separate from the
+  // official accumulated-count warning and never receive an invented meter.
+  // Keep confirmed near-threshold and scheduled rows in their existing order.
+  const riskSymbols = new Set(modes.risk.map(row => row.symbol));
+  for (const [source, market] of [['twseAttention', 'TWSE'], ['tpexAttention', 'TPEX']]) {
+    const latest = new Map();
+    for (const item of feeds[source]?.rows || []) {
+      const symbol = stockCode(item.Code || item.SecuritiesCompanyCode || item.SecuritiesCode || item['證券代號']);
+      if (!symbol || riskSymbols.has(symbol) || active.has(symbol)) continue;
+      const noticeDate = officialDate(item.Date || item.AnnouncementDate || item.TradeDate || item['公告日期']);
+      // These OpenAPI feeds publish the latest daily list. When their rows omit
+      // a date, use only a confirmed quote from the current official session.
+      const quote = quoteMap.get(symbol);
+      if (noticeDate ? (dataDate && noticeDate !== dataDate) : (!quote || quote.dataDate !== dataDate)) continue;
+      const basis = clean(item.AttentionTradingInformation || item.TradingInformation || item.Reason || item['注意交易資訊']);
+      latest.set(symbol, rowFor(symbol, clean(item.Name || item.CompanyName || item.SecuritiesName || item['證券名稱']), market, {
+        status: 'risk', riskLabel: '官方公布注意 · 持續觀察',
+        riskLevel: '官方注意股票（未列入累計預警）',
+        riskBasis: basis, noticeDate: noticeDate || dataDate,
+        riskProgress: null,
+        riskSourceUrl: market === 'TWSE' ? 'https://www.twse.com.tw/zh/announcement/notice.html'
+          : 'https://www.tpex.org.tw/zh-tw/announce/market/attention.html'
+      }));
+    }
+    for (const row of latest.values()) {
+      riskSymbols.add(row.symbol);
+      modes.risk.push(row);
+    }
+  }
   modes.disposal = [...active.values()].sort((a,b) => a.disposition.endDate.localeCompare(b.disposition.endDate));
   modes.release = modes.disposal.filter(row => row.disposition.releaseDays !== null && row.disposition.releaseDays <= 3)
     .map(row => ({ ...row, disposition: { ...row.disposition, status: 'release' } }));
   const status = names => names.every(name => feeds[name]?.ok) ? 'ready' : names.some(name => feeds[name]?.ok) ? 'partial' : 'error';
   return { modes, modesMeta: {
     checkedAt: now.toISOString(), asOf: dataDate, calendarReady: !!calendar,
-    risk: { status: status(['twseRisk', 'tpexRisk', 'twseDisposal', 'tpexDisposal']) },
+    risk: { status: status(['twseRisk', 'tpexRisk', 'twseDisposal', 'tpexDisposal', 'twseAttention', 'tpexAttention']) },
     disposal: { status: status(['twseDisposal', 'tpexDisposal']) },
     release: { status: calendar ? status(['twseDisposal', 'tpexDisposal']) : 'error' },
     sources: Object.fromEntries(Object.entries(feeds).map(([key,value]) => [key, { ok: value.ok, url: SOURCES[key] }]))

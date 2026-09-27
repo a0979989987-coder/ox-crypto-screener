@@ -2431,7 +2431,7 @@ function ensureStyles() {
   );
   const ui = document.createElement("link");
   ui.rel = "stylesheet";
-  ui.href = "src/markets/tw/radar-ui.css?v=20260927g";
+  ui.href = "src/markets/tw/radar-ui.css?v=20260927h";
   document.head.appendChild(ui);
 }
 
@@ -3090,7 +3090,7 @@ function refreshRadarDataUI(
       } else {
         const message = meta?.status === "error" || !meta ? "官方資料暫時無法載入，請稍後再試。"
           : meta?.status === "partial" ? "目前尚無可確認的股票，部分官方名單仍在更新。"
-          : activeMode === "risk" ? "目前官方名單沒有接近處置門檻的股票。"
+          : activeMode === "risk" ? "目前官方名單沒有公布注意或接近處置門檻的股票。"
           : activeMode === "release" ? "目前沒有 3 個交易日內處置結束的股票。"
           : "目前官方名單沒有處置中的股票。";
         list.innerHTML = `<div class="twr-empty" role="status">${message}</div>`;
