@@ -16,6 +16,7 @@ createServer(async (request, response) => {
     const file = resolve(root, `.${pathname === "/" ? "/index.html" : pathname}`);
     const rel = relative(root, file);
     if (rel === ".." || rel.startsWith(`..${sep}`)) throw new Error("Outside site root");
+    if (rel.split(sep).some(part => part.startsWith('.'))) throw new Error("Private file");
     if (!(await stat(file)).isFile()) throw new Error("Not a file");
     response.writeHead(200, { "Content-Type": types[extname(file)] || "application/octet-stream" });
     response.end(await readFile(file));
