@@ -132,7 +132,7 @@ export function renderTWStockCard(source, watchlist) {
       <div class="tw-stock-status">${escapeTW(riskLabel(row))}</div>
       ${hasRiskProgress || hasBatch ? `<div class="tw-stock-risk-row">
         ${hasRiskProgress ? `<div class="tw-stock-risk" title="${escapeTW(d.riskLevel || "風險程度")}">
-          <span class="tw-stock-risk-icon known" aria-hidden="true">◇</span>
+          <span class="tw-stock-risk-icon known" aria-hidden="true">◆</span>
           <div class="tw-stock-risk-track" role="progressbar" aria-label="${escapeTW(d.riskLevel || "風險程度")}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${d.riskProgress}"><i style="width:${d.riskProgress}%"></i></div>
         </div>` : ""}
         ${hasBatch ? `<span class="tw-stock-batch">${d.batchMinutes}分盤</span>` : ""}
