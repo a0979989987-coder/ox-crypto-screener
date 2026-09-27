@@ -160,7 +160,20 @@
       // Contract web URLs do not guarantee an app handoff. An exchange's
       // verified native deep-link format is required before navigation.
       this.lastExternalOpen=performance.now();
-      showToast("尚未取得此交易所的 App 合約連結，未開啟網頁");
+      let notice=q("#ox-contract-app-status");
+      if(!notice){
+        notice=document.createElement("div");
+        notice.id="ox-contract-app-status";
+        notice.className="ox-contract-app-status";
+        notice.setAttribute("role","status");
+        document.body.append(notice);
+      }
+      notice.textContent=`${this.label()} · ${state.symbol} 尚無可用的 App 合約連結`;
+      const card=q("#ticker-pair")?.closest(".market-line-card")?.getBoundingClientRect();
+      notice.style.top=`${Math.min((card?.bottom||80)+8,window.innerHeight-64)}px`;
+      notice.classList.add("show");
+      clearTimeout(this.contractNoticeTimer);
+      this.contractNoticeTimer=setTimeout(()=>notice.classList.remove("show"),3600);
     },
     onTickerClick(){
       const now=performance.now();
@@ -272,6 +285,7 @@
       picker.style.left=left+"px";picker.style.top=((card?.bottom||r.bottom)+6)+"px";
     },
     async openPicker(){
+      q("#ox-contract-app-status")?.classList.remove("show");
       this.ensurePicker();this.ensureTitleTrigger();
       const picker=q("#ox-provider-picker"),backdrop=q("#ox-provider-backdrop"),list=q("#ox-provider-list");
       if(!picker||!list)return;
