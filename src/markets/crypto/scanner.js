@@ -255,6 +255,25 @@ function renderCurrentTab() {
   if (!container) return;
   syncScannerFilterUI();
 
+  if (tab === "surge") {
+    const top = state.tickers
+      .filter(t => Number.isFinite(num(t.usdtVolume)) && num(t.usdtVolume) > 0)
+      .sort((a, b) => num(b.usdtVolume) - num(a.usdtVolume))
+      .slice(0, 15);
+    document.getElementById("pool-count").textContent = `24H 成交額前 ${top.length} 檔`;
+    if (!top.length) {
+      container.innerHTML = '<div class="turnover-empty">正在取得合約成交額…</div>';
+      return;
+    }
+    container.innerHTML = top.map((t, index) => `<div class="coin-card turnover-card ${t.symbol === state.symbol ? 'selected' : ''}" data-symbol="${t.symbol}" role="button" tabindex="0" aria-label="第 ${index + 1} 名 ${t.symbol}，24 小時成交額 ${fmtCryptoVolume(t.usdtVolume)} USDT，最新價格 ${fmtPrice(t.lastPr)}，漲跌 ${fmtPct(t.change24h)}">
+      <div class="turnover-name"><span class="turnover-rank">#${index + 1}</span><span class="turnover-symbol" title="${t.symbol}">${t.symbol.replace(/USDT$/, '')}</span></div>
+      <div class="turnover-volume">24H ${fmtCryptoVolume(t.usdtVolume)} USDT</div>
+      <div class="turnover-price">${fmtPrice(t.lastPr)}</div>
+      <div class="turnover-change ${num(t.change24h) >= 0 ? 'positive' : 'negative'}">${fmtPct(t.change24h)}</div>
+    </div>`).join('');
+    return;
+  }
+
   if (tab === "watch") {
     const savedAll = getWatchlistRecords().filter(rec => state.activeMarket !== "crypto" || isCryptoSymbolAllowed(rec.symbol));
     const saved = savedAll.filter(rec => {

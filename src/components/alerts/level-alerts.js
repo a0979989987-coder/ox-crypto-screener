@@ -194,8 +194,8 @@ function updateAlertButtons() {
   lowBtn.disabled = !state.currentLevels.low;
   highBtn.className = "alert-btn" + (high?.triggered ? " triggered" : high?.enabled ? " enabled-high" : "");
   lowBtn.className = "alert-btn" + (low?.triggered ? " triggered" : low?.enabled ? " enabled-low" : "");
-  highBtn.textContent = high?.triggered ? `✓ 前高` : `前高`;
-  lowBtn.textContent = low?.triggered ? `✓ 前低` : `前低`;
+  highBtn.textContent = high?.triggered ? `✓ 前高提醒` : `前高提醒`;
+  lowBtn.textContent = low?.triggered ? `✓ 前低提醒` : `前低提醒`;
 
   const highChip = document.getElementById("detail-high-alert");
   const lowChip = document.getElementById("detail-low-alert");
@@ -256,6 +256,5 @@ function checkLevelAlerts() {
     if (symbol === state.symbol && getKeyLevelPeriods().includes(period)) updateAlertButtons();
   }
 }
-
 
 

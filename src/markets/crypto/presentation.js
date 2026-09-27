@@ -1,4 +1,5 @@
 function renderBenchmarkBar() {
+  if (!document.getElementById("bench-btc-price")) return;
   const btc = state.btcTicker;
   const eth = state.ethTicker;
   if (btc) {

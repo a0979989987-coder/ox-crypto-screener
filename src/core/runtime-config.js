@@ -83,8 +83,8 @@ try {
 
 function syncDirectionalBadges() {
   const sideMap = state.tierMapBySide?.[state.directionFilter] || { t1:[], t2:[], t3:[] };
-  const surge = (state.tierMap.surge || []).filter(c => String(c.side || "").toLowerCase() === state.directionFilter);
-  const values = { t1:sideMap.t1?.length || 0, t2:sideMap.t2?.length || 0, t3:sideMap.t3?.length || 0, surge:surge.length };
+  const turnoverCount = Math.min(15, state.tickers.filter(t => Number.isFinite(num(t.usdtVolume)) && num(t.usdtVolume) > 0).length);
+  const values = { t1:sideMap.t1?.length || 0, t2:sideMap.t2?.length || 0, t3:sideMap.t3?.length || 0, surge:turnoverCount };
   Object.entries(values).forEach(([k,v]) => { const el=document.getElementById(`badge-${k}`); if(el) el.textContent=v; });
 }
 
