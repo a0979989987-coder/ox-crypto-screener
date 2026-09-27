@@ -72,6 +72,13 @@ body.ox-terminal #view-radar #radar-scanner-panel .scanner-tabs > button {
   -webkit-backdrop-filter:none!important;
   -webkit-tap-highlight-color:transparent;
 }
+/* iOS must treat the entire control row as buttons, not selectable text. */
+body.ox-terminal #view-radar #radar-scanner-panel .scanner-tabs,
+body.ox-terminal #view-radar #radar-scanner-panel .scanner-tabs * {
+  user-select:none!important;
+  -webkit-user-select:none!important;
+  -webkit-touch-callout:none!important;
+}
 @media(max-width:720px) {
   /* The full first cell is the Radar hit target, including its upper half. */
   body.ox-terminal #view-radar #radar-scanner-panel .scanner-tabs {
@@ -117,9 +124,11 @@ body.ox-terminal #view-radar .radar-combined-chevron {
 body.ox-terminal #view-radar .radar-combined-chevron::before {
   content:"";
   position:absolute;
-  width:14px;
-  height:34px;
-  bottom:-4px;
+  /* Keep the chevron target below the radar glyph, so icon presses open
+     the menu instead of accidentally cycling the tier. */
+  width:12px;
+  height:12px;
+  bottom:-3px;
   right:-3px;
 }
 body.ox-terminal #view-radar .radar-tier-current {
