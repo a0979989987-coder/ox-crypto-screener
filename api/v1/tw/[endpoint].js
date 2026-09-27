@@ -1,3 +1,4 @@
+import { getOfficialTWResearch } from './providers/research.js';
 import {
   getOfficialTWMarketPulse
 } from "./providers/official.js";
@@ -1494,6 +1495,12 @@ export default async function handler(
       endpoint
     ) {
 
+
+      case "research": {
+        const data = await getOfficialTWResearch();
+        setShortCache(res, 300);
+        return ok(res, data, { realtime: false, provider: "official-tw" });
+      }
 
       case "health":
 

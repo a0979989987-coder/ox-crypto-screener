@@ -1,3 +1,4 @@
+import { stopResearch } from "./research-page.js";
 import {
   TW_MODULE_CONFIG
 } from "./config.js";
@@ -356,6 +357,7 @@ function render(
   }
 
 
+  if (activeView === "radar") stopResearch();
   prepareSharedHostForView(
     activeView
   );
@@ -618,6 +620,7 @@ export const twModule =
 
       cancelRequest();
       cancelTWLookup();
+      stopResearch();
 
 
       restoreSharedMarketHost();
