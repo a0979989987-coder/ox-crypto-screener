@@ -104,10 +104,20 @@ body.ox-terminal #view-radar:not(.ox-scanner-collapsed) .chart-controls #btn-cha
   display:none!important;
 }
 body.ox-terminal #view-radar.ox-scanner-collapsed .workspace {
-  grid-template-columns:minmax(0,1fr)!important;
+  grid-template-columns:minmax(0,1fr) 0px!important;
   gap:0!important;
 }
-body.ox-terminal #view-radar.ox-scanner-collapsed #radar-scanner-panel {display:none!important}
+/* Keep both grid tracks mounted so width can interpolate and the chart's
+   existing ResizeObserver redraws each frame without stretching its canvas. */
+body.ox-terminal #view-radar .workspace {
+  transition:grid-template-columns 620ms cubic-bezier(.22,.8,.22,1),gap 620ms cubic-bezier(.22,.8,.22,1);
+}
+body.ox-terminal #view-radar #radar-scanner-panel {
+  transition:opacity 400ms ease,visibility 0s;
+}
+body.ox-terminal #view-radar.ox-scanner-collapsed #radar-scanner-panel {
+  transition:opacity 300ms ease,visibility 0s 620ms;
+}
 body.ox-terminal #radar-tier-menu {
   position:fixed;
   z-index:12001;
@@ -144,6 +154,7 @@ body.ox-terminal.theme-light #radar-tier-menu button[aria-checked="true"] {color
 @keyframes radar-tier-menu-in {from {opacity:0;transform:translateY(-6px) scale(.94)} to {opacity:1;transform:translateY(0) scale(1)}}
 @media(prefers-reduced-motion:reduce) {
   body.ox-terminal #radar-tier-menu {animation:none}
+  body.ox-terminal #view-radar #radar-scanner-panel {transition:none!important}
   body.ox-terminal #view-radar #direction-toggle .direction-toggle-icon {transition:none}
 }
 /* Let the existing native fullscreen chart fill its available height too. */

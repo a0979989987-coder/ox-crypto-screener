@@ -37,12 +37,20 @@
       document.querySelector(`#view-radar .tab-btn[data-tab="${tier.dataset.homeTier}"]`)?.click();
     }
   });
+  let radarChartFade = null;
   document.addEventListener('click',event => {
     const toggle = event.target.closest('#radar-scanner-toggle');
     if (!toggle) return;
     const radar = document.getElementById('view-radar');
     const hidden = !radar.classList.contains('ox-scanner-collapsed');
     radar.classList.toggle('ox-scanner-collapsed', hidden);
+    radarChartFade?.cancel();
+    if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      radarChartFade = radar.querySelector('#chart')?.animate(
+        [{ opacity: .72 }, { opacity: 1 }],
+        { duration: 620, easing: 'cubic-bezier(.22,.8,.22,1)' }
+      );
+    }
     const panel = document.getElementById('radar-scanner-panel');
     panel.setAttribute('aria-hidden', String(hidden));
     panel.inert = hidden;
