@@ -126,7 +126,9 @@ const OXControlPanel = (() => {
     });
 
     q("#ox-control-feedback-open")?.addEventListener("click", () => setView("feedback"));
-    q("#ox-control-feedback-back")?.addEventListener("click", () => setView("main"));
+    q("#ox-control-feedback-back")?.addEventListener("click", () => setView("advanced"));
+    q("#ox-control-advanced-open")?.addEventListener("click", () => setView("advanced"));
+    q("#ox-control-advanced-back")?.addEventListener("click", () => setView("main"));
 
     const about = q("#ox-control-about-toggle");
     const changelog = q("#ox-control-changelog");
