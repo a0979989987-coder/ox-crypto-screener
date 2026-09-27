@@ -438,7 +438,7 @@ body.ox-terminal #view-radar .coin-card.ox-coin-new-selection {animation:oxCoinS
  body.ox-terminal #view-radar .coin-mobile-bottom .coin-change.positive {font-size:12px!important}
 }
 @media(max-width:720px){
- body.ox-terminal #view-radar .coin-card {min-height:77px!important;padding-top:5px!important;padding-bottom:4px!important;row-gap:1px!important}
+ body.ox-terminal #view-radar .coin-card:not(.watch-list-card) {min-height:72px!important;padding-top:4px!important;padding-bottom:3px!important;row-gap:1px!important}
  body.ox-terminal #view-radar .coin-mobile-bottom {min-height:25px!important;padding-top:0!important}
  body.ox-terminal #view-radar .watch-star-mobile {height:25px!important;min-height:25px!important;width:25px!important;min-width:25px!important;padding:5px!important}
  body.ox-terminal #view-radar .coin-card.watch-list-card {min-height:77px!important}
