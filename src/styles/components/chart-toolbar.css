@@ -24,7 +24,7 @@ body.ox-terminal.chart-focus #view-radar .chart-controls #btn-chart-fullscreen.o
 body.ox-terminal #view-radar .chart-box:fullscreen #btn-chart-fullscreen.ox-chart-expand-dot,body.ox-terminal #view-radar .chart-box:-webkit-full-screen #btn-chart-fullscreen.ox-chart-expand-dot {display:inline-grid!important;position:absolute!important;top:calc(env(safe-area-inset-top) + 10px)!important;right:calc(env(safe-area-inset-right) + 12px)!important;z-index:60!important;width:28px!important;height:28px!important;min-width:28px!important;min-height:28px!important;border-radius:50%!important;background:#12161cdd!important;border:1px solid #ffffff78!important;box-shadow:inset 0 1px 0 #ffffff54,0 3px 12px #0008!important}
 body.ox-terminal.chart-focus #view-radar .chart-box>#btn-chart-exit-overlay {display:none!important}
 @media(max-width:900px){
-  body.ox-terminal.chart-focus #view-radar .chart-box>#btn-chart-exit-overlay {display:grid!important;place-items:center!important;position:absolute!important;top:calc(env(safe-area-inset-top) + 43px)!important;right:clamp(54px,10%,96px)!important;z-index:80!important;width:26px!important;height:26px!important;min-width:26px!important;min-height:26px!important;padding:5px!important;border:1px solid #ffffff69!important;border-radius:50%!important;background:#161b22c9!important;box-shadow:inset 0 1px 0 #ffffff40,0 0 9px #ffffff20!important;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);opacity:.74;transition:opacity .25s ease,box-shadow .25s ease!important}
+  body.ox-terminal.chart-focus #view-radar .chart-box>#btn-chart-exit-overlay {display:grid!important;place-items:center!important;position:absolute!important;top:calc(env(safe-area-inset-top) + 43px)!important;right:clamp(82px,18%,170px)!important;z-index:80!important;width:26px!important;height:26px!important;min-width:26px!important;min-height:26px!important;padding:5px!important;border:1px solid #ffffff69!important;border-radius:50%!important;background:#161b22c9!important;box-shadow:inset 0 1px 0 #ffffff40,0 0 9px #ffffff20!important;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);opacity:.74;transition:opacity .25s ease,box-shadow .25s ease!important}
   body.ox-terminal.chart-focus #view-radar .chart-box>#btn-chart-exit-overlay:is(:hover,:focus-visible,:active) {opacity:1;box-shadow:inset 0 1px 0 #ffffff85,0 0 12px #ffffff66!important}
   body.ox-terminal.chart-focus #view-radar .chart-box>#btn-chart-exit-overlay svg {width:14px!important;height:14px!important}
 }
@@ -35,10 +35,9 @@ body.ox-terminal .chart-tools-dialog {position:relative;width:min(440px,100%);ma
 body.ox-terminal .chart-tools-overlay.is-open .chart-tools-dialog {transform:translateY(0) scale(1)}
 @keyframes chart-dialog-edge {0%,100%{background:linear-gradient(160deg,#15191ff5,#0d1117f7) padding-box,linear-gradient(125deg,#ffffffa8,#d9e8f366 32%,#ffffff2a 58%,#ffffff8e) border-box}50%{background:linear-gradient(160deg,#15191ff5,#0d1117f7) padding-box,linear-gradient(305deg,#ffffffb8,#d9e8f37a 32%,#ffffff34 58%,#ffffffa3) border-box}}
 body.ox-terminal .chart-tools-head {display:flex;align-items:center;justify-content:space-between;padding-bottom:14px;border-bottom:1px solid #ffffff20}
-body.ox-terminal .chart-tools-overlay[data-active-panel="timeframes"] .chart-tools-dialog {padding-top:44px}
-body.ox-terminal .chart-tools-overlay[data-active-panel="timeframes"] .chart-tools-head {position:absolute;top:11px;right:11px;z-index:1;padding:0;border:0}
-body.ox-terminal .chart-tools-overlay[data-active-panel="timeframes"] .chart-tools-head>div {position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+body.ox-terminal .chart-tools-overlay[data-active-panel="timeframes"] .chart-tools-head {display:none}
 body.ox-terminal .chart-tools-overlay[data-active-panel="timeframes"] .chart-tools-panel {padding-top:0}
+body.ox-terminal .chart-tools-overlay[data-active-panel="timeframes"] .chart-timeframe-preferences {margin-top:0}
 body.ox-terminal .chart-tools-panel[data-chart-tools-panel="timeframes"]>h3,body.ox-terminal .chart-tools-panel[data-chart-tools-panel="timeframes"]>p {display:none}
 body.ox-terminal .chart-tools-head small {font-size:9px;letter-spacing:.12em;color:var(--muted)}
 body.ox-terminal .chart-tools-head h2 {margin:3px 0 0;font-size:19px;font-weight:600}
