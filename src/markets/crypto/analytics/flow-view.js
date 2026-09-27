@@ -16,9 +16,9 @@ const pp=v=>Number.isFinite(v)?signed(v,2)+'pp':'—';
 const color=v=>v>=0?'positive':'negative';
 const time=t=>new Date(t).toLocaleTimeString('zh-TW',{timeZone:'Asia/Taipei',hour:'2-digit',minute:'2-digit',hour12:false});
 const TABS=[['overview','總覽'],['heatmap','熱力圖'],['rotation','板塊輪動'],['flow','主動買賣'],['derivatives','合約'],['liquidations','爆倉'],['zones','清算'],['order','訂單流']];
-export function mountCryptoFlow(host,{onExit=()=>{},snapshot=null,marketSnapshot=null,liquidationSnapshot=null}={}) {
+export function mountCryptoFlow(host,{onExit=()=>{},snapshot=null,marketSnapshot=null,liquidationSnapshot=null,initialTab='rotation'}={}) {
  const shadow=host.shadowRoot||host.attachShadow({mode:'open'}),life=new AbortController();
- const state={tab:'rotation',period:'1h',heatPeriod:'24h',selected:'',filter:'',sector:'',search:'',frame:7,equal:true,trails:false,table:false,weight:'volume',grouped:false,focus:false,orderMode:'footprint',symbol:'BTCUSDT',step:10,count:3,liqPeriod:24,liqSymbol:'all',sort:'relative',watch:false};
+ const state={tab:TABS.some(([id])=>id===initialTab)?initialTab:'rotation',period:'1h',heatPeriod:'24h',selected:'',filter:'',sector:'',search:'',frame:7,equal:true,trails:false,table:false,weight:'volume',grouped:false,focus:false,orderMode:'footprint',symbol:'BTCUSDT',step:10,count:3,liqPeriod:24,liqSymbol:'all',sort:'relative',watch:false};
  let market=marketSnapshot,flowSnapshot=snapshot,liq=liquidationSnapshot,rotation=null,plot=null,otherPlot=null,replay=null,request=null,ws=null,ping=null;
  const pressureSnapshots=new Map();
  const pressureSnapshot=()=>pressureSnapshots.get(state.period)||flowSnapshot;
