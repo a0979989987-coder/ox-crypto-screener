@@ -37,6 +37,17 @@
 .ox-provider-unavailable{color:var(--red)!important}
 .ox-provider-loading{padding:17px;text-align:center;color:var(--muted);font-size:9px}
 
+/* Exchange selector anchored beneath the radar price card. */
+.ox-provider-backdrop.show{background:transparent;opacity:1}
+.ox-provider-picker{width:min(232px,calc(100vw - 24px));border:1px solid #ffffffaf;border-radius:12px;background:linear-gradient(145deg,#20252deb,#10151deb) padding-box,linear-gradient(125deg,#fff,#ffffff75 45%,#ffffffc4) border-box;box-shadow:0 12px 30px #0009,inset 0 1px 0 #ffffff70,0 0 10px #ffffff83,0 0 23px #ffffff3b;transform:translateY(-5px) scale(.98);transform-origin:top left;transition:opacity .25s ease,transform .32s cubic-bezier(.2,.8,.2,1),box-shadow .3s ease}
+.ox-provider-picker.show{transform:translateY(0) scale(1)}
+.ox-provider-list{padding:5px}
+.ox-provider-option{display:flex;align-items:center;min-height:38px;padding:6px 11px;border:1px solid transparent;border-radius:8px;transition:background .38s ease,border-color .38s ease,box-shadow .42s ease,color .38s ease,transform .32s ease}
+.ox-provider-name{font-size:12px;font-weight:600}
+.ox-provider-option:hover:not(:disabled),.ox-provider-option:focus-visible{color:#fff;background:linear-gradient(135deg,#ffffff30,#ffffff09);border-color:#ffffff9c;box-shadow:inset 0 1px 0 #ffffff75,0 0 10px #ffffff53}
+.ox-provider-option.active{background:linear-gradient(135deg,#ffffff1e,#ffffff05);border-color:#ffffff75;box-shadow:inset 0 1px 0 #ffffff57,0 0 7px #ffffff35}
+.ox-provider-option.is-selecting{color:#fff!important;background:linear-gradient(125deg,#ffffff44,#ffffff13 55%,#ffffff38)!important;border-color:#ffffffdc!important;box-shadow:inset 0 1px 0 #fff,0 0 10px #ffffffad,0 0 21px #ffffff78!important;transform:scale(.99)}
+
 body.theme-light .ox-feature-search-wrap{background:linear-gradient(180deg,rgba(248,250,252,.98) 76%,rgba(248,250,252,0))}
 body.theme-light .ox-feature-search-box,body.theme-light .ox-feature-results{background:rgba(255,255,255,.94);border-color:rgba(73,103,134,.17);box-shadow:0 12px 30px rgba(49,68,92,.09),inset 0 1px 0 #fff}
 body.theme-light .ox-feature-search-box input{color:#172235!important}
@@ -54,8 +65,8 @@ body.theme-light .ox-provider-option.active{background:#fff6df;border-color:#c89
   .ox-feature-search-wrap{margin:0 0 9px}.ox-feature-search-box{padding:9px 10px}.ox-feature-search-box input{font-size:10px}
   .ox-feature-result{padding:9px;grid-template-columns:29px minmax(0,1fr) auto}.ox-feature-result-icon{width:28px;height:28px}.ox-feature-result-copy b{font-size:9.5px}
   .ox-provider-backdrop.show{display:block}
-  .ox-provider-picker{left:0!important;right:0!important;top:auto!important;bottom:0!important;width:100%;max-width:none;border-radius:20px 20px 0 0;transform:translateY(18px);padding-bottom:env(safe-area-inset-bottom)}
-  .ox-provider-picker.show{transform:none}.ox-provider-head{padding:13px 14px}.ox-provider-list{padding:7px 8px 10px}.ox-provider-option{min-height:62px;padding:10px 11px}
+  .ox-provider-picker{right:auto;bottom:auto;max-width:calc(100vw - 24px);padding-bottom:0}
+  .ox-provider-list{padding:5px}.ox-provider-option{min-height:38px;padding:6px 11px}
 }
 /* STEP 4.5 REGRESSION FIX START */
 #view-radar:has(#direction-toggle.is-long) .market-line-card{border-color:rgba(54,211,153,.46)!important;box-shadow:inset 3px 0 0 rgba(54,211,153,.68),inset 0 0 42px rgba(54,211,153,.065),0 0 22px rgba(54,211,153,.08),0 10px 25px rgba(0,0,0,.16)!important;}
