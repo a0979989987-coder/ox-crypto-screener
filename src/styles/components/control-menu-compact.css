@@ -1,6 +1,21 @@
-/* The control drawer keeps its actions near the top and uses the chart's white selection light. */
-body.ox-terminal .ox-control-panel-head {justify-content:flex-end;padding:8px 12px!important;min-height:48px;background:transparent!important}
-body.ox-terminal .ox-control-panel-head .ox-control-close {flex:none}
+/* A small left-edge grip replaces the drawer header and its close button. */
+body.ox-terminal .ox-control-edge-close {position:absolute;z-index:8;left:0;top:50%;transform:translateY(-50%);width:19px;height:68px;display:grid;place-items:center;padding:0;border:1px solid #ffffff5e;border-left:0;border-radius:0 12px 12px 0;background:linear-gradient(120deg,#ffffff23,#16191eea);color:#eee;font-size:29px;line-height:1;opacity:.66;box-shadow:inset 0 1px 0 #ffffff61,0 0 11px #ffffff26;cursor:pointer;transition:opacity .3s ease,background .3s ease,box-shadow .3s ease!important}
+body.ox-terminal .ox-control-edge-close:is(:hover,:focus-visible,:active) {opacity:1;background:#ffffff29;box-shadow:inset 0 1px 0 #ffffff94,0 0 14px #ffffff57}
+body.ox-terminal .ox-control-scroll {padding-top:10px!important}
+body.ox-terminal .ox-control-section-label {display:none!important}
+body.ox-terminal .ox-control-group {margin-bottom:5px!important}
+body.ox-terminal .ox-control-row {min-height:49px!important;padding:7px 8px!important;grid-template-columns:26px minmax(0,1fr) auto!important;gap:6px!important}
+body.ox-terminal .ox-control-icon {width:26px!important;height:26px!important}
+body.ox-terminal .ox-control-copy b {font-size:12px!important;font-weight:600!important}
+body.ox-terminal .ox-control-copy [hidden] {display:none!important}
+body.ox-terminal .ox-feature-search-wrap {padding:0 0 6px!important;margin-bottom:5px!important}
+body.ox-terminal .ox-feature-search-box {padding:7px 9px!important}
+body.ox-terminal .ox-control-view.active {animation:ox-menu-view-in .28s cubic-bezier(.22,.8,.24,1) both}
+@keyframes ox-menu-view-in {from {opacity:.35;transform:translateX(8px)}to {opacity:1;transform:none}}
+body.ox-terminal .ox-control-advanced-back {display:flex;align-items:center;gap:8px;width:100%;min-height:38px;padding:5px 8px;margin-bottom:5px;border:0;border-bottom:1px solid var(--line);background:transparent;color:var(--ink);font-size:12px;text-align:left}
+body.ox-terminal .ox-theme-segment {width:112px!important}
+body.ox-terminal .ox-market-segment {gap:3px!important;max-width:124px}
+body.ox-terminal .ox-market-chip {padding:4px 5px!important}
 body.ox-terminal .ox-control-toggle span {border-radius:999px!important;transition:background .4s ease,border-color .4s ease,box-shadow .4s ease!important}
 body.ox-terminal .ox-control-toggle span::after {border-radius:50%!important;transition:transform .4s cubic-bezier(.22,.8,.24,1),background .4s ease!important}
 body.ox-terminal .ox-control-toggle input:checked+span {background:linear-gradient(145deg,#ffffff48,#ffffff12)!important;border-color:#ffffffc4!important;box-shadow:inset 0 1px 0 #ffffffb2,0 0 8px #ffffff72,0 0 18px #ffffff29!important}
@@ -10,8 +25,8 @@ body.ox-terminal .ox-theme-segment button.active,body.ox-terminal .ox-market-chi
 body.ox-terminal .ox-control-icon:has(+ .ox-control-copy b) {font-size:10px;font-weight:600}
 body.ox-terminal .ox-mobile-location {color:var(--ink)!important;font-size:13px!important;font-weight:600!important;letter-spacing:.02em!important}
 @media(max-width:720px){
-  body.ox-terminal .ox-control-panel {width:min(82%,340px)!important;max-width:calc(100% - 16px)!important}
-  body.ox-terminal .ox-control-scroll {padding-top:3px!important}
+  body.ox-terminal .ox-control-panel {width:clamp(248px,72vw,300px)!important;max-width:calc(100% - 16px)!important}
+  body.ox-terminal .ox-control-scroll {padding-top:8px!important;padding-inline:9px!important}
   body.ox-terminal:not(.chart-focus) #view-radar .chart-container {height:clamp(430px,calc(100dvh - 320px),650px)!important}
 }
-@media(prefers-reduced-motion:reduce){body.ox-terminal .ox-control-toggle span,body.ox-terminal .ox-control-toggle span::after,body.ox-terminal .ox-theme-segment button,body.ox-terminal .ox-market-chip {transition:none!important}}
+@media(prefers-reduced-motion:reduce){body.ox-terminal .ox-control-edge-close,body.ox-terminal .ox-control-toggle span,body.ox-terminal .ox-control-toggle span::after,body.ox-terminal .ox-theme-segment button,body.ox-terminal .ox-market-chip {transition:none!important}body.ox-terminal .ox-control-view.active {animation:none!important}}
