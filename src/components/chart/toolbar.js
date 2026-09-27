@@ -36,7 +36,7 @@
     const current = activeTf();
     const visible = selectedIntervals.includes(current) ? selectedIntervals : [...selectedIntervals, current];
     const last = visible.at(-1);
-    strip.innerHTML = `${visible.map(id => `<button class="btn-tf${id === current ? ' active' : ''}" type="button" data-tf="${id}" aria-pressed="${id === current}"${id === last ? ' title="再次點擊設定時間級別" aria-description="切換後再次點擊可設定時間級別"' : ''}>${id}</button>`).join('')}<span class="tf-glass-indicator" aria-hidden="true"></span>`;
+    strip.innerHTML = `${visible.map(id => `<button class="btn-tf${id === current ? ' active' : ''}" type="button" data-tf="${id}" aria-pressed="${id === current}"${id === last ? ' title="再次點擊設定時間級別" aria-description="切換後再次點擊可設定時間級別"' : ''}>${id}${id === last ? '<span class="tf-hint" aria-hidden="true">▾</span>' : ''}</button>`).join('')}<span class="tf-glass-indicator" aria-hidden="true"></span>`;
     requestAnimationFrame(addGlassMarker);
   }
   function renderPreferences() {
