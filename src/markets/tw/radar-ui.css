@@ -3,6 +3,12 @@
 #market-unavailable-card.tw-radar-root { --twr-up:#f16a70; --twr-down:#48b78e; }
 body.ox-terminal #market-unavailable-card.tw-radar-root { margin-top: 16px !important; }
 .tw-radar-root .twr-results-panel[hidden] { display: none !important; }
+.tw-radar-root .twr-results-panel { padding: 0 3px; background: none; border: 0; box-shadow: none; }
+.tw-radar-root .twr-results-head { margin-bottom: 8px; font-size: 10px; color: #ece9e087; }
+.tw-radar-root .twr-source-notice { margin: 0 0 10px; font-size: 11px; color: #e7c883; }
+.tw-stock-announcement { font-size: 12px; line-height: 1.7; }
+.tw-stock-announcement a { color: #ede9df; }
+.tw-stock-announcement details p { white-space: pre-line; }
 .tw-radar-root .twr-shell { max-width: 1440px; margin-inline: auto; gap: 12px; }
 .tw-radar-root .twr-header { padding: 0 3px; }
 .tw-radar-root .twr-header p { max-width: 52ch; }

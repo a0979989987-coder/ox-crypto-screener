@@ -2431,7 +2431,7 @@ function ensureStyles() {
   );
   const ui = document.createElement("link");
   ui.rel = "stylesheet";
-  ui.href = "src/markets/tw/radar-ui.css?v=20260927e";
+  ui.href = "src/markets/tw/radar-ui.css?v=20260927f";
   document.head.appendChild(ui);
 }
 
@@ -3047,7 +3047,13 @@ function refreshRadarDataUI(
 
   if (marketScan) marketScan.hidden = true;
   if (marketScanList) marketScanList.innerHTML = "";
-  if (resultsPanel) resultsPanel.hidden = activeMode !== "classic" && filtered.length === 0;
+  if (resultsPanel) resultsPanel.hidden = false;
+  const sourceNotice = root.querySelector("#twr-source-notice");
+  const modeMeta = state?.data?.radarModesMeta?.[activeMode];
+  if (sourceNotice) {
+    sourceNotice.hidden = modeMeta?.status !== "partial";
+    sourceNotice.textContent = modeMeta?.status === "partial" ? "部分官方名單更新中，目前顯示已確認資料。" : "";
+  }
 
 
   /*
@@ -3076,22 +3082,19 @@ function refreshRadarDataUI(
 
     list.innerHTML = activeMode === "classic" ? '<div class="twr-empty"><b>沒有符合目前條件的股票</b>請調整篩選條件。</div>' : "";
 
-    // Keep the mode result honest, but show a separate, clearly labeled
-    // official daily-market browse list so a missing disposition feed does
-    // not leave the whole mobile Radar empty.
-    if (activeMode !== "classic" && rows.length && marketScan && marketScanList) {
-      const browseRows = [...rows]
-        .filter(row => row.price !== null && row.symbol)
-        .sort((a, b) => (b.turnoverTwd ?? -1) - (a.turnoverTwd ?? -1))
-        .slice(0, 24);
-      if (browseRows.length) {
-        marketScanList.innerHTML = browseRows.map(row => renderTWStockCard(row, watchlist)).join("");
-        marketScan.hidden = false;
-        observeTWMiniCandles(marketScanList);
+    if (activeMode !== "classic") {
+      const meta = state?.data?.radarModesMeta?.[activeMode];
+      const loading = state?.status === "loading" && !meta;
+      if (loading) {
+        list.innerHTML = Array.from({ length: 4 }, () => '<div class="twr-loading-card" aria-label="官方名單載入中"><i></i><i></i><i></i></div>').join("");
+      } else {
+        const message = meta?.status === "error" || !meta ? "官方資料暫時無法載入，請稍後再試。"
+          : meta?.status === "partial" ? "目前尚無可確認的股票，部分官方名單仍在更新。"
+          : activeMode === "risk" ? "目前官方名單沒有接近處置門檻的股票。"
+          : activeMode === "release" ? "目前沒有 3 個交易日內處置結束的股票。"
+          : "目前官方名單沒有處置中的股票。";
+        list.innerHTML = `<div class="twr-empty" role="status">${message}</div>`;
       }
-    } else if (activeMode !== "classic" && state?.status === "loading" && marketScan && marketScanList) {
-      marketScanList.innerHTML = Array.from({ length: 4 }, () => '<div class="twr-loading-card" aria-label="台股行情載入中"><i></i><i></i><i></i></div>').join("");
-      marketScan.hidden = false;
     }
 
     return;
@@ -3855,15 +3858,11 @@ export function renderTWRadar(
           </span>
 
 
-          <span>
-            Provider ·
-            ${escapeHTML(
-              state?.provider ||
-              "DATA SOURCE PENDING"
-            )}
-          </span>
+          <span>${escapeHTML(state?.data?.radarModesMeta?.asOf ? `日行情 ${state.data.radarModesMeta.asOf.slice(5).replace("-", "/")}` : "")}</span>
 
         </div>
+
+        <p id="twr-source-notice" class="twr-source-notice" role="status" hidden></p>
 
 
         <div

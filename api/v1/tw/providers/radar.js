@@ -1,3 +1,5 @@
+import { loadTWSurveillance, buildTWSurveillance } from './surveillance.js';
+
 /*
  * OX v4.0 Modular
  * Taiwan Stock Radar Provider
@@ -1582,6 +1584,12 @@ function normalizeTWSEDailyRows(
             company.industry,
 
           price,
+          currentCandle: {
+            open: numberValue(row[fieldIndex(fields, ["開盤價", "開盤"])]),
+            high: numberValue(row[fieldIndex(fields, ["最高價", "最高"])]),
+            low: numberValue(row[fieldIndex(fields, ["最低價", "最低"])]),
+            close: price
+          },
 
           change,
 
@@ -1943,6 +1951,12 @@ function normalizeTPEXTableRows(
             company.industry,
 
           price,
+          currentCandle: {
+            open: numberValue(row[fieldIndex(fields, ["開盤價", "開盤"])]),
+            high: numberValue(row[fieldIndex(fields, ["最高價", "最高"])]),
+            low: numberValue(row[fieldIndex(fields, ["最低價", "最低"])]),
+            close: price
+          },
 
           change,
 
@@ -2390,11 +2404,10 @@ function normalizeTwseSnapshotStock(
     );
 
 
-  const company =
-    industryMap
-      ?.get(
-        symbol
-      );
+  const company = industryMap?.get(symbol) ||
+    ((!industryMap?.size && /^[1-9]\d{3}$/.test(symbol))
+      ? { name: textValue(row.Name || row.CompanyName || row['證券名稱']), industry: '' }
+      : null);
 
 
   if (
@@ -2466,6 +2479,12 @@ function normalizeTwseSnapshotStock(
       company.industry,
 
     price,
+    currentCandle: {
+      open: numberValue(row.OpeningPrice ?? row.Open ?? row['開盤價']),
+      high: numberValue(row.HighestPrice ?? row.High ?? row['最高價']),
+      low: numberValue(row.LowestPrice ?? row.Low ?? row['最低價']),
+      close: price
+    },
 
     change,
 
@@ -2530,11 +2549,10 @@ function normalizeTpexSnapshotStock(
     );
 
 
-  const company =
-    industryMap
-      ?.get(
-        symbol
-      );
+  const company = industryMap?.get(symbol) ||
+    ((!industryMap?.size && /^[1-9]\d{3}$/.test(symbol))
+      ? { name: textValue(row.Name || row.CompanyName || row['證券名稱']), industry: '' }
+      : null);
 
 
   if (
@@ -2607,6 +2625,12 @@ function normalizeTpexSnapshotStock(
       company.industry,
 
     price,
+    currentCandle: {
+      open: numberValue(row.OpeningPrice ?? row.Open ?? row['開盤價']),
+      high: numberValue(row.HighestPrice ?? row.High ?? row['最高價']),
+      low: numberValue(row.LowestPrice ?? row.Low ?? row['最低價']),
+      close: price
+    },
 
     change,
 
@@ -2731,11 +2755,14 @@ function keepLatestDate(
 
 
 async function loadTWSESnapshot(
-  industryMap
+  industryMap,
+  prefetched
 ) {
 
+  if (prefetched?.error) throw prefetched.error;
+
   const payload =
-    await requestJSON(
+    prefetched?.payload ?? await requestJSON(
       TWSE_QUOTES_FALLBACK_URL,
       {
         source:
@@ -2816,11 +2843,14 @@ async function loadTWSESnapshot(
 
 
 async function loadTPEXSnapshot(
-  industryMap
+  industryMap,
+  prefetched
 ) {
 
+  if (prefetched?.error) throw prefetched.error;
+
   const payload =
-    await requestJSON(
+    prefetched?.payload ?? await requestJSON(
       TPEX_QUOTES_FALLBACK_URL,
       {
         source:
@@ -2900,52 +2930,11 @@ async function loadTPEXSnapshot(
 }
 
 
-async function loadFallbackMarket(
-  industryMaps
-) {
-
-  const [
-    twseResult,
-    tpexResult
-  ] =
-    await Promise.allSettled([
-
-      industryMaps.twse
-        ? loadTWSESnapshot(
-            industryMaps.twse
-          )
-        : Promise.reject(
-            new TWRadarProviderError(
-              "TWSE industry map unavailable.",
-              {
-                code:
-                  "TWSE_INDUSTRY_UNAVAILABLE",
-
-                source:
-                  "TWSE"
-              }
-            )
-          ),
-
-      industryMaps.tpex
-        ? loadTPEXSnapshot(
-            industryMaps.tpex
-          )
-        : Promise.reject(
-            new TWRadarProviderError(
-              "TPEx industry map unavailable.",
-              {
-                code:
-                  "TPEX_INDUSTRY_UNAVAILABLE",
-
-                source:
-                  "TPEX"
-              }
-            )
-          )
-
-    ]);
-
+async function loadFallbackMarket(industryMaps, snapshots = {}) {
+  const [twseResult, tpexResult] = await Promise.allSettled([
+    loadTWSESnapshot(industryMaps.twse, snapshots.twse),
+    loadTPEXSnapshot(industryMaps.tpex, snapshots.tpex)
+  ]);
 
   const twse =
     twseResult.status ===
@@ -3355,6 +3344,9 @@ function applyOXScore(
 
         price:
           row.price,
+        change: row.change,
+        dataDate: row.dataDate,
+        currentCandle: row.currentCandle,
 
         changePct:
           row.changePct,
@@ -3458,7 +3450,13 @@ function errorSummary(
 /* Universe                                                                   */
 /* ========================================================================== */
 
+let universeRequest = null;
 async function buildUniverse() {
+  if (universeRequest) return universeRequest;
+  universeRequest = buildUniverseSnapshot().finally(() => { universeRequest = null; });
+  return universeRequest;
+}
+async function buildUniverseSnapshot() {
 
   const now =
     Date.now();
@@ -3475,8 +3473,14 @@ async function buildUniverse() {
   }
 
 
-  const industryMaps =
-    await loadIndustryMaps();
+  // Fetch the large quote payloads while the company dictionaries load.
+  // Keep errors as values so a failed exchange cannot reject the other feed.
+  const settled = promise => promise.then(payload => ({ payload }), error => ({ error }));
+  const [industryMaps, twseSnapshot, tpexSnapshot] = await Promise.all([
+    loadIndustryMaps(),
+    settled(requestJSON(TWSE_QUOTES_FALLBACK_URL, { source: 'TWSE-STOCK-DAY-ALL' })),
+    settled(requestJSON(TPEX_QUOTES_FALLBACK_URL, { source: 'TPEX-OPENAPI-DAILY', timeoutMs: 20000 }))
+  ]);
 
 
   let marketData =
@@ -3487,40 +3491,13 @@ async function buildUniverse() {
     null;
 
 
-  /*
-   * Primary:
-   * latest common completed
-   * after-trading date.
-   */
+  // The daily snapshots already carry the latest completed trading date.
+  // Use them first; avoid serial holiday lookbacks before showing the Radar.
   try {
-
-    marketData =
-      await loadLatestCommonDailyMarket(
-        industryMaps.twse,
-        industryMaps.tpex
-      );
-
-  } catch (
-    error
-  ) {
-
-    primaryError =
-      error;
-  }
-
-
-  /*
-   * Fallback:
-   * original OpenAPI snapshots.
-   */
-  if (
-    !marketData
-  ) {
-
-    marketData =
-      await loadFallbackMarket(
-        industryMaps
-      );
+    marketData = await loadFallbackMarket(industryMaps, { twse: twseSnapshot, tpex: tpexSnapshot });
+  } catch (error) {
+    primaryError = error;
+    marketData = await loadLatestCommonDailyMarket(industryMaps.twse, industryMaps.tpex);
   }
 
 
@@ -3869,6 +3846,7 @@ function sortRadar(
 
 export async function getOfficialTWRadar(
   {
+    includeSurveillance = false,
     market =
       "ALL",
 
@@ -3902,6 +3880,7 @@ export async function getOfficialTWRadar(
     );
 
 
+  const surveillanceRequest = includeSurveillance ? loadTWSurveillance() : null;
   const source =
     await buildUniverse();
 
@@ -3952,6 +3931,8 @@ export async function getOfficialTWRadar(
 
 
   return Object.freeze({
+
+    ...(surveillanceRequest ? buildTWSurveillance(await surveillanceRequest, source.radar, { dataDate: source.dataDate }) : {}),
 
     radar:
       Object.freeze(

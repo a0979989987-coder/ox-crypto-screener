@@ -81,7 +81,7 @@ let isActive =
 let requestController =
   null;
 
-const TW_RADAR_CACHE_KEY = "ox-tw-official-radar-session-v1";
+const TW_RADAR_CACHE_KEY = "ox-tw-official-radar-session-v2";
 const TW_RADAR_CACHE_MS = 15 * 60 * 1000;
 
 function readRadarCache() {
@@ -89,7 +89,7 @@ function readRadarCache() {
   try {
     const saved = JSON.parse(sessionStorage.getItem(TW_RADAR_CACHE_KEY) || "null");
     return saved && Date.now() - saved.savedAt < TW_RADAR_CACHE_MS && Array.isArray(saved.rows)
-      ? saved.rows : null;
+      ? saved : null;
   } catch { return null; }
 }
 
@@ -97,7 +97,8 @@ function cacheRadarState(state) {
   if (typeof sessionStorage === "undefined" || !state?.data?.radar?.length) return;
   try {
     sessionStorage.setItem(TW_RADAR_CACHE_KEY, JSON.stringify({
-      savedAt: Date.now(), rows: state.data.radar
+      savedAt: Date.now(), rows: state.data.radar,
+      radarModes: state.data.radarModes, radarModesMeta: state.data.radarModesMeta
     }));
   } catch { /* Storage limits never block market rendering. */ }
 }
@@ -365,7 +366,8 @@ function render(
 
   return renderer(previousRows ? {
     ...state,
-    data: { ...(state.data || {}), radar: previousRows, usingCachedRadar: true }
+    data: { ...(state.data || {}), radar: previousRows.rows, radarModes: previousRows.radarModes,
+      radarModesMeta: previousRows.radarModesMeta, usingCachedRadar: true }
   } : state);
 }
 

@@ -39,6 +39,14 @@ export function normalizeTWStockCard(source) {
     turnoverRate: numeric(source.turnoverRate),
     disposition: {
       status: ["risk", "active", "release", "earnings"].includes(disposition.status) ? disposition.status : "",
+      scheduled: disposition.scheduled === true,
+      riskLabel: text(disposition.riskLabel),
+      riskBasis: text(disposition.riskBasis),
+      noticeDate: safeDate(disposition.noticeDate),
+      announcementDate: safeDate(disposition.announcementDate),
+      detail: text(disposition.detail),
+      sourceUrl: text(disposition.sourceUrl),
+      riskSourceUrl: text(disposition.riskSourceUrl),
       riskLevel: text(disposition.riskLevel),
       riskProgress: numeric(disposition.riskProgress) !== null && Number(disposition.riskProgress) >= 0 && Number(disposition.riskProgress) <= 100 ? Number(disposition.riskProgress) : null,
       noRepeatRisk: knownBoolean(disposition.noRepeatRisk),
@@ -49,7 +57,7 @@ export function normalizeTWStockCard(source) {
       repeatRiskDays: positiveInt(disposition.repeatRiskDays),
       startDate: safeDate(disposition.startDate),
       endDate: safeDate(disposition.endDate),
-      batchMinutes: [2, 5, 20].includes(Number(disposition.batchMinutes)) ? Number(disposition.batchMinutes) : null,
+      batchMinutes: [2, 5, 10, 20, 30, 45, 60].includes(Number(disposition.batchMinutes)) ? Number(disposition.batchMinutes) : null,
       condition: text(disposition.condition),
       margin: knownBoolean(disposition.margin),
       short: knownBoolean(disposition.short),
@@ -75,17 +83,20 @@ function fmt(value, max = 2) {
 
 function riskLabel(row) {
   const d = row.disposition;
+  if (d.scheduled && d.startDate) return `${d.startDate.slice(5).replace('-', '/')} 起處置`;
+  if (d.riskLabel) return d.riskLabel;
   if (d.repeatRiskDays !== null) return `最快 ${d.repeatRiskDays} 日後再次處置`;
   if (d.noRepeatRisk === true) return "近期無再次處置風險";
   if (d.riskDays !== null) return `最快 ${d.riskDays} 日後進入處置`;
+  if (d.status === 'active' || d.status === 'release') return "目前處置中";
   if (d.status) return "風險資料待更新";
   return row.setup || row.breakoutState || "風險資料待更新";
 }
 
 function bottomLabel(row) {
   const d = row.disposition;
-  if (d.status === "release") return d.releaseDays === null ? "出關時間待更新" : d.releaseDays === 0 ? "今日出關" : `${d.releaseDays} 日後出關`;
-  if (d.status === "active") return d.startDate && d.endDate
+  if (d.status === "release") return d.releaseDays === null ? "出關時間待更新" : d.releaseDays === 0 ? "今日處置結束" : `${d.releaseDays} 交易日後出關`;
+  if (d.status === "active" || d.scheduled) return d.startDate && d.endDate
     ? `處置期間 ${d.startDate.slice(5).replace("-", "/")} - ${d.endDate.slice(5).replace("-", "/")}` : "處置期間待更新";
   if (d.exemption === true) return "豁免條件存在";
   if (d.condition) return d.condition;
@@ -106,6 +117,7 @@ export function renderTWStockCard(source, watchlist) {
   const tags = [["資", d.margin], ["券", d.short], ["沖", d.dayTrade], ["期", d.futures]];
   const change = `${row.changePct > 0 ? "▲" : row.changePct < 0 ? "▼" : ""}${row.change === null ? "—" : fmt(Math.abs(row.change))}`;
   const pct = row.changePct === null ? "—" : `${fmt(Math.abs(row.changePct))}%`;
+  const candle = renderTWCurrentCandle(row.currentCandle ? [row.currentCandle] : []);
   return `<article class="tw-stock-card" role="button" tabindex="0" aria-label="查看 ${escapeTW(row.name || row.symbol)} K 線" data-twr-symbol="${escapeTW(row.symbol)}">
     <div class="tw-stock-top">
       <div class="tw-stock-identity"><strong title="${escapeTW(row.name)}">${escapeTW(row.name || "名稱待更新")}</strong><span>${escapeTW(row.symbol)}</span></div>
@@ -113,7 +125,7 @@ export function renderTWStockCard(source, watchlist) {
       <button class="tw-stock-watch ${watched ? "active" : ""}" type="button" data-twr-watch="${escapeTW(row.symbol)}" aria-label="${watched ? "取消收藏" : "收藏"} ${escapeTW(row.name || row.symbol)}" aria-pressed="${watched}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2.8 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-2.9-5.6 2.9 1.1-6.2L3 9.4l6.2-.9z"/></svg></button>
     </div>
     <div class="tw-stock-quote ${direction}">
-      <div class="tw-stock-price"><span class="tw-stock-single-k" data-twr-mini="${escapeTW(row.symbol)}" aria-label="最近交易日日 K 載入中">—</span><strong>${fmt(row.price)}</strong></div>
+      <div class="tw-stock-price"><span class="tw-stock-single-k" ${candle ? '' : `data-twr-mini="${escapeTW(row.symbol)}"`} aria-label="官方最近交易日日 K · 非即時" title="官方最近交易日日 K · 非即時">${candle || '—'}</span><strong>${fmt(row.price)}</strong></div>
       <span class="tw-stock-change">${change} <small>(${pct})</small></span>
     </div>
     <div class="tw-stock-risk-area ${!hasRiskProgress ? 'no-progress' : ''}">
@@ -129,7 +141,7 @@ export function renderTWStockCard(source, watchlist) {
     <div class="tw-stock-stats">
       <div class="tw-stock-flags">${tags.map(([label, active]) => `<i class="${active === null ? "unknown" : active ? "on" : "off"}" title="${label}：${active === null ? "資料待更新" : active ? "是" : "否"}">${label}</i>`).join("")}</div>
       <div class="tw-stock-metric"><span>成交值</span><b>${row.turnoverTwd === null ? "—" : `${fmt(row.turnoverTwd / 1e8, 2)}億`}</b></div>
-      <div class="tw-stock-metric"><span>週轉率</span><b>${row.turnoverRate === null ? "—" : `${fmt(row.turnoverRate)}%`}</b></div>
+      <div class="tw-stock-metric" title="${escapeTW(row.turnoverBasis || '官方週轉率')}"><span>週轉率</span><b>${row.turnoverRate === null ? "—" : `${fmt(row.turnoverRate)}%`}</b></div>
     </div>
     ${bottomLabel(row) ? `<div class="tw-stock-bottom">${escapeTW(bottomLabel(row))}</div>` : ""}
   </article>`;

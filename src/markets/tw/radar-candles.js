@@ -78,10 +78,17 @@ export async function openTWStockDetail(root, row) {
   root.querySelector(".tw-stock-detail")?.remove();
   const scrollY = window.scrollY;
   const dialog = document.createElement("div");
+  const disposition = row.disposition || {};
+  const officialLink = url => {
+    try { const value = new URL(url); return value.protocol === 'https:' && ['www.twse.com.tw','www.tpex.org.tw'].includes(value.hostname) ? value.href : ''; }
+    catch { return ''; }
+  };
+  const sourceUrl = officialLink(disposition.sourceUrl || disposition.riskSourceUrl);
+  const announcement = `<div class="tw-stock-announcement">${disposition.riskBasis ? `<p><b>${escapeTW(disposition.riskLevel || '官方注意累計')}</b><br>${escapeTW(disposition.riskBasis)}<br>須後續再達官方注意標準，才可能進入處置。</p>` : ''}${disposition.detail ? `<details><summary>查看處置公告</summary><p>${escapeTW(disposition.detail)}</p></details>` : ''}${sourceUrl ? `<a href="${escapeTW(sourceUrl)}" target="_blank" rel="noopener noreferrer">官方公告 ↗</a>` : ''}</div>`;
   dialog.className = "tw-stock-detail";
-  dialog.innerHTML = `<div class="tw-stock-detail-scrim" data-twr-close></div><section class="tw-stock-detail-panel" role="dialog" aria-modal="true" aria-label="${escapeTW(row.name || row.symbol)} K 線"><header><div><small>OX TW · 官方日 K</small><h3>${escapeTW(row.name || row.symbol)} <span>${escapeTW(row.symbol)}</span></h3></div><button type="button" data-twr-close aria-label="返回雷達">×</button></header><div class="tw-stock-detail-chart">日 K 載入中…</div><p>歷史日 K，非即時行情。</p></section>`;
+  dialog.innerHTML = `<div class="tw-stock-detail-scrim" data-twr-close></div><section class="tw-stock-detail-panel" role="dialog" aria-modal="true" aria-label="${escapeTW(row.name || row.symbol)} K 線"><header><div><small>OX TW · 官方日 K</small><h3>${escapeTW(row.name || row.symbol)} <span>${escapeTW(row.symbol)}</span></h3></div><button type="button" data-twr-close aria-label="返回雷達">×</button></header><div class="tw-stock-detail-chart">日 K 載入中…</div><p>歷史日 K，非即時行情。出關倒數依公告迄日與官方交易日曆計算。</p>${announcement}</section>`;
   root.append(dialog);
-  dialog.querySelector("[data-twr-close]:last-child")?.focus();
+  dialog.querySelector("[data-twr-close]:last-child")?.focus({ preventScroll: true });
   const close = () => {
     dialog.classList.remove("visible");
     setTimeout(() => dialog.remove(), 190);

@@ -952,6 +952,7 @@ async function handleRadar(
   const data =
     await getOfficialTWRadar(
       {
+        includeSurveillance: true,
         market,
         tier,
         sort,

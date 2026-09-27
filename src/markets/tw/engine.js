@@ -1689,6 +1689,7 @@ export async function refreshTWMarketState(
     market: "ALL",
     limit: 1000,
     sort: "oxScore",
+    timeoutMs: 28000,
     signal
   }).then(payload => {
     if (!signal?.aborted) {
@@ -1698,7 +1699,8 @@ export async function refreshTWMarketState(
         data: {
           ...(currentState.data || {}),
           radar: normalizeTWRadar(payload),
-          radarModes: payload?.modes || {}
+          radarModes: payload?.modes || {},
+          radarModesMeta: payload?.modesMeta || {}
         }
       });
       emitState(partialState);
@@ -1961,6 +1963,7 @@ export async function refreshTWMarketState(
               // disposition status from ordinary price or volume fields.
               radarModes:
                 resultValue(radarResult, {})?.modes || {},
+              radarModesMeta: resultValue(radarResult, {})?.modesMeta || {},
 
               indicators,
 
