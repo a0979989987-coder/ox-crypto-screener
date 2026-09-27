@@ -369,7 +369,12 @@ function initSettings() {
     const key = `ox-setting-${input.dataset.settingKey}`;
     const stored = localStorage.getItem(key);
     if (stored !== null) input.checked = stored === "1";
-    input.addEventListener("change", () => { localStorage.setItem(key, input.checked ? "1" : "0"); flashSettingsSaved(); });
+    if (input.dataset.settingKey === "oxLive") document.documentElement.classList.toggle("ox-live-disabled", !input.checked);
+    input.addEventListener("change", () => {
+      localStorage.setItem(key, input.checked ? "1" : "0");
+      if (input.dataset.settingKey === "oxLive") document.documentElement.classList.toggle("ox-live-disabled", !input.checked);
+      flashSettingsSaved();
+    });
   });
 
   document.querySelectorAll("[data-theme-choice]").forEach(btn => {
