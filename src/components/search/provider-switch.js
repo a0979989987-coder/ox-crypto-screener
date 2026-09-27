@@ -158,7 +158,7 @@
     label(){return this.adapter().name},
     applyLabels(){
       const p=this.adapter(),pair=q("#ticker-pair");
-      if(pair)pair.textContent=state.symbol+" · "+p.name+" USDT 永續";
+      if(pair)pair.textContent=state.symbol+" · "+p.name;
       const trigger=q("#chart-provider-trigger");
       if(trigger)trigger.textContent=state.symbol+" · "+p.name+" 永續合約";
     },
@@ -203,6 +203,14 @@
     },
     ensureTitleTrigger(){
       const head=q("#chart-head-title");if(!head)return;
+      const pair=q("#ticker-pair");
+      if(pair&&!pair.dataset.providerBound){
+        pair.dataset.providerBound="true";
+        pair.setAttribute("role","button");pair.tabIndex=0;
+        pair.setAttribute("aria-label","切換交易所與合約資料源");
+        pair.addEventListener("click",()=>this.openPicker());
+        pair.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();this.openPicker()}});
+      }
       let trigger=q("#chart-provider-trigger");
       if(!trigger){
         const first=head.querySelector("span:first-child");if(!first)return;
@@ -226,7 +234,7 @@
       picker.addEventListener("click",e=>{const b=e.target.closest("[data-provider-id]");if(b&&!b.disabled)this.select(b.dataset.providerId)});
     },
     positionPicker(){
-      const picker=q("#ox-provider-picker"),trigger=q("#chart-provider-trigger");
+      const picker=q("#ox-provider-picker"),trigger=q("#ticker-pair")||q("#chart-provider-trigger");
       if(!picker||!trigger)return;
       if(window.matchMedia("(max-width:720px)").matches){picker.style.left="";picker.style.top="";return}
       const r=trigger.getBoundingClientRect(),width=Math.min(390,window.innerWidth-24);
