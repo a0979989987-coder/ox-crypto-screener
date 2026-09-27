@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { numeric, normalizeInstitutional, joinResearchStocks, aggregateSectors, enrichResearch } from '../server/markets/tw/research.js';
 import { normalizeHistoricalQuotes } from '../server/markets/tw/research-history.js';
 import { quadrant } from '../src/markets/tw/research-data.js';
-import { bubbleChart } from '../src/markets/tw/research-bubbles.js';
+import { bubbleChart, flowScale } from '../src/markets/tw/research-bubbles.js';
 test('missing values are not zero; shares remain shares until joined to same-day close',()=>{
   assert.equal(numeric('--'),null);assert.equal(numeric(null),null);assert.equal(numeric('0'),0);
   const rows=normalizeInstitutional({fields:['證券代號','外陸資買賣超股數(不含外資自營商)','投信買賣超股數','自營商買賣超股數','三大法人買賣超股數'],data:[['2330','1,000','-200','0','800']]},'TWSE','2026-09-24');
@@ -26,6 +26,19 @@ test('all quadrants and chart no-data states are distinct',()=>{
  assert.match(bubbleChart([],'momentum'),/20 個交易日/);
  const chart=bubbleChart([{name:'<script>',flow:1,changePct:2,turnoverTwd:100}]);
  assert.doesNotMatch(chart,/<script>/);assert.match(chart,/&lt;script&gt;/);
+});
+test('a large flow outlier does not compress every other bubble against zero or overlap all labels',()=>{
+ const scale=flowScale([-385e8,-14e8,-4e8,1e8,4e8,15e8]);
+ assert.ok(scale.position(-14e8)<-.3);
+ assert.ok(scale.position(-385e8)<scale.position(-14e8));
+ assert.equal(scale.position(0),0);
+ assert.equal(scale.position(15e8)>0,true);
+ const sectors=Array.from({length:32},(_,i)=>({name:`產業${i}`,flow:(i-16)*1e8,changePct:(i-16)*.05,turnoverTwd:1e9}));
+ sectors.push({name:'半導體',flow:-385e8,changePct:.1,turnoverTwd:1e11});
+ const chart=bubbleChart(sectors);
+ assert.equal((chart.match(/class="twx-bubble /g)||[]).length,33);
+ assert.ok((chart.match(/class="twx-bubble-label"/g)||[]).length<=10);
+ assert.match(chart,/壓縮刻度/);
 });
 test('historical quote signs and identity are joined from official fields',()=>{
  const rows=normalizeHistoricalQuotes({tables:[{fields:['證券代號','收盤價','漲跌(+/-)','漲跌價差','成交金額'],data:[['2330','100','<p>-</p>','2','10,000']]}]},'TWSE','2026-09-24',new Map([['TWSE:2330',{name:'台積電',industry:'半導體'}]]));
