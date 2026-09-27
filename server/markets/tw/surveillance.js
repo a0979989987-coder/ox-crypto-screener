@@ -111,6 +111,27 @@ export async function loadTWSurveillance() {
   return Object.fromEntries(entries);
 }
 
+// The unparameterized TWSE daily report defaults to *today*, which is empty
+// on weekends and holidays. Request the actual quote session explicitly.
+// Unlike a static stock list this remains an official, dated membership feed.
+export async function loadTWSEAttentionForDate(date) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date || '')) return { ok: false, rows: [] };
+  const key = `twseAttention:${date}`;
+  const hit = cache.get(key);
+  if (hit && hit.expires > Date.now()) return { ok: true, rows: hit.rows };
+  try {
+    const day = date.replaceAll('-', '');
+    const url = `https://www.twse.com.tw/announcement/notice?response=json&startDate=${day}&endDate=${day}`;
+    const response = await fetch(url, { signal: AbortSignal.timeout(12000), headers: { Accept: 'application/json', 'User-Agent': 'Mozilla/5.0 OX-Market-Command-Center' } });
+    if (!response.ok) throw new Error(`TWSE attention: HTTP ${response.status}`);
+    const payload = await response.json();
+    if (!Array.isArray(payload?.data) || !Array.isArray(payload?.fields)) throw new Error('TWSE attention: invalid report');
+    const rows = payload.data.map(values => Object.fromEntries(payload.fields.map((field, i) => [clean(field), values[i]])));
+    cache.set(key, { rows, expires: Date.now() + 300000 });
+    return { ok: true, rows };
+  } catch { return { ok: false, rows: [] }; }
+}
+
 export function buildTWSurveillance(feeds, quotes = [], { now = new Date(), dataDate = '' } = {}) {
   const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Taipei', year: 'numeric', month: '2-digit', day: '2-digit' }).format(now);
   const calendar = tradingCalendar(feeds.calendar?.ok ? feeds.calendar.rows : null);
@@ -199,7 +220,7 @@ export function buildTWSurveillance(feeds, quotes = [], { now = new Date(), data
     for (const item of feeds[source]?.rows || []) {
       const symbol = stockCode(item.Code || item.SecuritiesCompanyCode || item.SecuritiesCode || item['證券代號']);
       if (!symbol || riskSymbols.has(symbol) || active.has(symbol)) continue;
-      const noticeDate = officialDate(item.Date || item.AnnouncementDate || item.TradeDate || item['公告日期']);
+      const noticeDate = officialDate(item.Date || item.AnnouncementDate || item.TradeDate || item['公告日期'] || item['日期']);
       // These OpenAPI feeds publish the latest daily list. When their rows omit
       // a date, use only a confirmed quote from the current official session.
       const quote = quoteMap.get(symbol);

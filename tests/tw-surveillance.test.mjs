@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { officialDate, tradingCalendar, tradingDaysBetween, attentionProgress, batchMinutes, buildTWSurveillance } from '../server/markets/tw/surveillance.js';
+import { officialDate, tradingCalendar, tradingDaysBetween, attentionProgress, batchMinutes, buildTWSurveillance, loadTWSEAttentionForDate } from '../server/markets/tw/surveillance.js';
 
 const ok = rows => ({ ok: true, rows });
 const calendar = [
@@ -64,4 +64,20 @@ test('expired warnings and finished dispositions cannot remain current', () => {
   const d=buildTWSurveillance(feeds(),[],{now:new Date('2026-10-06T11:00:00Z'),dataDate:'2026-10-06'});
   assert.equal(d.modes.risk.length,0);
   assert.equal(d.modes.disposal.length,0);
+});
+test('dated TWSE report maps the complete official daily list, not a sample or radar quote limit', async t => {
+  const entries = Array.from({ length: 65 }, (_, i) => [`${8000 + i}`, `測試${i}`, '1', '成交異常', '115/09/24', '50', '10']);
+  let requested = '';
+  t.mock.method(globalThis, 'fetch', async url => {
+    requested = url;
+    return { ok: true, json: async () => ({ fields: ['證券代號','證券名稱','累計次數','注意交易資訊','日期','收盤價','本益比'], data: entries }) };
+  });
+  const daily = await loadTWSEAttentionForDate('2026-09-24');
+  assert.match(requested, /startDate=20260924&endDate=20260924/);
+  assert.equal(daily.rows.length, 65);
+  const f = feeds();
+  f.twseAttention = daily;
+  const result = buildTWSurveillance(f, [], options);
+  assert.equal(result.modes.risk.length, 67);
+  assert.equal(result.modes.risk.find(row => row.symbol === '8064').disposition.riskProgress, null);
 });

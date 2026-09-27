@@ -1,4 +1,4 @@
-import { loadTWSurveillance, buildTWSurveillance } from '../../../../server/markets/tw/surveillance.js';
+import { loadTWSurveillance, loadTWSEAttentionForDate, buildTWSurveillance } from '../../../../server/markets/tw/surveillance.js';
 
 /*
  * OX v4.0 Modular
@@ -3884,6 +3884,15 @@ export async function getOfficialTWRadar(
   const source =
     await buildUniverse();
 
+  let surveillance = null;
+  if (surveillanceRequest) {
+    const [feeds, datedAttention] = await Promise.all([
+      surveillanceRequest,
+      loadTWSEAttentionForDate(source.dataDate)
+    ]);
+    surveillance = datedAttention.ok ? { ...feeds, twseAttention: datedAttention } : feeds;
+  }
+
 
   let rows =
     [
@@ -3932,7 +3941,7 @@ export async function getOfficialTWRadar(
 
   return Object.freeze({
 
-    ...(surveillanceRequest ? buildTWSurveillance(await surveillanceRequest, source.radar, { dataDate: source.dataDate }) : {}),
+    ...(surveillance ? buildTWSurveillance(surveillance, source.radar, { dataDate: source.dataDate }) : {}),
 
     radar:
       Object.freeze(
