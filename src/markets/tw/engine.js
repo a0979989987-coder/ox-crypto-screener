@@ -1589,7 +1589,10 @@ export async function refreshTWMarketState(
       null,
 
     force =
-      false
+      false,
+
+    onRadarReady =
+      null
   } = {}
 ) {
 
@@ -1682,6 +1685,28 @@ export async function refreshTWMarketState(
   );
 
 
+  const radarRequest = twProvider.getRadar({
+    market: "ALL",
+    limit: 1000,
+    sort: "oxScore",
+    signal
+  }).then(payload => {
+    if (!signal?.aborted) {
+      const partialState = setState({
+        ...currentState,
+        status: "loading",
+        data: {
+          ...(currentState.data || {}),
+          radar: normalizeTWRadar(payload),
+          radarModes: payload?.modes || {}
+        }
+      });
+      emitState(partialState);
+      if (typeof onRadarReady === "function") onRadarReady(partialState);
+    }
+    return payload;
+  });
+
   activeRequest =
     Promise
       .allSettled([
@@ -1709,19 +1734,7 @@ export async function refreshTWMarketState(
             signal
           }),
 
-        twProvider
-          .getRadar({
-            market:
-              "ALL",
-
-            limit:
-              1000,
-
-            sort:
-              "oxScore",
-
-            signal
-          }),
+        radarRequest,
 
         twProvider
           .getIndicators({

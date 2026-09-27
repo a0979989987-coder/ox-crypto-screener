@@ -1,6 +1,8 @@
 /* TW Radar UI 2.0. Kept local to the TW market host. */
 #market-unavailable-card.tw-radar-root .twr-classic-only[hidden] { display: none !important; }
 #market-unavailable-card.tw-radar-root { --twr-up:#f16a70; --twr-down:#48b78e; }
+#market-unavailable-card.tw-radar-root { margin-top: 16px !important; }
+.tw-radar-root .twr-results-panel[hidden] { display: none !important; }
 .tw-radar-root .twr-shell { max-width: 1440px; margin-inline: auto; gap: 12px; }
 .tw-radar-root .twr-header { padding: 0 3px; }
 .tw-radar-root .twr-header p { max-width: 52ch; }
@@ -76,6 +78,10 @@
 .tw-radar-root .twr-market-scan { padding: 0 3px; }
 .tw-radar-root .twr-market-scan-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 3px 9px; margin: 0 0 9px; color: #f2eee4d9; font-size: 12px; }
 .tw-radar-root .twr-market-scan-head span { color: #ece9e087; font-size: 10px; }
+.tw-radar-root .twr-loading-card { height: 168px; padding: 16px 12px; border: 1px solid #ffffff18; border-radius: 12px; background: linear-gradient(145deg,#ffffff0e,#17191d); box-sizing: border-box; }
+.tw-radar-root .twr-loading-card i { display: block; height: 10px; width: 75%; margin: 8px 0 18px; border-radius: 5px; background: #ffffff12; }
+.tw-radar-root .twr-loading-card i:nth-child(2) { width: 62%; height: 18px; }
+.tw-radar-root .twr-loading-card i:nth-child(3) { width: 90%; }
 .tw-radar-root .tw-lookup { margin-top: 22px; }
 .tw-stock-detail { position: fixed; z-index: 9999; inset: 0; display: grid; place-items: center; opacity: 0; transition: opacity .19s ease; }
 .tw-stock-detail.visible { opacity: 1; }
@@ -90,5 +96,6 @@
 .tw-stock-detail-chart svg { width: 100%; max-height: 330px; }
 @media (max-width: 1000px) { .tw-radar-root .twr-list { grid-template-columns: repeat(3,minmax(0,1fr)); } }
 @media (max-width: 700px) { .tw-radar-root .twr-list { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 7px; } .tw-radar-root .twr-panel { padding: 9px; } .tw-radar-root .tw-stock-card { min-height: 168px; padding: 8px; border-radius: var(--ox-radius-sm,12px); } .tw-radar-root .twr-mode-rail button { padding: 7px 3px; } }
+@media (max-width: 700px) { #market-unavailable-card.tw-radar-root { margin-top: 15px !important; } }
 @media (max-width: 360px) { .tw-radar-root .twr-list { gap: 5px; } .tw-radar-root .tw-stock-card { padding: 8px; }  }
 @media (prefers-reduced-motion: reduce) { .tw-radar-root .twr-mode-indicator,.tw-radar-root .tw-stock-card,.tw-stock-detail,.tw-stock-detail-panel { transition-duration: .01ms; } }

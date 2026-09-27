@@ -1,4 +1,3 @@
-import { bindTWLookup, renderTWLookup } from "./lookup.js";
 import { TW_RADAR_MODES, normalizeTWStockCard, rowsForTWMode, renderTWStockCard } from "./radar-card.js";
 import { observeTWMiniCandles, resetTWMiniCandles, openTWStockDetail } from "./radar-candles.js";
 
@@ -2905,6 +2904,7 @@ function refreshRadarDataUI(
 
   const marketScan = root.querySelector("#twr-market-scan");
   const marketScanList = root.querySelector("#twr-market-scan-list");
+  const resultsPanel = root.querySelector(".twr-results-panel");
 
 
   if (
@@ -3047,6 +3047,7 @@ function refreshRadarDataUI(
 
   if (marketScan) marketScan.hidden = true;
   if (marketScanList) marketScanList.innerHTML = "";
+  if (resultsPanel) resultsPanel.hidden = activeMode !== "classic" && filtered.length === 0;
 
 
   /*
@@ -3073,7 +3074,7 @@ function refreshRadarDataUI(
     0
   ) {
 
-    list.innerHTML = `<div class="twr-empty"><b>${activeMode === "classic" ? "沒有符合目前條件的股票" : state?.status === "loading" ? "分類資料載入中" : state?.status === "error" ? "分類資料載入失敗" : "分類資料待更新"}</b>${activeMode === "classic" ? "請調整篩選條件。" : "目前尚無經官方分類的股票名單。"}</div>`;
+    list.innerHTML = activeMode === "classic" ? '<div class="twr-empty"><b>沒有符合目前條件的股票</b>請調整篩選條件。</div>' : "";
 
     // Keep the mode result honest, but show a separate, clearly labeled
     // official daily-market browse list so a missing disposition feed does
@@ -3088,6 +3089,9 @@ function refreshRadarDataUI(
         marketScan.hidden = false;
         observeTWMiniCandles(marketScanList);
       }
+    } else if (activeMode !== "classic" && state?.status === "loading" && marketScan && marketScanList) {
+      marketScanList.innerHTML = Array.from({ length: 4 }, () => '<div class="twr-loading-card" aria-label="台股行情載入中"><i></i><i></i><i></i></div>').join("");
+      marketScan.hidden = false;
     }
 
     return;
@@ -3224,11 +3228,6 @@ export function renderTWRadar(
 
   const watchlist =
     loadWatchlist();
-
-
-  const hasData =
-    rows.length >
-    0;
 
 
   const hasError =
@@ -3837,7 +3836,7 @@ export function renderTWRadar(
       <!-- ============================================================ -->
 
       <section
-        class="twr-panel"
+        class="twr-panel twr-results-panel"
       >
 
 
@@ -3954,11 +3953,9 @@ export function renderTWRadar(
       </section>
 
       <section class="twr-market-scan" id="twr-market-scan" hidden aria-label="台股官方日行情">
-        <div class="twr-market-scan-head"><strong>台股行情</strong><span>官方日收盤資料 · 非處置分類名單</span></div>
+        <div class="twr-market-scan-head"><strong>台股行情</strong><span>官方日收盤資料 · 非處置分類名單${state?.data?.usingCachedRadar ? " · 更新中" : ""}</span></div>
         <div class="twr-list" id="twr-market-scan-list"></div>
       </section>
-
-      ${renderTWLookup()}
 
 
     </div>
@@ -4475,7 +4472,6 @@ export function renderTWRadar(
     );
 
 
-  bindTWLookup(root);
   modeResizeObserver?.disconnect();
   modeResizeObserver = new ResizeObserver(() => positionModeIndicator(root));
   modeResizeObserver.observe(root.querySelector('.twr-mode-rail'));

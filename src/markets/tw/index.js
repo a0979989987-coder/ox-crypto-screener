@@ -81,6 +81,27 @@ let isActive =
 let requestController =
   null;
 
+const TW_RADAR_CACHE_KEY = "ox-tw-official-radar-session-v1";
+const TW_RADAR_CACHE_MS = 15 * 60 * 1000;
+
+function readRadarCache() {
+  if (typeof sessionStorage === "undefined") return null;
+  try {
+    const saved = JSON.parse(sessionStorage.getItem(TW_RADAR_CACHE_KEY) || "null");
+    return saved && Date.now() - saved.savedAt < TW_RADAR_CACHE_MS && Array.isArray(saved.rows)
+      ? saved.rows : null;
+  } catch { return null; }
+}
+
+function cacheRadarState(state) {
+  if (typeof sessionStorage === "undefined" || !state?.data?.radar?.length) return;
+  try {
+    sessionStorage.setItem(TW_RADAR_CACHE_KEY, JSON.stringify({
+      savedAt: Date.now(), rows: state.data.radar
+    }));
+  } catch { /* Storage limits never block market rendering. */ }
+}
+
 
 /* ========================================================================== */
 /* Shared market host                                                        */
@@ -339,9 +360,13 @@ function render(
   );
 
 
-  return renderer(
-    state
-  );
+  const previousRows = activeView === "radar" && !state?.data?.radar?.length
+    ? readRadarCache() : null;
+
+  return renderer(previousRows ? {
+    ...state,
+    data: { ...(state.data || {}), radar: previousRows, usingCachedRadar: true }
+  } : state);
 }
 
 
@@ -428,7 +453,13 @@ async function loadMarketData(
       signal:
         controller.signal,
 
-      force
+      force,
+
+      onRadarReady(state) {
+        if (!isActive || requestController !== controller) return;
+        cacheRadarState(state);
+        if (activeView === "radar") render(state);
+      }
 
     });
 
@@ -452,6 +483,8 @@ async function loadMarketData(
 
   const state =
     await pending;
+
+  if (!controller.signal.aborted) cacheRadarState(state);
 
 
   /*
