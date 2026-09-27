@@ -36,6 +36,12 @@ test("TW cards retain all reference information without treating unknown as safe
   const unknown = renderTWStockCard({ symbol: "2330" }, new Set());
   assert.doesNotMatch(unknown, /近期無再次處置風險|aria-valuenow/);
   assert.match(unknown, /券：資料待更新/);
+  assert.doesNotMatch(unknown, /tw-stock-risk-track|分盤 —|OX T1/);
+  const quiet = renderTWStockCard({ symbol: "2330", tier: "T1", disposition: { noRepeatRisk: true, batchMinutes: 2, riskProgress: 80 } }, new Set());
+  assert.match(quiet, /近期無再次處置風險|2分盤/);
+  assert.doesNotMatch(quiet, /tw-stock-risk-track|OX T1/);
+  const watched = renderTWStockCard({ symbol: "2330" }, new Set(["2330"]));
+  assert.match(watched, /tw-stock-watch active/);
 });
 
 test("TW candles render OHLC bodies and wicks only from valid provider points", () => {

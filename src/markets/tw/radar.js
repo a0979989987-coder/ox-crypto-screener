@@ -2431,7 +2431,7 @@ function ensureStyles() {
   );
   const ui = document.createElement("link");
   ui.rel = "stylesheet";
-  ui.href = "src/markets/tw/radar-ui.css?v=20260927d";
+  ui.href = "src/markets/tw/radar-ui.css?v=20260927e";
   document.head.appendChild(ui);
 }
 
@@ -3952,8 +3952,7 @@ export function renderTWRadar(
 
       </section>
 
-      <section class="twr-market-scan" id="twr-market-scan" hidden aria-label="台股官方日行情">
-        <div class="twr-market-scan-head"><strong>台股行情</strong><span>官方日收盤資料 · 非處置分類名單${state?.data?.usingCachedRadar ? " · 更新中" : ""}</span></div>
+      <section class="twr-market-scan" id="twr-market-scan" hidden aria-label="台股行情">
         <div class="twr-list" id="twr-market-scan-list"></div>
       </section>
 
@@ -4370,8 +4369,13 @@ export function renderTWRadar(
             watchlist
           );
 
-
-          refresh();
+          // Updating one icon avoids replacing every card and reloading their
+          // candles, which caused a visible scroll/layout jump on mobile.
+          const selected = watchlist.has(symbol);
+          watchButton.classList.toggle("active", selected);
+          watchButton.setAttribute("aria-pressed", String(selected));
+          watchButton.setAttribute("aria-label", `${selected ? "取消收藏" : "收藏"} ${watchButton.closest(".tw-stock-card")?.querySelector(".tw-stock-identity strong")?.textContent || symbol}`);
+          root.querySelector("#twr-watch-count")?.replaceChildren(document.createTextNode(String(watchlist.size)));
 
           return;
         }

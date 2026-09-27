@@ -90,7 +90,7 @@ function bottomLabel(row) {
   if (d.exemption === true) return "豁免條件存在";
   if (d.condition) return d.condition;
   if (d.status === "earnings") return "自結發布";
-  return row.tier ? `OX ${row.tier}` : "—";
+  return "";
 }
 
 export function renderTWStockCard(source, watchlist) {
@@ -99,6 +99,10 @@ export function renderTWStockCard(source, watchlist) {
   const watched = watchlist.has(row.symbol);
   const direction = row.changePct > 0 ? "up" : row.changePct < 0 ? "down" : "flat";
   const d = row.disposition;
+  // A risk meter is meaningful only when the official provider supplies its
+  // progress. Never render a placeholder meter for ordinary daily quotes.
+  const hasRiskProgress = d.riskProgress !== null && d.noRepeatRisk !== true;
+  const hasBatch = d.batchMinutes !== null;
   const tags = [["資", d.margin], ["券", d.short], ["沖", d.dayTrade], ["期", d.futures]];
   const change = `${row.changePct > 0 ? "▲" : row.changePct < 0 ? "▼" : ""}${row.change === null ? "—" : fmt(Math.abs(row.change))}`;
   const pct = row.changePct === null ? "—" : `${fmt(Math.abs(row.changePct))}%`;
@@ -112,22 +116,22 @@ export function renderTWStockCard(source, watchlist) {
       <div class="tw-stock-price"><span class="tw-stock-single-k" data-twr-mini="${escapeTW(row.symbol)}" aria-label="最近交易日日 K 載入中">—</span><strong>${fmt(row.price)}</strong></div>
       <span class="tw-stock-change">${change} <small>(${pct})</small></span>
     </div>
-    <div class="tw-stock-risk-area ${d.noRepeatRisk === true && d.repeatRiskDays === null ? 'no-repeat' : ''}">
+    <div class="tw-stock-risk-area ${!hasRiskProgress ? 'no-progress' : ''}">
       <div class="tw-stock-status">${escapeTW(riskLabel(row))}</div>
-      <div class="tw-stock-risk-row">
-        <div class="tw-stock-risk" title="${escapeTW(d.riskLevel || "風險程度待更新")}">
-          <span class="tw-stock-risk-icon ${d.riskProgress !== null ? "known" : ""}" aria-hidden="true">${d.riskProgress !== null ? "◇" : "—"}</span>
-          <div class="tw-stock-risk-track ${d.riskProgress === null ? "unknown" : ""}" ${d.riskProgress === null ? 'aria-label="風險程度待更新"' : `role="progressbar" aria-label="${escapeTW(d.riskLevel || "風險程度")}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${d.riskProgress}"`}><i style="width:${d.riskProgress ?? 0}%"></i></div>
-        </div>
-        <span class="tw-stock-batch">${d.batchMinutes ? `${d.batchMinutes}分盤` : "分盤 —"}</span>
-      </div>
+      ${hasRiskProgress || hasBatch ? `<div class="tw-stock-risk-row">
+        ${hasRiskProgress ? `<div class="tw-stock-risk" title="${escapeTW(d.riskLevel || "風險程度")}">
+          <span class="tw-stock-risk-icon known" aria-hidden="true">◇</span>
+          <div class="tw-stock-risk-track" role="progressbar" aria-label="${escapeTW(d.riskLevel || "風險程度")}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${d.riskProgress}"><i style="width:${d.riskProgress}%"></i></div>
+        </div>` : ""}
+        ${hasBatch ? `<span class="tw-stock-batch">${d.batchMinutes}分盤</span>` : ""}
+      </div>` : ""}
     </div>
     <div class="tw-stock-stats">
       <div class="tw-stock-flags">${tags.map(([label, active]) => `<i class="${active === null ? "unknown" : active ? "on" : "off"}" title="${label}：${active === null ? "資料待更新" : active ? "是" : "否"}">${label}</i>`).join("")}</div>
       <div class="tw-stock-metric"><span>成交值</span><b>${row.turnoverTwd === null ? "—" : `${fmt(row.turnoverTwd / 1e8, 2)}億`}</b></div>
       <div class="tw-stock-metric"><span>週轉率</span><b>${row.turnoverRate === null ? "—" : `${fmt(row.turnoverRate)}%`}</b></div>
     </div>
-    <div class="tw-stock-bottom">${escapeTW(bottomLabel(row))}</div>
+    ${bottomLabel(row) ? `<div class="tw-stock-bottom">${escapeTW(bottomLabel(row))}</div>` : ""}
   </article>`;
 }
 
