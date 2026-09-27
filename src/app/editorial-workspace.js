@@ -1,7 +1,7 @@
 /* Shared editorial UI. Market data and radar workspace remain owned by their modules. */
 (() => {
   'use strict';
-  const names = {home:'市場總覽',strength:'市場指標',radar:'雷達工作區',data:'數據與事件',media:'OX Journal',settings:'設定',news:'全球市場消息'};
+  const marketNames = {crypto:'Crypto',us:'美股',tw:'台股',forex:'外匯'};
   const modeKey = 'ox-ui-mode';
   function setMode(mode) {
     document.body.dataset.uiMode = mode === 'plus' ? 'plus' : 'pro';
@@ -19,7 +19,8 @@
   function updateContext() {
     const view = document.querySelector('.app-view.active')?.dataset.appView || 'home';
     document.body.dataset.view = view;
-    document.querySelectorAll('[data-terminal-view]').forEach(el => { el.textContent = names[view] || names.home; });
+    const market = document.body.dataset.market || window.state?.activeMarket || 'crypto';
+    document.querySelectorAll('[data-terminal-view]').forEach(el => { el.textContent = marketNames[market] || marketNames.crypto; });
     document.querySelectorAll('.ox-desktop-nav [data-view-target]').forEach(el => {
       const active = el.dataset.viewTarget === view;
       el.classList.toggle('active',active);

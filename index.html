@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="color-scheme" content="dark light">
   <meta name="description" content="OX Market Command Center - 市場總覽、指標、雷達篩選、K 線與提醒工作區。">
+  <script src="src/app/live-visibility.js?v=20260927-oxlive-setting1"></script>
   <title>OX 市場指揮中心 v4.0｜Crypto・US・TW・Forex</title>
   <!-- build: v4.0-modular-classified-rc2-2026-09-22 -->
   <!-- build-refine: v3.8-ui-glass-fluid-2026-09-22 -->
@@ -74,13 +75,14 @@
 
   <link rel="stylesheet" href="src/styles/themes/editorial-radar.css?v=20260927-home-radar9">
   <link rel="stylesheet" href="src/styles/components/chart-toolbar.css?v=20260927-toolbar8">
+  <link rel="stylesheet" href="src/styles/components/live-visibility.css?v=20260927-oxlive-setting1">
   <link rel="stylesheet" href="src/styles/account/account.css">
 </head>
 <body class="ox-terminal" data-view="radar">
 
 <header class="ox-shell-header">
   <div class="wrap nav">
-    <span class="ox-mobile-location" data-terminal-view>雷達工作區</span>
+    <span class="ox-mobile-location" data-terminal-view>Crypto</span>
     <nav class="ox-desktop-nav" aria-label="桌面主要功能">
       <button type="button" data-view-target="home">總覽</button>
       <button type="button" data-view-target="strength">市場指標</button>
@@ -698,6 +700,7 @@
             <button type="button" class="btn-act theme-choice" data-theme-choice="light">白色</button>
             <button type="button" class="btn-act theme-choice" data-theme-choice="system">隨系統</button>
           </div>
+          <label class="settings-switch"><span>顯示 OX LIVE</span><input type="checkbox" data-setting-key="oxLive" checked></label>
           <p class="settings-hint" id="settings-status">設定會自動保存在目前瀏覽器。</p>
         </article>
       </div>
@@ -782,7 +785,7 @@
 <script src="src/components/alerts/level-alerts.js"></script>
 <script src="src/components/strength/market-strength.js"></script>
 <script src="src/app/token-logos.js"></script>
-<script src="src/app/view-home-theme.js?v=20260927-home-radar9"></script>
+<script src="src/app/view-home-theme.js?v=20260927-oxlive-setting1"></script>
 <script src="src/markets/crypto/api.js?v=20260926-native-chart5"></script>
 <script src="src/markets/crypto/engine.js"></script>
 <script src="src/markets/crypto/scanner.js?v=20260926-native-chart5"></script>
@@ -840,7 +843,7 @@
 
 <script src="src/components/search/provider-switch.js?v=20260927-picker2"></script>
 <script type="module" src="src/app/app.js"></script>
-<script src="src/app/editorial-workspace.js?v=20260926-radar-fold3"></script>
+<script src="src/app/editorial-workspace.js?v=20260927-market-label1"></script>
 
 </body>
 </html>
