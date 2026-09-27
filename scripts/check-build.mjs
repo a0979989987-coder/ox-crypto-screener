@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { resolve } from "node:path";
 
 const root = resolve(import.meta.dirname, "..");
@@ -19,6 +19,11 @@ if (!html.includes("v4.0-modular-classified-rc2")) errors.push("Build marker is 
 if (!html.includes('data-market-choice="forex"')) errors.push("Forex market switch is missing");
 if (!html.includes('type="module" src="src/app/app.js"')) errors.push("Modular entry is missing");
 if (/src\/(?:legacy\/|styles\/legacy\.css)/.test(html)) errors.push("Legacy bundle references remain");
+
+// The production Vercel Hobby project counts each JavaScript file under api/ as a function.
+const apiFiles = readdirSync(resolve(root, "api"), { recursive: true, withFileTypes: true })
+  .filter(entry => entry.isFile() && /\.[cm]?js$/.test(entry.name));
+if (apiFiles.length > 12) errors.push(`Vercel Hobby function limit exceeded: ${apiFiles.length}/12 API files`);
 
 if (errors.length) {
   console.error(errors.join("\n"));

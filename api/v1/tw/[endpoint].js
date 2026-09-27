@@ -1,4 +1,4 @@
-import { getOfficialTWResearch } from './providers/research.js';
+import { getOfficialTWResearch } from '../../../server/markets/tw/research-provider.js';
 import {
   getOfficialTWMarketPulse
 } from "./providers/official.js";
