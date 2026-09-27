@@ -441,9 +441,12 @@ body.ox-terminal #view-radar .coin-card.ox-coin-new-selection {animation:oxCoinS
  body.ox-terminal #view-radar .coin-card:not(.watch-list-card) {min-height:70px!important;padding-top:3px!important;padding-bottom:2px!important;row-gap:1px!important}
  body.ox-terminal #view-radar .coin-card:not(.watch-list-card) .coin-title {align-self:center!important;white-space:nowrap!important}
  body.ox-terminal #view-radar .coin-card:not(.watch-list-card) .coin-symbol-mobile {font-size:12px!important;line-height:1.2!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
- body.ox-terminal #view-radar .coin-card:not(.watch-list-card) .coin-ox {gap:0!important;line-height:1!important}
- body.ox-terminal #view-radar .coin-card:not(.watch-list-card) .coin-ox-label {font-size:8px!important;line-height:1!important}
- body.ox-terminal #view-radar .coin-card:not(.watch-list-card) .coin-ox-value {font-size:13px!important;line-height:1!important}
+ body.ox-terminal #view-radar .coin-card:not(.watch-list-card) .coin-ox {gap:1px!important;line-height:1!important}
+ body.ox-terminal #view-radar .coin-card:not(.watch-list-card) .coin-ox-label {font-size:7px!important;line-height:1!important}
+ body.ox-terminal #view-radar .coin-card:not(.watch-list-card) .coin-ox-value {font-size:12px!important;line-height:1!important}
+ body.ox-terminal #view-radar .coin-card:not(.watch-list-card) .mobile-coin-volume {line-height:1.2!important}
+ body.ox-terminal #view-radar .coin-card:not(.watch-list-card) .coin-mobile-bottom .coin-change {font-size:11px!important;line-height:1.2!important}
+ body.ox-terminal #view-radar .coin-card:not(.watch-list-card) .watch-star-icon {width:13px!important;height:13px!important}
  body.ox-terminal #view-radar .coin-mobile-bottom {min-height:23px!important;padding-top:0!important}
  body.ox-terminal #view-radar .watch-star-mobile {height:23px!important;min-height:23px!important;width:23px!important;min-width:23px!important;padding:4px!important}
  body.ox-terminal #view-radar .coin-card.watch-list-card {min-height:77px!important}
