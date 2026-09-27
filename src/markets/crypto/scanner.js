@@ -297,7 +297,7 @@ function renderCurrentTab() {
   const sourceList = isTierTab
     ? (state.tierMapBySide?.[state.directionFilter]?.[tab] || [])
     : (state.tierMap[tab] || []).filter(c => passesDirectionFilter(c.side));
-  const list = sourceList;
+  const list = window.OXChartToolbar?.filterList(sourceList) || sourceList;
   const directionLabel = state.directionFilter === "long" ? "多頭" : "空頭";
   document.getElementById("pool-count").textContent = `${list.length} 檔${directionLabel}`;
   syncWatchBadge();

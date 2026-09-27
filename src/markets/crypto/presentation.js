@@ -113,7 +113,7 @@ function updateHeaderHUD() {
   updateRadarMarketGlow();
   if (!ticker) return;
 
-  document.getElementById("ticker-pair").textContent = `${ticker.symbol} · Bitget 永續`;
+  document.getElementById("ticker-pair").textContent = `${ticker.symbol} · Bitget`;
   document.getElementById("price").textContent = fmtPrice(ticker.lastPr);
   const focusPrice = document.getElementById("chart-focus-price");
   if (focusPrice) focusPrice.textContent = fmtPrice(ticker.lastPr);

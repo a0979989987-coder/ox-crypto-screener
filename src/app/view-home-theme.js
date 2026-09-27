@@ -41,6 +41,8 @@ function createCoinLogo(symbol) {
 }
 
 function setChartFocus(enabled) {
+  const chartBox = document.querySelector('#view-radar .chart-box');
+  const prefersReducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
   document.body.classList.toggle("chart-focus", enabled);
   updateChartExpandButton();
   state.volumeSeries?.applyOptions({ visible: !enabled && !!document.getElementById("chk-vol")?.checked });
@@ -51,7 +53,18 @@ function setChartFocus(enabled) {
     renderKeyLevelPriceLinesFromState();
     if (state.candleData?.length) renderChartData(state.candleData);
   }
-  requestAnimationFrame(() => resizeChartToContainer(true));
+  requestAnimationFrame(() => {
+    resizeChartToContainer(true);
+    if (chartBox && !prefersReducedMotion && typeof chartBox.animate === 'function') {
+      const transform = getComputedStyle(chartBox).transform;
+      chartBox.animate(
+        enabled
+          ? [{ transform: `${transform} scale(.965)`, opacity: .86 }, { transform, opacity: 1 }]
+          : [{ transform, opacity: 1 }, { transform: `${transform} scale(.985)`, opacity: .9 }],
+        { duration: enabled ? 520 : 360, easing: 'cubic-bezier(.22,.8,.24,1)', fill: 'both' }
+      ).onfinish = () => { chartBox.getAnimations().forEach(animation => animation.cancel()); };
+    }
+  });
   [100, 300].forEach(ms => setTimeout(() => { resizeChartToContainer(true); updatePriceTimer(); }, ms));
 }
 
