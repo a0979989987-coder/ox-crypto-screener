@@ -4,6 +4,29 @@ import { bubbleChart, bubblePoints } from './research-bubbles.js';
 import { closeResearchDetails, showSector, showStock, watchClick } from './research-detail.js';
 const prefs = { tab: 'bubble', scope: 'all', market: 'ALL', mode: 'auto', density: 'top', zoom: 1, panX: 0, panY: 0, sort: 'buy', query: '', quadrant: null };
 let session, data = savedResearch(), loading = false, error = null, lastFetch = 0;
+let outlook = { day: null, up: 0, down: 0, mine: null, status: '載入多空看法中', ready: false, checkedAt: 0, pending: false };
+async function loadOutlook(s) {
+  if (s.view !== 'home' || outlook.pending || Date.now() - outlook.checkedAt < 60000) return;
+  outlook.pending = true; outlook.checkedAt = Date.now();
+  try {
+    const response = await fetch('/api/v1/tw/outlook', { cache: 'no-store' });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error === 'POLL_NOT_CONFIGURED' ? '多空投票尚未啟用' : '多空投票暫時無法連線');
+    outlook = { ...result, status: result.mine ? '已記錄，可修改 · 每個瀏覽器一票' : '每個瀏覽器一票', ready: true, checkedAt: Date.now(), pending: false };
+  } catch (e) { outlook.ready = false; outlook.status = e.message || '多空投票暫時無法連線'; outlook.pending = false; }
+  if (current(s)) paint(s);
+}
+async function submitOutlook(s, side) {
+  if (!outlook.ready || outlook.pending) return;
+  outlook.pending = true; outlook.status = '送出中'; paint(s);
+  try {
+    const response = await fetch('/api/v1/tw/outlook', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ day: outlook.day, side }) });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error === 'TRADING_DAY_CHANGED' ? '交易日已更新，請再投一次' : '送出失敗，請稍後再試');
+    outlook = { ...result, status: '已記錄，可修改 · 每個瀏覽器一票', ready: true, checkedAt: Date.now(), pending: false };
+  } catch (e) { outlook.status = e.message; outlook.pending = false; outlook.checkedAt = 0; }
+  if (current(s)) paint(s);
+}
 export function stopResearch() { session?.controller.abort(); session = null; closeResearchDetails(); }
 const current = s => session === s && document.body.dataset.market === 'tw' && s.root.querySelector(`[data-twx-view="${s.view}"]`);
 function homeContent(state) {
@@ -14,11 +37,11 @@ function homeContent(state) {
   const up = stocks.filter(s => s.changePct > 0).length, down = stocks.filter(s => s.changePct < 0).length;
   const flat = stocks.filter(s => s.changePct === 0).length;
   const total = up + down + flat;
-  const day = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Taipei', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
-  let vote; try { vote = localStorage.getItem(`ox-tw-outlook:${day}`); } catch {}
+  const { day, up: bulls, down: bears, mine: vote, ready } = outlook;
+  const votes = bulls + bears, bullPct = votes ? Math.round(bulls / votes * 100) : 0;
   const chip = s => `<button type="button" class="twx-sector-chip" data-sector="${escape(s.name)}"><span>${escape(s.name)}</span><b class="${direction(s.flow)}">${money(s.flow)}</b></button>`;
   const watches = stocks.filter(s => readWatchlist().has(s.symbol));
-  return `<div class="twx-home-grid"><section class="twx-glass twx-market"><div class="twx-indices">${['TAIEX', 'TPEX', 'TX'].map((symbol, i) => { const p = pulse[symbol]; return `<div><small>${['加權指數', '櫃買指數', '台指近月'][i]}</small><strong>${number(p?.price)}</strong><span class="${direction(p?.changePct)}">${pct(p?.changePct)}</span></div>`; }).join('')}</div><div class="twx-breadth"><div><span class="up">上漲 ${total ? up : '—'}</span><span>平盤 ${total ? flat : '—'}</span><span class="down">下跌 ${total ? down : '—'}</span></div><div class="twx-breadth-track"><i style="width:${total ? up / total * 100 : 0}%"></i><i style="width:${total ? flat / total * 100 : 0}%"></i><i style="width:${total ? down / total * 100 : 0}%"></i></div></div></section><section class="twx-glass twx-outlook"><div class="twx-section-head"><span>下一交易日</span><small>我的看法</small></div><div class="twx-votes"><button type="button" data-vote="up" data-day="${day}" aria-pressed="${vote === 'up'}"><span class="up">↗</span>看漲</button><button type="button" data-vote="down" data-day="${day}" aria-pressed="${vote === 'down'}"><span class="down">↘</span>看跌</button></div><small class="twx-vote-status">${vote ? '已記錄，可修改 · 僅儲存於此裝置' : '僅儲存於此裝置'}</small></section><section class="twx-glass"><div class="twx-section-head"><span>法人買超產業</span><button type="button" data-go="strength">查看泡泡圖 ↗</button></div><div class="twx-chip-list">${leaders.filter(s => s.flow > 0).slice(0, 5).map(chip).join('') || '<span class="twx-muted">法人資料待更新</span>'}</div></section><section class="twx-glass"><div class="twx-section-head"><span>法人賣超產業</span><small>估算金額</small></div><div class="twx-chip-list">${leaders.filter(s => s.flow < 0).reverse().slice(0, 5).map(chip).join('') || '<span class="twx-muted">法人資料待更新</span>'}</div></section><section class="twx-glass twx-home-wide"><div class="twx-section-head"><span>法人動向</span><small>估算淨買超</small></div>${stockRows([...stocks].filter(s => Number.isFinite(s.netTwd)).sort((a, b) => b.netTwd - a.netTwd), readWatchlist(), 8) || '<div class="twx-empty">官方資料載入後顯示</div>'}</section><section class="twx-glass twx-home-wide"><div class="twx-section-head"><span>自選</span><small>${watches.length} 檔</small></div>${stockRows(watches, readWatchlist(), 20) || '<div class="twx-empty">點選股票旁的星星加入自選</div>'}</section></div>`;
+  return `<div class="twx-home-grid"><section class="twx-glass twx-market"><div class="twx-indices">${['TAIEX', 'TPEX', 'TX'].map((symbol, i) => { const p = pulse[symbol]; return `<div><small>${['加權指數', '櫃買指數', '台指近月'][i]}</small><strong>${number(p?.price)}</strong><span class="${direction(p?.changePct)}">${pct(p?.changePct)}</span></div>`; }).join('')}</div><div class="twx-breadth"><div><span class="up">上漲 ${total ? up : '—'}</span><span>平盤 ${total ? flat : '—'}</span><span class="down">下跌 ${total ? down : '—'}</span></div><div class="twx-breadth-track"><i style="width:${total ? up / total * 100 : 0}%"></i><i style="width:${total ? flat / total * 100 : 0}%"></i><i style="width:${total ? down / total * 100 : 0}%"></i></div></div></section><section class="twx-glass twx-outlook"><div class="twx-section-head"><span>下一交易日</span><small>${day || '—'} · 我的看法</small></div><div class="twx-votes"><button type="button" data-vote="up" aria-pressed="${vote === 'up'}" ${!ready || outlook.pending ? 'disabled' : ''}><span class="up">↗</span>看漲</button><button type="button" data-vote="down" aria-pressed="${vote === 'down'}" ${!ready || outlook.pending ? 'disabled' : ''}><span class="down">↘</span>看跌</button></div><div class="twx-energy" aria-label="多空能量：看漲 ${bulls} 票，看跌 ${bears} 票"><div class="twx-energy-label"><span class="up">看漲 ${ready ? `${bulls} · ${bullPct}%` : '—'}</span><span>多空能量 · ${ready ? `${votes} 票` : '—'}</span><span class="down">看跌 ${ready ? `${bears} · ${votes ? 100 - bullPct : 0}%` : '—'}</span></div><div class="twx-energy-track">${ready && votes ? `<i class="up" style="width:${bullPct}%"></i><i class="down" style="width:${100 - bullPct}%"></i>` : ''}</div></div><small class="twx-vote-status" role="status">${escape(outlook.status)}</small></section><section class="twx-glass"><div class="twx-section-head"><span>法人買超產業</span><button type="button" data-go="strength">查看泡泡圖 ↗</button></div><div class="twx-chip-list">${leaders.filter(s => s.flow > 0).slice(0, 5).map(chip).join('') || '<span class="twx-muted">法人資料待更新</span>'}</div></section><section class="twx-glass"><div class="twx-section-head"><span>法人賣超產業</span><small>估算金額</small></div><div class="twx-chip-list">${leaders.filter(s => s.flow < 0).reverse().slice(0, 5).map(chip).join('') || '<span class="twx-muted">法人資料待更新</span>'}</div></section><section class="twx-glass twx-home-wide"><div class="twx-section-head"><span>法人動向</span><small>估算淨買超</small></div>${stockRows([...stocks].filter(s => Number.isFinite(s.netTwd)).sort((a, b) => b.netTwd - a.netTwd), readWatchlist(), 8) || '<div class="twx-empty">官方資料載入後顯示</div>'}</section><section class="twx-glass twx-home-wide"><div class="twx-section-head"><span>自選</span><small>${watches.length} 檔</small></div>${stockRows(watches, readWatchlist(), 20) || '<div class="twx-empty">點選股票旁的星星加入自選</div>'}</section></div>`;
 }
 function chartMode() {
   if (prefs.mode !== 'auto') return prefs.mode;
@@ -68,9 +91,9 @@ async function refresh(s, force) {
 }
 export function renderResearch(view, state) {
   const root = mountResearch(view); if (!root) return null;
-  if (session?.view === view && session.root === root && root.querySelector(`[data-twx-view="${view}"]`)) { session.state = state; if (!document.querySelector('.twx-dialog') && document.activeElement?.tagName !== 'INPUT') paint(session); return root; }
+  if (session?.view === view && session.root === root && root.querySelector(`[data-twx-view="${view}"]`)) { session.state = state; if (!document.querySelector('.twx-dialog') && document.activeElement?.tagName !== 'INPUT') paint(session); loadOutlook(session); return root; }
   stopResearch();
-  const s = { view, root, state, controller: new AbortController() }; session = s; paint(s);
+  const s = { view, root, state, controller: new AbortController() }; session = s; paint(s); loadOutlook(s);
   root.addEventListener('click', event => {
     if (Date.now() < (s.suppressClickUntil || 0) && event.target.closest('.twx-bubble')) return;
     const button = event.target.closest('button, [data-sector]'); if (!button) return;
@@ -80,9 +103,7 @@ export function renderResearch(view, state) {
     if (button.dataset.sector) { const sector = selectSectors(data, prefs).find(x => x.name === button.dataset.sector) || selectSectors(data).find(x => x.name === button.dataset.sector); if (sector) showSector(sector); return; }
     if (button.dataset.go) { document.querySelector(`.dock-btn[data-view-target="${button.dataset.go}"]`)?.click(); return; }
     if (button.dataset.vote) {
-      try { localStorage.setItem(`ox-tw-outlook:${button.dataset.day}`, button.dataset.vote); } catch { root.querySelector('.twx-vote-status').textContent = '無法儲存，請確認瀏覽器儲存設定'; return; }
-      root.querySelectorAll('[data-vote]').forEach(b => b.setAttribute('aria-pressed', String(b === button)));
-      root.querySelector('.twx-vote-status').textContent = '已記錄，可修改 · 僅儲存於此裝置'; return;
+      submitOutlook(s, button.dataset.vote); return;
     }
     if (button.hasAttribute('data-expand')) { root.querySelector('.twx-chart-panel').classList.toggle('expanded'); button.setAttribute('aria-label', root.querySelector('.expanded') ? '收合圖表' : '展開圖表'); return; }
     if (button.dataset.zoom) {

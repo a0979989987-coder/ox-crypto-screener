@@ -1,4 +1,5 @@
 import { getOfficialTWResearch } from '../../../server/markets/tw/research-provider.js';
+import { handleTWOutlook } from '../../../server/markets/tw/outlook.js';
 import {
   getOfficialTWMarketPulse
 } from "./providers/official.js";
@@ -1436,6 +1437,10 @@ export default async function handler(
   req,
   res
 ) {
+
+  if (stringParam(req.query?.endpoint).toLowerCase() === 'outlook') {
+    return handleTWOutlook(req, res);
+  }
 
   if (
     !applyCors(

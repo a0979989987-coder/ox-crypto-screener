@@ -103,6 +103,7 @@ async function load(name) {
   pending.set(name, request);
   return request;
 }
+export async function loadTWTradingCalendar() { return tradingCalendar(await load('calendar')); }
 export async function loadTWSurveillance() {
   const entries = await Promise.all(Object.keys(SOURCES).map(async name => {
     try { return [name, { rows: await load(name), ok: true }]; }
