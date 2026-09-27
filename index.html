@@ -73,6 +73,7 @@
 <!-- CSS moved: ox-v381-ios-liquid-glass-max -->
 
   <link rel="stylesheet" href="src/styles/themes/editorial-radar.css?v=20260927-home-radar9">
+  <link rel="stylesheet" href="src/styles/components/chart-toolbar.css?v=20260927-toolbar1">
   <link rel="stylesheet" href="src/styles/account/account.css">
 </head>
 <body class="ox-terminal" data-view="radar">
@@ -366,7 +367,8 @@
       <button class="btn-act" id="btn-chart-exit-overlay" type="button" aria-label="收合圖表" title="收合圖表"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3v6H3m18 0h-6V3M3 15h6v6m6 0v-6h6"/></svg></button>
 
       <div class="chart-controls">
-        <div class="ctrl-group">
+        <div class="ctrl-group chart-timeframe-group">
+          <div class="chart-timeframe-strip" id="chart-timeframe-strip" aria-label="圖表時間級別">
           <button class="btn-tf" data-tf="1m">1m</button>
           <button class="btn-tf" data-tf="5m">5m</button>
           <button class="btn-tf" data-tf="15m">15m</button>
@@ -374,23 +376,15 @@
           <button class="btn-tf" data-tf="4H">4H</button>
           <button class="btn-tf active" data-tf="1D">1D</button>
           <button class="btn-tf" data-tf="1W">1W</button>
+          </div>
+          <button class="chart-tool-icon tf-more-button" id="tf-more" type="button" aria-label="選擇時間級別" aria-expanded="false" aria-controls="tf-picker-popover" title="選擇時間級別"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+          <div class="tf-picker-popover" id="tf-picker-popover" hidden></div>
         </div>
-        <div class="ctrl-group">
-          <label class="toggle-lbl"><input type="checkbox" id="chk-vol" checked>成交量</label>
-          <label class="toggle-lbl"><input type="checkbox" id="chk-ox-markers">OX 指標</label>
-          <label class="toggle-lbl key-level-visibility-toggle" title="只切換圖表顯示，不停止前高前低計算與提醒">
-            <input type="checkbox" id="chk-key-levels">
-            <span id="key-level-toggle-text">前高前低</span>
-          </label>
+        <div class="ctrl-group chart-tool-actions">
           <button class="btn-act radar-scanner-reopen" id="radar-scanner-reopen" type="button" aria-label="展開幣種篩選" title="展開幣種篩選" aria-expanded="false" aria-controls="radar-scanner-panel"><span aria-hidden="true">‹</span></button>
           <button class="btn-act ox-chart-expand-dot" id="btn-chart-fullscreen" type="button" aria-label="展開圖表" aria-pressed="false" title="展開圖表"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3H3v6m12-6h6v6M3 15v6h6m6 0h6v-6"/></svg></button>
+          <button class="chart-tool-icon indicator-open-button" id="chart-indicator-open" type="button" aria-label="指標與篩選設定" aria-haspopup="dialog" title="指標與篩選設定"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16M8 3v6m8 0v6m-5 0v6"/><circle cx="8" cy="6" r="1.8"/><circle cx="16" cy="12" r="1.8"/><circle cx="11" cy="18" r="1.8"/></svg></button>
         </div>
-      </div>
-
-
-      <div class="ox-indicator-legend" id="ox-indicator-legend" aria-label="OX 指標圖例">
-        <span><i class="ox-indicator-up">▲</i> 放量突破</span>
-        <span><i class="ox-indicator-down">▼</i> 放量下跌</span>
       </div>
 
       <div id="chart" class="chart-container">
@@ -753,6 +747,43 @@
 
 <div id="toast" class="toast" role="status"></div>
 
+<div class="chart-tools-overlay" id="chart-tools-overlay" aria-hidden="true">
+  <section class="chart-tools-dialog" role="dialog" aria-modal="true" aria-labelledby="chart-tools-title" tabindex="-1">
+    <header class="chart-tools-head">
+      <div><small>CHART SETTINGS</small><h2 id="chart-tools-title">指標與篩選</h2></div>
+      <button class="chart-tools-close" type="button" data-chart-tools-close aria-label="關閉">×</button>
+    </header>
+    <div class="chart-tools-panel" data-chart-tools-panel="indicators">
+      <h3>圖表指標</h3>
+      <div class="chart-indicator-options">
+        <label class="chart-indicator-option"><input type="checkbox" id="chk-vol" checked><span class="chart-indicator-check" aria-hidden="true"></span><span>成交量</span></label>
+        <label class="chart-indicator-option"><input type="checkbox" id="chk-ox-markers"><span class="chart-indicator-check" aria-hidden="true"></span><span>OX 指標</span></label>
+        <label class="chart-indicator-option key-level-visibility-toggle" title="只切換圖表顯示，不停止前高前低計算與提醒"><input type="checkbox" id="chk-key-levels"><span class="chart-indicator-check" aria-hidden="true"></span><span id="key-level-toggle-text">前高前低</span></label>
+      </div>
+      <div class="chart-filter-mode-section">
+        <h3>篩選模式</h3>
+        <p>經典模式保留目前 OX 雷達規則；自訂模式會依勾選條件縮小列表。</p>
+        <div class="chart-filter-mode" role="group" aria-label="篩選模式">
+          <button type="button" data-filter-mode="classic" aria-pressed="true">經典</button>
+          <button type="button" data-filter-mode="custom" aria-pressed="false">自訂</button>
+        </div>
+        <div class="chart-custom-filters" id="chart-custom-filters" hidden>
+          <label><input type="checkbox" data-custom-filter="surge"><span>成交量放大</span></label>
+          <label><input type="checkbox" data-custom-filter="score"><span>OX 分數 75 以上</span></label>
+          <label><input type="checkbox" data-custom-filter="trigger"><span>型態觸發</span></label>
+          <small>需同時符合已勾選的條件；未勾選條件時顯示全部結果。</small>
+        </div>
+      </div>
+    </div>
+    <div class="chart-tools-panel" data-chart-tools-panel="timeframes" hidden>
+      <h3>顯示時間級別</h3>
+      <p>選擇要放在橫向時間列中的級別；未顯示的級別仍可從時間選單切換。</p>
+      <div class="chart-timeframe-preferences" id="chart-timeframe-preferences"></div>
+      <button class="chart-tools-save" type="button" id="chart-timeframe-save">儲存時間級別</button>
+    </div>
+  </section>
+</div>
+
 <script src="src/core/runtime-config.js?v=20260927-home-radar9"></script>
 <script src="src/components/strength/snapshots.js"></script>
 <script src="src/components/alerts/level-alerts.js"></script>
@@ -767,6 +798,7 @@
 <script src="src/components/account/store.js?v=20260927-home-radar9"></script>
 <script src="src/components/control-panel/feature-pack.js"></script>
 <script src="src/services/liquidations.js"></script>
+<script src="src/components/chart/toolbar.js?v=20260927-toolbar1"></script>
 <script src="src/app/runtime-boot.js?v=20260927-home-radar9"></script>
 
 <script src="src/components/motion/controller.js?v=20260926-radar-fold3"></script>
