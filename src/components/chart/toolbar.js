@@ -114,7 +114,7 @@
   $$('[data-filter-mode]').forEach(button => button.addEventListener('click', () => setMode(button.dataset.filterMode)));
   $('#chart-timeframe-save')?.addEventListener('click', () => {
     const checked = $$('#chart-timeframe-preferences input:checked').map(input => input.value);
-    if (!checked.length) return;
+    if (!checked.length) checked.push(activeTf());
     selectedIntervals = intervals.map(([id]) => id).filter(id => checked.includes(id));
     localStorage.setItem('ox-chart-timeframes',JSON.stringify(selectedIntervals));
     renderTimeframes(); closeDialog();
