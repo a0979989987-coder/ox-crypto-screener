@@ -77,7 +77,7 @@
   <link rel="stylesheet" href="src/styles/components/radar-detail-neon.css?v=20260927-detail1">
   <link rel="stylesheet" href="src/styles/components/chart-toolbar.css?v=20260927-toolbar8">
   <link rel="stylesheet" href="src/styles/components/radar-turnover.css?v=20260927-turnover1">
-  <link rel="stylesheet" href="src/styles/components/radar-combined.css?v=20260927-radar-controls1">
+  <link rel="stylesheet" href="src/styles/components/radar-combined.css?v=20260927-radar-icon1">
   <link rel="stylesheet" href="src/styles/components/live-visibility.css?v=20260927-oxlive-setting1">
   <link rel="stylesheet" href="src/styles/components/control-menu-compact.css?v=20260927-menu4">
   <link rel="stylesheet" href="src/styles/account/account.css">
@@ -393,7 +393,7 @@
         </div>
         <div class="ctrl-group chart-tool-actions">
           <button class="chart-tool-icon indicator-open-button" id="chart-indicator-open" type="button" aria-label="指標與篩選設定" aria-haspopup="dialog" title="指標與篩選設定"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h4m4 0h8M4 12h10m4 0h2M4 18h2m4 0h10"/><circle cx="10" cy="6" r="2"/><circle cx="16" cy="12" r="2"/><circle cx="8" cy="18" r="2"/></svg></button>
-          <button class="chart-tool-icon" id="radar-scanner-toggle" type="button" aria-label="收起右側雷達" title="收起右側雷達" aria-expanded="true" aria-controls="radar-scanner-panel"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 4v16M4 4h16v16H4zM7 9l3 3-3 3"/></svg></button>
+          <button class="chart-tool-icon" id="radar-scanner-toggle" type="button" aria-label="收起右側雷達" title="收起右側雷達" aria-expanded="true" aria-controls="radar-scanner-panel"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
           <button class="btn-act ox-chart-expand-dot" id="btn-chart-fullscreen" type="button" aria-label="展開圖表" aria-pressed="false" title="展開圖表"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3H3v6m12-6h6v6M3 15v6h6m6 0h6v-6"/></svg></button>
         </div>
       </div>
@@ -415,16 +415,12 @@
       <div class="scanner-tabs" role="tablist" aria-label="雷達分級">
         <button class="tab-btn radar-combined-tab active" data-tab="all" aria-haspopup="menu" aria-expanded="false" aria-controls="radar-tier-menu" type="button" aria-label="雷達：依序顯示 T1、T2、T3" title="T1 / T2 / T3 雷達">
           <span class="radar-combined-mark">
-      <svg class="radar-combined-logo" viewBox="0 0 450 439" aria-hidden="true" focusable="false">
-        <g fill="currentColor">
-          <rect x="0" y="0" width="202" height="43"/><rect x="247" y="0" width="203" height="43"/>
-          <rect x="0" y="80" width="202" height="42"/><rect x="247" y="80" width="202" height="42"/>
-          <rect x="0" y="159" width="202" height="42"/><rect x="247" y="159" width="202" height="42"/>
-          <rect x="0" y="238" width="449" height="42"/>
-          <rect x="0" y="317" width="202" height="42"/><rect x="248" y="317" width="202" height="42"/>
-          <rect x="0" y="396" width="202" height="43"/><rect x="247" y="396" width="203" height="43"/>
-        </g>
-      </svg>
+            <svg class="radar-combined-logo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+              <circle cx="12" cy="12" r="9"/>
+              <circle cx="12" cy="12" r="4.5"/>
+              <path d="M12 12 18.4 5.6"/>
+              <circle cx="7.5" cy="15.5" r="1" fill="currentColor" stroke="none"/>
+            </svg>
             <span class="radar-tier-current" aria-hidden="true"></span>
             <span class="radar-combined-chevron" data-radar-tier-cycle aria-hidden="true">▼</span>
           </span>
@@ -846,8 +842,8 @@
 
 <script src="src/components/search/provider-switch.js?v=20260927-picker2"></script>
 <script type="module" src="src/app/app.js"></script>
-<script src="src/app/editorial-workspace.js?v=20260927-radar-controls1"></script>
-<script src="src/components/radar/controls.js?v=20260927-radar-controls1"></script>
+<script src="src/app/editorial-workspace.js?v=20260927-radar-icon1"></script>
+<script src="src/components/radar/controls.js?v=20260927-radar-icon1"></script>
 
 </body>
 </html>

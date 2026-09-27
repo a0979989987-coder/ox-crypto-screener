@@ -25,7 +25,9 @@
     syncScannerFilterUI();
     const rect = logo.getBoundingClientRect();
     menu.hidden = false;
-    menu.style.left = `${Math.max(8, Math.min(rect.left, innerWidth - menu.offsetWidth - 8))}px`;
+    const left = Math.max(8, Math.min(rect.left, innerWidth - menu.offsetWidth - 8));
+    menu.style.left = `${left}px`;
+    menu.style.setProperty('--radar-menu-origin-x', `${rect.left + rect.width / 2 - left}px`);
     menu.style.top = `${Math.max(8, Math.min(rect.bottom + 5, innerHeight - menu.offsetHeight - 8))}px`;
     logo.setAttribute('aria-expanded', 'true');
     menu.querySelector('[aria-checked="true"]')?.focus({ preventScroll: true });

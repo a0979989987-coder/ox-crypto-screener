@@ -50,8 +50,8 @@
     toggle.setAttribute('aria-label', hidden ? '展開右側雷達' : '收起右側雷達');
     toggle.title = toggle.getAttribute('aria-label');
     toggle.querySelector('path').setAttribute('d', hidden
-      ? 'M14 4v16M4 4h16v16H4zM10 9l-3 3 3 3'
-      : 'M14 4v16M4 4h16v16H4zM7 9l3 3-3 3');
+      ? 'M15 5l-7 7 7 7'
+      : 'M9 5l7 7-7 7');
     document.dispatchEvent(new CustomEvent('ox:radarvisibilitychange'));
     requestAnimationFrame(() => window.resizeChartToContainer?.(true));
   });

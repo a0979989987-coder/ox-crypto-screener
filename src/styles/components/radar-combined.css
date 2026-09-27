@@ -12,8 +12,8 @@ body.ox-terminal #view-radar .radar-combined-mark {
 }
 body.ox-terminal #view-radar .radar-combined-logo {
   display:block;
-  width:19px;
-  height:19px;
+  width:17px;
+  height:17px;
   color:inherit;
 }
 body.ox-terminal #view-radar .radar-combined-chevron {
@@ -121,7 +121,8 @@ body.ox-terminal #radar-tier-menu {
   box-shadow:0 6px 22px #0008,inset 0 0 0 1px #ffffff2b,0 0 8px #ffffff1c;
   backdrop-filter:blur(12px);
   -webkit-backdrop-filter:blur(12px);
-  animation:radar-tier-menu-in .18s ease-out;
+  transform-origin:var(--radar-menu-origin-x, 18px) top;
+  animation:radar-tier-menu-in .24s cubic-bezier(.22,.8,.24,1);
 }
 body.ox-terminal #radar-tier-menu[hidden] {display:none}
 body.ox-terminal #radar-tier-menu button {
@@ -140,7 +141,7 @@ body.ox-terminal #radar-tier-menu button[aria-checked="true"] {color:#fff;text-s
 body.ox-terminal #radar-tier-menu button[aria-checked="true"]::after {content:"·";float:right}
 body.ox-terminal.theme-light #radar-tier-menu {background:#f3f4f6f5;color:#202832;box-shadow:0 6px 22px #0002,inset 0 0 0 1px #0002}
 body.ox-terminal.theme-light #radar-tier-menu button[aria-checked="true"] {color:#111;background:#0000000a;text-shadow:none}
-@keyframes radar-tier-menu-in {from {opacity:0;transform:translateY(-4px)} to {opacity:1;transform:translateY(0)}}
+@keyframes radar-tier-menu-in {from {opacity:0;transform:translateY(-6px) scale(.94)} to {opacity:1;transform:translateY(0) scale(1)}}
 @media(prefers-reduced-motion:reduce) {
   body.ox-terminal #radar-tier-menu {animation:none}
   body.ox-terminal #view-radar #direction-toggle .direction-toggle-icon {transition:none}
