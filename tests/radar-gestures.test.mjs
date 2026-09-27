@@ -33,7 +33,7 @@ function harness() {
   document.body = { append() {} };
   const state = { currentTab: 'all' };
   runInNewContext(readFileSync(new URL('../src/components/radar/controls.js', import.meta.url), 'utf8'), {
-    document, window, state, innerWidth: 390, innerHeight: 844,
+    document, window, state, performance: { now: () => now }, innerWidth: 390, innerHeight: 844,
     syncScannerFilterUI() {}, setScannerTierFilter(tier) { state.currentTab = tier; },
     setTimeout(fn, delay) { const id = ++nextId; timers.set(id, { fn, at: now + delay }); return id; },
     clearTimeout(id) { timers.delete(id); }
@@ -44,6 +44,7 @@ function harness() {
     start() { logo.emit('touchstart', { touches: [touch], changedTouches: [touch] }); },
     end(type = 'touchend') { document.emit(type, { changedTouches: [touch] }); },
     move(dx) { document.emit('touchmove', { touches: [{ ...touch, clientX: touch.clientX + dx }] }); },
+    elapse(ms) { now += ms; },
     advance(ms) { now += ms; for (const [id, timer] of timers) if (timer.at <= now) { timers.delete(id); timer.fn(); } }
   };
 }
@@ -65,7 +66,7 @@ test('held touch survives compatibility pointer cancellation and viewport resize
 });
 
 test('drag, native scrolling, cancellation and multiple fingers cancel pending long press', () => {
-  for (const cancel of [h => h.move(20), h => h.document.emit('scroll'), h => h.end('touchcancel'), h => h.document.emit('touchstart', { touches: [{}, {}] })]) {
+  for (const cancel of [h => h.move(20), h => { h.window.scrollY = 50; h.document.emit('scroll'); }, h => h.end('touchcancel'), h => h.document.emit('touchstart', { touches: [{}, {}] })]) {
     const h = harness(); h.start(); h.advance(1000); cancel(h); h.advance(3000);
     assert.equal(h.menu.hidden, true);
     h.logo.emit('click', { detail: 0 }); assert.equal(h.state.currentTab, 'all');
@@ -73,7 +74,7 @@ test('drag, native scrolling, cancellation and multiple fingers cancel pending l
 });
 
 test('unrelated scrolling does not cancel hold and touch listeners never block page scrolling', () => {
-  const h = harness(); h.start(); h.document.emit('scroll', { target: {} }); h.advance(3000);
+  const h = harness(); h.start(); h.document.emit('scroll', { target: {} }); h.document.emit('scroll'); h.advance(3000);
   assert.equal(h.menu.hidden, false);
   for (const target of [h.logo, h.document]) for (const [type, entries] of target.listeners) {
     if (type.startsWith('touch')) assert(entries.every(entry => entry.options.passive === true));
@@ -83,10 +84,32 @@ test('unrelated scrolling does not cancel hold and touch listeners never block p
 test('short taps still cycle existing tiers; keyboard can open and dismiss choices', () => {
   const h = harness();
   for (const tier of ['t1', 't2', 't3', 'all']) {
-    h.start(); h.advance(100); h.end(); h.logo.emit('click', { detail: 0 });
+    h.start(); h.advance(100); h.end(); h.logo.emit('click', { target: { closest: () => ({}) } });
     assert.equal(h.state.currentTab, tier);
   }
   h.logo.emit('keydown', { key: 'ArrowDown' });
   assert.equal(h.menu.hidden, false); assert.equal(h.selected.focused, true);
   h.document.emit('keydown', { key: 'Escape' }); assert.equal(h.menu.hidden, true);
+});
+
+
+test('tap on radar opens choices and a delayed hold timer is recovered on release', () => {
+  const h = harness();
+  h.start(); h.elapse(3100); h.end();
+  assert.equal(h.menu.hidden, false, 'release recovers an overdue timer');
+  h.logo.emit('click'); assert.equal(h.menu.hidden, false, 'release click cannot close menu');
+  h.document.emit('keydown', { key: 'Escape' });
+  h.start(); h.advance(100); h.end(); h.logo.emit('click');
+  assert.equal(h.menu.hidden, false, 'direct tap also opens the same choices');
+  assert.equal(h.state.currentTab, 'all', 'opening choices does not change selection');
+});
+
+test('touch pointer events work when a WebView does not provide Touch Events', () => {
+  const h = harness();
+  h.logo.emit('pointerdown', { pointerType: 'touch', isPrimary: true, button: 0, pointerId: 5, clientX: 295, clientY: 142 });
+  h.advance(3000);
+  assert.equal(h.menu.hidden, false);
+  h.document.emit('pointerup', { pointerType: 'touch', pointerId: 5 });
+  h.logo.emit('click');
+  assert.equal(h.menu.hidden, false); assert.equal(h.state.currentTab, 'all');
 });

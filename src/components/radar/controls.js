@@ -10,7 +10,16 @@
   let press = null;
   let timer = 0;
   let suppressClick = false;
+  let scrollOrigins = new Map();
 
+  function rememberScroll() {
+    scrollOrigins = new Map([[document, [window.scrollX || 0, window.scrollY || 0]]]);
+    for (let element = logo.parentElement; element; element = element.parentElement) {
+      scrollOrigins.set(element, [element.scrollLeft, element.scrollTop]);
+    }
+    const list = document.getElementById('screener-list');
+    if (list) scrollOrigins.set(list, [list.scrollLeft, list.scrollTop]);
+  }
   function cancelPress() {
     clearTimeout(timer);
     timer = 0;
@@ -33,6 +42,7 @@
     menu.hidden = false;
     positionMenu();
     logo.setAttribute('aria-expanded', 'true');
+    rememberScroll();
     // Moving focus while a finger is held can cancel the gesture on mobile.
     if (keyboard) menu.querySelector('[aria-checked="true"]')?.focus({ preventScroll: true });
   }
@@ -44,13 +54,23 @@
   function beginPress(kind, id, x, y) {
     cancelPress();
     suppressClick = false;
-    press = { kind, id, x, y };
+    press = { kind, id, x, y, started: performance.now() };
+    rememberScroll();
     timer = setTimeout(() => {
       timer = 0;
       if (!press) return;
       suppressClick = true;
       openMenu();
     }, 3000);
+  }
+  function finishPress(cancelled = false) {
+    // A busy mobile event loop may deliver release before the hold timer.
+    if (!cancelled && press && !suppressClick && performance.now() - press.started >= 3000) {
+      suppressClick = true;
+      openMenu();
+    }
+    if (cancelled) suppressClick = true;
+    cancelPress();
   }
   function movePress(x, y) {
     if (Math.hypot(x - press.x, y - press.y) <= 12) return;
@@ -72,15 +92,16 @@
   }, { passive: true });
   function endTouch(event) {
     if (press?.kind !== 'touch' || ![...event.changedTouches].some(touch => touch.identifier === press.id)) return;
-    if (event.type === 'touchcancel') suppressClick = true;
-    cancelPress();
+    finishPress(event.type === 'touchcancel');
     // A completed long press stays open on release/cancel; a real drag or
     // scroll already dismisses it. All listeners remain passive for scrolling.
   }
   document.addEventListener('touchend', endTouch, { passive: true });
   document.addEventListener('touchcancel', endTouch, { passive: true });
   logo.addEventListener('pointerdown', event => {
-    if (event.pointerType === 'touch' || !event.isPrimary || event.button !== 0) return;
+    if (!event.isPrimary || event.button !== 0) return;
+    // Also works in WebViews that expose Pointer Events without Touch Events.
+    // A subsequent touchstart takes ownership of the same gesture.
     beginPress('pointer', event.pointerId, event.clientX, event.clientY);
   }, { passive: true });
   document.addEventListener('pointermove', event => {
@@ -89,14 +110,18 @@
   for (const type of ['pointerup', 'pointercancel']) {
     document.addEventListener(type, event => {
       if (press?.kind !== 'pointer' || event.pointerId !== press.id) return;
-      if (type === 'pointercancel') suppressClick = true;
-      cancelPress();
+      finishPress(type === 'pointercancel');
     }, { passive: true });
   }
   document.addEventListener('scroll', event => {
     // Ignore unrelated tickers/containers scrolling elsewhere on the page.
     const target = event.target;
-    if (target !== document && !target.contains?.(logo) && !target.closest?.('#radar-scanner-panel')) return;
+    const origin = scrollOrigins.get(target);
+    if (!origin) return;
+    const x = target === document ? window.scrollX || 0 : target.scrollLeft;
+    const y = target === document ? window.scrollY || 0 : target.scrollTop;
+    // Layout/viewport notifications without actual movement are not a drag.
+    if (Math.hypot(x - origin[0], y - origin[1]) <= 4) return;
     if (press) suppressClick = true;
     cancelPress();
     closeMenu();
@@ -107,10 +132,10 @@
     event.preventDefault();
     event.stopPropagation();
     if (suppressClick) { suppressClick = false; return; }
-    if (event.target.closest('[data-radar-tier-cycle]') || event.detail === 0) {
+    if (event.target.closest('[data-radar-tier-cycle]')) {
       select(tiers[(tiers.indexOf(state.currentTab) + 1) % tiers.length]);
-    } else if (!tiers.includes(state.currentTab)) {
-      select('all');
+    } else {
+      if (menu.hidden) openMenu(event.detail === 0); else closeMenu();
     }
   });
   logo.addEventListener('keydown', event => {

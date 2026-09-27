@@ -40,7 +40,7 @@ body.ox-terminal #view-radar #screener-list > .radar-tier-separator {
 
 /* Existing toolbar treatment, scoped to the radar controls. */
 body.ox-terminal #view-radar #radar-scanner-panel .scanner-tabs {
-  grid-template-columns:34px 28px repeat(2,minmax(24px,1fr))!important;
+  grid-template-columns:34px repeat(2,minmax(24px,1fr)) 28px!important;
   min-height:36px!important;
   align-items:center!important;
 }
@@ -48,19 +48,33 @@ body.ox-terminal #view-radar #radar-scanner-panel .radar-combined-tab {
   height:36px!important;
   min-height:36px!important;
   padding:0!important;
-  touch-action:pan-y;
+  touch-action:pan-y!important;
   user-select:none;
   -webkit-user-select:none;
   -webkit-touch-callout:none;
 }
+/* Flat icon controls: no sliding glass tile or pressed glass background. */
+body.ox-terminal #view-radar #radar-scanner-panel .scanner-tabs > button {
+  background:transparent!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+  -webkit-tap-highlight-color:transparent;
+}
+body.ox-terminal #view-radar .radar-combined-tab * {
+  -webkit-touch-callout:none;
+  -webkit-user-select:none;
+  user-select:none;
+}
+body.ox-terminal #view-radar .radar-combined-logo {pointer-events:none}
 body.ox-terminal #view-radar .radar-combined-chevron {
   pointer-events:auto;
 }
 body.ox-terminal #view-radar .radar-combined-chevron::before {
   content:"";
   position:absolute;
-  width:24px;
-  height:30px;
+  width:14px;
+  height:34px;
   bottom:-4px;
   right:-3px;
 }
@@ -126,11 +140,11 @@ body.ox-terminal #radar-tier-menu {
   padding:4px;
   border:0;
   border-radius:8px;
-  background:#171b20f5;
+  background:#171b20;
   color:#eeece7;
   box-shadow:0 6px 22px #0008,inset 0 0 0 1px #ffffff2b,0 0 8px #ffffff1c;
-  backdrop-filter:blur(12px);
-  -webkit-backdrop-filter:blur(12px);
+  backdrop-filter:none;
+  -webkit-backdrop-filter:none;
   transform-origin:var(--radar-menu-origin-x, 18px) top;
   animation:radar-tier-menu-in .24s cubic-bezier(.22,.8,.24,1);
 }
@@ -149,7 +163,7 @@ body.ox-terminal #radar-tier-menu button {
 body.ox-terminal #radar-tier-menu button:is(:hover,:focus-visible) {background:#ffffff0d;outline:none}
 body.ox-terminal #radar-tier-menu button[aria-checked="true"] {color:#fff;text-shadow:0 0 6px #ffffff85;background:#ffffff0a}
 body.ox-terminal #radar-tier-menu button[aria-checked="true"]::after {content:"·";float:right}
-body.ox-terminal.theme-light #radar-tier-menu {background:#f3f4f6f5;color:#202832;box-shadow:0 6px 22px #0002,inset 0 0 0 1px #0002}
+body.ox-terminal.theme-light #radar-tier-menu {background:#f3f4f6;color:#202832;box-shadow:0 6px 22px #0002,inset 0 0 0 1px #0002}
 body.ox-terminal.theme-light #radar-tier-menu button[aria-checked="true"] {color:#111;background:#0000000a;text-shadow:none}
 @keyframes radar-tier-menu-in {from {opacity:0;transform:translateY(-6px) scale(.94)} to {opacity:1;transform:translateY(0) scale(1)}}
 @media(prefers-reduced-motion:reduce) {

@@ -77,7 +77,7 @@
   <link rel="stylesheet" href="src/styles/components/radar-detail-neon.css?v=20260927-detail1">
   <link rel="stylesheet" href="src/styles/components/chart-toolbar.css?v=20260927-toolbar8">
   <link rel="stylesheet" href="src/styles/components/radar-turnover.css?v=20260927-turnover1">
-  <link rel="stylesheet" href="src/styles/components/radar-combined.css?v=20260927-radar-touch2">
+  <link rel="stylesheet" href="src/styles/components/radar-combined.css?v=20260927-radar-menu3">
   <link rel="stylesheet" href="src/styles/components/live-visibility.css?v=20260927-oxlive-setting1">
   <link rel="stylesheet" href="src/styles/components/control-menu-compact.css?v=20260927-menu4">
   <link rel="stylesheet" href="src/styles/account/account.css">
@@ -425,9 +425,9 @@
             <span class="radar-combined-chevron" data-radar-tier-cycle aria-hidden="true">▼</span>
           </span>
         </button>
-        <button class="direction-toggle-btn is-long chart-tool-icon" id="direction-toggle" type="button" aria-label="目前多頭，點擊切換空頭" aria-pressed="false" title="目前：多頭模式；點擊切換空頭"><span class="direction-toggle-icon" aria-hidden="true">↑</span></button>
         <button class="tab-btn" data-tab="surge" aria-label="合約 24H 成交額前 15 名" title="合約 24H 成交額前 15 名"><svg class="radar-tab-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M13 3c1 5-4 6-3 10 2-1 3-3 3-3 4 3 5 5 4 8-1 3-7 4-10 0-3-5 2-8 6-15Z"/></svg> <span class="tab-badge" id="badge-surge">0</span></button>
         <button class="tab-btn" data-tab="watch" aria-label="自選清單" title="自選清單"><span class="watch-tab-desktop">自選</span><span class="watch-tab-mobile"><svg class="radar-tab-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9Z"/></svg></span> <span class="tab-badge" id="badge-watch">0</span></button>
+        <button class="direction-toggle-btn is-long chart-tool-icon" id="direction-toggle" type="button" aria-label="目前多頭，點擊切換空頭" aria-pressed="false" title="目前：多頭模式；點擊切換空頭"><span class="direction-toggle-icon" aria-hidden="true">↑</span></button>
       </div>
       <span id="pool-count" hidden aria-live="polite">掃描中…</span>
       <div id="radar-tier-menu" role="menu" aria-label="雷達分級" hidden>
@@ -779,7 +779,7 @@
   </section>
 </div>
 
-<script src="src/core/runtime-config.js?v=20260927-radar-controls1"></script>
+<script src="src/core/runtime-config.js?v=20260927-radar-menu3"></script>
 <script src="src/components/strength/snapshots.js"></script>
 <script src="src/components/alerts/level-alerts.js?v=20260927-turnover1"></script>
 <script src="src/components/strength/market-strength.js"></script>
@@ -796,7 +796,7 @@
 <script src="src/components/chart/toolbar.js?v=20260927-toolbar7"></script>
 <script src="src/app/runtime-boot.js?v=20260927-home-radar9"></script>
 
-<script src="src/components/motion/controller.js?v=20260926-radar-fold3"></script>
+<script src="src/components/motion/controller.js?v=20260927-radar-menu3"></script>
 
 
 
@@ -842,8 +842,8 @@
 
 <script src="src/components/search/provider-switch.js?v=20260927-picker2"></script>
 <script type="module" src="src/app/app.js"></script>
-<script src="src/app/editorial-workspace.js?v=20260927-radar-touch2"></script>
-<script src="src/components/radar/controls.js?v=20260927-radar-touch2"></script>
+<script src="src/app/editorial-workspace.js?v=20260927-radar-menu3"></script>
+<script src="src/components/radar/controls.js?v=20260927-radar-menu3"></script>
 
 </body>
 </html>

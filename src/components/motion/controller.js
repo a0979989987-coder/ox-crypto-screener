@@ -38,7 +38,7 @@
   function scheduleFrame(){ if (!raf && !reduced()) raf = requestAnimationFrame(motionFrame); }
   // Keep the large background and glass surfaces static while scrolling.
   // Repainting them on every scroll frame delayed gestures on every view.
-  window.addEventListener('resize', () => { targetScroll = window.scrollY || 0; scheduleFrame(); syncDockIndicator(); syncScannerIndicator(); }, {passive:true});
+  window.addEventListener('resize', () => { targetScroll = window.scrollY || 0; scheduleFrame(); syncDockIndicator(); }, {passive:true});
   if (isFinePointer()) window.addEventListener('pointermove', e => { targetPointerX = 12 + (e.clientX / Math.max(1,innerWidth)) * 76; scheduleFrame(); }, {passive:true});
 
   /* ---- decorate only important glass surfaces, never every small card ---- */
@@ -109,30 +109,6 @@
     indicator.style.width = `${width.toFixed(1)}px`;
     indicator.style.transform = `translate3d(${x.toFixed(1)}px,0,0)`;
     indicator.style.opacity='1';
-  }
-
-  /* ---- scanner segmented active bubble ---- */
-  let scannerIndicator;
-  function ensureScannerIndicator(){
-    const tabs = document.querySelector('.scanner-tabs');
-    if (!tabs) return null;
-    scannerIndicator = tabs.querySelector('.ox-segment-indicator');
-    if (!scannerIndicator) {
-      scannerIndicator = document.createElement('span');
-      scannerIndicator.className = 'ox-segment-indicator';
-      scannerIndicator.setAttribute('aria-hidden','true');
-      tabs.prepend(scannerIndicator);
-    }
-    return scannerIndicator;
-  }
-  function syncScannerIndicator(){
-    const tabs = document.querySelector('.scanner-tabs');
-    const indicator = ensureScannerIndicator();
-    const active = tabs?.querySelector('.tab-btn.active');
-    if (!tabs || !indicator || !active) return;
-    const tr=tabs.getBoundingClientRect(), br=active.getBoundingClientRect();
-    indicator.style.width=`${br.width.toFixed(1)}px`;
-    indicator.style.transform=`translate3d(${(br.left-tr.left).toFixed(1)}px,0,0)`;
   }
 
   /* ---- star pop after the existing renderCurrentTab replaces DOM ---- */
@@ -231,9 +207,7 @@
   function init(){
     decorateGlassTargets();
     ensureDockIndicator();
-    ensureScannerIndicator();
     syncDockIndicator();
-    syncScannerIndicator();
     initNumberObservers();
     initLiquidationObserver();
     initControlObserver();
@@ -246,9 +220,7 @@
   document.addEventListener('ox:viewchange', e => {
     requestAnimationFrame(()=>{ syncDockIndicator(); revealView(e.detail?.to || ''); decorateGlassTargets(); });
   });
-  document.addEventListener('ox:filterchange', () => requestAnimationFrame(syncScannerIndicator));
   document.addEventListener('click', e => {
-    if(e.target.closest?.('.tab-btn')) requestAnimationFrame(syncScannerIndicator);
     if(e.target.closest?.('.dock-btn')) requestAnimationFrame(syncDockIndicator);
   });
 
