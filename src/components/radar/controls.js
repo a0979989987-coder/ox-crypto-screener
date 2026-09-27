@@ -6,6 +6,7 @@
   if (!logo || !menu) return;
   // A portal avoids clipping by the scanner's scroll/overflow containers.
   document.body.append(menu);
+  const holdMs = 2000;
   const tiers = ['all', 't1', 't2', 't3'];
   let press = null;
   let timer = 0;
@@ -61,11 +62,11 @@
       if (!press) return;
       suppressClick = true;
       openMenu();
-    }, 3000);
+    }, holdMs);
   }
   function finishPress(cancelled = false) {
     // A busy mobile event loop may deliver release before the hold timer.
-    if (!cancelled && press && !suppressClick && performance.now() - press.started >= 3000) {
+    if (!cancelled && press && !suppressClick && performance.now() - press.started >= holdMs) {
       suppressClick = true;
       openMenu();
     }
@@ -135,8 +136,15 @@
     if (event.target.closest('[data-radar-tier-cycle]')) {
       select(tiers[(tiers.indexOf(state.currentTab) + 1) % tiers.length]);
     } else {
-      if (menu.hidden) openMenu(event.detail === 0); else closeMenu();
+      // Opening is idempotent: a rapid second tap must not close the menu.
+      if (menu.hidden) openMenu(event.detail === 0);
     }
+  });
+  logo.addEventListener('dblclick', event => {
+    if (event.target.closest('[data-radar-tier-cycle]')) return;
+    event.preventDefault();
+    event.stopPropagation();
+    if (menu.hidden) openMenu();
   });
   logo.addEventListener('keydown', event => {
     if (event.key === 'ArrowDown') { event.preventDefault(); openMenu(true); }

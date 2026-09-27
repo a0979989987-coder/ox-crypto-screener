@@ -40,7 +40,7 @@ body.ox-terminal #view-radar #screener-list > .radar-tier-separator {
 
 /* Existing toolbar treatment, scoped to the radar controls. */
 body.ox-terminal #view-radar #radar-scanner-panel .scanner-tabs {
-  grid-template-columns:34px repeat(2,minmax(24px,1fr)) 28px!important;
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
   min-height:36px!important;
   align-items:center!important;
 }
@@ -55,11 +55,49 @@ body.ox-terminal #view-radar #radar-scanner-panel .radar-combined-tab {
 }
 /* Flat icon controls: no sliding glass tile or pressed glass background. */
 body.ox-terminal #view-radar #radar-scanner-panel .scanner-tabs > button {
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  position:relative;
+  width:100%!important;
+  min-width:0!important;
+  height:36px!important;
+  min-height:36px!important;
+  padding:0!important;
+  line-height:1!important;
+  border:0!important;
   background:transparent!important;
   box-shadow:none!important;
   backdrop-filter:none!important;
   -webkit-backdrop-filter:none!important;
   -webkit-tap-highlight-color:transparent;
+}
+/* The active underline must not shift the content's vertical center. */
+body.ox-terminal #view-radar #radar-scanner-panel .scanner-tabs > .tab-btn.active::after {
+  display:block!important;
+  content:"";
+  position:absolute;
+  left:0;
+  right:0;
+  bottom:0;
+  height:2px;
+  background:var(--ink);
+  pointer-events:none;
+}
+body.ox-terminal #view-radar #radar-scanner-panel .tab-badge {
+  position:absolute;
+  top:2px;
+  right:2px;
+  margin:0;
+}
+body.ox-terminal #view-radar #radar-scanner-panel .radar-tab-icon {flex:none;margin:0}
+@media(max-width:720px) {
+  body.ox-terminal #view-radar #radar-scanner-panel .watch-tab-mobile {
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    line-height:1;
+  }
 }
 body.ox-terminal #view-radar .radar-combined-tab * {
   -webkit-touch-callout:none;
@@ -88,9 +126,13 @@ body.ox-terminal #view-radar .radar-tier-current {
   pointer-events:none;
 }
 body.ox-terminal #view-radar #radar-scanner-panel .scanner-tabs #direction-toggle {
-  width:28px!important;
-  min-width:28px!important;
-  max-width:28px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  grid-template-columns:none!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:none!important;
   height:36px!important;
   padding:0!important;
   border:0!important;
@@ -100,11 +142,17 @@ body.ox-terminal #view-radar #radar-scanner-panel .scanner-tabs #direction-toggl
   overflow:visible!important;
 }
 body.ox-terminal #view-radar #direction-toggle .direction-toggle-icon {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:16px;
+  height:16px;
+  line-height:1;
+  transform:none;
+  translate:none;
   font-size:16px!important;
   transition:color .28s ease,text-shadow .28s ease,translate .28s ease;
 }
-body.ox-terminal #view-radar #direction-toggle.is-long .direction-toggle-icon {translate:0 -1px}
-body.ox-terminal #view-radar #direction-toggle.is-short .direction-toggle-icon {translate:0 1px}
 body.ox-terminal #view-radar #direction-toggle:is(:hover,:focus-visible,:active) .direction-toggle-icon {
   text-shadow:0 0 6px currentColor;
 }

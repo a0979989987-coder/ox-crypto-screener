@@ -50,9 +50,9 @@ function harness() {
 }
 
 test('held touch survives compatibility pointer cancellation and viewport resize, without moving focus', () => {
-  const h = harness(); h.start(); h.advance(1500);
+  const h = harness(); h.start(); h.advance(1000);
   h.document.emit('pointercancel', { pointerType: 'touch', pointerId: 9 });
-  h.window.emit('resize'); h.move(7); h.advance(1499);
+  h.window.emit('resize'); h.move(7); h.advance(999);
   assert.equal(h.menu.hidden, true);
   h.advance(1);
   assert.equal(h.menu.hidden, false);
@@ -67,14 +67,14 @@ test('held touch survives compatibility pointer cancellation and viewport resize
 
 test('drag, native scrolling, cancellation and multiple fingers cancel pending long press', () => {
   for (const cancel of [h => h.move(20), h => { h.window.scrollY = 50; h.document.emit('scroll'); }, h => h.end('touchcancel'), h => h.document.emit('touchstart', { touches: [{}, {}] })]) {
-    const h = harness(); h.start(); h.advance(1000); cancel(h); h.advance(3000);
+    const h = harness(); h.start(); h.advance(1000); cancel(h); h.advance(2000);
     assert.equal(h.menu.hidden, true);
     h.logo.emit('click', { detail: 0 }); assert.equal(h.state.currentTab, 'all');
   }
 });
 
 test('unrelated scrolling does not cancel hold and touch listeners never block page scrolling', () => {
-  const h = harness(); h.start(); h.document.emit('scroll', { target: {} }); h.document.emit('scroll'); h.advance(3000);
+  const h = harness(); h.start(); h.document.emit('scroll', { target: {} }); h.document.emit('scroll'); h.advance(2000);
   assert.equal(h.menu.hidden, false);
   for (const target of [h.logo, h.document]) for (const [type, entries] of target.listeners) {
     if (type.startsWith('touch')) assert(entries.every(entry => entry.options.passive === true));
@@ -95,7 +95,7 @@ test('short taps still cycle existing tiers; keyboard can open and dismiss choic
 
 test('tap on radar opens choices and a delayed hold timer is recovered on release', () => {
   const h = harness();
-  h.start(); h.elapse(3100); h.end();
+  h.start(); h.elapse(2100); h.end();
   assert.equal(h.menu.hidden, false, 'release recovers an overdue timer');
   h.logo.emit('click'); assert.equal(h.menu.hidden, false, 'release click cannot close menu');
   h.document.emit('keydown', { key: 'Escape' });
@@ -107,9 +107,23 @@ test('tap on radar opens choices and a delayed hold timer is recovered on releas
 test('touch pointer events work when a WebView does not provide Touch Events', () => {
   const h = harness();
   h.logo.emit('pointerdown', { pointerType: 'touch', isPrimary: true, button: 0, pointerId: 5, clientX: 295, clientY: 142 });
-  h.advance(3000);
+  h.advance(2000);
   assert.equal(h.menu.hidden, false);
   h.document.emit('pointerup', { pointerType: 'touch', pointerId: 5 });
   h.logo.emit('click');
   assert.equal(h.menu.hidden, false); assert.equal(h.state.currentTab, 'all');
+});
+
+
+test('rapid double tap leaves choices open instead of toggling them closed', () => {
+  const h = harness();
+  for (let tap = 0; tap < 2; tap++) {
+    h.start(); h.advance(50); h.end(); h.logo.emit('click', { detail: tap + 1 });
+    assert.equal(h.menu.hidden, false);
+  }
+  h.logo.emit('dblclick');
+  assert.equal(h.menu.hidden, false);
+  assert.equal(h.state.currentTab, 'all');
+  h.document.emit('pointerdown', { target: {} });
+  assert.equal(h.menu.hidden, true, 'outside tap still dismisses choices');
 });

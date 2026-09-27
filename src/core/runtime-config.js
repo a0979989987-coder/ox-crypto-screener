@@ -93,7 +93,7 @@ function syncScannerFilterUI() {
   const radarTab = document.querySelector(".radar-combined-tab");
   if (radarTab) {
     const tier = ["t1", "t2", "t3"].includes(state.currentTab) ? state.currentTab.toUpperCase() : "全部";
-    radarTab.setAttribute("aria-label", `雷達：${tier}；點擊圖示或長按三秒選擇分級，右下角切換`);
+    radarTab.setAttribute("aria-label", `雷達：${tier}；單擊、快速雙擊圖示或長按兩秒選擇分級，右下角切換`);
     radarTab.title = `雷達：${tier}`;
     const label = radarTab.querySelector(".radar-tier-current");
     if (label) label.textContent = tier === "全部" ? "" : tier;
