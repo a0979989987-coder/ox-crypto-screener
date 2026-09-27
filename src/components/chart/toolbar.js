@@ -48,6 +48,8 @@
     if (!overlay) return;
     returnFocusElement = document.activeElement;
     panels.forEach(el => { el.hidden = el.dataset.chartToolsPanel !== panel; });
+    overlay.dataset.activePanel = panel;
+    dialog?.setAttribute('aria-label', panel === 'timeframes' ? '選擇時間級別' : '指標與篩選');
     overlay.classList.add('is-open'); overlay.setAttribute('aria-hidden','false');
     document.body.classList.add('chart-tools-open');
     dialog?.focus({preventScroll:true});
