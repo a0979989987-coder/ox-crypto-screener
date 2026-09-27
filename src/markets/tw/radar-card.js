@@ -7,7 +7,8 @@
 export const TW_RADAR_MODES = Object.freeze([
   { id: "risk", label: "風險股" },
   { id: "disposal", label: "處置中" },
-  { id: "release", label: "即將出關" }
+  { id: "release", label: "即將出關" },
+  { id: "watchlist", label: "自選" }
 ]);
 
 export const escapeTW = value => String(value ?? "").replace(/[&<>"']/g, char => ({
@@ -68,8 +69,22 @@ export function normalizeTWStockCard(source) {
 }
 
 // Explicit membership only: price action is never used to guess exchange disposition rules.
-export function rowsForTWMode(state, mode, classicRows) {
+export function rowsForTWMode(state, mode, classicRows, watchlist) {
   if (mode === "classic") return classicRows;
+  if (mode === "watchlist") {
+    if (!watchlist?.size) return [];
+    const available = new Map(classicRows.map(row => [row.symbol, row]));
+    // Announcement rows have more status fields than the ordinary quote rows.
+    for (const category of ["risk", "disposal", "release"]) {
+      for (const row of state?.data?.radarModes?.[category] || []) {
+        const normalized = normalizeTWStockCard(row);
+        if (normalized) available.set(normalized.symbol, normalized);
+      }
+    }
+    return [...watchlist].map(symbol => available.get(symbol) ||
+      normalizeTWStockCard({ symbol, name: symbol, disposition: { riskLabel: "行情資料待更新" } }))
+      .filter(Boolean);
+  }
   const supplied = state?.data?.radarModes?.[mode];
   if (Array.isArray(supplied)) return supplied.map(normalizeTWStockCard).filter(Boolean);
   if (mode === "hot") return classicRows.filter(row => row.price !== null)

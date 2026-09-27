@@ -2431,7 +2431,7 @@ function ensureStyles() {
   );
   const ui = document.createElement("link");
   ui.rel = "stylesheet";
-  ui.href = "src/markets/tw/radar-ui.css?v=20260927h";
+  ui.href = "src/markets/tw/radar-ui.css?v=20260927i";
   document.head.appendChild(ui);
 }
 
@@ -2857,7 +2857,7 @@ function refreshRadarDataUI(
       state
     );
 
-  const modeRows = rowsForTWMode(state, activeMode, rows);
+  const modeRows = rowsForTWMode(state, activeMode, rows, watchlist);
 
 
   const filtered =
@@ -3084,11 +3084,12 @@ function refreshRadarDataUI(
 
     if (activeMode !== "classic") {
       const meta = state?.data?.radarModesMeta?.[activeMode];
-      const loading = state?.status === "loading" && !meta;
+      const loading = activeMode !== "watchlist" && state?.status === "loading" && !meta;
       if (loading) {
         list.innerHTML = Array.from({ length: 4 }, () => '<div class="twr-loading-card" aria-label="官方名單載入中"><i></i><i></i><i></i></div>').join("");
       } else {
-        const message = meta?.status === "error" || !meta ? "官方資料暫時無法載入，請稍後再試。"
+        const message = activeMode === "watchlist" ? "尚未收藏股票。點選股票卡片右上角的星星即可加入自選。"
+          : meta?.status === "error" || !meta ? "官方資料暫時無法載入，請稍後再試。"
           : meta?.status === "partial" ? "目前尚無可確認的股票，部分官方名單仍在更新。"
           : activeMode === "risk" ? "目前官方名單沒有公布注意或接近處置門檻的股票。"
           : activeMode === "release" ? "目前沒有 3 個交易日內處置結束的股票。"
@@ -4376,12 +4377,22 @@ export function renderTWRadar(
           watchButton.setAttribute("aria-label", `${selected ? "取消收藏" : "收藏"} ${watchButton.closest(".tw-stock-card")?.querySelector(".tw-stock-identity strong")?.textContent || symbol}`);
           root.querySelector("#twr-watch-count")?.replaceChildren(document.createTextNode(String(watchlist.size)));
 
+          if (activeMode === "watchlist" && !selected) {
+            // Only the removed favourite leaves this grid; other modes keep
+            // their cards, candles, and scroll position untouched.
+            const card = watchButton.closest(".tw-stock-card");
+            card?.remove();
+            root.querySelector("#twr-result-count")?.replaceChildren(
+              document.createTextNode(String(watchlist.size)));
+            if (!watchlist.size) refresh();
+          }
+
           return;
         }
 
         const stock = event.target.closest("[data-twr-symbol]");
         if (stock) {
-          const row = [...rowsForTWMode(state, activeMode, getRadarRows(state)), ...getRadarRows(state)]
+          const row = [...rowsForTWMode(state, activeMode, getRadarRows(state), watchlist), ...getRadarRows(state)]
             .find(item => item.symbol === stock.dataset.twrSymbol);
           openTWStockDetail(root, row);
           return;
@@ -4482,7 +4493,7 @@ export function renderTWRadar(
   shell?.addEventListener("keydown", event => {
     if ((event.key === "Enter" || event.key === " ") && event.target.matches(".tw-stock-card")) {
       event.preventDefault();
-      const row = [...rowsForTWMode(state, activeMode, getRadarRows(state)), ...getRadarRows(state)].find(item => item.symbol === event.target.dataset.twrSymbol);
+      const row = [...rowsForTWMode(state, activeMode, getRadarRows(state), watchlist), ...getRadarRows(state)].find(item => item.symbol === event.target.dataset.twrSymbol);
       openTWStockDetail(root, row);
     }
   });

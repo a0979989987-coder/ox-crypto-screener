@@ -21,6 +21,18 @@ test("TW disposition lists require explicit provider membership and never infer 
   assert.doesNotMatch(renderTWStockCard(ordinary, new Set()), /進入處置/);
 });
 
+test("TW favourites retain saved symbols and prefer official disposition details", () => {
+  const quote = normalizeTWStockCard({ symbol: "2330", name: "台積電", price: 120 });
+  const state = { data: { radarModes: {
+    disposal: [{ symbol: "2330", name: "台積電", price: 120, disposition: { status: "active", batchMinutes: 5 } }]
+  } } };
+  const selected = rowsForTWMode(state, "watchlist", [quote], new Set(["2330", "3450"]));
+  assert.deepEqual(selected.map(row => row.symbol), ["2330", "3450"]);
+  assert.equal(selected[0].disposition.batchMinutes, 5);
+  assert.equal(selected[1].price, null);
+  assert.equal(rowsForTWMode(state, "watchlist", [quote], new Set()).length, 0);
+});
+
 test("TW price icon shows only the last supplied session and does not invent a candle", () => {
   const points = [{ open: 10, high: 12, low: 9, close: 11 }, { open: 11, high: 12, low: 8, close: 9 }];
   const icon = renderTWCurrentCandle(points);

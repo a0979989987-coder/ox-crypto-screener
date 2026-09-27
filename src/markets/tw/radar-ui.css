@@ -109,9 +109,22 @@ body.ox-terminal #market-unavailable-card.tw-radar-root { margin-top: 16px !impo
 @media (max-width: 360px) { .tw-radar-root .twr-list { gap: 5px; } .tw-radar-root .tw-stock-card { padding: 8px; }  }
 @media (prefers-reduced-motion: reduce) { .tw-radar-root .twr-mode-indicator,.tw-radar-root .tw-stock-card,.tw-stock-detail,.tw-stock-detail-panel { transition-duration: .01ms; } }
 
-/* Leave a compact breathing space below the three modes on mobile. */
+/* Keep the four mode buttons readable on narrow phones. */
 @media (max-width:700px) {
   .tw-radar-root .twr-shell { gap: 5px; }
   .tw-radar-root .twr-results-panel { margin-top: 0; padding-top: 0; }
   .tw-radar-root .twr-results-head { margin: 0 0 6px; }
+  .tw-radar-root .twr-mode-rail button { padding-inline: 1px; font-size: clamp(10px, 3.1vw, 12px); }
 }
+
+/* The stock tiles carry their own glass edges. Remove the enclosing panel. */
+.tw-radar-root .twr-results-panel {
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+.tw-radar-root .twr-results-panel::before { display: none; }
