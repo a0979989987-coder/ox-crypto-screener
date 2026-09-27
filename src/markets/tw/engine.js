@@ -986,10 +986,21 @@ function normalizeRadarItem(
       ),
 
     rs:
+      // Historical relative strength is supplied by the provider only.
       finiteNumber(
         item.rs ??
         item.relativeStrength
       ),
+
+    turnoverRate:
+      finiteNumber(item.turnoverRate),
+
+    change:
+      finiteNumber(item.change),
+
+    disposition:
+      item.disposition && typeof item.disposition === "object"
+        ? item.disposition : null,
 
     breakout:
       booleanValue(
@@ -1932,6 +1943,11 @@ export async function refreshTWMarketState(
               themes,
 
               radar,
+
+              // Optional provider-curated lists. The client never derives
+              // disposition status from ordinary price or volume fields.
+              radarModes:
+                resultValue(radarResult, {})?.modes || {},
 
               indicators,
 

@@ -1,4 +1,6 @@
 import { bindTWLookup, renderTWLookup } from "./lookup.js";
+import { TW_RADAR_MODES, normalizeTWStockCard, rowsForTWMode, renderTWStockCard } from "./radar-card.js";
+import { observeTWMiniCandles, resetTWMiniCandles, openTWStockDetail } from "./radar-candles.js";
 
 /*
  * OX v4.0 Modular
@@ -109,6 +111,18 @@ let searchQuery =
 
 let sortKey =
   "oxScore";
+
+let activeMode = "risk";
+let pageObserver = null;
+let modeResizeObserver = null;
+
+function positionModeIndicator(root) {
+  const rail = root.querySelector('.twr-mode-rail');
+  const selected = rail?.querySelector('.active');
+  if (!selected) return;
+  rail.style.setProperty('--mode-x', `${selected.offsetLeft}px`);
+  rail.style.setProperty('--mode-width', `${selected.offsetWidth}px`);
+}
 
 
 const quickFilters =
@@ -829,7 +843,12 @@ function normalizeRow(
 
     updatedAt:
       item.updatedAt ||
-      null
+      null,
+
+    // Reserved for an explicit official disposition adapter.
+    disposition: item.disposition,
+    turnoverRate: finiteNumber(item.turnoverRate),
+    change: finiteNumber(item.change)
   };
 }
 
@@ -1421,10 +1440,10 @@ function ensureStyles() {
         rgba(218,229,242,.56);
 
       --twr-up:
-        #37ca96;
+        #f16a70;
 
       --twr-down:
-        #ef667b;
+        #48b78e;
 
       --twr-gold:
         #e7b955;
@@ -2411,6 +2430,10 @@ function ensureStyles() {
   document.head.appendChild(
     style
   );
+  const ui = document.createElement("link");
+  ui.rel = "stylesheet";
+  ui.href = "src/markets/tw/radar-ui.css";
+  document.head.appendChild(ui);
 }
 
 
@@ -2835,14 +2858,14 @@ function refreshRadarDataUI(
       state
     );
 
+  const modeRows = rowsForTWMode(state, activeMode, rows);
+
 
   const filtered =
-    sortRows(
-      filterRows(
-        rows,
-        watchlist
-      )
-    );
+    activeMode === "classic"
+      ? sortRows(filterRows(rows, watchlist))
+      : modeRows.filter(row => activeBoard === "ALL" || row.market === activeBoard)
+          .filter(row => !searchQuery || `${row.symbol} ${row.name} ${row.industry}`.toLowerCase().includes(searchQuery.toLowerCase()));
 
 
   const totalEl =
@@ -2943,6 +2966,17 @@ function refreshRadarDataUI(
       );
   }
 
+  const modeRail = root.querySelector(".twr-mode-rail");
+  modeRail?.querySelectorAll("[data-twr-mode]").forEach(button => {
+    const selected = button.dataset.twrMode === activeMode;
+    button.classList.toggle("active", selected);
+    button.setAttribute("aria-selected", String(selected));
+  });
+  positionModeIndicator(root);
+  root.querySelectorAll(".twr-classic-only").forEach(section => section.hidden = activeMode !== "classic");
+  const label = root.querySelector("#twr-mode-label");
+  if (label) label.textContent = TW_RADAR_MODES.find(mode => mode.id === activeMode)?.label || "";
+
 
   root
     .querySelectorAll(
@@ -3005,6 +3039,9 @@ function refreshRadarDataUI(
     return;
   }
 
+  pageObserver?.disconnect();
+  resetTWMiniCandles();
+
 
   /*
    * No provider data yet.
@@ -3012,26 +3049,10 @@ function refreshRadarDataUI(
   if (
     rows.length ===
     0
+    && activeMode === "classic"
   ) {
 
-    list.innerHTML = `
-      ${renderWaitingRows()}
-
-      <div
-        class="twr-empty"
-      >
-        <b>
-          WAITING FOR TW STOCK DATA
-        </b>
-
-        台股 Radar UI 已完成，
-        但 TW Provider / Engine
-        尚未提供個股掃描資料。<br>
-
-        目前不會使用假股票或
-        Crypto 資料填入台股市場。
-      </div>
-    `;
+    list.innerHTML = `<div class="twr-empty"><b>${state?.status === "error" ? "資料載入失敗" : state?.status === "loading" ? "資料載入中" : "尚無台股行情"}</b>請稍後重試。</div>`;
 
     return;
   }
@@ -3046,38 +3067,33 @@ function refreshRadarDataUI(
     0
   ) {
 
-    list.innerHTML = `
-
-      <div
-        class="twr-empty"
-      >
-        <b>
-          沒有符合目前條件的股票
-        </b>
-
-        可以降低條件、
-        清除快速篩選，
-        或切回 ALL。
-      </div>
-
-    `;
+    list.innerHTML = `<div class="twr-empty"><b>${activeMode === "classic" ? "沒有符合目前條件的股票" : "此模式資料待更新"}</b>${activeMode === "classic" ? "請調整篩選條件。" : "目前尚未接入官方分類資料，沒有推測或示範股票。"}</div>`;
 
     return;
   }
 
 
-  list.innerHTML =
-    filtered
-      .map(
-        row =>
-          renderRow(
-            row,
-            watchlist
-          )
-      )
-      .join(
-        ""
-      );
+  let shown = 0;
+  const appendPage = () => {
+    const page = filtered.slice(shown, shown + 40);
+    shown += page.length;
+    const sentinel = list.querySelector(".twr-more-sentinel");
+    sentinel?.insertAdjacentHTML("beforebegin", page.map(row =>
+      renderTWStockCard(normalizeTWStockCard(row), watchlist)).join(""));
+    if (shown >= filtered.length) sentinel?.remove();
+    observeTWMiniCandles(list);
+  };
+  list.innerHTML = `<div class="twr-more-sentinel" aria-hidden="true"></div>`;
+  appendPage();
+  if (shown < filtered.length) {
+    pageObserver = new IntersectionObserver(entries => {
+      if (entries.some(entry => entry.isIntersecting)) {
+        appendPage();
+        if (shown >= filtered.length) pageObserver?.disconnect();
+      }
+    }, { rootMargin: "400px" });
+    pageObserver.observe(list.querySelector(".twr-more-sentinel"));
+  }
 }
 
 
@@ -3282,6 +3298,8 @@ export function renderTWRadar(
 
       </header>
 
+      <nav class="twr-mode-viewport" aria-label="台股雷達模式"><div class="twr-mode-rail" role="tablist"><span class="twr-mode-indicator" aria-hidden="true"></span>${TW_RADAR_MODES.map(mode => `<button type="button" role="tab" data-twr-mode="${mode.id}" aria-selected="${mode.id === activeMode}">${mode.label}</button>`).join("")}</div></nav>
+
       ${renderTWLookup()}
 
 
@@ -3290,7 +3308,7 @@ export function renderTWRadar(
       <!-- ============================================================ -->
 
       <section
-        class="twr-panel"
+        class="twr-panel twr-classic-only"
       >
 
         <div
@@ -3374,7 +3392,7 @@ export function renderTWRadar(
       <!-- ============================================================ -->
 
       <section
-        class="twr-panel"
+        class="twr-panel twr-classic-only"
       >
 
         <div
@@ -3870,7 +3888,7 @@ export function renderTWRadar(
         >
 
           <span>
-            篩選結果
+            <span id="twr-mode-label">${TW_RADAR_MODES.find(mode => mode.id === activeMode)?.label}</span>
             <b
               id="twr-result-count"
             >
@@ -3892,7 +3910,7 @@ export function renderTWRadar(
 
 
         <div
-          class="twr-table-head"
+          class="twr-table-head twr-classic-only"
         >
 
           <span>
@@ -3958,7 +3976,7 @@ export function renderTWRadar(
 
 
         <footer
-          class="twr-footer"
+          class="twr-footer twr-classic-only"
         >
 
           <span>
@@ -4248,6 +4266,20 @@ export function renderTWRadar(
       "click",
       event => {
 
+        const modeButton = event.target.closest("[data-twr-mode]");
+        if (modeButton) {
+          activeMode = modeButton.dataset.twrMode;
+          modeButton.scrollIntoView({ block: "nearest", inline: "center", behavior: "smooth" });
+          refresh();
+          if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            root.querySelector('#twr-list')?.animate([
+              { opacity: .25, transform: 'translateY(4px)' },
+              { opacity: 1, transform: 'translateY(0)' }
+            ], { duration: 220, easing: 'cubic-bezier(.22,.8,.22,1)' });
+          }
+          return;
+        }
+
 
         /* Tier */
 
@@ -4271,7 +4303,6 @@ export function renderTWRadar(
 
           return;
         }
-
 
         /* Board */
 
@@ -4383,6 +4414,14 @@ export function renderTWRadar(
           return;
         }
 
+        const stock = event.target.closest("[data-twr-symbol]");
+        if (stock) {
+          const row = rowsForTWMode(state, activeMode, getRadarRows(state))
+            .find(item => item.symbol === stock.dataset.twrSymbol);
+          openTWStockDetail(root, row);
+          return;
+        }
+
 
         /* Reset */
 
@@ -4472,6 +4511,17 @@ export function renderTWRadar(
 
 
   bindTWLookup(root);
+  modeResizeObserver?.disconnect();
+  modeResizeObserver = new ResizeObserver(() => positionModeIndicator(root));
+  modeResizeObserver.observe(root.querySelector('.twr-mode-rail'));
+
+  shell?.addEventListener("keydown", event => {
+    if ((event.key === "Enter" || event.key === " ") && event.target.matches(".tw-stock-card")) {
+      event.preventDefault();
+      const row = rowsForTWMode(state, activeMode, getRadarRows(state)).find(item => item.symbol === event.target.dataset.twrSymbol);
+      openTWStockDetail(root, row);
+    }
+  });
 
   refresh();
 
