@@ -372,7 +372,10 @@ function initSettings() {
     if (input.dataset.settingKey === "oxLive") document.documentElement.classList.toggle("ox-live-disabled", !input.checked);
     input.addEventListener("change", () => {
       localStorage.setItem(key, input.checked ? "1" : "0");
-      if (input.dataset.settingKey === "oxLive") document.documentElement.classList.toggle("ox-live-disabled", !input.checked);
+      if (input.dataset.settingKey === "oxLive") {
+        document.documentElement.classList.toggle("ox-live-disabled", !input.checked);
+        document.querySelectorAll('[data-setting-key="oxLive"]').forEach(other => { other.checked = input.checked; });
+      }
       flashSettingsSaved();
     });
   });
