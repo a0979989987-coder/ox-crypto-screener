@@ -28,6 +28,7 @@ function aggregate(raw,frame){
   console.log('Opening page');await page.goto(origin,{waitUntil:'domcontentloaded'});await page.getByRole('button',{name:'指標',exact:true}).click();await page.locator('.px-board').waitFor();console.log('Pattern page ready');
   assert.deepEqual((await page.locator('#ox-crypto-tools-nav [data-crypto-tool]').allTextContents()).slice(0,3),['型態搜尋','總覽','強弱對比']);
   assert.equal(await page.locator('[data-frame-label]').textContent(),'4H + 1H');
+  assert.equal(await page.locator('[data-limit]').inputValue(),'0','all eligible coins by default');
   await page.waitForFunction(()=>document.querySelector('#ox-crypto-tools-inline').firstElementChild.shadowRoot.querySelector('.px-status').textContent.includes('預先分類'));
   await page.waitForTimeout(600);assert.ok(candleRequests>0,'preloads candles before any drawing or preset');
   await page.locator('[data-action="timeframes"]').click();await page.locator('[data-frame="15m"]').click();await page.locator('[data-frame="4H"]').click();await page.locator('[data-frame="1H"]').click();await page.getByRole('button',{name:'關閉時間級別',exact:true}).click();
@@ -44,7 +45,7 @@ function aggregate(raw,frame){
   const boxes=await page.locator('.px-card').evaluateAll(es=>es.slice(0,2).map(e=>({x:e.getBoundingClientRect().x,y:e.getBoundingClientRect().y,w:e.getBoundingClientRect().width})));assert.equal(boxes[0].y,boxes[1].y);assert.ok(boxes[1].x>boxes[0].x);
   const ranks=await page.locator('.px-card').evaluateAll(es=>es.map(e=>({tier:Number(e.dataset.tier),score:Number(e.querySelector('.px-match span:last-child').textContent.replace('相似 ',''))})));
   assert.ok(ranks.every((x,i)=>!i||x.tier>ranks[i-1].tier||x.tier===ranks[i-1].tier&&x.score<=ranks[i-1].score));
-  const topCount=Number((await page.locator('[data-tier-filter="1"]').textContent()).replace(/[^0-9]/g,''));
+  const topCount=Number((await page.locator('[data-tier-filter="1"]').textContent()).trim().split(/\s+/).at(-1));
   await page.locator('[data-tier-filter="1"]').click();assert.equal(await page.locator('.px-card').count(),Math.min(topCount,24));await page.locator('[data-tier-filter="all"]').click();
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
   fs.mkdirSync('/tmp/ox-pattern-review',{recursive:true});await page.screenshot({path:'/tmp/ox-pattern-review/mobile.png',fullPage:true});
@@ -59,9 +60,12 @@ function aggregate(raw,frame){
   const afterDetailRequests=candleRequests;
   // Freehand input is drawn from an actual observed window, preserving its capture timestamp.
   await page.locator('[data-action="undo"]').click();const raw=snapshot.candles.BTCUSDT.response.data.map(r=>r.map(Number)).filter(r=>r[0]+900000<=snapshot.requestTime).sort((a,b)=>a[0]-b[0]).slice(-61),lo=Math.min(...raw.map(r=>r[4])),hi=Math.max(...raw.map(r=>r[4]));
-  const board=page.locator('.px-board canvas');await board.scrollIntoViewIfNeeded();const bb=await board.boundingBox();const x=i=>bb.x+18+i/(raw.length-1)*(bb.width-36),y=r=>bb.y+60+(1-(r[4]-lo)/(hi-lo))*(bb.height-105);
+  const board=page.locator('.px-board canvas');await board.scrollIntoViewIfNeeded();const bb=await board.boundingBox();
+  const controlBox=await page.locator('.px-controls').boundingBox(),bottomBox=await page.locator('.px-board-bottom').boundingBox();assert.ok(controlBox.y+controlBox.height<=bb.y,'controls cannot overlay canvas');assert.ok(bottomBox.y>=bb.y+bb.height,'footer cannot overlay canvas');const x=i=>bb.x+18+i/(raw.length-1)*(bb.width-36),y=r=>bb.y+18+(1-(r[4]-lo)/(hi-lo))*(bb.height-36);
   await page.mouse.move(x(0),y(raw[0]));await page.mouse.down();for(let i=1;i<raw.length;i++)await page.mouse.move(x(i),y(raw[i]));await page.mouse.up();await page.waitForTimeout(1300);await page.waitForFunction(()=>document.querySelector('#ox-crypto-tools-inline').firstElementChild.shadowRoot.querySelector('.px').dataset.indexState!=='loading',{},{timeout:60000});
   assert.ok((await page.locator('.px-card .px-symbol').allTextContents()).some(s=>s.startsWith('BTC')));assert.equal(candleRequests,afterDetailRequests,'freehand search uses already loaded candles');
+  // A new stroke replaces the old one without Undo, and the drawing glow is finite.
+  await page.mouse.move(bb.x+20,bb.y+40);await page.mouse.down();assert.ok(await page.locator('.px-board.is-drawing').count());await page.mouse.move(bb.x+bb.width-20,bb.y+40,{steps:20});await page.mouse.up();await page.waitForTimeout(200);assert.equal(await page.locator('[data-pattern-label]').textContent(),'水平阻力');assert.equal(await page.locator('.px-board.is-drawing').count(),0);
   await page.setViewportSize({width:1440,height:1100});await page.waitForTimeout(250);await page.screenshot({path:'/tmp/ox-pattern-review/desktop.png',fullPage:true});
   await page.locator('#ox-crypto-tools-nav [data-crypto-tool="strength"]').click();assert.ok(await page.locator('.strength-compare-panel').isVisible());assert.equal(await page.locator('.px-board').count(),0);
   await page.locator('#ox-crypto-tools-nav [data-crypto-tool="overview"]').click();await page.locator('.cfx-overview').waitFor();

@@ -1,6 +1,6 @@
 // Local observations only; no generated candles or inferred market values are stored.
-import { TIMEFRAMES, candleBoundary } from './catalog.js?v=patterns4-20260929';
-export const INDEX_VERSION=3;
+import { TIMEFRAMES, candleBoundary } from './catalog.js?v=patterns5-20260929';
+export const INDEX_VERSION=4;
 const memory=new Map();let opening;
 export const entryKey=data=>`${data.symbol}:${data.frame}`;
 export function entryCurrent(entry,now=Date.now()){
@@ -21,9 +21,9 @@ export async function readIndex(frames,now=Date.now()){
   const db=await database();
   if(db)await Promise.all(frames.map(frame=>new Promise(resolve=>{
     let r;try{r=db.transaction('series').objectStore('series').index('frame').getAll(frame);}catch{return resolve();}
-    r.onsuccess=()=>{for(const e of r.result)if(entryCurrent(e,now))memory.set(e.key,e);resolve();};r.onerror=()=>resolve();
+    r.onsuccess=()=>{for(const e of r.result)if(entryCurrent(e,now)||e.version===INDEX_VERSION&&e.data?.frame==='1W')memory.set(e.key,e);resolve();};r.onerror=()=>resolve();
   })));
-  return [...memory.values()].filter(e=>frames.includes(e.data.frame)&&entryCurrent(e,now));
+  return [...memory.values()].filter(e=>frames.includes(e.data.frame)&&(entryCurrent(e,now)||e.version===INDEX_VERSION&&e.data.frame==='1W'));
 }
 export async function saveIndex(data,matches){
   const entry={key:entryKey(data),frame:data.frame,data,matches,version:INDEX_VERSION,savedAt:Date.now()};memory.set(entry.key,entry);

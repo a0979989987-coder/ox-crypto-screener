@@ -1,4 +1,4 @@
-import { PATTERNS, patternById } from './catalog.js?v=patterns4-20260929';
+import { PATTERNS, patternById } from './catalog.js?v=patterns5-20260929';
 const clamp = (x, a=0, b=1) => Math.max(a, Math.min(b, x));
 const mean = a => a.reduce((s,x)=>s+x,0)/a.length;
 export function normalize(points) {
@@ -110,9 +110,13 @@ function setupPhase(context,pattern,pivots,score,shape,visual,end){
     // A failed right shoulder or second bottom is not an actionable reversal.
     if((last-trough)*dir<-.35*a)return null;
     const symmetry=pivots.length===5?Math.abs(pivots[1].y-pivots[3].y)/height:Math.abs(pivots[1].y-pivots[5].y)/height;
-    const strict=symmetry<=.18&&shape>=86&&visual>=64&&score>=83&&age<=3;
-    if(strict&&progress>=-.9*a&&progress<=.25*a)return {tier:1,stage:'頸線附近 · 待確認'};
-    if(progress>=-.9*a&&progress<=Math.min(1.7*a,height*.38)&&score>=76&&age<=5)return {tier:2,stage:progress>0?'初步越過頸線':'接近頸線'};
+    const right=pivots.at(-2).x,after=candles.slice(right+1);
+    const excursion=Math.max(0,...after.map(c=>((bullish?c.high:c.low)-neck)*dir));
+    const quality=symmetry<=.34&&shape>=78&&visual>=58&&score>=74&&age<=5;
+    // Loosen the pre-breakout zone, not the post-breakout rule. A run-and-return
+    // cannot regain T1 just because the latest close is back near its neckline.
+    if(quality&&progress>=-.6*height&&progress<=.12*height&&excursion<=Math.max(.65*a,.18*height))return {tier:1,stage:bullish?'未噴發':'未破位'};
+    if(progress>=-.35*height&&progress<=.55*height&&excursion<=.7*height&&score>=74&&age<=7)return {tier:2,stage:progress>0?'初步越過頸線':'接近頸線'};
     return {tier:3,stage:progress>Math.min(1.7*a,height*.38)?'已走離頸線':'尚未到觸發區'};
   }
   if(['triangle','ascending','descending'].includes(r)){
@@ -125,7 +129,8 @@ function setupPhase(context,pattern,pivots,score,shape,visual,end){
     const up=(last-top)/a,down=(bottom-last)/a,opposite=r==='ascending'?down:r==='descending'?up:Math.max(0,Math.min(up,down));
     if(opposite>.45)return null;
     if(up>.35||down>.35){const move=Math.max(up,down);return move<=1.5&&score>=77?{tier:2,stage:'初步突破邊界'}:{tier:3,stage:'已走離收斂區'};}
-    if(score>=84&&shape>=86&&visual>=64&&contract<=.67&&age<=3&&width>-.35*a)return {tier:1,stage:'收斂末段 · 待確認'};
+    const late=pivots.at(-2).x,hadBreak=candles.slice(late+1).some((c,i)=>c.close>upper.m*(late+1+i)+upper.b+.65*a||c.close<lower.m*(late+1+i)+lower.b-.65*a);
+    if(!hadBreak&&score>=78&&shape>=80&&visual>=58&&contract<=.76&&age<=5&&width>0)return {tier:1,stage:'未噴發 · 收斂'};
     return {tier:3,stage:'收斂中'};
   }
   // Other catalog shapes have no verified trigger rule yet; keep them out of T1.
@@ -135,7 +140,9 @@ function setupPhase(context,pattern,pivots,score,shape,visual,end){
 }
 // Build reusable features once per symbol/timeframe, independent of the selected drawing.
 export function prepareCandles(candles) {
-  const volatility=atr(candles), n=candles.length, swings=[];
+  // Recent 14-bar true range: distant high-volatility history must not erase
+  // a smaller, currently forming weekly base.
+  const volatility=atr(candles.slice(-15)), n=candles.length, swings=[];
   for(const [radius,multiple] of [[1,.5],[2,.65],[3,1],[5,1.5],[8,2]]) {
     const p=swingPoints(candles,radius,volatility*multiple);swings.push(p);
   }
@@ -162,9 +169,10 @@ function levelMatch(context,pattern) {
     if(crossed>span*.08)return;
     const error=mean(touches.map(p=>Math.abs(p.y-(line.m*p.x+line.b))))/a;
     const score=clamp(.72+Math.min(touches.length,5)*.035-error*.09-Math.abs(distance)/a*.012)*100;
-    const tier=error<=.48&&score>=82&&distance>=0&&distance<=.75*a?1:
+    const hadBreak=c.slice(touches.at(-1).x+1).some((v,i)=>(v.close-(line.m*(touches.at(-1).x+1+i)+line.b))*(support?-1:1)>.65*a);
+    const tier=!hadBreak&&error<=.58&&score>=80&&distance>=0&&distance<=1.8*a?1:
       score>=76&&(support?distance>.75*a&&distance<=2.2*a:distance<0&&distance>=-1.5*a)?2:3;
-    const stage=tier===1?(support?'支撐附近 · 待確認':'阻力附近 · 待確認'):tier===2?(support?'初步反彈':'初步突破'):'已離開水平區';
+    const stage=tier===1?(support?'支撐待確認':'未噴發'):tier===2?(support?'初步反彈':'初步突破'):'已離開水平區';
     if(best&&(tier>best.tier||tier===best.tier&&score<=best.similarity))return;
     best={start,end,similarity:Math.round(score*10)/10,points:[{x:start,y:line.m*start+line.b},{x:end,y:atEnd}],label:pattern.name,lastTime:c[end].time,touches:touches.length,tier,stage,kind:'level'};
   };
@@ -236,6 +244,26 @@ export function patternCounts(entries,frames){
   for(const entry of entries)if(frames.includes(entry.data.frame))for(const id of Object.keys(entry.matches))sets.get(id)?.add(entry.data.symbol);
   return Object.fromEntries([...sets].map(([id,s])=>[id,s.size]));
 }
+// Identify the turning sequence independently of handwriting width/speed. Small
+// tremors are removed with an amplitude threshold, not by warping market candles.
+export function recognizeReversal(points){
+  const values=resample(points,81);if(!values.length)return null;
+  const smooth=values.map((v,i)=>mean(values.slice(Math.max(0,i-1),Math.min(values.length,i+2))));
+  for(const threshold of [.12,.17,.22]){
+    const turns=[{x:0,y:smooth[0]}];let direction=0,extreme=turns[0];
+    for(let i=1;i<smooth.length;i++){
+      const p={x:i/(smooth.length-1),y:smooth[i]};
+      if(!direction){if(Math.abs(p.y-extreme.y)>=threshold){direction=Math.sign(p.y-extreme.y);extreme=p;}continue;}
+      if((p.y-extreme.y)*direction>=0)extreme=p;
+      else if((extreme.y-p.y)*direction>=threshold){turns.push(extreme);direction=-direction;extreme=p;}
+    }
+    turns.push({x:1,y:smooth.at(-1)});
+    if(turns.length!==5)continue;
+    const w=turns[1].y<turns[0].y,v=turns.map(p=>w?p.y:1-p.y);
+    if(v[0]-v[1]>.22&&v[2]-Math.max(v[1],v[3])>.24&&v[4]-v[3]>.2&&Math.abs(v[1]-v[3])<.48&&turns.slice(1).every((p,i)=>p.x-turns[i].x>.035))return w?'w':'m';
+  }
+  return null;
+}
 export function queryFromStrokes(strokes) {
   const valid=strokes.filter(s=>s.length>=2);if(!valid.length)return null;
   // Two drawn boundaries become an alternating path between their measured envelopes.
@@ -259,6 +287,8 @@ export function queryFromStrokes(strokes) {
   if(height<.045)return {id:'horizontal-resistance',mode:'level'};
   if(deviation<.025&&Math.abs(line.m)>.15)return {id:line.m>0?'trend-up':'trend-down',mode:'level'};
   const p=normalize(path);if(!p.length)return null;
+  const reversal=recognizeReversal(p);
+  if(reversal)return {id:reversal,points:p,mode:'pattern',recognition:'turns'};
   // Only label a hand-drawn common shape when strongly aligned; harmonic names require explicit ratio validation.
   const best=PATTERNS.filter(t=>t.rule!=='harmonic'&&!t.rule.startsWith('level')&&!t.rule.startsWith('trend')).map(t=>({t,s:similarity(resample(p),resample(t.points))})).sort((a,b)=>b.s-a.s)[0];
   return best.s>=78?{id:best.t.id,points:p,mode:'sketch'}:{points:p,mode:'sketch'};

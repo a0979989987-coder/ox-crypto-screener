@@ -1,4 +1,4 @@
-import { TIMEFRAMES, candleBoundary } from './catalog.js?v=patterns4-20260929';
+import { TIMEFRAMES, candleBoundary } from './catalog.js?v=patterns5-20260929';
 const BASE='https://api.bitget.com';
 const candleCache=new Map();let nextRequest=0;
 const abortError=()=>new DOMException('Aborted','AbortError');
@@ -39,11 +39,17 @@ export function selectUniverse(tickers,instruments,limit=80){
   const allowed=new Set(instruments.filter(i=>i.symbolType==='crypto'&&i.type==='perpetual'&&i.status==='online'&&i.quoteCoin==='USDT').map(i=>i.symbol));
   return tickers.filter(t=>allowed.has(t.symbol)&&Number(t.usdtVolume)>=3000000&&Number(t.lastPr)>0).sort((a,b)=>Number(b.usdtVolume)-Number(a.usdtVolume)).slice(0,limit||Infinity);
 }
+export function radarSymbols(runtime=typeof state==='undefined'?null:state){
+  if(runtime?.activeMarket&&runtime.activeMarket!=='crypto')return [];
+  return [...new Set(['t1','t2','t3'].flatMap(t=>(runtime?.tierMap?.[t]||[]).slice(0,10).map(r=>r.symbol)))];
+}
 export async function fetchUniverse(signal,limit=80){
   const [quotes,metadata]=await Promise.all([request('/api/v2/mix/market/tickers?productType=USDT-FUTURES',signal),request('/api/v3/market/instruments?category=USDT-FUTURES',signal)]);
   const serverTime=Number(quotes.requestTime);
   if(!Number.isFinite(serverTime)||Math.abs(Date.now()-serverTime)>300000)throw Error('行情時間戳過期，請稍後重試');
-  const tickers=selectUniverse(quotes.data,metadata.data,limit);
+  const eligible=selectUniverse(quotes.data,metadata.data,0),radar=new Set(radarSymbols());
+  const selected=selectUniverse(quotes.data,metadata.data,limit);
+  const tickers=[...eligible.filter(t=>radar.has(t.symbol)),...selected.filter(t=>!radar.has(t.symbol))];
   if(!tickers.length)throw Error('沒有符合流動性條件的加密合約');
   const allowed=new Set(metadata.data.filter(i=>i.symbolType==='crypto'&&i.type==='perpetual'&&i.status==='online'&&i.quoteCoin==='USDT').map(i=>i.symbol));
   return {tickers,allTickers:quotes.data.filter(t=>allowed.has(t.symbol)&&[t.lastPr,t.change24h,t.usdtVolume].every(v=>v!==''&&Number.isFinite(Number(v)))),serverTime};
@@ -53,7 +59,21 @@ export async function fetchSeries(symbol,frame,signal,now=Date.now()){
   if(cached?.candles.at(-1)?.provisional?cached.candles.at(-1).time===boundary&&now-cached.serverTime<300000:cached?.candles.at(-1)?.time+TIMEFRAMES[frame]===boundary)return cached;
   const granularity=['6H','12H','1D','1W'].includes(frame)?frame+'utc':frame;
   const path=`/api/v2/mix/market/candles?symbol=${encodeURIComponent(symbol)}&productType=USDT-FUTURES&granularity=${granularity}&limit=200`;
-  const data=await request(path,signal),serverTime=Number(data.requestTime),candles=parseCandles(data.data,frame,serverTime,{includeOpen:frame==='1W'});
+  const data=await request(path,signal),serverTime=Number(data.requestTime);
+  let rows=data.data;
+  if(frame==='1W'){
+    // The recent endpoint returns only about 90 days (13 weeks). Page real history,
+    // preserving UTC week boundaries; never synthesize candles from chart shapes.
+    const historical=(cached?.candles||[]).filter(c=>!c.provisional).map(c=>[c.time*1000,c.open,c.high,c.low,c.close,c.volume,c.quoteVolume]);
+    rows=[...historical,...rows];
+    for(let page=0;page<7&&new Set(rows.map(r=>Number(r[0]))).size<80;page++){
+      const earliest=Math.min(...rows.map(r=>Number(r[0])));if(!Number.isFinite(earliest))break;
+      const past=await request(`/api/v2/mix/market/history-candles?symbol=${encodeURIComponent(symbol)}&productType=USDT-FUTURES&granularity=1Wutc&limit=200&endTime=${earliest}`,signal);
+      const older=past.data.filter(r=>Number(r[0])<earliest);if(!older.length)break;
+      rows=[...older,...rows];
+    }
+  }
+  const candles=parseCandles(rows,frame,serverTime,{includeOpen:frame==='1W'}).slice(-200);
   if(Math.abs(now-serverTime)>300000||candles.length<35)throw Error(`${symbol} ${frame} K 線不足或缺漏`);
   const value={candles,source:'Bitget',frame,symbol,serverTime};candleCache.set(key,value);
   if(candleCache.size>1200)candleCache.delete(candleCache.keys().next().value);

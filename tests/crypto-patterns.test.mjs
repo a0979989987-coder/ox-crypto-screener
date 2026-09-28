@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import { runInNewContext } from 'node:vm';
 import { PATTERNS,patternById,TIMEFRAMES,candleBoundary } from '../src/markets/crypto/patterns/catalog.js';
 import { normalize,resample,similarity,matchCandles,validateHarmonic,structureValid,queryFromStrokes,sortMatches,prepareCandles,classifyPrepared,matchPrepared,patternCounts } from '../src/markets/crypto/patterns/matcher.js';
-import { parseCandles,selectUniverse,classicScore,fetchSeries } from '../src/markets/crypto/patterns/source.js';
+import { parseCandles,selectUniverse,classicScore,fetchSeries,radarSymbols } from '../src/markets/crypto/patterns/source.js';
 
 // Explicit synthetic fixtures, only for checking positive/negative geometric invariants.
 function fixture(points){
@@ -109,16 +109,43 @@ test('score adapter agrees with the unchanged classic formula on the same data',
   assert.ok(Number.isFinite(context.result));assert.ok(context.result>=0&&context.result<=100);
 });
 
-test('freehand retains the drawing and does not gate matches by an inferred name',()=>{
+test('clear asymmetric W is recognized structurally; optional similar-path mode remains ungated',()=>{
   const points=[1,.04,.75,0,.62].map((y,i)=>({x:[0,.18,.51,.79,1][i],y}));
-  const query=queryFromStrokes([points]);assert.equal(query.mode,'sketch');assert.ok(query.points.length);
+  const query=queryFromStrokes([points]);assert.equal(query.mode,'pattern');assert.equal(query.id,'w');assert.ok(query.points.length);
   const c=fixture(points);assert.ok(matchCandles(c,query));
-  const forced={...query,id:'m'};assert.equal(matchCandles(c,forced)?.similarity,matchCandles(c,query)?.similarity);
+  const sketch={...query,mode:'sketch'},forced={...sketch,id:'m'};assert.equal(matchCandles(c,forced)?.similarity,matchCandles(c,sketch)?.similarity);
 });
 test('forming W can be found without requiring neckline completion; inverse is rejected',()=>{
   const c=fixture([1,0,.8,.10,.60].map((y,i)=>({x:i/4,y})));
-  const match=matchCandles(c,{id:'w'});assert.ok(match);assert.equal(match.stage,'尚未到觸發區');
+  const match=matchCandles(c,{id:'w'});assert.ok(match);assert.equal(match.stage,'未噴發');assert.equal(match.tier,1);
   assert.equal(matchCandles(c,{id:'m'}),null);
+});
+test('uneven hand-drawn W and M tolerate small tremors, but a V is not a W',()=>{
+  const shape=[{x:0,y:1},{x:.12,y:.08},{x:.43,y:.7},{x:.82,y:.2},{x:1,y:.82}];
+  const drawn=[];for(let i=0;i<shape.length-1;i++)for(let j=0;j<20;j++){const t=j/20;drawn.push({x:shape[i].x+(shape[i+1].x-shape[i].x)*t,y:shape[i].y+(shape[i+1].y-shape[i].y)*t+Math.sin(j*2)*.012});}drawn.push(shape.at(-1));
+  assert.equal(queryFromStrokes([drawn]).id,'w');assert.equal(queryFromStrokes([drawn.map(p=>({...p,y:1-p.y}))]).id,'m');
+  assert.notEqual(queryFromStrokes([[{x:0,y:1},{x:.5,y:0},{x:1,y:1}]]).id,'w');
+});
+test('a W that already ran past the neckline cannot return to T1 on a pullback',()=>{
+  const base=fixture(patternById('w').points.map((p,i)=>({...p,y:i===4?.87:p.y}))).slice(0,-2);
+  const original=matchCandles(base,{id:'w'});assert.equal(original?.tier,1);
+  const spiked=structuredClone(base);spiked.at(-3).high+=8;
+  assert.notEqual(matchCandles(spiked,{id:'w'})?.tier,1);
+});
+test('radar candidate bridge is read-only, deduplicated and Crypto-only',()=>{
+  const runtime={activeMarket:'crypto',tierMap:{t1:[{symbol:'BTCUSDT'}],t2:[{symbol:'BTCUSDT'},{symbol:'ALGOUSDT'}],t3:[]}},before=JSON.stringify(runtime);
+  assert.deepEqual(radarSymbols(runtime),['BTCUSDT','ALGOUSDT']);assert.equal(JSON.stringify(runtime),before);
+  assert.deepEqual(radarSymbols({...runtime,activeMarket:'tw'}),[]);
+});
+test('weekly fetch pages 90-day historical slices, preserves actual current week and reuses history',async()=>{
+  const monday=Date.parse('2026-09-28T00:00:00Z'),now=monday+3600000,week=604800000;
+  const rows=Array.from({length:100},(_,i)=>[String(monday-(99-i)*week),'100','103','98','101','10','1010']);
+  const oldFetch=globalThis.fetch,requests=[];
+  try{
+    globalThis.fetch=async input=>{const url=new URL(input);requests.push(url.pathname);const end=Number(url.searchParams.get('endTime'));return {ok:true,json:async()=>({code:'00000',requestTime:now,data:end?rows.filter(r=>Number(r[0])<end).slice(-13):rows.slice(-13)})};};
+    const data=await fetchSeries('PAGEDWEEKUSDT','1W',new AbortController().signal,now);
+    assert.ok(data.candles.length>=80);assert.equal(data.candles.at(-1).provisional,true);assert.ok(requests.filter(x=>x.endsWith('history-candles')).length>=5);
+  }finally{globalThis.fetch=oldFetch;}
 });
 test('levels and trend lines overlap other patterns without becoming pattern aliases',()=>{
   const range=fixture(patternById('range').points),up=fixture(patternById('channel-up').points),down=fixture(patternById('channel-down').points);

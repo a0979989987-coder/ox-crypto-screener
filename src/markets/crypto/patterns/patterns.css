@@ -41,3 +41,16 @@
 .px-card[data-tier]:hover,.px-card[data-tier]:focus-visible{border-color:#fff;box-shadow:inset 0 1px #ffffffa6,0 0 9px #ffffff6b,0 0 18px #ffffff29,0 3px 14px #0006}
 @media(max-width:600px){.px-tier-filters{margin-bottom:7px}.px-tier-filters button{padding:3px 8px}.px-card-right{gap:4px}.px-tier-badge{font-size:8px;padding:2px 3px}}
 @media(prefers-reduced-motion:reduce){.px-tier-filters button{transition:none}}
+
+/* Controls occupy their own rows: none overlap the active drawing canvas. */
+.px-board{display:flex;flex-direction:column;border-color:#eef1eb8c;box-shadow:inset 0 1px #ffffff5c,0 0 8px #ffffff24}
+.px-board::after{content:"";position:absolute;inset:0;border:1px solid #fff;border-radius:inherit;box-shadow:inset 0 0 13px #ffffff70;opacity:.12;pointer-events:none;transition:opacity 1.4s ease-out}
+.px-board.is-drawing::after{opacity:.95;transition:none}
+.px-controls{position:relative;inset:auto;order:-1;margin:8px 9px 0;flex:none}
+.px-board canvas{height:250px;flex:none}
+.px-board-bottom{position:relative;inset:auto;margin:0 9px 6px;min-height:28px;flex:none}
+.px-tier-heading{grid-column:1/-1;display:flex;align-items:center;gap:9px;font-size:11px;font-weight:650;color:#e9eae4;padding:5px 2px;border-bottom:1px solid #ffffff20;margin-top:5px}
+.px-tier-heading span{font-size:10px;font-weight:400;color:#969e9f}
+.px-tier-heading[data-tier-heading="1"]{text-shadow:0 0 8px #ffffff75}
+@media(max-width:600px){.px-board canvas{height:210px}.px-tier-heading{margin-top:3px}}
+@media(prefers-reduced-motion:reduce){.px-board::after{transition:none}}
