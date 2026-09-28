@@ -1,4 +1,4 @@
-import { PATTERNS, patternById } from './catalog.js';
+import { PATTERNS, patternById } from './catalog.js?v=patterns2-20260928';
 const clamp = (x, a=0, b=1) => Math.max(a, Math.min(b, x));
 const mean = a => a.reduce((s,x)=>s+x,0)/a.length;
 export function normalize(points) {

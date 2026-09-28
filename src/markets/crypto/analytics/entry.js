@@ -58,7 +58,7 @@ if (section) {
     pending = true; const token = ++generation;
     try {
       if(selected==='patterns'){
-        const { mountPatternSearch } = await import('../patterns/view.js?v=patterns1-20260928');
+        const { mountPatternSearch } = await import('../patterns/view.js?v=patterns2-20260928');
         if(token!==generation||!active())return;
         instance=mountPatternSearch(host);
         return;
@@ -71,7 +71,8 @@ if (section) {
       host.shadowRoot.append(style);
       observer = new MutationObserver(syncFocus);
       observer.observe(host.shadowRoot.querySelector('.cfx'), {attributes:true,attributeFilter:['class']});
-    } catch {
+    } catch (error) {
+      console.warn('[OX Crypto tool]',error);
       if (token === generation) { host.textContent = '工具載入失敗'; const retry = document.createElement('button'); retry.textContent='重新載入'; retry.onclick=()=>{host.textContent='';sync();}; host.append(retry); }
     } finally { if (token === generation) pending = false; }
   }
