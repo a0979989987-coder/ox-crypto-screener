@@ -56,7 +56,7 @@ if (section) {
     if (instance || pending) return;
     pending = true; const token = ++generation;
     try {
-      const { mountCryptoFlow } = await import('./flow-view.js?v=crypto-live-20260928');
+      const { mountCryptoFlow } = await import('./flow-view.js?v=crypto-live2-20260928');
       if (token !== generation || !active()) return;
       instance = mountCryptoFlow(host, { initialTab:selected, autoRefresh:true, onExit() { ns.querySelector('[data-crypto-tool="strength"]').click(); } });
       const style = document.createElement('style');
