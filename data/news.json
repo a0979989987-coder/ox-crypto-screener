@@ -1513,32 +1513,6 @@
       "translationStatus": "translated"
     },
     {
-      "id": "44be4f6a261f5c1d4596",
-      "title": "Christine Lagarde: Interview with Ouest-France",
-      "link": "https://www.ecb.europa.eu//press/inter/date/2026/html/ecb.in260912~3cc706f4d6.en.html",
-      "publishedAt": "2026-09-12T20:00:00.000Z",
-      "source": "European Central Bank",
-      "sourceId": "ecb",
-      "markets": [
-        "forex"
-      ],
-      "kind": "news",
-      "verified": "official-source",
-      "impact": {
-        "stars": null,
-        "impactImportance": null,
-        "reason": "尚未評估；標題不足以判定影響力",
-        "ruleVersion": "unassessed-v1",
-        "evidence": null,
-        "sourceConfidence": "official-source",
-        "analysisConfidence": null,
-        "direction": null,
-        "sourceId": "ecb"
-      },
-      "titleZh": "克莉絲汀・拉加德接受《法國西部報》專訪",
-      "translationStatus": "translated"
-    },
-    {
       "id": "4e67ddc0da672bb08477",
       "title": "CFTC Approves Final Rule Concerning Whistleblower Awards",
       "link": "https://www.cftc.gov/PressRoom/PressReleases/9297-26",
@@ -5078,8 +5052,13 @@
       }
     }
   ],
-  "generatedAt": "2026-09-25T18:35:20.539Z",
+  "generatedAt": "2026-09-28T18:39:07.188Z",
   "sources": [
+    {
+      "id": "twse",
+      "status": "ready",
+      "count": 35
+    },
     {
       "id": "fed",
       "status": "ready",
@@ -5124,11 +5103,6 @@
       "id": "bitcoin-core",
       "status": "ready",
       "count": 10
-    },
-    {
-      "id": "twse",
-      "status": "ready",
-      "count": 35
     }
   ]
 }
