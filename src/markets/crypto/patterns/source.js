@@ -1,4 +1,4 @@
-import { TIMEFRAMES } from './catalog.js?v=patterns2-20260928';
+import { TIMEFRAMES } from './catalog.js?v=patterns3-20260928';
 const BASE='https://api.bitget.com';
 const candleCache=new Map();let nextRequest=0;
 const abortError=()=>new DOMException('Aborted','AbortError');
