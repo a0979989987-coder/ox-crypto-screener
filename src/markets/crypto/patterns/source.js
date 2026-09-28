@@ -5,7 +5,7 @@ const abortError=()=>new DOMException('Aborted','AbortError');
 function wait(ms,signal){return new Promise((resolve,reject)=>{if(signal?.aborted)return reject(abortError());const id=setTimeout(()=>{signal?.removeEventListener('abort',cancel);resolve();},ms);function cancel(){clearTimeout(id);reject(abortError());}signal?.addEventListener('abort',cancel,{once:true});});}
 async function request(path,signal){
   for(let attempt=0;attempt<3;attempt++){
-    const at=Math.max(Date.now(),nextRequest);nextRequest=at+280;await wait(at-Date.now(),signal);
+    const clock=performance.now(),at=Math.max(clock,nextRequest);nextRequest=at+280;await wait(Math.max(0,at-clock),signal);
     const ctrl=new AbortController(),cancel=()=>ctrl.abort();signal?.addEventListener('abort',cancel,{once:true});const timer=setTimeout(cancel,12000);
     try{
       const response=await fetch(BASE+path,{signal:ctrl.signal,cache:'no-store'});
