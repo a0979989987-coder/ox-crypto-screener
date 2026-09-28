@@ -1,4 +1,4 @@
-import { PATTERNS, patternById } from './catalog.js?v=patterns5-20260929';
+import { PATTERNS, patternById } from './catalog.js?v=patterns5b-20260929';
 const clamp = (x, a=0, b=1) => Math.max(a, Math.min(b, x));
 const mean = a => a.reduce((s,x)=>s+x,0)/a.length;
 export function normalize(points) {
@@ -293,4 +293,4 @@ export function queryFromStrokes(strokes) {
   const best=PATTERNS.filter(t=>t.rule!=='harmonic'&&!t.rule.startsWith('level')&&!t.rule.startsWith('trend')).map(t=>({t,s:similarity(resample(p),resample(t.points))})).sort((a,b)=>b.s-a.s)[0];
   return best.s>=78?{id:best.t.id,points:p,mode:'sketch'}:{points:p,mode:'sketch'};
 }
-export function sortMatches(rows){return [...rows].sort((a,b)=>(a.match?.tier??3)-(b.match?.tier??3)||b.similarity-a.similarity||(b.oxScore??-1)-(a.oxScore??-1)||b.turnover-a.turnover||a.symbol.localeCompare(b.symbol));}
+export function sortMatches(rows){return [...rows].sort((a,b)=>(a.match?.tier??3)-(b.match?.tier??3)||b.similarity-a.similarity||(b.oxScore??-1)-(a.oxScore??-1)||(b.turnover??0)-(a.turnover??0)||String(a.symbol??a.match?.label??'').localeCompare(String(b.symbol??b.match?.label??'')));}

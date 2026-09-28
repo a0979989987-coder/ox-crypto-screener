@@ -81,6 +81,7 @@ test('universe excludes stock tokens, unavailable instruments and illiquid pairs
 });
 test('ranking prioritizes similarity, OX only breaks ties',()=>{
   assert.deepEqual(sortMatches([{symbol:'B',similarity:82,oxScore:99},{symbol:'A',similarity:95,oxScore:40},{symbol:'C',similarity:95,oxScore:85}]).map(r=>r.symbol),['C','A','B']);
+  assert.doesNotThrow(()=>sortMatches([{match:{tier:1,label:'W'},similarity:85},{match:{tier:1,label:'阻力'},similarity:85}]));
 });
 test('pattern T1 is a nearby clean setup, T2 early breakout, T3 lower priority; failed reversals are excluded',()=>{
   const w=patternById('w').points;
