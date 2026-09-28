@@ -4,7 +4,7 @@ const root = resolve(import.meta.dirname, '..');
 const read = path => readFile(resolve(root, path), 'utf8');
 const css = await read('src/markets/crypto/analytics/flow.css');
 const [snapshot, market, liquidations] = await Promise.all(['crypto-flow','crypto-tools','crypto-liquidations'].map(async f=>JSON.parse(await read(`previews/data/${f}-snapshot.json`))));
-const modules=['flow-model.js','tools-model.js','flow-source.js','flow-chart.js','tools-charts.js','flow-view.js'];
+const modules=['flow-model.js','tools-model.js','flow-source.js','market-live.js','flow-chart.js','tools-charts.js','flow-view.js'];
 const sources = await Promise.all(modules.map(f => read('src/markets/crypto/analytics/' + f)));
 const combined = sources.map(s => s.replace(/^import .*;\n/gm, '').replace(/^export /gm, ''))
   .join('\n').replace(/^const (snapshotURL|marketURL|liquidationURL|cssURL)\s*=.*;$/gm, 'const $1 = null;')

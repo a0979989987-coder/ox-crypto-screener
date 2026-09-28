@@ -1,15 +1,15 @@
 // Crypto-only inline tools. Preserve the existing strength calculations and DOM.
 const section = document.querySelector('#view-strength .strength-page');
 if (section) {
-  const tabs = [['strength','BTC／小幣強弱'],['overview','總覽'],['heatmap','熱力圖'],['rotation','板塊輪動'],['flow','主動買賣'],['liquidations','爆倉'],['zones','清算'],['derivatives','合約'],['order','訂單流']];
-  let selected = 'strength';
+  const tabs = [['overview','總覽'],['strength','強弱對比'],['heatmap','熱力圖'],['rotation','板塊輪動'],['flow','主動買賣'],['liquidations','爆倉'],['zones','清算'],['derivatives','合約'],['order','訂單流']];
+  let selected = 'overview';
   const nav = document.createElement('div'); nav.id='ox-crypto-tools-nav'; nav.style.cssText='grid-column:1/-1;min-width:0;'; nav.hidden=true;
   const ns = nav.attachShadow({mode:'open'});
   const twCSS = new URL('../../tw/radar-ui.css',import.meta.url);
-  ns.innerHTML = `<link rel="stylesheet" href="${twCSS.href}"><style>:host{display:block}:host([hidden]){display:none}.tw-radar-root .twr-mode-rail{width:max-content;min-width:100%}.tw-radar-root .twr-mode-rail button{flex:1 0 auto;padding:11px 15px;font-family:inherit;min-height:42px}.tw-radar-root{font-family:Inter,-apple-system,BlinkMacSystemFont,"PingFang TC",sans-serif}@media(prefers-reduced-motion:reduce){*{transition:none!important}}</style><div class="tw-radar-root"><nav class="twr-mode-viewport" aria-label="Crypto 指標分類"><div class="twr-mode-rail" role="tablist"><span class="twr-mode-indicator" aria-hidden="true"></span>${tabs.map(([id,label])=>`<button type="button" role="tab" data-crypto-tool="${id}" aria-selected="${id===selected}" tabindex="${id===selected?0:-1}" class="${id===selected?'active':''}">${label}</button>`).join('')}</div></nav></div>`;
+  ns.innerHTML = `<link rel="stylesheet" href="${twCSS.href}"><style>:host{display:block}:host([hidden]){display:none}.tw-radar-root .twr-mode-rail{width:max-content;min-width:100%}.tw-radar-root .twr-mode-rail button{flex:0 0 auto;padding:7px 12px;font-family:inherit;min-height:34px;font-size:11px}.tw-radar-root{font-family:Inter,-apple-system,BlinkMacSystemFont,"PingFang TC",sans-serif}@media(max-width:600px){.tw-radar-root .twr-mode-rail button{padding:6px 10px;min-height:33px;font-size:11px}}@media(prefers-reduced-motion:reduce){*{transition:none!important}}</style><div class="tw-radar-root"><nav class="twr-mode-viewport" aria-label="Crypto 指標分類"><div class="twr-mode-rail" role="tablist"><span class="twr-mode-indicator" aria-hidden="true"></span>${tabs.map(([id,label])=>`<button type="button" role="tab" data-crypto-tool="${id}" aria-selected="${id===selected}" tabindex="${id===selected?0:-1}" class="${id===selected?'active':''}">${label}</button>`).join('')}</div></nav></div>`;
   section.prepend(nav);
   const boundaryStyle=document.createElement('style');
-  boundaryStyle.textContent='#view-strength .strength-page[data-crypto-tool]:not([data-crypto-tool="strength"]) > :not(#ox-crypto-tools-nav):not(#ox-crypto-tools-inline){display:none!important}#view-strength .strength-page > [hidden]{display:none!important}';
+  boundaryStyle.textContent='body[data-view="strength"] .ox-live-shell{margin-bottom:14px!important}#view-strength .strength-page{padding-top:8px!important}#view-strength .strength-page[data-crypto-tool]:not([data-crypto-tool="strength"]) > :not(#ox-crypto-tools-nav):not(#ox-crypto-tools-inline){display:none!important}#view-strength .strength-page > [hidden]{display:none!important}#view-strength .strength-page[data-crypto-tool="strength"] .strength-compare-top .page-kicker,#view-strength .strength-page[data-crypto-tool="strength"] .strength-compare-top h2,#view-strength .strength-page[data-crypto-tool="strength"] .strength-compare-top p,#view-strength .strength-page[data-crypto-tool="strength"] .strength-compare-side span,#view-strength .strength-page[data-crypto-tool="strength"] .strength-head p,#view-strength .strength-page[data-crypto-tool="strength"] .strength-explain{display:none!important}#view-strength .strength-page[data-crypto-tool="strength"] .strength-compare-top{justify-content:flex-end;margin-bottom:8px}';
   section.append(boundaryStyle);
   function positionIndicator(){const rail=ns.querySelector('.twr-mode-rail'),button=rail.querySelector('.active');if(!button)return;rail.style.setProperty('--mode-x',button.offsetLeft+'px');rail.style.setProperty('--mode-width',button.offsetWidth+'px');}
   new ResizeObserver(positionIndicator).observe(nav); ns.querySelector('link').addEventListener('load',positionIndicator);
@@ -18,7 +18,7 @@ if (section) {
   const slot = document.createElement('section');
   slot.id = 'ox-crypto-tools-inline';
   slot.setAttribute('aria-label', '加密市場工具');
-  slot.style.cssText = 'grid-column:1/-1;min-width:0;margin:18px 0;';
+  slot.style.cssText = 'grid-column:1/-1;min-width:0;margin:8px 0 18px;';
   slot.hidden = true;
   const anchor = section.querySelector('.strength-compare-panel');
   if (anchor) anchor.after(slot); else section.prepend(slot);
@@ -56,9 +56,9 @@ if (section) {
     if (instance || pending) return;
     pending = true; const token = ++generation;
     try {
-      const { mountCryptoFlow } = await import('./flow-view.js?v=inline-tabs-20260928');
+      const { mountCryptoFlow } = await import('./flow-view.js?v=crypto-live-20260928');
       if (token !== generation || !active()) return;
-      instance = mountCryptoFlow(host, { initialTab:selected, onExit() { ns.querySelector('[data-crypto-tool="strength"]').click(); } });
+      instance = mountCryptoFlow(host, { initialTab:selected, autoRefresh:true, onExit() { ns.querySelector('[data-crypto-tool="strength"]').click(); } });
       const style = document.createElement('style');
       style.textContent = ':host{display:block}.cfx{min-height:0;border:1px solid #344248;border-radius:14px;overflow:hidden}.cfx-top{height:43px;padding:0 12px}.cfx-back,.cfx-brand,.cfx-source-badge,.cfx-tabs{display:none}.cfx-tabs{padding:0 12px;gap:18px}.cfx-content{padding:12px 10px}.cfx.focused{border:0;border-radius:0}.cfx.focused .cfx-brand{display:flex}';
       host.shadowRoot.append(style);

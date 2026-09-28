@@ -54,7 +54,7 @@ export function derivativeRows(data) {
   const oiChange=baseOI!==null&&finite(old?.holdingAmount)>0?100*(baseOI/Number(old.holdingAmount)-1):null;
   const priceChange=finite(t.lastPr)>0&&finite(old?.lastPr)>0?100*(Number(t.lastPr)/Number(old.lastPr)-1):null;
   const ratio=data.ratios?.[t.symbol]?.response?.data?.slice().sort((a,b)=>Number(b.ts)-Number(a.ts))[0];
-  return {symbol:t.symbol,base:t.symbol.replace(/USDT$/,''),price:finite(t.lastPr),baseOI,notional:baseOI!==null&&mark!==null?baseOI*mark:null,funding:finite(fund?.fundingRate??t.fundingRate),interval:finite(fund?.fundingRateInterval??meta.get(t.symbol)?.fundInterval),nextUpdate:finite(fund?.nextUpdate),premium:idx>0&&mark!==null?100*(mark/idx-1):null,oiChange,priceChange,previousTime:finite(old?.ts),ts:finite(t.ts),ratio:finite(ratio?.longShortRatio),ratioTime:finite(ratio?.ts),turnover:finite(t.usdtVolume)};
+  return {symbol:t.symbol,base:t.symbol.replace(/USDT$/,''),price:finite(t.lastPr),baseOI,notional:baseOI!==null&&mark!==null?baseOI*mark:null,funding:finite(t.fundingRate??fund?.fundingRate),interval:finite(fund?.fundingRateInterval??meta.get(t.symbol)?.fundInterval),nextUpdate:finite(fund?.nextUpdate),premium:idx>0&&mark!==null?100*(mark/idx-1):null,oiChange,priceChange,previousTime:finite(old?.ts),ts:finite(t.ts),ratio:finite(ratio?.longShortRatio),ratioTime:finite(ratio?.ts),turnover:finite(t.usdtVolume)};
  }).sort((a,b)=>(b.notional??-1)-(a.notional??-1));
 }
 export function normalizeTrades(entry) {

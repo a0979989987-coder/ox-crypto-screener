@@ -3,7 +3,8 @@ const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
 export function createFlowChart(canvas, { onSelect, onZoom = () => {}, signal }) {
   const ctx = canvas.getContext('2d');
   let rows = [], selected = '', filter = '', all = [], points = [], labelHits = [], width = 0, height = 0, zoom = 1, pan = { x: 0, y: 0 }, raf = 0;
-  let settings = {}, interactive = false, drag = null, pinch = null; const pointers = new Map();
+  let settings = {}, interactive = true, drag = null, pinch = null; const pointers = new Map();
+  canvas.style.touchAction = 'none';
   const draw = () => {
     raf = 0; labelHits = []; if (!width || !height) return;
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -93,10 +94,10 @@ export function createFlowChart(canvas, { onSelect, onZoom = () => {}, signal })
   const schedule = () => { if (!raf) raf = requestAnimationFrame(draw); };
   const resize = new ResizeObserver(entries => { const r = entries[0].contentRect; width = r.width; height = r.height; schedule(); }); resize.observe(canvas);
   const local = e => { const r = canvas.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; };
-  canvas.addEventListener('pointerdown', e => { const p = local(e); pointers.set(e.pointerId, p); if (interactive) canvas.setPointerCapture(e.pointerId); drag = { ...p, px: pan.x, py: pan.y, moved: false }; if (pointers.size === 2 && interactive) { const [a, b] = [...pointers.values()]; pinch = { d: Math.hypot(a.x - b.x, a.y - b.y), z: zoom }; } }, { signal });
+  canvas.addEventListener('pointerdown', e => { const p = local(e); pointers.set(e.pointerId, p); canvas.setPointerCapture(e.pointerId); if(pointers.size===1)drag = { ...p, px: pan.x, py: pan.y, moved: false }; if (pointers.size === 2) { const [a, b] = [...pointers.values()]; pinch = { d: Math.hypot(a.x - b.x, a.y - b.y), z: zoom }; } }, { signal });
   canvas.addEventListener('pointermove', e => {
     if (!pointers.has(e.pointerId)) return; const p = local(e); pointers.set(e.pointerId, p);
-    if (pinch && pointers.size === 2 && interactive) { const [a, b] = [...pointers.values()]; zoom = clamp(pinch.z * Math.hypot(a.x - b.x, a.y - b.y) / Math.max(1, pinch.d), 1, 5); if (drag) drag.moved = true; onZoom(zoom); schedule(); }
+    if (pinch && pointers.size === 2) { const [a, b] = [...pointers.values()]; zoom = clamp(pinch.z * Math.hypot(a.x - b.x, a.y - b.y) / Math.max(1, pinch.d), 1, 5); if (drag) drag.moved = true; onZoom(zoom); schedule(); }
     else if (interactive && drag) { if (Math.hypot(p.x - drag.x, p.y - drag.y) > 5) drag.moved = true; if (drag.moved) { pan = { x: clamp(drag.px + p.x - drag.x, -width * zoom / 2, width * zoom / 2), y: clamp(drag.py + p.y - drag.y, -height * zoom / 2, height * zoom / 2) }; schedule(); } }
     else if (drag && Math.hypot(p.x - drag.x, p.y - drag.y) > 7) drag.moved = true;
   }, { signal });
@@ -105,7 +106,7 @@ export function createFlowChart(canvas, { onSelect, onZoom = () => {}, signal })
   canvas.addEventListener('wheel', e => { if (!interactive || e.ctrlKey) return; e.preventDefault(); zoom = clamp(zoom * (e.deltaY > 0 ? .9 : 1.1), 1, 5); onZoom(zoom); schedule(); }, { signal, passive: false });
   return {
     update(next, options = {}) { settings = options; all = next; rows = next; selected = options.selected || ''; filter = options.filter || ''; schedule(); },
-    setInteractive(value) { interactive = value; canvas.style.touchAction = value ? 'none' : 'pan-y pinch-zoom'; },
+    setInteractive() { interactive = true; canvas.style.touchAction = 'none'; },
     reset() { zoom = 1; pan = { x: 0, y: 0 }; onZoom(zoom); schedule(); },
     zoom(delta) { zoom = clamp(zoom + delta, 1, 5); onZoom(zoom); schedule(); },
     destroy() { resize.disconnect(); cancelAnimationFrame(raf); pointers.clear(); }
