@@ -1,4 +1,4 @@
-import { TIMEFRAMES } from './catalog.js?v=patterns3-20260928';
+import { TIMEFRAMES, candleBoundary } from './catalog.js?v=patterns4-20260929';
 const BASE='https://api.bitget.com';
 const candleCache=new Map();let nextRequest=0;
 const abortError=()=>new DOMException('Aborted','AbortError');
@@ -17,20 +17,22 @@ async function request(path,signal){
     finally{clearTimeout(timer);signal?.removeEventListener('abort',cancel);}
   }
 }
-export function parseCandles(rows,frame,serverTime){
+export function parseCandles(rows,frame,serverTime,{includeOpen=false}={}){
   const seconds=TIMEFRAMES[frame],map=new Map();if(!seconds||!Number.isFinite(serverTime))return [];
+  const boundary=candleBoundary(serverTime,frame);
   const times=[...new Set(rows.map(r=>Number(r[0])).filter(Number.isFinite))].sort((a,b)=>a-b);
   if(times.some((t,i)=>i&&(t-times[i-1])%(seconds*1000)!==0))return [];
   for(const row of rows){
     const [ms,open,high,low,close,volume,quoteVolume]=row.map(Number),time=ms/1000;
-    if(![ms,open,high,low,close,volume,quoteVolume].every(Number.isFinite)||time%seconds||open<=0||close<=0||low<=0||high<Math.max(open,close)||low>Math.min(open,close)||high<low||volume<0||quoteVolume<0||ms+seconds*1000>serverTime)continue;
-    map.set(time,{time,open,high,low,close,volume,quoteVolume});
+    const provisional=time===boundary&&time+seconds>serverTime/1000;
+    if(![ms,open,high,low,close,volume,quoteVolume].every(Number.isFinite)||(time-boundary)%seconds||open<=0||close<=0||low<=0||high<Math.max(open,close)||low>Math.min(open,close)||high<low||volume<0||quoteVolume<0||time>serverTime/1000||provisional&&!includeOpen||!provisional&&ms+seconds*1000>serverTime)continue;
+    map.set(time,{time,open,high,low,close,volume,quoteVolume,...(provisional?{provisional:true}:{})});
   }
   const sorted=[...map.values()].sort((a,b)=>a.time-b.time);
   // Only the most recent uninterrupted run is eligible; never fill gaps with invented candles.
   let start=0;for(let i=1;i<sorted.length;i++)if(sorted[i].time-sorted[i-1].time!==seconds)start=i;
   const tail=sorted.slice(start);
-  if(!tail.length||tail.at(-1).time+seconds<(Math.floor(serverTime/1000/seconds)*seconds))return [];
+  if(!tail.length||tail.at(-1).time+seconds<boundary)return [];
   return tail;
 }
 export function selectUniverse(tickers,instruments,limit=80){
@@ -47,11 +49,11 @@ export async function fetchUniverse(signal,limit=80){
   return {tickers,allTickers:quotes.data.filter(t=>allowed.has(t.symbol)&&[t.lastPr,t.change24h,t.usdtVolume].every(v=>v!==''&&Number.isFinite(Number(v)))),serverTime};
 }
 export async function fetchSeries(symbol,frame,signal,now=Date.now()){
-  const key=`${symbol}:${frame}`,cached=candleCache.get(key),boundary=Math.floor(now/1000/TIMEFRAMES[frame])*TIMEFRAMES[frame];
-  if(cached?.candles.at(-1)?.time+TIMEFRAMES[frame]===boundary)return cached;
-  const granularity=['6H','12H','1D'].includes(frame)?frame+'utc':frame;
+  const key=`${symbol}:${frame}`,cached=candleCache.get(key),boundary=candleBoundary(now,frame);
+  if(cached?.candles.at(-1)?.provisional?cached.candles.at(-1).time===boundary&&now-cached.serverTime<300000:cached?.candles.at(-1)?.time+TIMEFRAMES[frame]===boundary)return cached;
+  const granularity=['6H','12H','1D','1W'].includes(frame)?frame+'utc':frame;
   const path=`/api/v2/mix/market/candles?symbol=${encodeURIComponent(symbol)}&productType=USDT-FUTURES&granularity=${granularity}&limit=200`;
-  const data=await request(path,signal),serverTime=Number(data.requestTime),candles=parseCandles(data.data,frame,serverTime);
+  const data=await request(path,signal),serverTime=Number(data.requestTime),candles=parseCandles(data.data,frame,serverTime,{includeOpen:frame==='1W'});
   if(Math.abs(now-serverTime)>300000||candles.length<35)throw Error(`${symbol} ${frame} K 線不足或缺漏`);
   const value={candles,source:'Bitget',frame,symbol,serverTime};candleCache.set(key,value);
   if(candleCache.size>1200)candleCache.delete(candleCache.keys().next().value);

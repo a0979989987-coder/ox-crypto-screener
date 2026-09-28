@@ -27,3 +27,17 @@
 .px-detail-footer{flex:none;max-height:110px;overflow:auto}
 @media(max-width:600px){.px-detail[open]{height:calc(100dvh - 24px - env(safe-area-inset-bottom));max-height:95dvh}.px-detail-frames{padding:6px 8px}.px-detail-frames button{min-width:38px}.px-detail-footer{padding:7px 10px;font-size:10px;line-height:1.6}.px-detail-footer span{margin-right:9px}}
 @media(prefers-reduced-motion:reduce){.px-card{transition:none}}
+.px-tier-filters{display:flex;align-items:center;gap:5px;margin:0 0 9px;overflow-x:auto;scrollbar-width:none}
+.px-tier-filters::-webkit-scrollbar{display:none}
+.px-tier-filters button{flex:none;min-height:27px;padding:3px 10px;border:1px solid #ffffff30;border-radius:7px;background:#ffffff08;color:#b6bab8;font-size:10px;white-space:nowrap;transition:border-color .25s,background .25s,box-shadow .25s}
+.px-tier-filters button[aria-pressed=true]{color:#fff;border-color:#ffffffab;background:linear-gradient(140deg,#ffffff28,#ffffff0a);box-shadow:inset 0 1px #ffffff7d,0 0 7px #ffffff40}
+.px-card-right{display:flex;align-items:center;gap:7px;white-space:nowrap}
+.px-tier-badge{font-size:9px;letter-spacing:.04em;font-weight:600;border:1px solid #ffffff91;border-radius:5px;padding:2px 4px;color:#f5f5ee;line-height:1.25}
+.px-card[data-tier="1"]{border-color:#f1f4eec4;box-shadow:inset 0 1px #ffffff9c,0 0 8px #ffffff63,0 0 16px #ffffff25}
+.px-card[data-tier="2"]{border-color:#c1c7c497;box-shadow:inset 0 1px #ffffff4a,0 0 6px #ffffff27}
+.px-card[data-tier="2"] .px-tier-badge{border-color:#ffffff6a;color:#dce0da}
+.px-card[data-tier="3"]{border-color:#70787a5a;box-shadow:inset 0 1px #ffffff1c}
+.px-card[data-tier="3"] .px-tier-badge{border-color:#ffffff32;color:#9ca2a2}
+.px-card[data-tier]:hover,.px-card[data-tier]:focus-visible{border-color:#fff;box-shadow:inset 0 1px #ffffffa6,0 0 9px #ffffff6b,0 0 18px #ffffff29,0 3px 14px #0006}
+@media(max-width:600px){.px-tier-filters{margin-bottom:7px}.px-tier-filters button{padding:3px 8px}.px-card-right{gap:4px}.px-tier-badge{font-size:8px;padding:2px 3px}}
+@media(prefers-reduced-motion:reduce){.px-tier-filters button{transition:none}}

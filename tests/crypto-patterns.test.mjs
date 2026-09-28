@@ -2,9 +2,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { runInNewContext } from 'node:vm';
-import { PATTERNS,patternById,TIMEFRAMES } from '../src/markets/crypto/patterns/catalog.js';
+import { PATTERNS,patternById,TIMEFRAMES,candleBoundary } from '../src/markets/crypto/patterns/catalog.js';
 import { normalize,resample,similarity,matchCandles,validateHarmonic,structureValid,queryFromStrokes,sortMatches,prepareCandles,classifyPrepared,matchPrepared,patternCounts } from '../src/markets/crypto/patterns/matcher.js';
-import { parseCandles,selectUniverse,classicScore } from '../src/markets/crypto/patterns/source.js';
+import { parseCandles,selectUniverse,classicScore,fetchSeries } from '../src/markets/crypto/patterns/source.js';
 
 // Explicit synthetic fixtures, only for checking positive/negative geometric invariants.
 function fixture(points){
@@ -57,6 +57,23 @@ test('closed candles only: deduplicate, reject invalid OHLC and never bridge a m
   assert.equal(parseCandles(rows,'4H',server).length,0);
   const invalid=rows.map(r=>[...r]);invalid[6][2]='90';assert.equal(parseCandles(invalid,'1H',server).length,0);
 });
+test('UTC Monday week boundary and provisional Bitget candle are explicit, fresh, and never synthesized',async()=>{
+  const monday=Date.parse('2026-09-28T00:00:00Z'),now=monday+36*3600000,week=604800000;
+  assert.equal(candleBoundary(now,'1W'),monday/1000);
+  const rows=Array.from({length:40},(_,i)=>[String(monday-(39-i)*week),'100','103','98','101','10','1010']);
+  assert.equal(parseCandles(rows,'1W',now).length,39);
+  const actual=parseCandles(rows,'1W',now,{includeOpen:true});assert.equal(actual.length,40);assert.equal(actual.at(-1).provisional,true);
+  assert.equal(parseCandles(rows.filter((_,i)=>i!==30),'1W',now,{includeOpen:true}).length,9);
+  const originalFetch=globalThis.fetch;let requested='';
+  try{
+    globalThis.fetch=async url=>{requested=String(url);return {ok:true,json:async()=>({code:'00000',requestTime:now,data:rows})};};
+    const data=await fetchSeries('WEEKTESTUSDT','1W',new AbortController().signal,now);
+    assert.match(requested,/granularity=1Wutc/);assert.equal(data.candles.at(-1).provisional,true);
+    const {entryCurrent,INDEX_VERSION}=await import('../src/markets/crypto/patterns/index-cache.js');
+    const entry={version:INDEX_VERSION,data};
+    assert.equal(entryCurrent(entry,now+299000),true);assert.equal(entryCurrent(entry,now+301000),false);
+  }finally{globalThis.fetch=originalFetch;}
+});
 test('universe excludes stock tokens, unavailable instruments and illiquid pairs',()=>{
   const tickers=['BTC','ETH','AAPL','LOW','OFF'].map((s,i)=>({symbol:s+'USDT',lastPr:'10',usdtVolume:s==='LOW'?'90000':String(1e8-i*1e7)}));
   const instruments=tickers.map(t=>({symbol:t.symbol,symbolType:t.symbol==='AAPLUSDT'?'stock':'crypto',type:'perpetual',status:t.symbol==='OFFUSDT'?'offline':'online',quoteCoin:'USDT'}));
@@ -64,6 +81,23 @@ test('universe excludes stock tokens, unavailable instruments and illiquid pairs
 });
 test('ranking prioritizes similarity, OX only breaks ties',()=>{
   assert.deepEqual(sortMatches([{symbol:'B',similarity:82,oxScore:99},{symbol:'A',similarity:95,oxScore:40},{symbol:'C',similarity:95,oxScore:85}]).map(r=>r.symbol),['C','A','B']);
+});
+test('pattern T1 is a nearby clean setup, T2 early breakout, T3 lower priority; failed reversals are excluded',()=>{
+  const w=patternById('w').points;
+  const pending=fixture(w.map((p,i)=>({...p,y:i===4?.87:p.y}))).slice(0,-2);
+  const ready=matchCandles(pending,{id:'w'});assert.equal(ready?.tier,1);
+  const extended=matchCandles(fixture(w),{id:'w'});assert.equal(extended?.tier,2);
+  const triangle=matchCandles(fixture(patternById('triangle').points).slice(0,-2),{id:'triangle'});
+  assert.equal(triangle?.tier,1);
+  const failed=[...fixture(patternById('ihs').points)];
+  const rightShoulder=failed[51].low;for(let i=0;i<3;i++){const close=rightShoulder-2-i;failed.push({...failed.at(-1),time:failed.at(-1).time+3600,open:close,close,low:close-.1,high:close+.1});}
+  assert.equal(matchCandles(failed,{id:'ihs'}),null);
+  assert.deepEqual(sortMatches([{symbol:'L',similarity:99,match:{tier:3}},{symbol:'H',similarity:83,match:{tier:1}},{symbol:'M',similarity:90,match:{tier:2}}]).map(r=>r.symbol),['H','M','L']);
+});
+test('horizontal resistance needs at least three separate touches',()=>{
+  const three=fixture(patternById('range').points),two=fixture([{x:0,y:1},{x:.33,y:0},{x:.66,y:.99},{x:1,y:.1}]);
+  assert.ok(matchCandles(three,{id:'horizontal-resistance'})?.touches>=3);
+  assert.equal(matchCandles(two,{id:'horizontal-resistance'}),null);
 });
 test('classic score unavailable without the original engine; not replaced by similarity',()=>assert.equal(classicScore({},[],[]),null));
 test('score adapter agrees with the unchanged classic formula on the same data',()=>{
@@ -79,11 +113,11 @@ test('freehand retains the drawing and does not gate matches by an inferred name
   const points=[1,.04,.75,0,.62].map((y,i)=>({x:[0,.18,.51,.79,1][i],y}));
   const query=queryFromStrokes([points]);assert.equal(query.mode,'sketch');assert.ok(query.points.length);
   const c=fixture(points);assert.ok(matchCandles(c,query));
-  const forced={...query,id:'m'};assert.deepEqual(matchCandles(c,forced),matchCandles(c,query));
+  const forced={...query,id:'m'};assert.equal(matchCandles(c,forced)?.similarity,matchCandles(c,query)?.similarity);
 });
 test('forming W can be found without requiring neckline completion; inverse is rejected',()=>{
   const c=fixture([1,0,.8,.10,.60].map((y,i)=>({x:i/4,y})));
-  const match=matchCandles(c,{id:'w'});assert.ok(match);assert.equal(match.stage,'形成中');
+  const match=matchCandles(c,{id:'w'});assert.ok(match);assert.equal(match.stage,'尚未到觸發區');
   assert.equal(matchCandles(c,{id:'m'}),null);
 });
 test('levels and trend lines overlap other patterns without becoming pattern aliases',()=>{
@@ -109,5 +143,5 @@ test('cache cannot carry an index across a close boundary or algorithm version',
   const entry={version:INDEX_VERSION,data:{frame:'1H',candles}},now=(start+40.5*3600)*1000;
   assert.equal(entryCurrent(entry,now),true);assert.equal(entryCurrent(entry,now+3600000),false);
   assert.equal(entryCurrent({...entry,version:0},now),false);
-  assert.equal(Object.keys(TIMEFRAMES).length,10);
+  assert.equal(Object.keys(TIMEFRAMES).length,11);
 });

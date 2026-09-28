@@ -1,11 +1,13 @@
 // Local observations only; no generated candles or inferred market values are stored.
-import { TIMEFRAMES } from './catalog.js?v=patterns3-20260928';
-export const INDEX_VERSION=2;
+import { TIMEFRAMES, candleBoundary } from './catalog.js?v=patterns4-20260929';
+export const INDEX_VERSION=3;
 const memory=new Map();let opening;
 export const entryKey=data=>`${data.symbol}:${data.frame}`;
 export function entryCurrent(entry,now=Date.now()){
   const d=entry?.data,seconds=TIMEFRAMES[d?.frame];
-  return entry?.version===INDEX_VERSION&&!!seconds&&Array.isArray(d.candles)&&d.candles.length>=35&&d.candles.at(-1).time+seconds===Math.floor(now/1000/seconds)*seconds;
+  if(entry?.version!==INDEX_VERSION||!seconds||!Array.isArray(d.candles)||d.candles.length<35)return false;
+  const last=d.candles.at(-1),boundary=candleBoundary(now,d.frame);
+  return last.provisional?last.time===boundary&&now-d.serverTime<300000:last.time+seconds===boundary;
 }
 function database(){
   if(typeof indexedDB==='undefined')return Promise.resolve(null);

@@ -1,4 +1,4 @@
-import { PATTERNS, patternById } from './catalog.js?v=patterns3-20260928';
+import { PATTERNS, patternById } from './catalog.js?v=patterns4-20260929';
 const clamp = (x, a=0, b=1) => Math.max(a, Math.min(b, x));
 const mean = a => a.reduce((s,x)=>s+x,0)/a.length;
 export function normalize(points) {
@@ -99,6 +99,40 @@ export function structureValid(p,pattern) {
   }
 }
 function atr(c) {return mean(c.slice(1).map((v,i)=>Math.max(v.high-v.low,Math.abs(v.high-c[i].close),Math.abs(v.low-c[i].close))));}
+// These are observed setup phases, never a breakout prediction or the Radar's T1/T2/T3 score.
+function setupPhase(context,pattern,pivots,score,shape,visual,end){
+  const {candles,volatility:a}=context,last=candles.at(-1).close,age=candles.length-1-end,r=pattern?.rule;
+  if(!pattern||!pivots)return {tier:score>=90&&age<=2?2:3,stage:'相似路徑'};
+  const bullish=['w','ihs','triple-bottom'].includes(r),bearish=['m','hs','triple-top'].includes(r);
+  if(bullish||bearish){
+    const dir=bullish?1:-1,trough=pivots.at(-2).y,neck=pivots.length===5?pivots[2].y:(pivots[2].y+pivots[4].y)/2;
+    const height=Math.max(Math.abs(neck-trough),a),progress=(last-neck)*dir;
+    // A failed right shoulder or second bottom is not an actionable reversal.
+    if((last-trough)*dir<-.35*a)return null;
+    const symmetry=pivots.length===5?Math.abs(pivots[1].y-pivots[3].y)/height:Math.abs(pivots[1].y-pivots[5].y)/height;
+    const strict=symmetry<=.18&&shape>=86&&visual>=64&&score>=83&&age<=3;
+    if(strict&&progress>=-.9*a&&progress<=.25*a)return {tier:1,stage:'頸線附近 · 待確認'};
+    if(progress>=-.9*a&&progress<=Math.min(1.7*a,height*.38)&&score>=76&&age<=5)return {tier:2,stage:progress>0?'初步越過頸線':'接近頸線'};
+    return {tier:3,stage:progress>Math.min(1.7*a,height*.38)?'已走離頸線':'尚未到觸發區'};
+  }
+  if(['triangle','ascending','descending'].includes(r)){
+    const highs=pivots.filter(p=>p.type===1),lows=pivots.filter(p=>p.type===-1);
+    if(highs.length<2||lows.length<2)return {tier:3,stage:'結構待確認'};
+    const upper=regression(highs),lower=regression(lows),x=candles.length-1;
+    const top=upper.m*x+upper.b,bottom=lower.m*x+lower.b;
+    const widthAtStart=(upper.m-lower.m)*pivots[0].x+upper.b-lower.b;
+    const width=(top-bottom),contract=widthAtStart>0?width/widthAtStart:1;
+    const up=(last-top)/a,down=(bottom-last)/a,opposite=r==='ascending'?down:r==='descending'?up:Math.max(0,Math.min(up,down));
+    if(opposite>.45)return null;
+    if(up>.35||down>.35){const move=Math.max(up,down);return move<=1.5&&score>=77?{tier:2,stage:'初步突破邊界'}:{tier:3,stage:'已走離收斂區'};}
+    if(score>=84&&shape>=86&&visual>=64&&contract<=.67&&age<=3&&width>-.35*a)return {tier:1,stage:'收斂末段 · 待確認'};
+    return {tier:3,stage:'收斂中'};
+  }
+  // Other catalog shapes have no verified trigger rule yet; keep them out of T1.
+  if(score>=88&&shape>=88&&age<=2)return {tier:2,stage:'形態候選 · 位置待確認'};
+  if(score>=78&&age<=5)return {tier:2,stage:'形態形成中'};
+  return {tier:3,stage:'相似形態 · 較早期'};
+}
 // Build reusable features once per symbol/timeframe, independent of the selected drawing.
 export function prepareCandles(candles) {
   const volatility=atr(candles), n=candles.length, swings=[];
@@ -121,20 +155,24 @@ function levelMatch(context,pattern) {
   const pivots=swings[1].filter(p=>p.type===type&&p.x>=n-150);let best=null;
   const consider=(touches,line)=>{
     const start=touches[0].x,end=n-1,span=end-start;
-    if(span<15||end-touches.at(-1).x>32)return;
+    if(span<15||touches.length<3||end-touches.at(-1).x>32)return;
     const atEnd=line.m*end+line.b,distance=(last-atEnd)*(support?1:-1);
-    if(distance<-.8*a||distance>5*a)return;
-    const crossed=c.slice(start).filter((v,i)=>(v.close-(line.m*(i+start)+line.b))*(support?1:-1)<-a).length;
+    if(distance<(support?-.45:-2)*a||distance>5*a)return;
+    const crossed=c.slice(start,touches.at(-1).x+1).filter((v,i)=>(v.close-(line.m*(i+start)+line.b))*(support?1:-1)<-a).length;
     if(crossed>span*.08)return;
     const error=mean(touches.map(p=>Math.abs(p.y-(line.m*p.x+line.b))))/a;
     const score=clamp(.72+Math.min(touches.length,5)*.035-error*.09-Math.abs(distance)/a*.012)*100;
-    if(best&&score<=best.similarity)return;
-    best={start,end,similarity:Math.round(score*10)/10,points:[{x:start,y:line.m*start+line.b},{x:end,y:atEnd}],label:pattern.name,lastTime:c[end].time,touches:touches.length,kind:'level'};
+    const tier=error<=.48&&score>=82&&distance>=0&&distance<=.75*a?1:
+      score>=76&&(support?distance>.75*a&&distance<=2.2*a:distance<0&&distance>=-1.5*a)?2:3;
+    const stage=tier===1?(support?'支撐附近 · 待確認':'阻力附近 · 待確認'):tier===2?(support?'初步反彈':'初步突破'):'已離開水平區';
+    if(best&&(tier>best.tier||tier===best.tier&&score<=best.similarity))return;
+    best={start,end,similarity:Math.round(score*10)/10,points:[{x:start,y:line.m*start+line.b},{x:end,y:atEnd}],label:pattern.name,lastTime:c[end].time,touches:touches.length,tier,stage,kind:'level'};
   };
   if(!trend){
     for(const pivot of pivots){
-      const near=pivots.filter(p=>Math.abs(p.y-pivot.y)<=a*.7),touches=near.filter((p,i)=>!i||p.x-near[i-1].x>=4);
-      if(touches.length>=2)consider(touches,{m:0,b:mean(touches.map(p=>p.y))});
+      const near=pivots.filter(p=>Math.abs(p.y-pivot.y)<=a*.58),touches=[];
+      for(const p of near)if(!touches.length||p.x-touches.at(-1).x>=4)touches.push(p);
+      if(touches.length>=3)consider(touches,{m:0,b:mean(touches.map(p=>p.y))});
     }
   }else for(let start=0;start<pivots.length-2;start++){
     const tail=pivots.slice(start),line=regression(tail);
@@ -157,13 +195,14 @@ export function matchPrepared(context,query) {
     const key=start+':'+end;
     let visualSamples=samples||context.visuals.get(key);
     if(!visualSamples){const slice=candles.slice(start,end+1);if(Math.max(...slice.map(c=>c.high))-Math.min(...slice.map(c=>c.low))<context.volatility*2)return;visualSamples=resample(slice.map((c,i)=>({x:i,y:c.close})));context.visuals.set(key,visualSamples);}
-    const visual=similarity(visualSamples,target);let score=visual,stage='';
-    if(pivots){const shape=similarity(resample(pivots),target);score=.6*shape+.4*visual;if(shape<70)return;}
+    const visual=similarity(visualSamples,target);let score=visual,shape=visual;
+    if(pivots){shape=similarity(resample(pivots),target);score=.6*shape+.4*visual;if(shape<70)return;}
     const reversal=pattern&&['w','m'].includes(pattern.rule);
-    if(reversal){const dir=pattern.rule==='w'?1:-1;stage=(candles.at(-1).close-pivots[2].y)*dir>0?'頸線已越過':'形成中';}
     const minimum=sketch?70:pattern?.rule==='harmonic'?72:reversal?71:77;
-    if(score<minimum||best&&score<=best.similarity)return;
-    best={start,end,similarity:Math.round(score*10)/10,points:pivots||candles.slice(start,end+1).map((c,i)=>({x:i+start,y:c.close})),ratios,label:sketch?'相似路徑':pattern?.name||'自繪路徑',stage,kind:sketch?'sketch':'pattern',lastTime:candles[end].time};
+    if(score<minimum)return;
+    const phase=setupPhase(context,pattern,pivots,score,shape,visual,end);if(!phase)return;
+    if(best&&(phase.tier>best.tier||phase.tier===best.tier&&score<=best.similarity))return;
+    best={start,end,similarity:Math.round(score*10)/10,points:pivots||candles.slice(start,end+1).map((c,i)=>({x:i+start,y:c.close})),ratios,label:sketch?'相似路徑':pattern?.name||'自繪路徑',...phase,kind:sketch?'sketch':'pattern',lastTime:candles[end].time};
   };
   if(pattern&&pattern.rule!=='path') {
     for(const base of context.swings){
@@ -179,6 +218,12 @@ export function matchPrepared(context,query) {
     // Cheap aligned distance narrows the candidates before DTW. Timing and price are normalized.
     const nearest=context.windows.map(w=>({w,error:mean(w.samples.map((v,i)=>Math.abs(v-target[i])))})).sort((a,b)=>a.error-b.error).slice(0,16);
     for(const {w} of nearest)consider(w.start,w.end,null,null,w.samples);
+  }
+  if(sketch&&best&&query.id){
+    const structural=matchPrepared(context,{id:query.id});
+    if(structural&&Math.abs(structural.end-best.end)<=8&&Math.abs(structural.start-best.start)<=25){
+      best.tier=structural.tier;best.stage=structural.stage;
+    }else{best.tier=3;best.stage='路徑相似 · 結構未確認';}
   }
   return best;
 }
@@ -218,4 +263,4 @@ export function queryFromStrokes(strokes) {
   const best=PATTERNS.filter(t=>t.rule!=='harmonic'&&!t.rule.startsWith('level')&&!t.rule.startsWith('trend')).map(t=>({t,s:similarity(resample(p),resample(t.points))})).sort((a,b)=>b.s-a.s)[0];
   return best.s>=78?{id:best.t.id,points:p,mode:'sketch'}:{points:p,mode:'sketch'};
 }
-export function sortMatches(rows){return [...rows].sort((a,b)=>b.similarity-a.similarity||(b.oxScore??-1)-(a.oxScore??-1)||b.turnover-a.turnover||a.symbol.localeCompare(b.symbol));}
+export function sortMatches(rows){return [...rows].sort((a,b)=>(a.match?.tier??3)-(b.match?.tier??3)||b.similarity-a.similarity||(b.oxScore??-1)-(a.oxScore??-1)||b.turnover-a.turnover||a.symbol.localeCompare(b.symbol));}

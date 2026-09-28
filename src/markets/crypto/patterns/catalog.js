@@ -56,4 +56,9 @@ for (const [id,name,values,ratios] of harmonics) {
   });
 }
 export const patternById = id => PATTERNS.find(p => p.id === id);
-export const TIMEFRAMES = Object.freeze({ '1m':60, '3m':180, '5m':300, '15m':900, '30m':1800, '1H':3600, '4H':14400, '6H':21600, '12H':43200, '1D':86400 });
+export const TIMEFRAMES = Object.freeze({ '1m':60, '3m':180, '5m':300, '15m':900, '30m':1800, '1H':3600, '4H':14400, '6H':21600, '12H':43200, '1D':86400, '1W':604800 });
+// Bitget 1Wutc opens Monday 00:00 UTC; Unix weeks otherwise begin Thursday.
+export const candleBoundary=(ms,frame)=>{
+  const seconds=TIMEFRAMES[frame],offset=frame==='1W'?345600:0;
+  return Math.floor((ms/1000-offset)/seconds)*seconds+offset;
+};
