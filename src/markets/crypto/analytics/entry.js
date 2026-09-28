@@ -1,8 +1,8 @@
 // Crypto-only inline tools. Preserve the existing strength calculations and DOM.
 const section = document.querySelector('#view-strength .strength-page');
 if (section) {
-  const tabs = [['overview','總覽'],['strength','強弱對比'],['heatmap','熱力圖'],['rotation','板塊輪動'],['flow','主動買賣'],['liquidations','爆倉'],['zones','清算'],['derivatives','合約'],['order','訂單流']];
-  let selected = 'overview';
+  const tabs = [['patterns','型態搜尋'],['overview','總覽'],['strength','強弱對比'],['heatmap','熱力圖'],['rotation','板塊輪動'],['flow','主動買賣'],['liquidations','爆倉'],['zones','清算'],['derivatives','合約'],['order','訂單流']];
+  let selected = 'patterns';
   const nav = document.createElement('div'); nav.id='ox-crypto-tools-nav'; nav.style.cssText='grid-column:1/-1;min-width:0;'; nav.hidden=true;
   const ns = nav.attachShadow({mode:'open'});
   const twCSS = new URL('../../tw/radar-ui.css',import.meta.url);
@@ -11,6 +11,7 @@ if (section) {
   const boundaryStyle=document.createElement('style');
   boundaryStyle.textContent='body[data-view="strength"] .ox-live-shell{margin-bottom:14px!important}#view-strength .strength-page{padding-top:8px!important}#view-strength .strength-page[data-crypto-tool]:not([data-crypto-tool="strength"]) > :not(#ox-crypto-tools-nav):not(#ox-crypto-tools-inline){display:none!important}#view-strength .strength-page > [hidden]{display:none!important}#view-strength .strength-page[data-crypto-tool="strength"] .strength-compare-top .page-kicker,#view-strength .strength-page[data-crypto-tool="strength"] .strength-compare-top h2,#view-strength .strength-page[data-crypto-tool="strength"] .strength-compare-top p,#view-strength .strength-page[data-crypto-tool="strength"] .strength-compare-side span,#view-strength .strength-page[data-crypto-tool="strength"] .strength-head p,#view-strength .strength-page[data-crypto-tool="strength"] .strength-explain{display:none!important}#view-strength .strength-page[data-crypto-tool="strength"] .strength-compare-top{justify-content:flex-end;margin-bottom:8px}';
   section.append(boundaryStyle);
+  boundaryStyle.textContent+='#view-strength .strength-page[data-crypto-tool="patterns"]{row-gap:4px!important}';
   function positionIndicator(){const rail=ns.querySelector('.twr-mode-rail'),button=rail.querySelector('.active');if(!button)return;rail.style.setProperty('--mode-x',button.offsetLeft+'px');rail.style.setProperty('--mode-width',button.offsetWidth+'px');}
   new ResizeObserver(positionIndicator).observe(nav); ns.querySelector('link').addEventListener('load',positionIndicator);
   ns.addEventListener('click',e=>{const b=e.target.closest('[data-crypto-tool]');if(!b)return;selected=b.dataset.cryptoTool;ns.querySelectorAll('button').forEach(x=>{const a=x===b;x.classList.toggle('active',a);x.setAttribute('aria-selected',a);x.tabIndex=a?0:-1;});positionIndicator();b.scrollIntoView({block:'nearest',inline:'nearest',behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth'});unmount();sync();});
@@ -56,6 +57,12 @@ if (section) {
     if (instance || pending) return;
     pending = true; const token = ++generation;
     try {
+      if(selected==='patterns'){
+        const { mountPatternSearch } = await import('../patterns/view.js?v=patterns1-20260928');
+        if(token!==generation||!active())return;
+        instance=mountPatternSearch(host);
+        return;
+      }
       const { mountCryptoFlow } = await import('./flow-view.js?v=crypto-live2-20260928');
       if (token !== generation || !active()) return;
       instance = mountCryptoFlow(host, { initialTab:selected, autoRefresh:true, onExit() { ns.querySelector('[data-crypto-tool="strength"]').click(); } });

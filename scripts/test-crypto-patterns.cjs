@@ -1,0 +1,55 @@
+// UI QA uses recorded exchange responses at their original capture time.
+// Synthetic geometry belongs only to the unit suite, never this review or production.
+const {chromium}=require('playwright'),fs=require('node:fs'),assert=require('node:assert/strict');
+const snapshot=JSON.parse(fs.readFileSync('previews/data/crypto-tools-snapshot.json'));
+const origin='http://127.0.0.1:4193';
+function aggregate(raw,frame){
+  if(frame==='15m')return raw;
+  const ms=frame==='1H'?3600000:frame==='4H'?14400000:frame==='30m'?1800000:86400000,buckets=new Map();
+  for(const r of [...raw].sort((a,b)=>Number(a[0])-Number(b[0]))){const key=Math.floor(Number(r[0])/ms)*ms;if(!buckets.has(key))buckets.set(key,[]);buckets.get(key).push(r.map(Number));}
+  return [...buckets].filter(([ts,r])=>r.length===ms/900000&&r[0][0]===ts).map(([ts,r])=>[ts,r[0][1],Math.max(...r.map(x=>x[2])),Math.min(...r.map(x=>x[3])),r.at(-1)[4],r.reduce((s,x)=>s+x[5],0),r.reduce((s,x)=>s+x[6],0)].map(String));
+}
+(async()=>{
+ const server=require('node:child_process').spawn(process.execPath,['scripts/dev-server.mjs','--port','4193']);server.stderr.on('data',s=>process.stderr.write(s));await new Promise((resolve,reject)=>{server.stdout.once('data',resolve);server.once('error',reject);server.once('exit',code=>reject(Error('Server exit '+code)));});console.log('Preview ready');
+ const browser=await chromium.launch({executablePath:process.env.OX_CHROMIUM_EXECUTABLE||'/workspace/scratch/6827c8da6e73/browser-tools/chrome-headless-shell-linux64/chrome-headless-shell',headless:true,args:['--no-sandbox']});
+ try{
+  console.log('Browser ready');const page=await browser.newPage({viewport:{width:390,height:844},hasTouch:true});
+  const errors=[];page.on('pageerror',e=>errors.push(e.message));await page.clock.setFixedTime(new Date(snapshot.requestTime));
+  await page.route('https://api.bitget.com/**',route=>{
+   const url=new URL(route.request().url());let body;
+   if(url.pathname.endsWith('/tickers'))body={code:'00000',requestTime:snapshot.requestTime,data:snapshot.tickers};
+   else if(url.pathname.endsWith('/instruments'))body={code:'00000',requestTime:snapshot.requestTime,data:snapshot.instruments};
+   else if(url.pathname.endsWith('/contracts'))body={code:'00000',data:snapshot.instruments.map(i=>({...i,symbolStatus:'normal',symbolType:'perpetual'}))};
+   else if(url.pathname.endsWith('/candles')){const rows=snapshot.candles[url.searchParams.get('symbol')]?.response.data||[];body={code:'00000',requestTime:snapshot.requestTime,data:aggregate(rows,url.searchParams.get('granularity'))};}
+   else return route.abort();
+   return route.fulfill({status:200,headers:{'access-control-allow-origin':'*'},contentType:'application/json',body:JSON.stringify(body)});
+  });
+  await page.route(/https:\/\/(?!api\.bitget\.com)/,r=>r.abort());
+  console.log('Opening page');await page.goto(origin,{waitUntil:'domcontentloaded'});await page.getByRole('button',{name:'指標',exact:true}).click();await page.locator('.px-board').waitFor();console.log('Pattern page ready');
+  assert.deepEqual((await page.locator('#ox-crypto-tools-nav [data-crypto-tool]').allTextContents()).slice(0,3),['型態搜尋','總覽','強弱對比']);
+  assert.equal(await page.locator('[data-frame-label]').textContent(),'4H + 1H');
+  await page.locator('[data-action="timeframes"]').click();await page.locator('[data-frame="15m"]').click();await page.locator('[data-frame="4H"]').click();await page.locator('[data-frame="1H"]').click();await page.getByRole('button',{name:'關閉時間級別',exact:true}).click();
+  await page.locator('[data-action="patterns"]').click();assert.equal(await page.locator('[data-preset]').count(),47);await page.locator('.px-search').fill('階梯');assert.equal(await page.locator('[data-preset]').count(),2);await page.locator('[data-preset="stairs-up"]').click();
+  console.log('Scanning recorded 15m data');await page.waitForFunction(()=>{const root=document.querySelector('#ox-crypto-tools-inline').firstElementChild.shadowRoot;return /幣 ·/.test(root.querySelector('.px-status').textContent);},{},{timeout:60000});console.log('Scan complete');
+  assert.ok(await page.locator('.px-card').count()>=2);assert.equal(await page.locator('.px-card strong').first().textContent()==='—',false);
+  const boxes=await page.locator('.px-card').evaluateAll(es=>es.slice(0,2).map(e=>({x:e.getBoundingClientRect().x,y:e.getBoundingClientRect().y,w:e.getBoundingClientRect().width})));assert.equal(boxes[0].y,boxes[1].y);assert.ok(boxes[1].x>boxes[0].x);
+  const similarity=await page.locator('.px-match span:last-child').allTextContents();const nums=similarity.map(s=>Number(s.replace('相似 ','')));assert.ok(nums.every((x,i)=>!i||x<=nums[i-1]));
+  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
+  fs.mkdirSync('/tmp/ox-pattern-review',{recursive:true});await page.screenshot({path:'/tmp/ox-pattern-review/mobile.png',fullPage:true});
+  await page.locator('.px-card').first().click();const chart=page.locator('.px-detail canvas');await chart.waitFor();await page.waitForTimeout(150);const before=await chart.evaluate(e=>e.toDataURL());const box=await chart.boundingBox(),session=await page.context().newCDPSession(page);
+  await session.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:box.x+100,y:box.y+180,id:1},{x:box.x+230,y:box.y+180,id:2}]});
+  await session.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:box.x+60,y:box.y+180,id:1},{x:box.x+280,y:box.y+180,id:2}]});await session.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});await page.waitForTimeout(150);assert.notEqual(await chart.evaluate(e=>e.toDataURL()),before);await page.screenshot({path:'/tmp/ox-pattern-review/detail.png'});await page.getByRole('button',{name:'關閉圖表',exact:true}).click();
+  // Freehand input is drawn from an actual observed window, preserving its capture timestamp.
+  await page.locator('[data-action="undo"]').click();const raw=snapshot.candles.BTCUSDT.response.data.map(r=>r.map(Number)).filter(r=>r[0]+900000<=snapshot.requestTime).sort((a,b)=>a[0]-b[0]).slice(-61),lo=Math.min(...raw.map(r=>r[4])),hi=Math.max(...raw.map(r=>r[4]));
+  const board=page.locator('.px-board canvas');await board.scrollIntoViewIfNeeded();const bb=await board.boundingBox();const x=i=>bb.x+18+i/(raw.length-1)*(bb.width-36),y=r=>bb.y+60+(1-(r[4]-lo)/(hi-lo))*(bb.height-105);
+  await page.mouse.move(x(0),y(raw[0]));await page.mouse.down();for(let i=1;i<raw.length;i++)await page.mouse.move(x(i),y(raw[i]));await page.mouse.up();await page.waitForTimeout(1300);await page.waitForFunction(()=>/幣 ·/.test(document.querySelector('#ox-crypto-tools-inline').firstElementChild.shadowRoot.querySelector('.px-status').textContent),{},{timeout:60000});
+  assert.ok((await page.locator('.px-card .px-symbol').allTextContents()).some(s=>s.startsWith('BTC')));
+  await page.setViewportSize({width:1440,height:1100});await page.waitForTimeout(250);await page.screenshot({path:'/tmp/ox-pattern-review/desktop.png',fullPage:true});
+  await page.locator('#ox-crypto-tools-nav [data-crypto-tool="strength"]').click();assert.ok(await page.locator('.strength-compare-panel').isVisible());assert.equal(await page.locator('.px-board').count(),0);
+  await page.locator('#ox-crypto-tools-nav [data-crypto-tool="overview"]').click();await page.locator('.cfx-overview').waitFor();
+  await page.locator('#ox-crypto-tools-nav [data-crypto-tool="patterns"]').click();await page.locator('.px-board').waitFor();
+  await page.evaluate(()=>{document.body.dataset.market='tw';document.dispatchEvent(new CustomEvent('ox:marketchange'));});assert.equal(await page.locator('#ox-crypto-tools-nav').isVisible(),false);assert.equal(await page.locator('.px-board').count(),0);
+  const unexpected=errors.filter(e=>!e.includes('LightweightCharts is not defined'));assert.deepEqual(unexpected,[]);
+  console.log('PASS: first tab, 47 presets, default 4H/1H, real recorded candles, OX, two columns, rank, freehand matching, pinch, navigation cleanup and Crypto-only scope');
+ }finally{await browser.close();server.kill();}
+})().catch(e=>{console.error(e);process.exitCode=1;});
