@@ -2,6 +2,10 @@
 const points = values => values.map((y, i) => ({ x: i / (values.length - 1), y }));
 const item = (id, name, group, values, rule = id) => ({ id, name, group, points: points(values), rule });
 export const PATTERNS = [
+  item('horizontal-resistance', '水平阻力', '水平阻力／支撐', [.5,.5], 'level-resistance'),
+  item('horizontal-support', '水平支撐', '水平阻力／支撐', [.5,.5], 'level-support'),
+  item('trend-up', '上升趨勢線', '趨勢線', [0,1], 'trend-support'),
+  item('trend-down', '下降趨勢線', '趨勢線', [1,0], 'trend-resistance'),
   item('w', 'W 底・雙底', '常見型態', [1, 0, .8, .06, 1]),
   item('m', 'M 頂・雙頂', '常見型態', [0, 1, .2, .94, 0]),
   item('triangle', '對稱三角收斂', '常見型態', [1, 0, .86, .17, .7, .32, .56]),
@@ -52,4 +56,4 @@ for (const [id,name,values,ratios] of harmonics) {
   });
 }
 export const patternById = id => PATTERNS.find(p => p.id === id);
-export const TIMEFRAMES = Object.freeze({ '15m':900, '30m':1800, '1H':3600, '4H':14400, '1D':86400 });
+export const TIMEFRAMES = Object.freeze({ '1m':60, '3m':180, '5m':300, '15m':900, '30m':1800, '1H':3600, '4H':14400, '6H':21600, '12H':43200, '1D':86400 });

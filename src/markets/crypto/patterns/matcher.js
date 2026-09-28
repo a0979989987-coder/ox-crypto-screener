@@ -19,11 +19,11 @@ export function resample(points,n=40) {
 // Bounded DTW plus aligned error preserves timing and prevents arbitrary warping.
 export function similarity(a,b) {
   if(a.length!==b.length||a.length<4)return 0;
-  const n=a.length,band=4;let prev=new Float64Array(n+1).fill(Infinity);prev[0]=0;
+  const n=a.length,band=7;let prev=new Float64Array(n+1).fill(Infinity),row=new Float64Array(n+1);prev[0]=0;
   for(let i=1;i<=n;i++){
-    const row=new Float64Array(n+1).fill(Infinity);
+    row.fill(Infinity);
     for(let j=Math.max(1,i-band);j<=Math.min(n,i+band);j++)row[j]=Math.abs(a[i-1]-b[j-1])+Math.min(prev[j],row[j-1],prev[j-1]);
-    prev=row;
+    [prev,row]=[row,prev];
   }
   const aligned=mean(a.map((x,i)=>Math.abs(x-b[i])));
   const edge=(Math.abs(a[0]-b[0])+Math.abs(a.at(-1)-b.at(-1)))/2;
@@ -68,7 +68,7 @@ export function structureValid(p,pattern) {
   if(r==='harmonic')return !!validateHarmonic(p,pattern);
   if(r==='w'||r==='m'){
     const v=r==='m'?q.map(v=>1-v):q;
-    return Math.abs(v[1]-v[3])<=.18&&v[2]-Math.max(v[1],v[3])>=.45&&v[4]>=v[2]-.18;
+    return Math.abs(v[1]-v[3])<=.25&&v[0]-v[1]>=.35&&v[2]-Math.max(v[1],v[3])>=.30&&v[4]-v[3]>=.18;
   }
   if(['hs','ihs','triple-bottom','triple-top'].includes(r)){
     const v=['hs','triple-top'].includes(r)?q.map(v=>1-v):q;
@@ -99,41 +99,100 @@ export function structureValid(p,pattern) {
   }
 }
 function atr(c) {return mean(c.slice(1).map((v,i)=>Math.max(v.high-v.low,Math.abs(v.high-c[i].close),Math.abs(v.low-c[i].close))));}
-export function matchCandles(candles,query) {
+// Build reusable features once per symbol/timeframe, independent of the selected drawing.
+export function prepareCandles(candles) {
+  const volatility=atr(candles), n=candles.length, swings=[];
+  for(const [radius,multiple] of [[1,.5],[2,.65],[3,1],[5,1.5],[8,2]]) {
+    const p=swingPoints(candles,radius,volatility*multiple);swings.push(p);
+  }
+  const windows=[];
+  for(let end=n-1;end>=Math.max(0,n-7);end-=2)for(let span=16;span<=Math.min(160,end);span+=4){
+    const start=end-span,slice=candles.slice(start,end+1),points=slice.map((c,i)=>({x:i,y:c.close}));
+    if(Math.max(...slice.map(c=>c.high))-Math.min(...slice.map(c=>c.low))<volatility*2)continue;
+    windows.push({start,end,samples:resample(points)});
+  }
+  return {candles,volatility,swings,windows,visuals:new Map()};
+}
+const targets=new Map(PATTERNS.map(p=>[p.id,resample(p.points)]));
+function levelMatch(context,pattern) {
+  const {candles:c,volatility:a,swings}=context,n=c.length,last=c.at(-1).close;
+  if(!a)return null;
+  const support=pattern.rule.endsWith('support'),trend=pattern.rule.startsWith('trend'),type=support?-1:1;
+  const pivots=swings[1].filter(p=>p.type===type&&p.x>=n-150);let best=null;
+  const consider=(touches,line)=>{
+    const start=touches[0].x,end=n-1,span=end-start;
+    if(span<15||end-touches.at(-1).x>32)return;
+    const atEnd=line.m*end+line.b,distance=(last-atEnd)*(support?1:-1);
+    if(distance<-.8*a||distance>5*a)return;
+    const crossed=c.slice(start).filter((v,i)=>(v.close-(line.m*(i+start)+line.b))*(support?1:-1)<-a).length;
+    if(crossed>span*.08)return;
+    const error=mean(touches.map(p=>Math.abs(p.y-(line.m*p.x+line.b))))/a;
+    const score=clamp(.72+Math.min(touches.length,5)*.035-error*.09-Math.abs(distance)/a*.012)*100;
+    if(best&&score<=best.similarity)return;
+    best={start,end,similarity:Math.round(score*10)/10,points:[{x:start,y:line.m*start+line.b},{x:end,y:atEnd}],label:pattern.name,lastTime:c[end].time,touches:touches.length,kind:'level'};
+  };
+  if(!trend){
+    for(const pivot of pivots){
+      const near=pivots.filter(p=>Math.abs(p.y-pivot.y)<=a*.7),touches=near.filter((p,i)=>!i||p.x-near[i-1].x>=4);
+      if(touches.length>=2)consider(touches,{m:0,b:mean(touches.map(p=>p.y))});
+    }
+  }else for(let start=0;start<pivots.length-2;start++){
+    const tail=pivots.slice(start),line=regression(tail);
+    if(line.m*(support?1:-1)<a*.025)continue;
+    const touches=tail.filter(p=>Math.abs(p.y-(line.m*p.x+line.b))<=a*.8);
+    if(touches.length>=3&&touches.at(-1).x-touches[0].x>=12)consider(touches,regression(touches));
+  }
+  return best;
+}
+export function matchPrepared(context,query) {
+  const {candles,n= context.candles.length}=context;
   if(candles.length<24)return null;
-  const pattern=patternById(query.id),target=resample(pattern?.points||query.points||[]);
+  const sketch=query.mode==='sketch',pattern=sketch?null:patternById(query.id);
+  if(pattern?.rule.startsWith('level')||pattern?.rule.startsWith('trend'))return levelMatch(context,pattern);
+  const target=sketch?resample(query.points||[]):targets.get(pattern?.id)||resample(query.points||[]);
   if(!target.length)return null;
-  const n=candles.length;let best=null;
-  const consider=(start,end,pivots,ratios=null)=>{
-    if(end-start<15||end-start>140||n-1-end>8)return;
-    const slice=candles.slice(start,end+1),pricePath=slice.map((c,i)=>({x:i,y:c.close}));
-    if(Math.max(...slice.map(c=>c.high))-Math.min(...slice.map(c=>c.low))<atr(slice)*2.5)return;
-    const visual=similarity(resample(pricePath),target);
-    let score=visual;
-    if(pivots){const shape=similarity(resample(pivots),target);score=.6*shape+.4*visual;if(shape<77)return;}
-    const minimum=pattern?.rule==='harmonic'?72:78;
+  let best=null;
+  const consider=(start,end,pivots,ratios=null,samples=null)=>{
+    if(end-start<15||end-start>160||n-1-end>8)return;
+    const key=start+':'+end;
+    let visualSamples=samples||context.visuals.get(key);
+    if(!visualSamples){const slice=candles.slice(start,end+1);if(Math.max(...slice.map(c=>c.high))-Math.min(...slice.map(c=>c.low))<context.volatility*2)return;visualSamples=resample(slice.map((c,i)=>({x:i,y:c.close})));context.visuals.set(key,visualSamples);}
+    const visual=similarity(visualSamples,target);let score=visual,stage='';
+    if(pivots){const shape=similarity(resample(pivots),target);score=.6*shape+.4*visual;if(shape<70)return;}
+    const reversal=pattern&&['w','m'].includes(pattern.rule);
+    if(reversal){const dir=pattern.rule==='w'?1:-1;stage=(candles.at(-1).close-pivots[2].y)*dir>0?'頸線已越過':'形成中';}
+    const minimum=sketch?70:pattern?.rule==='harmonic'?72:reversal?71:77;
     if(score<minimum||best&&score<=best.similarity)return;
-    best={start,end,similarity:Math.round(score*10)/10,points:pivots||pricePath.map(v=>({x:v.x+start,y:v.y})),ratios,label:pattern?.name||'自繪路徑',lastTime:candles[end].time};
+    best={start,end,similarity:Math.round(score*10)/10,points:pivots||candles.slice(start,end+1).map((c,i)=>({x:i+start,y:c.close})),ratios,label:sketch?'相似路徑':pattern?.name||'自繪路徑',stage,kind:sketch?'sketch':'pattern',lastTime:candles[end].time};
   };
   if(pattern&&pattern.rule!=='path') {
-    const minMove=atr(candles)*.65;
-    for(const radius of [2,3,5]){
-      const pivots=swingPoints(candles,radius,minMove);
-      // A terminal close is allowed for neckline/continuation sketches; never for harmonic pivots.
+    for(const base of context.swings){
+      const pivots=[...base];
       if(pattern.rule!=='harmonic'&&pivots.length){const last=pivots.at(-1),c=candles.at(-1);if((c.close-last.y)*last.type<0)pivots.push({x:n-1,y:c.close,type:-last.type});}
       const k=pattern.points.length;
-      for(let i=Math.max(0,pivots.length-k-4);i<=pivots.length-k;i++){
+      for(let i=Math.max(0,pivots.length-k-6);i<=pivots.length-k;i++){
         const p=pivots.slice(i,i+k);if(n-1-p.at(-1).x>8||!structureValid(p,pattern))continue;
         consider(p[0].x,p.at(-1).x,p,pattern.rule==='harmonic'?validateHarmonic(p,pattern):null);
       }
     }
-  }else{
-    for(let end=n-1;end>=n-4;end--)for(let span=20;span<=Math.min(140,end);span+=4)consider(end-span,end,null);
+  }else {
+    // Cheap aligned distance narrows the candidates before DTW. Timing and price are normalized.
+    const nearest=context.windows.map(w=>({w,error:mean(w.samples.map((v,i)=>Math.abs(v-target[i])))})).sort((a,b)=>a.error-b.error).slice(0,16);
+    for(const {w} of nearest)consider(w.start,w.end,null,null,w.samples);
   }
   return best;
 }
+export function matchCandles(candles,query){return matchPrepared(prepareCandles(candles),query);}
+export function classifyPrepared(context){
+  const matches={};for(const p of PATTERNS){const match=matchPrepared(context,{id:p.id});if(match)matches[p.id]=match;}return matches;
+}
+export function patternCounts(entries,frames){
+  const sets=new Map(PATTERNS.map(p=>[p.id,new Set()]));
+  for(const entry of entries)if(frames.includes(entry.data.frame))for(const id of Object.keys(entry.matches))sets.get(id)?.add(entry.data.symbol);
+  return Object.fromEntries([...sets].map(([id,s])=>[id,s.size]));
+}
 export function queryFromStrokes(strokes) {
-  const valid=strokes.filter(s=>s.length>=3);if(!valid.length)return null;
+  const valid=strokes.filter(s=>s.length>=2);if(!valid.length)return null;
   // Two drawn boundaries become an alternating path between their measured envelopes.
   if(valid.length===2){
     const lines=valid.map(s=>regression(s)),left=Math.max(...valid.map(s=>Math.min(...s.map(p=>p.x)))),right=Math.min(...valid.map(s=>Math.max(...s.map(p=>p.x))));
@@ -143,17 +202,20 @@ export function queryFromStrokes(strokes) {
       if(lines[0].m*right+lines[0].b>=lines[1].m*right+lines[1].b){
         const candidates=PATTERNS.filter(p=>['triangle','ascending','descending','range','falling-wedge','rising-wedge','channel-up','channel-down','broadening'].includes(p.id));
         const best=candidates.map(p=>({p,s:similarity(resample(points),resample(p.points))})).sort((a,b)=>b.s-a.s)[0];
-        return best.s>=83?{id:best.p.id,points}:{points};
+        return best.s>=83?{id:best.p.id,points,mode:'sketch'}:{points,mode:'sketch'};
       }
     }
   }
   const raw=valid.at(-1),a=raw[0].x,b=raw.at(-1).x;
   const chronological=b>=a?raw:[...raw].reverse();let last=-Infinity;
   const path=chronological.filter(p=>{if(p.x<=last+.001)return false;last=p.x;return true;});
-  if(path.length<3||path.at(-1).x-path[0].x<.12)return null;
+  if(path.length<2||path.at(-1).x-path[0].x<.12)return null;
+  const line=regression(path),deviation=Math.sqrt(mean(path.map(p=>(p.y-line.m*p.x-line.b)**2))),height=Math.max(...path.map(p=>p.y))-Math.min(...path.map(p=>p.y));
+  if(height<.045)return {id:'horizontal-resistance',mode:'level'};
+  if(deviation<.025&&Math.abs(line.m)>.15)return {id:line.m>0?'trend-up':'trend-down',mode:'level'};
   const p=normalize(path);if(!p.length)return null;
   // Only label a hand-drawn common shape when strongly aligned; harmonic names require explicit ratio validation.
-  const best=PATTERNS.filter(t=>t.rule!=='harmonic').map(t=>({t,s:similarity(resample(p),resample(t.points))})).sort((a,b)=>b.s-a.s)[0];
-  return best.s>=90?{id:best.t.id,points:p}:{points:p};
+  const best=PATTERNS.filter(t=>t.rule!=='harmonic'&&!t.rule.startsWith('level')&&!t.rule.startsWith('trend')).map(t=>({t,s:similarity(resample(p),resample(t.points))})).sort((a,b)=>b.s-a.s)[0];
+  return best.s>=78?{id:best.t.id,points:p,mode:'sketch'}:{points:p,mode:'sketch'};
 }
 export function sortMatches(rows){return [...rows].sort((a,b)=>b.similarity-a.similarity||(b.oxScore??-1)-(a.oxScore??-1)||b.turnover-a.turnover||a.symbol.localeCompare(b.symbol));}

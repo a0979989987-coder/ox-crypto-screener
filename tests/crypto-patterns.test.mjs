@@ -2,8 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { runInNewContext } from 'node:vm';
-import { PATTERNS,patternById } from '../src/markets/crypto/patterns/catalog.js';
-import { normalize,resample,similarity,matchCandles,validateHarmonic,structureValid,queryFromStrokes,sortMatches } from '../src/markets/crypto/patterns/matcher.js';
+import { PATTERNS,patternById,TIMEFRAMES } from '../src/markets/crypto/patterns/catalog.js';
+import { normalize,resample,similarity,matchCandles,validateHarmonic,structureValid,queryFromStrokes,sortMatches,prepareCandles,classifyPrepared,matchPrepared,patternCounts } from '../src/markets/crypto/patterns/matcher.js';
 import { parseCandles,selectUniverse,classicScore } from '../src/markets/crypto/patterns/source.js';
 
 // Explicit synthetic fixtures, only for checking positive/negative geometric invariants.
@@ -19,7 +19,7 @@ test('drawing invariants: time scale, price scale and offset; inverse W is dissi
   assert.ok(similarity(resample(p),resample(p.map(v=>({x:v.x*300+7,y:v.y*14+991}))))>99.9);
   assert.ok(similarity(resample(p),resample(patternById('m').points))<55);
   assert.equal(queryFromStrokes([p]).id,'w');
-  assert.equal(queryFromStrokes([[{x:.1,y:.5},{x:.2,y:.5},{x:.4,y:.5}]]),null);
+  assert.equal(queryFromStrokes([[{x:.1,y:.5},{x:.2,y:.5},{x:.4,y:.5}]]).id,'horizontal-resistance');
   assert.equal(queryFromStrokes([[{x:0,y:1},{x:.5,y:.8},{x:1,y:.6}],[{x:0,y:0},{x:.5,y:.2},{x:1,y:.4}]]).id,'triangle');
 });
 test('W matching cannot return an M, missing second trough or an old completed W',()=>{
@@ -46,7 +46,7 @@ test('harmonic ratios reject visually similar geometry with wrong Fibonacci prop
   assert.equal(validateHarmonic(patternById('w').points,patternById('gartley-bull')),null);
 });
 test('all named templates can match observed OHLC pivots with small nonzero wicks',()=>{
-  for(const p of PATTERNS)assert.ok(matchCandles(fixture(p.points),{id:p.id}),p.id);
+  for(const p of PATTERNS.filter(p=>!p.rule.startsWith('level')&&!p.rule.startsWith('trend')))assert.ok(matchCandles(fixture(p.points),{id:p.id}),p.id);
 });
 test('closed candles only: deduplicate, reject invalid OHLC and never bridge a missing interval',()=>{
   const base=1700002800000,rows=Array.from({length:8},(_,i)=>[String(base+i*3600000),'100','102','99','101','5','505']);
@@ -73,4 +73,41 @@ test('score adapter agrees with the unchanged classic formula on the same data',
   const context={CONFIG:cfg,num:Number,clamp:n=>Math.min(100,Math.max(0,n)),fmtPrice:String,ticker,candles};
   runInNewContext(engine+'\n'+classicScore.toString()+'\nresult=classicScore(ticker,candles,[ticker]);',context);
   assert.ok(Number.isFinite(context.result));assert.ok(context.result>=0&&context.result<=100);
+});
+
+test('freehand retains the drawing and does not gate matches by an inferred name',()=>{
+  const points=[1,.04,.75,0,.62].map((y,i)=>({x:[0,.18,.51,.79,1][i],y}));
+  const query=queryFromStrokes([points]);assert.equal(query.mode,'sketch');assert.ok(query.points.length);
+  const c=fixture(points);assert.ok(matchCandles(c,query));
+  const forced={...query,id:'m'};assert.deepEqual(matchCandles(c,forced),matchCandles(c,query));
+});
+test('forming W can be found without requiring neckline completion; inverse is rejected',()=>{
+  const c=fixture([1,0,.8,.10,.60].map((y,i)=>({x:i/4,y})));
+  const match=matchCandles(c,{id:'w'});assert.ok(match);assert.equal(match.stage,'形成中');
+  assert.equal(matchCandles(c,{id:'m'}),null);
+});
+test('levels and trend lines overlap other patterns without becoming pattern aliases',()=>{
+  const range=fixture(patternById('range').points),up=fixture(patternById('channel-up').points),down=fixture(patternById('channel-down').points);
+  const matches=classifyPrepared(prepareCandles(range));
+  assert.ok(matches['horizontal-resistance']);assert.ok(matchCandles(fixture(patternById('range').points.map(p=>({...p,y:1-p.y}))),{id:'horizontal-support'}));assert.ok(matches.range);
+  assert.ok(matchCandles(up,{id:'trend-up'}));assert.ok(matchCandles(down,{id:'trend-down'}));
+  assert.equal(matchCandles(up,{id:'trend-down'}),null);
+  const broken=[...range,...Array.from({length:8},(_,i)=>({...range.at(-1),close:120+i,open:120+i,high:121+i,low:119+i}))];
+  assert.equal(matchCandles(broken,{id:'horizontal-resistance'}),null);
+});
+test('preclassification equals direct search; counts deduplicate symbols across selected frames',()=>{
+  const candles=fixture(patternById('w').points),context=prepareCandles(candles),matches=classifyPrepared(context);
+  assert.deepEqual(matches.w,matchCandles(candles,{id:'w'}));
+  assert.ok(matchPrepared(context,{mode:'sketch',points:patternById('w').points}));
+  const entries=[{data:{symbol:'BTCUSDT',frame:'1H'},matches},{data:{symbol:'BTCUSDT',frame:'4H'},matches},{data:{symbol:'ETHUSDT',frame:'15m'},matches}];
+  assert.equal(patternCounts(entries,['1H','4H']).w,1);assert.equal(patternCounts(entries,['1H','4H','15m']).w,2);
+});
+
+test('cache cannot carry an index across a close boundary or algorithm version',async()=>{
+  const {entryCurrent,INDEX_VERSION}=await import('../src/markets/crypto/patterns/index-cache.js');
+  const start=1700002800,candles=Array.from({length:40},(_,i)=>({time:start+i*3600}));
+  const entry={version:INDEX_VERSION,data:{frame:'1H',candles}},now=(start+40.5*3600)*1000;
+  assert.equal(entryCurrent(entry,now),true);assert.equal(entryCurrent(entry,now+3600000),false);
+  assert.equal(entryCurrent({...entry,version:0},now),false);
+  assert.equal(Object.keys(TIMEFRAMES).length,10);
 });

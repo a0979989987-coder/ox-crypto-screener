@@ -14,13 +14,13 @@ function aggregate(raw,frame){
  const browser=await chromium.launch({executablePath:process.env.OX_CHROMIUM_EXECUTABLE||'/workspace/scratch/6827c8da6e73/browser-tools/chrome-headless-shell-linux64/chrome-headless-shell',headless:true,args:['--no-sandbox']});
  try{
   console.log('Browser ready');const page=await browser.newPage({viewport:{width:390,height:844},hasTouch:true});
-  const errors=[];page.on('pageerror',e=>errors.push(e.message));await page.clock.setFixedTime(new Date(snapshot.requestTime));
+  const errors=[];let candleRequests=0,blockCandles=false;page.on('pageerror',e=>errors.push(e.message));await page.clock.setFixedTime(new Date(snapshot.requestTime));
   await page.route('https://api.bitget.com/**',route=>{
    const url=new URL(route.request().url());let body;
    if(url.pathname.endsWith('/tickers'))body={code:'00000',requestTime:snapshot.requestTime,data:snapshot.tickers};
    else if(url.pathname.endsWith('/instruments'))body={code:'00000',requestTime:snapshot.requestTime,data:snapshot.instruments};
    else if(url.pathname.endsWith('/contracts'))body={code:'00000',data:snapshot.instruments.map(i=>({...i,symbolStatus:'normal',symbolType:'perpetual'}))};
-   else if(url.pathname.endsWith('/candles')){const rows=snapshot.candles[url.searchParams.get('symbol')]?.response.data||[];body={code:'00000',requestTime:snapshot.requestTime,data:aggregate(rows,url.searchParams.get('granularity'))};}
+   else if(url.pathname.endsWith('/candles')){candleRequests++;if(blockCandles)return route.abort();const rows=snapshot.candles[url.searchParams.get('symbol')]?.response.data||[];body={code:'00000',requestTime:snapshot.requestTime,data:aggregate(rows,url.searchParams.get('granularity'))};}
    else return route.abort();
    return route.fulfill({status:200,headers:{'access-control-allow-origin':'*'},contentType:'application/json',body:JSON.stringify(body)});
   });
@@ -28,9 +28,15 @@ function aggregate(raw,frame){
   console.log('Opening page');await page.goto(origin,{waitUntil:'domcontentloaded'});await page.getByRole('button',{name:'指標',exact:true}).click();await page.locator('.px-board').waitFor();console.log('Pattern page ready');
   assert.deepEqual((await page.locator('#ox-crypto-tools-nav [data-crypto-tool]').allTextContents()).slice(0,3),['型態搜尋','總覽','強弱對比']);
   assert.equal(await page.locator('[data-frame-label]').textContent(),'4H + 1H');
+  await page.waitForFunction(()=>document.querySelector('#ox-crypto-tools-inline').firstElementChild.shadowRoot.querySelector('.px-status').textContent.includes('預先分類'));
+  await page.waitForTimeout(600);assert.ok(candleRequests>0,'preloads candles before any drawing or preset');
   await page.locator('[data-action="timeframes"]').click();await page.locator('[data-frame="15m"]').click();await page.locator('[data-frame="4H"]').click();await page.locator('[data-frame="1H"]').click();await page.getByRole('button',{name:'關閉時間級別',exact:true}).click();
-  await page.locator('[data-action="patterns"]').click();assert.equal(await page.locator('[data-preset]').count(),47);await page.locator('.px-search').fill('階梯');assert.equal(await page.locator('[data-preset]').count(),2);await page.locator('[data-preset="stairs-up"]').click();
-  console.log('Scanning recorded 15m data');await page.waitForFunction(()=>{const root=document.querySelector('#ox-crypto-tools-inline').firstElementChild.shadowRoot;return /幣 ·/.test(root.querySelector('.px-status').textContent);},{},{timeout:60000});console.log('Scan complete');
+  await page.locator('[data-action="patterns"]').click();assert.deepEqual((await page.locator('[data-preset]').evaluateAll(es=>es.slice(0,4).map(e=>e.dataset.preset))),['horizontal-resistance','horizontal-support','trend-up','trend-down']);assert.equal(await page.locator('[data-preset]').count(),51);await page.locator('.px-search').fill('階梯');assert.equal(await page.locator('[data-preset]').count(),2);await page.locator('[data-preset="stairs-up"]').click();
+  console.log('Scanning recorded 15m data');await page.waitForFunction(()=>{const root=document.querySelector('#ox-crypto-tools-inline').firstElementChild.shadowRoot;return root.querySelector('.px').dataset.indexState!=='loading';},{},{timeout:60000});console.log('Scan complete');
+  await page.locator('[data-action="patterns"]').click();await page.waitForTimeout(380);await page.screenshot({path:'/tmp/ox-pattern-menu-v2.png'});await page.getByRole('button',{name:'關閉型態選單',exact:true}).click();await page.locator('[data-action="timeframes"]').click();assert.equal(await page.locator('[data-frame]').count(),10);await page.waitForTimeout(380);await page.screenshot({path:'/tmp/ox-pattern-timeframes-v2.png'});await page.getByRole('button',{name:'關閉時間級別',exact:true}).click();
+  const requestCount=candleRequests;
+  await page.locator('[data-action="patterns"]').click();await page.locator('.px-search').fill('水平阻力');const preCount=Number(await page.locator('[data-count="horizontal-resistance"]').textContent());assert.ok(preCount>0);const start=Date.now();await page.locator('[data-preset="horizontal-resistance"]').click();await page.waitForTimeout(250);assert.equal(candleRequests,requestCount,'preset selection must not request candles');assert.equal(await page.locator('.px-card').count(),Math.min(preCount,24));console.log('Cached preset including close animation ms',Date.now()-start);
+  await page.locator('[data-action="patterns"]').click();await page.locator('[data-preset="stairs-up"]').click();await page.waitForTimeout(250);
   assert.ok(await page.locator('.px-card').count()>=2);assert.equal(await page.locator('.px-card strong').first().textContent()==='—',false);
   const boxes=await page.locator('.px-card').evaluateAll(es=>es.slice(0,2).map(e=>({x:e.getBoundingClientRect().x,y:e.getBoundingClientRect().y,w:e.getBoundingClientRect().width})));assert.equal(boxes[0].y,boxes[1].y);assert.ok(boxes[1].x>boxes[0].x);
   const similarity=await page.locator('.px-match span:last-child').allTextContents();const nums=similarity.map(s=>Number(s.replace('相似 ','')));assert.ok(nums.every((x,i)=>!i||x<=nums[i-1]));
@@ -42,14 +48,18 @@ function aggregate(raw,frame){
   // Freehand input is drawn from an actual observed window, preserving its capture timestamp.
   await page.locator('[data-action="undo"]').click();const raw=snapshot.candles.BTCUSDT.response.data.map(r=>r.map(Number)).filter(r=>r[0]+900000<=snapshot.requestTime).sort((a,b)=>a[0]-b[0]).slice(-61),lo=Math.min(...raw.map(r=>r[4])),hi=Math.max(...raw.map(r=>r[4]));
   const board=page.locator('.px-board canvas');await board.scrollIntoViewIfNeeded();const bb=await board.boundingBox();const x=i=>bb.x+18+i/(raw.length-1)*(bb.width-36),y=r=>bb.y+60+(1-(r[4]-lo)/(hi-lo))*(bb.height-105);
-  await page.mouse.move(x(0),y(raw[0]));await page.mouse.down();for(let i=1;i<raw.length;i++)await page.mouse.move(x(i),y(raw[i]));await page.mouse.up();await page.waitForTimeout(1300);await page.waitForFunction(()=>/幣 ·/.test(document.querySelector('#ox-crypto-tools-inline').firstElementChild.shadowRoot.querySelector('.px-status').textContent),{},{timeout:60000});
-  assert.ok((await page.locator('.px-card .px-symbol').allTextContents()).some(s=>s.startsWith('BTC')));
+  await page.mouse.move(x(0),y(raw[0]));await page.mouse.down();for(let i=1;i<raw.length;i++)await page.mouse.move(x(i),y(raw[i]));await page.mouse.up();await page.waitForTimeout(1300);await page.waitForFunction(()=>document.querySelector('#ox-crypto-tools-inline').firstElementChild.shadowRoot.querySelector('.px').dataset.indexState!=='loading',{},{timeout:60000});
+  assert.ok((await page.locator('.px-card .px-symbol').allTextContents()).some(s=>s.startsWith('BTC')));assert.equal(candleRequests,requestCount,'freehand search uses already loaded candles');
   await page.setViewportSize({width:1440,height:1100});await page.waitForTimeout(250);await page.screenshot({path:'/tmp/ox-pattern-review/desktop.png',fullPage:true});
   await page.locator('#ox-crypto-tools-nav [data-crypto-tool="strength"]').click();assert.ok(await page.locator('.strength-compare-panel').isVisible());assert.equal(await page.locator('.px-board').count(),0);
   await page.locator('#ox-crypto-tools-nav [data-crypto-tool="overview"]').click();await page.locator('.cfx-overview').waitFor();
   await page.locator('#ox-crypto-tools-nav [data-crypto-tool="patterns"]').click();await page.locator('.px-board').waitFor();
+  // A full reload must recover the classified 15m index, even if candle transport is unavailable.
+  blockCandles=true;await page.setViewportSize({width:390,height:844});await page.reload({waitUntil:'domcontentloaded'});await page.getByRole('button',{name:'指標',exact:true}).click();await page.locator('.px-board').waitFor();
+  await page.locator('[data-action="timeframes"]').click();await page.locator('[data-frame="15m"]').click();await page.locator('[data-frame="4H"]').click();await page.locator('[data-frame="1H"]').click();await page.getByRole('button',{name:'關閉時間級別',exact:true}).click();
+  await page.locator('[data-action="patterns"]').click();await page.locator('[data-preset="horizontal-resistance"]').click();await page.locator('.px-card').first().waitFor({timeout:4000});assert.ok(await page.locator('.px-card').count()>0,'persisted classification survives reload');console.log('PASS persisted classified index with candles transport blocked');
   await page.evaluate(()=>{document.body.dataset.market='tw';document.dispatchEvent(new CustomEvent('ox:marketchange'));});assert.equal(await page.locator('#ox-crypto-tools-nav').isVisible(),false);assert.equal(await page.locator('.px-board').count(),0);
   const unexpected=errors.filter(e=>!e.includes('LightweightCharts is not defined'));assert.deepEqual(unexpected,[]);
-  console.log('PASS: first tab, 47 presets, default 4H/1H, real recorded candles, OX, two columns, rank, freehand matching, pinch, navigation cleanup and Crypto-only scope');
+  console.log('PASS: first tab, 51 presets, default 4H/1H, real recorded candles, OX, two columns, rank, freehand matching, pinch, navigation cleanup and Crypto-only scope');
  }finally{await browser.close();server.kill();}
 })().catch(e=>{console.error(e);process.exitCode=1;});

@@ -5,7 +5,7 @@ const abortError=()=>new DOMException('Aborted','AbortError');
 function wait(ms,signal){return new Promise((resolve,reject)=>{if(signal?.aborted)return reject(abortError());const id=setTimeout(()=>{signal?.removeEventListener('abort',cancel);resolve();},ms);function cancel(){clearTimeout(id);reject(abortError());}signal?.addEventListener('abort',cancel,{once:true});});}
 async function request(path,signal){
   for(let attempt=0;attempt<3;attempt++){
-    const clock=performance.now(),at=Math.max(clock,nextRequest);nextRequest=at+280;await wait(Math.max(0,at-clock),signal);
+    const clock=performance.now(),at=Math.max(clock,nextRequest);nextRequest=at+110;await wait(Math.max(0,at-clock),signal);
     const ctrl=new AbortController(),cancel=()=>ctrl.abort();signal?.addEventListener('abort',cancel,{once:true});const timer=setTimeout(cancel,12000);
     try{
       const response=await fetch(BASE+path,{signal:ctrl.signal,cache:'no-store'});
@@ -49,12 +49,16 @@ export async function fetchUniverse(signal,limit=80){
 export async function fetchSeries(symbol,frame,signal,now=Date.now()){
   const key=`${symbol}:${frame}`,cached=candleCache.get(key),boundary=Math.floor(now/1000/TIMEFRAMES[frame])*TIMEFRAMES[frame];
   if(cached?.candles.at(-1)?.time+TIMEFRAMES[frame]===boundary)return cached;
-  const path=`/api/v2/mix/market/candles?symbol=${encodeURIComponent(symbol)}&productType=USDT-FUTURES&granularity=${frame}&limit=200`;
+  const granularity=['6H','12H','1D'].includes(frame)?frame+'utc':frame;
+  const path=`/api/v2/mix/market/candles?symbol=${encodeURIComponent(symbol)}&productType=USDT-FUTURES&granularity=${granularity}&limit=200`;
   const data=await request(path,signal),serverTime=Number(data.requestTime),candles=parseCandles(data.data,frame,serverTime);
   if(Math.abs(now-serverTime)>300000||candles.length<35)throw Error(`${symbol} ${frame} K 線不足或缺漏`);
   const value={candles,source:'Bitget',frame,symbol,serverTime};candleCache.set(key,value);
   if(candleCache.size>1200)candleCache.delete(candleCache.keys().next().value);
   return value;
+}
+export function primeCandleCache(data){
+  if(data?.candles?.length>=35&&TIMEFRAMES[data.frame])candleCache.set(`${data.symbol}:${data.frame}`,data);
 }
 // Read the preserved classic engine. No strategy state or score constants are modified.
 export function classicScore(ticker,candles,tickers){
@@ -73,11 +77,11 @@ export async function scanUniverse(universe,frames,{signal,onSeries,onProgress})
       if(signal.aborted)throw abortError();
       try{
         const data=frame==='1H'?(hourly||await fetchSeries(ticker.symbol,frame,signal,universe.serverTime)):await fetchSeries(ticker.symbol,frame,signal,universe.serverTime);
-        await onSeries({...data,ticker,oxScore,turnover:Number(ticker.usdtVolume),change:Number(ticker.change24h)*100});
+        await onSeries({...data,ticker,oxScore,quoteTime:universe.serverTime,turnover:Number(ticker.usdtVolume),change:Number(ticker.change24h)*100});
       }catch(e){if(signal.aborted)throw e;failed++;}
       done++;onProgress({done,total,failed});
     }
   });
-  await Promise.all(Array.from({length:3},async()=>{while(cursor<jobs.length){if(signal.aborted)throw abortError();const job=jobs[cursor++];await job();}}));
+  await Promise.all(Array.from({length:4},async()=>{while(cursor<jobs.length){if(signal.aborted)throw abortError();const job=jobs[cursor++];await job();}}));
   return {done,total,failed};
 }

@@ -1,5 +1,16 @@
-import { matchCandles } from './matcher.js';
-self.onmessage = ({data}) => {
-  try { self.postMessage({id:data.id,match:matchCandles(data.candles,data.query)}); }
-  catch(error) { self.postMessage({id:data.id,error:error.message}); }
+import { prepareCandles, classifyPrepared, matchPrepared } from './matcher.js';
+const index=new Map();
+self.onmessage=({data})=>{
+  try{
+    if(data.type==='index'){
+      const context=prepareCandles(data.candles);index.set(data.key,context);
+      self.postMessage({id:data.id,result:data.matches||classifyPrepared(context)});
+    }else if(data.type==='search'){
+      const results=[];
+      for(const key of data.keys){const context=index.get(key);if(!context)continue;const match=matchPrepared(context,data.query);if(match)results.push({key,match});}
+      self.postMessage({id:data.id,result:results});
+    }else if(data.type==='retain'){
+      const keep=new Set(data.keys);for(const key of index.keys())if(!keep.has(key))index.delete(key);
+    }
+  }catch(error){self.postMessage({id:data.id,error:error.message});}
 };

@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdir,writeFile } from 'node:fs/promises';
 import { selectUniverse,parseCandles } from '../src/markets/crypto/patterns/source.js';
 import { matchCandles } from '../src/markets/crypto/patterns/matcher.js';
+import { TIMEFRAMES } from '../src/markets/crypto/patterns/catalog.js';
 const origin='https://a0979989987-coder.github.io';
 async function get(path){
  const response=await fetch('https://api.bitget.com'+path,{signal:AbortSignal.timeout(20000),headers:{Origin:origin}});
@@ -12,8 +13,8 @@ async function get(path){
 const quotes=await get('/api/v2/mix/market/tickers?productType=USDT-FUTURES'),metadata=await get('/api/v3/market/instruments?category=USDT-FUTURES');
 const pool=selectUniverse(quotes.data,metadata.data,80);assert.ok(pool.length>3);
 const evidence={capturedAt:new Date().toISOString(),source:'Bitget',universe:pool.length,checks:[],responses:{}};
-for(const ticker of pool.slice(0,6))for(const frame of ['1H','4H']){
- const path=`/api/v2/mix/market/candles?symbol=${ticker.symbol}&productType=USDT-FUTURES&granularity=${frame}&limit=200`;
+for(const [i,ticker] of pool.slice(0,4).entries())for(const frame of i===0?Object.keys(TIMEFRAMES):['1H','4H']){
+ const path=`/api/v2/mix/market/candles?symbol=${ticker.symbol}&productType=USDT-FUTURES&granularity=${['6H','12H','1D'].includes(frame)?frame+'utc':frame}&limit=200`;
  const body=await get(path),candles=parseCandles(body.data,frame,Number(body.requestTime));assert.ok(candles.length>=35,`${ticker.symbol} ${frame} closed candles`);
  const match=matchCandles(candles,{id:'w'});evidence.checks.push({symbol:ticker.symbol,frame,closedCandles:candles.length,lastOpenTime:candles.at(-1).time,wSimilarity:match?.similarity??null});evidence.responses[ticker.symbol+':'+frame]=body;
  console.log('PASS',ticker.symbol,frame,candles.length,'closed candles; CORS allowed; W',match?.similarity??'no match');
