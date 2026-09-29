@@ -1,5 +1,6 @@
 function getChartRightOffset() {
-  return window.matchMedia("(max-width: 720px)").matches ? 5 : 12;
+  // Full price ticks require a real scale, but future bars do not need a wide gutter.
+  return window.matchMedia("(max-width: 720px)").matches ? 0 : 1;
 }
 
 function chartAxisPrecision(price) {
