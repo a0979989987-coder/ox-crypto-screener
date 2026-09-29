@@ -1071,58 +1071,6 @@
       "translationStatus": "translated"
     },
     {
-      "id": "cb84a5e8d806a2a28735",
-      "title": "Kraken is an official X Cashtag partner, with trading just a tap away from your timeline",
-      "link": "https://blog.kraken.com/news/kraken-is-an-official-x-cashtag-partner",
-      "publishedAt": "2026-09-16T17:59:10.000Z",
-      "source": "Kraken",
-      "sourceId": "kraken",
-      "markets": [
-        "crypto"
-      ],
-      "kind": "news",
-      "verified": "official-source",
-      "impact": {
-        "stars": null,
-        "impactImportance": null,
-        "reason": "尚未評估；標題不足以判定影響力",
-        "ruleVersion": "unassessed-v1",
-        "evidence": null,
-        "sourceConfidence": "official-source",
-        "analysisConfidence": null,
-        "direction": null,
-        "sourceId": "kraken"
-      },
-      "titleZh": "Kraken 宣布成為 X Cashtag 合作夥伴，提供交易入口",
-      "translationStatus": "translated"
-    },
-    {
-      "id": "2cac824f7ba0456c84d3",
-      "title": "USDCx on Aleo deposits and withdrawals now available!",
-      "link": "https://blog.kraken.com/product/new-features/usdcx-on-aleo-deposits-and-withdrawals-now-available",
-      "publishedAt": "2026-09-16T17:25:17.000Z",
-      "source": "Kraken",
-      "sourceId": "kraken",
-      "markets": [
-        "crypto"
-      ],
-      "kind": "news",
-      "verified": "official-source",
-      "impact": {
-        "stars": null,
-        "impactImportance": null,
-        "reason": "尚未評估；標題不足以判定影響力",
-        "ruleVersion": "unassessed-v1",
-        "evidence": null,
-        "sourceConfidence": "official-source",
-        "analysisConfidence": null,
-        "direction": null,
-        "sourceId": "kraken"
-      },
-      "titleZh": "Kraken 開放 Aleo 網路 USDCx 充值與提領",
-      "translationStatus": "translated"
-    },
-    {
       "id": "74bc20501745ffbed39f",
       "title": "SEC Proposes Rescission of Shareholder Proposal Rule and Reforms to Proxy Solicitation Process",
       "link": "https://www.sec.gov/newsroom/press-releases/2026-89-sec-proposes-rescission-shareholder-proposal-rule-reforms-proxy-solicitation-process",
@@ -2847,32 +2795,6 @@
       "translationStatus": "translated"
     },
     {
-      "id": "2c242017eb037b992c43",
-      "title": "SEC Announces Roundtable on Preparations for 24-Hour Trading",
-      "link": "https://www.sec.gov/newsroom/press-releases/2026-69-sec-announces-roundtable-preparations-24-hour-trading",
-      "publishedAt": "2026-07-23T15:04:00.000Z",
-      "source": "U.S. SEC",
-      "sourceId": "sec",
-      "markets": [
-        "us"
-      ],
-      "kind": "news",
-      "verified": "official-source",
-      "impact": {
-        "stars": null,
-        "impactImportance": null,
-        "reason": "尚未評估；標題不足以判定影響力",
-        "ruleVersion": "unassessed-v1",
-        "evidence": null,
-        "sourceConfidence": "official-source",
-        "analysisConfidence": null,
-        "direction": null,
-        "sourceId": "sec"
-      },
-      "titleZh": "美國證管會宣布舉辦全天候交易準備圓桌會議",
-      "translationStatus": "translated"
-    },
-    {
       "id": "5a26ae43a3fa1c29fad7",
       "title": "Minutes of the Board&#39;s discount rate meetings on June 8 and June 17, 2026",
       "link": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260714a.htm",
@@ -4379,32 +4301,6 @@
       "translationStatus": "translated"
     },
     {
-      "id": "eebb3fef3b76a665857f",
-      "title": "Devcon 8 is coming to Mumbai, India in November 2026",
-      "link": "https://blog.ethereum.org/en/2025/12/23/devcon-mumbai",
-      "publishedAt": "2025-12-23T00:00:00.000Z",
-      "source": "Ethereum Foundation",
-      "sourceId": "ethereum",
-      "markets": [
-        "crypto"
-      ],
-      "kind": "news",
-      "verified": "official-source",
-      "impact": {
-        "stars": null,
-        "impactImportance": null,
-        "reason": "尚未評估；標題不足以判定影響力",
-        "ruleVersion": "unassessed-v1",
-        "evidence": null,
-        "sourceConfidence": "official-source",
-        "analysisConfidence": null,
-        "direction": null,
-        "sourceId": "ethereum"
-      },
-      "titleZh": "第 8 屆以太坊開發者大會將於 2026 年 11 月在印度孟買舉行",
-      "translationStatus": "translated"
-    },
-    {
       "id": "fd1c5c8a98273d0a5f07",
       "title": "CPI for all items rises 2.7% over 12 months ending in November; shelter up",
       "link": "https://www.bls.gov/news.release/archives/cpi_12182025.htm",
@@ -5052,7 +4948,7 @@
       }
     }
   ],
-  "generatedAt": "2026-09-28T18:39:07.188Z",
+  "generatedAt": "2026-09-29T00:41:48.643Z",
   "sources": [
     {
       "id": "twse",
@@ -5091,8 +4987,8 @@
     },
     {
       "id": "kraken",
-      "status": "error",
-      "message": "HTTP 403"
+      "status": "ready",
+      "count": 7
     },
     {
       "id": "cftc",
