@@ -1,4 +1,4 @@
-import { PATTERNS, patternById } from './catalog.js?v=patterns5c-20260929';
+import { PATTERNS, patternById } from './catalog.js?v=patterns5d-20260929';
 const clamp = (x, a=0, b=1) => Math.max(a, Math.min(b, x));
 const mean = a => a.reduce((s,x)=>s+x,0)/a.length;
 export function normalize(points) {
@@ -160,33 +160,48 @@ function levelMatch(context,pattern) {
   if(!a)return null;
   const support=pattern.rule.endsWith('support'),trend=pattern.rule.startsWith('trend'),type=support?-1:1;
   const pivots=swings[1].filter(p=>p.type===type&&p.x>=n-150);let best=null;
-  const consider=(touches,line)=>{
-    const start=touches[0].x,end=n-1,span=end-start;
-    if(span<15||touches.length<3||end-touches.at(-1).x>32)return;
+  const consider=(candidate,line)=>{
+    const start=candidate[0].x,end=n-1,span=end-start;
+    if(span<15||candidate.length<3||end-candidate.at(-1).x>24)return;
+    const touches=candidate.filter(p=>Math.abs(p.y-(line.m*p.x+line.b))<=a*.42);
+    if(touches.length<3||touches.at(-1).x-touches[0].x<12)return;
     const atEnd=line.m*end+line.b,distance=(last-atEnd)*(support?1:-1);
-    if(distance<(support?-.45:-2)*a||distance>5*a)return;
-    const crossed=c.slice(start,touches.at(-1).x+1).filter((v,i)=>(v.close-(line.m*(i+start)+line.b))*(support?1:-1)<-a).length;
-    if(crossed>span*.08)return;
+    if(distance<-.42*a||distance>3*a)return;
+    // A support must remain below the candles, a resistance above them.
+    // Check the complete drawn segment, including every candle after the last touch.
+    // One shallow wick rejection is acceptable; a body or a full swing through
+    // the line makes it a different setup, even if price later returns.
+    let shallowWicks=0;
+    for(let i=start;i<=end;i++){
+      const bar=c[i],at=line.m*i+line.b;
+      const closeSide=(bar.close-at)*(support?1:-1);
+      const wickSide=((support?bar.low:bar.high)-at)*(support?1:-1);
+      if(closeSide<-.2*a||wickSide<-.42*a)return;
+      if(wickSide<-.2*a&&++shallowWicks>Math.max(1,Math.floor(span*.025)))return;
+    }
     const error=mean(touches.map(p=>Math.abs(p.y-(line.m*p.x+line.b))))/a;
-    const score=clamp(.72+Math.min(touches.length,5)*.035-error*.09-Math.abs(distance)/a*.012)*100;
-    const hadBreak=c.slice(touches.at(-1).x+1).some((v,i)=>(v.close-(line.m*(touches.at(-1).x+1+i)+line.b))*(support?-1:1)>.65*a);
-    const tier=!hadBreak&&error<=.58&&score>=80&&distance>=0&&distance<=1.8*a?1:
-      score>=76&&(support?distance>.75*a&&distance<=2.2*a:distance<0&&distance>=-1.5*a)?2:3;
-    const stage=tier===1?(support?'支撐待確認':'未噴發'):tier===2?(support?'初步反彈':'初步突破'):'已離開水平區';
+    const latestTouch=touches.at(-1).x,recency=end-latestTouch;
+    const moveSinceTouch=Math.max(0,...c.slice(latestTouch+1).map((bar,j)=>((support?bar.high:bar.low)-(line.m*(latestTouch+1+j)+line.b))*(support?1:-1)));
+    const score=clamp(.73+Math.min(touches.length,5)*.035-error*.12-Math.abs(distance)/a*.025)*100;
+    const nearRetest=c.slice(-2).some((bar,j)=>Math.abs((support?bar.low:bar.high)-(line.m*(end-1+j)+line.b))<=.42*a);
+    const actionable=(recency<=8||nearRetest)&&distance>=-.12*a&&distance<=.85*a&&moveSinceTouch<=Math.max(3.5*a,last*.02)&&error<=.42&&score>=78;
+    const tier=actionable?1:recency<=12&&distance<=1.7*a&&score>=76?2:3;
+    const stage=tier===1?(support?'支撐未啟動':'阻力未突破'):tier===2?'等待重新靠近':'已離開觸發區';
     if(best&&(tier>best.tier||tier===best.tier&&score<=best.similarity))return;
     best={start,end,similarity:Math.round(score*10)/10,points:[{x:start,y:line.m*start+line.b},{x:end,y:atEnd}],label:pattern.name,lastTime:c[end].time,touches:touches.length,tier,stage,kind:'level'};
   };
   if(!trend){
     for(const pivot of pivots){
-      const near=pivots.filter(p=>Math.abs(p.y-pivot.y)<=a*.58),touches=[];
+      const near=pivots.filter(p=>Math.abs(p.y-pivot.y)<=a*.42),touches=[];
       for(const p of near)if(!touches.length||p.x-touches.at(-1).x>=4)touches.push(p);
       if(touches.length>=3)consider(touches,{m:0,b:mean(touches.map(p=>p.y))});
     }
-  }else for(let start=0;start<pivots.length-2;start++){
-    const tail=pivots.slice(start),line=regression(tail);
-    if(line.m*(support?1:-1)<a*.025)continue;
-    const touches=tail.filter(p=>Math.abs(p.y-(line.m*p.x+line.b))<=a*.8);
-    if(touches.length>=3&&touches.at(-1).x-touches[0].x>=12)consider(touches,regression(touches));
+  }else for(let i=0;i<pivots.length-2;i++)for(let j=i+2;j<pivots.length;j++){
+    const first=pivots[i],last=pivots[j];if(last.x-first.x<12)continue;
+    const m=(last.y-first.y)/(last.x-first.x),line={m,b:first.y-m*first.x};
+    if(m*(support?1:-1)<a*.025)continue;
+    const touches=pivots.slice(i).filter(p=>Math.abs(p.y-(line.m*p.x+line.b))<=a*.42);
+    if(touches.length>=3)consider(touches,line);
   }
   return best;
 }
@@ -293,4 +308,4 @@ export function queryFromStrokes(strokes) {
   const best=PATTERNS.filter(t=>t.rule!=='harmonic'&&!t.rule.startsWith('level')&&!t.rule.startsWith('trend')).map(t=>({t,s:similarity(resample(p),resample(t.points))})).sort((a,b)=>b.s-a.s)[0];
   return best.s>=78?{id:best.t.id,points:p,mode:'sketch'}:{points:p,mode:'sketch'};
 }
-export function sortMatches(rows){return [...rows].sort((a,b)=>(a.match?.tier??3)-(b.match?.tier??3)||b.similarity-a.similarity||(b.oxScore??-1)-(a.oxScore??-1)||(b.turnover??0)-(a.turnover??0)||String(a.symbol??a.match?.label??'').localeCompare(String(b.symbol??b.match?.label??'')));}
+export function sortMatches(rows){return [...rows].sort((a,b)=>(a.displayTier??a.match?.tier??3)-(b.displayTier??b.match?.tier??3)||(b.rankPriority??-1)-(a.rankPriority??-1)||b.similarity-a.similarity||(b.oxScore??-1)-(a.oxScore??-1)||(b.turnover??0)-(a.turnover??0)||String(a.symbol??a.match?.label??'').localeCompare(String(b.symbol??b.match?.label??'')));}

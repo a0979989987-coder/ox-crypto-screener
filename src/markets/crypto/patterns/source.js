@@ -1,4 +1,4 @@
-import { TIMEFRAMES, candleBoundary } from './catalog.js?v=patterns5c-20260929';
+import { TIMEFRAMES, candleBoundary } from './catalog.js?v=patterns5d-20260929';
 const BASE='https://api.bitget.com';
 const candleCache=new Map();let nextRequest=0;
 const abortError=()=>new DOMException('Aborted','AbortError');
@@ -39,10 +39,15 @@ export function selectUniverse(tickers,instruments,limit=80){
   const allowed=new Set(instruments.filter(i=>i.symbolType==='crypto'&&i.type==='perpetual'&&i.status==='online'&&i.quoteCoin==='USDT').map(i=>i.symbol));
   return tickers.filter(t=>allowed.has(t.symbol)&&Number(t.usdtVolume)>=3000000&&Number(t.lastPr)>0).sort((a,b)=>Number(b.usdtVolume)-Number(a.usdtVolume)).slice(0,limit||Infinity);
 }
-export function radarSymbols(runtime=typeof state==='undefined'?null:state){
+export function radarCandidates(runtime=typeof state==='undefined'?null:state){
   if(runtime?.activeMarket&&runtime.activeMarket!=='crypto')return [];
-  return [...new Set(['t1','t2','t3'].flatMap(t=>(runtime?.tierMap?.[t]||[]).slice(0,10).map(r=>r.symbol)))];
+  const seen=new Set();
+  return ['t1','t2','t3'].flatMap((tier,i)=>(runtime?.tierMap?.[tier]||[]).slice(0,10).flatMap((r,rank)=>{
+    if(!r.symbol||seen.has(r.symbol))return [];
+    seen.add(r.symbol);return [{symbol:r.symbol,tier:i+1,rank,side:r.side}];
+  }));
 }
+export function radarSymbols(runtime=typeof state==='undefined'?null:state){return radarCandidates(runtime).map(r=>r.symbol);}
 export async function fetchUniverse(signal,limit=80){
   const [quotes,metadata]=await Promise.all([request('/api/v2/mix/market/tickers?productType=USDT-FUTURES',signal),request('/api/v3/market/instruments?category=USDT-FUTURES',signal)]);
   const serverTime=Number(quotes.requestTime);

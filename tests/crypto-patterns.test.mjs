@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import { runInNewContext } from 'node:vm';
 import { PATTERNS,patternById,TIMEFRAMES,candleBoundary } from '../src/markets/crypto/patterns/catalog.js';
 import { normalize,resample,similarity,matchCandles,validateHarmonic,structureValid,queryFromStrokes,sortMatches,prepareCandles,classifyPrepared,matchPrepared,patternCounts } from '../src/markets/crypto/patterns/matcher.js';
-import { parseCandles,selectUniverse,classicScore,fetchSeries,radarSymbols } from '../src/markets/crypto/patterns/source.js';
+import { parseCandles,selectUniverse,classicScore,fetchSeries,radarSymbols,radarCandidates } from '../src/markets/crypto/patterns/source.js';
 
 // Explicit synthetic fixtures, only for checking positive/negative geometric invariants.
 function fixture(points){
@@ -136,6 +136,7 @@ test('a W that already ran past the neckline cannot return to T1 on a pullback',
 test('radar candidate bridge is read-only, deduplicated and Crypto-only',()=>{
   const runtime={activeMarket:'crypto',tierMap:{t1:[{symbol:'BTCUSDT'}],t2:[{symbol:'BTCUSDT'},{symbol:'ALGOUSDT'}],t3:[]}},before=JSON.stringify(runtime);
   assert.deepEqual(radarSymbols(runtime),['BTCUSDT','ALGOUSDT']);assert.equal(JSON.stringify(runtime),before);
+  assert.deepEqual(radarCandidates(runtime).map(({symbol,tier,rank})=>[symbol,tier,rank]),[['BTCUSDT',1,0],['ALGOUSDT',2,1]]);
   assert.deepEqual(radarSymbols({...runtime,activeMarket:'tw'}),[]);
 });
 test('weekly fetch pages 90-day historical slices, preserves actual current week and reuses history',async()=>{
@@ -148,14 +149,34 @@ test('weekly fetch pages 90-day historical slices, preserves actual current week
     assert.ok(data.candles.length>=80);assert.equal(data.candles.at(-1).provisional,true);assert.ok(requests.filter(x=>x.endsWith('history-candles')).length>=5);
   }finally{globalThis.fetch=oldFetch;}
 });
+function cleanRisingSupport(){
+  return Array.from({length:81},(_,i)=>{
+    const base=100+i*.06,offset=1.8*Math.sin(i*Math.PI/10)**2,close=base+offset,open=base-.06+1.8*Math.sin((i-1)*Math.PI/10)**2;
+    return {time:1700000000+i*3600,open,close,high:Math.max(open,close)+.035,low:Math.min(open,close)-.035,volume:100,quoteVolume:close*100};
+  });
+}
 test('levels and trend lines overlap other patterns without becoming pattern aliases',()=>{
-  const range=fixture(patternById('range').points),up=fixture(patternById('channel-up').points),down=fixture(patternById('channel-down').points);
+  const range=fixture(patternById('range').points),up=cleanRisingSupport();
+  const down=up.map(c=>({...c,open:210-c.open,close:210-c.close,high:210-c.low,low:210-c.high}));
   const matches=classifyPrepared(prepareCandles(range));
   assert.ok(matches['horizontal-resistance']);assert.ok(matchCandles(fixture(patternById('range').points.map(p=>({...p,y:1-p.y}))),{id:'horizontal-support'}));assert.ok(matches.range);
-  assert.ok(matchCandles(up,{id:'trend-up'}));assert.ok(matchCandles(down,{id:'trend-down'}));
+  assert.equal(matchCandles(up,{id:'trend-up'})?.tier,1);assert.equal(matchCandles(down,{id:'trend-down'})?.tier,1);
   assert.equal(matchCandles(up,{id:'trend-down'}),null);
   const broken=[...range,...Array.from({length:8},(_,i)=>({...range.at(-1),close:120+i,open:120+i,high:121+i,low:119+i}))];
   assert.equal(matchCandles(broken,{id:'horizontal-resistance'}),null);
+});
+test('a line passing through a full candle swing or a run is never a T1 entry setup',()=>{
+  const clean=cleanRisingSupport();
+  assert.equal(matchCandles(clean,{id:'trend-up'})?.tier,1);
+  const crossed=structuredClone(clean);
+  for(let i=65;i<=68;i++){crossed[i].open-=5;crossed[i].close-=5;crossed[i].low-=5;crossed[i].high-=5;}
+  assert.equal(matchCandles(crossed,{id:'trend-up'}),null);
+  const run=structuredClone(clean);
+  for(let i=76;i<=80;i++){run[i].open+=4;run[i].close+=4;run[i].low+=4;run[i].high+=4;}
+  assert.notEqual(matchCandles(run,{id:'trend-up'})?.tier,1);
+  const resist=clean.map(c=>({...c,open:210-c.open,close:210-c.close,high:210-c.low,low:210-c.high}));
+  for(let i=65;i<=68;i++){resist[i].open+=5;resist[i].close+=5;resist[i].low+=5;resist[i].high+=5;}
+  assert.equal(matchCandles(resist,{id:'trend-down'}),null);
 });
 test('preclassification equals direct search; counts deduplicate symbols across selected frames',()=>{
   const candles=fixture(patternById('w').points),context=prepareCandles(candles),matches=classifyPrepared(context);
