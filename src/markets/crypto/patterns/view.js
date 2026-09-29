@@ -1,10 +1,10 @@
 import { PATTERNS, patternById, TIMEFRAMES } from './catalog.js?v=patterns5d-20260929';
 import { queryFromStrokes, normalize, sortMatches, patternCounts, prepareCandles, classifyPrepared, matchPrepared } from './matcher.js?v=patterns5d-20260929';
-import { fetchUniverse, scanUniverse, primeCandleCache, fetchSeries, radarCandidates } from './source.js?v=patterns5d-20260929';
+import { fetchUniverse, scanUniverse, primeCandleCache, fetchSeries, radarCandidates } from './source.js?v=patterns5f-20260929';
 import { readIndex, saveIndex, pruneIndex, entryCurrent, INDEX_VERSION } from './index-cache.js?v=patterns5d-20260929';
 import { candleChart } from './charts.js?v=patterns5d-20260929';
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const icons={down:'<path d="m6 9 6 6 6-6"/>',close:'<path d="m6 6 12 12M18 6 6 18"/>',undo:'<path d="m9 5-5 5 5 5M4 10h10a5 5 0 1 1 0 10"/>',refresh:'<path d="M4 4v6h6M4 10a8 8 0 1 1 1 8"/>',expand:'<path d="M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5"/>'};
+const icons={down:'<path d="m6 9 6 6 6-6"/>',close:'<path d="m6 6 12 12M18 6 6 18"/>',undo:'<path d="m9 5-5 5 5 5M4 10h10a5 5 0 1 1 0 10"/>',refresh:'<path d="M4 4v6h6M4 10a8 8 0 1 1 1 8"/>',scan:'<circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="1.5"/><path d="M12 12 17 7M12 2v2M22 12h-2M12 22v-2M2 12h2"/>',expand:'<path d="M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5"/>'};
 const icon=name=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${icons[name]||''}</svg>`;
 const volume=n=>!Number.isFinite(n)?'—':n>=1e8?(n/1e8).toFixed(2)+'億':n>=1e4?(n/1e4).toFixed(1)+'萬':n.toFixed(0);
 const signed=n=>Number.isFinite(n)?`${n>=0?'+':''}${n.toFixed(2)}%`:'—';
@@ -13,19 +13,19 @@ let saved={frames:['4H','1H'],limit:0,query:null,strokes:[]};
 export function mountPatternSearch(host){
   const shadow=host.shadowRoot||host.attachShadow({mode:'open'}),life=new AbortController();
   let frames=[...saved.frames],limit=saved.limit,query=saved.query,strokes=structuredClone(saved.strokes),universe=null,controller=null,version=0,busy=false,lastScan=0,resumePending=false;
-  let rows=new Map(),shown=24,tierFilter='all',progress={done:0,total:0,failed:0},paintTimer=0,drawTimer=0,boardRAF=0,lastSignature='',selectedRow=null,detailChart=null,detailController=null,detailVersion=0,detailFrame=null;
+  let rows=new Map(),shown=24,tierFilter='all',progress={done:0,total:0,failed:0,coinsDone:0,coinsTotal:0},paintTimer=0,drawTimer=0,boardRAF=0,scanFinishTimer=0,lastSignature='',selectedRow=null,detailChart=null,detailController=null,detailVersion=0,detailFrame=null;
   let chartInstances=[],chartObserver=null,worker=null,workerId=0,jobs=new Map(),fallback=new Map();
   let glowEnded=0,moreObserver=null;const reducedMotion=matchMedia('(prefers-reduced-motion:reduce)').matches;
   let entries=new Map(),queryVersion=0,searchRunning=false,searchPending=false,disposed=false,lastError='';
   const hydrated=new Set();
-  shadow.innerHTML=`<link rel="stylesheet" href="${new URL('./patterns.css?v=patterns5e-20260929',import.meta.url)}"><main class="px"><section class="px-board" aria-label="型態畫板"><canvas tabindex="0" aria-label="由左向右畫走勢，完成後自動比對；亦可使用型態選單"></canvas><div class="px-controls"><button class="px-control" data-action="timeframes" aria-haspopup="dialog" aria-expanded="false"><span data-frame-label></span>${icon('down')}</button><button class="px-control" data-action="patterns" aria-haspopup="dialog" aria-expanded="false"><span data-pattern-label>型態</span>${icon('down')}</button></div><span class="px-hint">畫出走勢，或選擇型態</span><div class="px-board-bottom"><div class="px-modes" hidden><button data-mode="sketch">相似路徑</button><button data-mode="pattern">型態條件</button></div><span class="px-caption"></span><button class="px-icon" data-action="undo" aria-label="清除上一筆" title="清除上一筆">${icon('undo')}</button><div class="px-tier-filters" role="group" aria-label="型態階段"><button data-tier-filter="all" aria-pressed="true">全部</button><button data-tier-filter="1" aria-pressed="false">T1</button><button data-tier-filter="2" aria-pressed="false">T2</button><button data-tier-filter="3" aria-pressed="false">T3</button></div></div></section><div class="px-meta"><span class="px-status" role="status" aria-live="polite">Bitget · USDT 永續</span><button data-action="refresh" aria-label="重新掃描">重新掃描</button></div><div class="px-load-track" hidden><i></i></div><section class="px-grid" aria-label="依 T1 T2 T3 排列的幣種"><div class="px-empty">等待畫入型態</div></section><button class="px-more" data-action="more" hidden>顯示更多</button><dialog class="px-dialog px-presets" aria-label="選擇型態"><div class="px-dialog-head"><span>型態</span><button class="px-icon" data-action="close" aria-label="關閉型態選單">${icon('close')}</button></div><div class="px-dialog-body"><input class="px-search" aria-label="搜尋型態" placeholder="搜尋型態"><div class="px-count-status" aria-live="polite"></div><div class="px-options"></div></div></dialog><dialog class="px-dialog px-settings" aria-label="時間級別"><div class="px-dialog-head"><span>時間級別</span><button class="px-icon" data-action="close" aria-label="關閉時間級別">${icon('close')}</button></div><div class="px-dialog-body"><div class="px-frames">${Object.keys(TIMEFRAMES).map(f=>`<button class="px-frame-option" data-frame="${f}">${f}</button>`).join('')}</div><label class="px-setting"><span>成交額觀察池</span><select data-limit aria-label="掃描幣種數"><option value="80">前 80 幣</option><option value="160">前 160 幣</option><option value="0">全部合資格幣</option></select></label><details class="px-help"><summary>比對與資料</summary><p>只掃描 Bitget 加密 USDT 永續，24H 成交額至少 300 萬 USDT。依成交額選池；結果先依 T1／T2／T3 階段，再依相似度與 OX 分數排序。型態 T1＝結構清楚、尚未啟動且價格仍靠近可觀察位置；T2＝開始啟動或需再次確認；T3＝仍早期或已走離；這是觀察階段，不是勝率或交易建議。未噴發只描述尚未突破，不保證行情方向。未畫圖時顯示原雷達 T1／T2／T3 候選，型態階段另列；畫圖後的 T1／T2／T3 才是型態階段。水平線至少三次確認觸及，整段不能貫穿明顯 K 線。選擇多個級別會分別比對。</p><p>進入頁面即預先分類，選型態直接讀取分類結果。手繪辨認出明確 W／M 時優先搜尋型態條件，容許左右寬度與深淺不同；可切回相似路徑。其餘不確定筆跡保留相似路徑，不強加型態名稱。W／M 包含形成中的第二段反彈，卡片會標示狀態。白線標示比對區段；相似度不是勝率。</p><p>OX 使用原本經典評分公式，以 1H 已收盤 K 線計算。成交額與漲跌為 24H；不同級別共用同一筆 OX 評分。</p><p>分類結果保存於此裝置，只沿用仍符合已收盤級別的資料。開啟頁面時預先載入；已分類的型態切換不重抓行情。數量按目前級別計算不重複幣種，同幣可符合不同類別。未載入完會顯示分類進度；首次使用與新增級別仍須載入。行情最長每 5 分鐘更新；1W 會納入 Bitget 真實但尚未收盤的本週 K，並明確標示未收，其餘級別只用已收盤 K；切走或背景停止。資料缺漏會跳過並顯示缺漏數，不補造 K 線。諧波固定比例容差為相對 ±5%，區間比例採硬性範圍；結果都是待觀察的型態候選。</p></details></div></dialog><dialog class="px-dialog px-detail" aria-label="型態 K 線詳情"><div class="px-dialog-head"><span class="px-detail-title"></span><div class="px-detail-tools"><button class="px-icon" data-action="reset-chart" aria-label="重設圖表範圍">${icon('refresh')}</button><button class="px-icon" data-action="close" aria-label="關閉圖表">${icon('close')}</button></div></div><div class="px-detail-frames" role="group" aria-label="K 線時間級別">${Object.keys(TIMEFRAMES).map(f=>`<button data-detail-frame="${f}" aria-pressed="false">${f}</button>`).join('')}</div><div class="px-detail-stage"><canvas aria-label="可拖曳及雙指縮放的 K 線圖"></canvas><div class="px-detail-loading" role="status" hidden></div></div><div class="px-detail-footer"></div></dialog></main>`;
+  shadow.innerHTML=`<link rel="stylesheet" href="${new URL('./patterns.css?v=patterns5h-20260929',import.meta.url)}"><main class="px"><section class="px-board" aria-label="型態畫板"><canvas tabindex="0" aria-label="在整個畫板由左向右畫走勢，完成後自動比對；亦可使用型態選單"></canvas><div class="px-controls"><button class="px-control" data-action="timeframes" aria-haspopup="dialog" aria-expanded="false"><span data-frame-label></span>${icon('down')}</button><button class="px-control" data-action="patterns" aria-haspopup="dialog" aria-expanded="false"><span data-pattern-label>型態</span>${icon('down')}</button></div><span class="px-hint">畫出走勢，或選擇型態</span><div class="px-board-bottom"><button class="px-mode-toggle" data-action="toggle-mode" hidden aria-label="切換搜尋模式" title="切換搜尋模式"><span class="px-mode-glyph" aria-hidden="true">⌁</span><span data-mode-label></span></button><button class="px-icon" data-action="undo" aria-label="清除上一筆" title="清除上一筆">${icon('undo')}</button><div class="px-tier-filters" role="group" aria-label="型態階段"><button data-tier-filter="all" aria-pressed="true">全部</button><button data-tier-filter="1" aria-pressed="false">T1</button><button data-tier-filter="2" aria-pressed="false">T2</button><button data-tier-filter="3" aria-pressed="false">T3</button></div></div></section><button class="px-refresh-pill" data-action="refresh" aria-label="重新掃描" title="重新掃描"><svg class="px-pill-progress" viewBox="0 0 40 40" aria-hidden="true"><circle class="px-pill-track" cx="20" cy="20" r="17"/><circle class="px-pill-arc" cx="20" cy="20" r="17"/></svg><span class="px-refresh-glyph">${icon('scan')}</span></button><div class="px-results"><span class="px-status" role="status" aria-live="polite">Bitget · USDT 永續</span><section class="px-grid" aria-label="依 T1 T2 T3 排列的幣種"><div class="px-empty">等待畫入型態</div></section></div><button class="px-more" data-action="more" hidden>顯示更多</button><dialog class="px-dialog px-presets" aria-label="選擇型態"><div class="px-dialog-head"><span>型態</span><button class="px-icon" data-action="close" aria-label="關閉型態選單">${icon('close')}</button></div><div class="px-dialog-body"><input class="px-search" aria-label="搜尋型態" placeholder="搜尋型態"><div class="px-count-status" aria-live="polite"></div><div class="px-options"></div></div></dialog><dialog class="px-dialog px-settings" aria-label="時間級別"><div class="px-dialog-head"><span>時間級別</span><button class="px-icon" data-action="close" aria-label="關閉時間級別">${icon('close')}</button></div><div class="px-dialog-body"><div class="px-frames">${Object.keys(TIMEFRAMES).map(f=>`<button class="px-frame-option" data-frame="${f}">${f}</button>`).join('')}</div><label class="px-setting"><span>成交額觀察池</span><select data-limit aria-label="掃描幣種數"><option value="80">前 80 幣</option><option value="160">前 160 幣</option><option value="0">全部合資格幣</option></select></label><details class="px-help"><summary>比對與資料</summary><p>只掃描 Bitget 加密 USDT 永續，24H 成交額至少 300 萬 USDT。依成交額選池；結果先依 T1／T2／T3 階段，再依相似度與 OX 分數排序。型態 T1＝結構清楚、尚未啟動且價格仍靠近可觀察位置；T2＝開始啟動或需再次確認；T3＝仍早期或已走離；這是觀察階段，不是勝率或交易建議。未噴發只描述尚未突破，不保證行情方向。未畫圖時顯示原雷達 T1／T2／T3 候選，型態階段另列；畫圖後的 T1／T2／T3 才是型態階段。水平線至少三次確認觸及，整段不能貫穿明顯 K 線。選擇多個級別會分別比對。</p><p>進入頁面即預先分類，選型態直接讀取分類結果。手繪辨認出明確 W／M 時優先搜尋型態條件，容許左右寬度與深淺不同；可切回相似路徑。其餘不確定筆跡保留相似路徑，不強加型態名稱。W／M 包含形成中的第二段反彈，卡片會標示狀態。白線標示比對區段；相似度不是勝率。</p><p>OX 使用原本經典評分公式，以 1H 已收盤 K 線計算。成交額與漲跌為 24H；不同級別共用同一筆 OX 評分。</p><p>分類結果保存於此裝置，只沿用仍符合已收盤級別的資料。開啟頁面時預先載入；已分類的型態切換不重抓行情。數量按目前級別計算不重複幣種，同幣可符合不同類別。未載入完會顯示分類進度；首次使用與新增級別仍須載入。行情最長每 5 分鐘更新；1W 會納入 Bitget 真實但尚未收盤的本週 K，並明確標示未收，其餘級別只用已收盤 K；切走或背景停止。資料缺漏會跳過並顯示缺漏數，不補造 K 線。諧波固定比例容差為相對 ±5%，區間比例採硬性範圍；結果都是待觀察的型態候選。</p></details></div></dialog><dialog class="px-dialog px-detail" aria-label="型態 K 線詳情"><div class="px-dialog-head"><span class="px-detail-title"></span><div class="px-detail-tools"><button class="px-to-radar" data-action="open-radar" aria-label="在雷達查看這個幣種">前往雷達</button><button class="px-icon" data-action="reset-chart" aria-label="重設圖表範圍">${icon('refresh')}</button><button class="px-icon" data-action="close" aria-label="關閉圖表">${icon('close')}</button></div></div><div class="px-detail-frames" role="group" aria-label="K 線時間級別">${Object.keys(TIMEFRAMES).map(f=>`<button data-detail-frame="${f}" aria-pressed="false">${f}</button>`).join('')}</div><div class="px-detail-stage"><canvas aria-label="可拖曳及雙指縮放的 K 線圖"></canvas><div class="px-detail-loading" role="status" hidden></div></div><div class="px-detail-footer"></div></dialog></main>`;
   const q=s=>shadow.querySelector(s),qa=s=>[...shadow.querySelectorAll(s)],board=q('.px-board canvas');
   function preferences(){saved={frames:[...frames],limit,query,strokes:structuredClone(strokes)};}
   function labels(){
     q('[data-frame-label]').textContent=frames.join(' + ');q('[data-pattern-label]').textContent=patternById(query?.id)?.name||'型態';
-    q('.px-modes').hidden=!strokes.length||!query?.points||!query?.id;
-    qa('[data-mode]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.mode===(query?.mode==='sketch'?'sketch':'pattern')));
-    q('.px-caption').textContent=query?.mode==='sketch'&&!query.id?'相似路徑':'';
+    const toggle=q('.px-mode-toggle'),hasModes=!!strokes.length&&!!query?.points&&!!query?.id;
+    toggle.hidden=!hasModes;
+    if(hasModes){const sketch=query.mode==='sketch';q('[data-mode-label]').textContent=sketch?'相似路徑':'型態條件';q('.px-mode-glyph').textContent=sketch?'⌁':'◇';toggle.setAttribute('aria-label',`${sketch?'相似路徑':'型態條件'}，點擊切換為${sketch?'型態條件':'相似路徑'}`);toggle.title=toggle.getAttribute('aria-label');}
     q('.px-hint').hidden=strokes.length>0||!!query;q('[data-action="undo"]').disabled=!strokes.length&&!query;
     qa('[data-frame]').forEach(b=>b.setAttribute('aria-pressed',frames.includes(b.dataset.frame)));q('[data-limit]').value=String(limit);
   }
@@ -35,8 +35,8 @@ export function mountPatternSearch(host){
     c.fillStyle='#e0e7ef13';for(let x=22;x<w-10;x+=24)for(let y=18;y<h-12;y+=24)c.fillRect(x,y,1,1);
     const paths=strokes.length?strokes:(query?.id?[templatePath(patternById(query.id))]:query?.points?[normalize(query.points)]:[]);
     const glow=reducedMotion?0:activePointer!==null?1:Math.max(0,1-(performance.now()-glowEnded)/1400);
-    c.shadowColor=`rgba(255,255,255,${.15+glow*.8})`;c.shadowBlur=1+glow*15;c.lineWidth=2+glow*.35;c.lineJoin=c.lineCap='round';c.strokeStyle='#f7f7f2';paths.forEach(path=>{c.beginPath();path.forEach((p,i)=>{const x=18+p.x*(w-36),y=18+(1-p.y)*(h-36);if(i)c.lineTo(x,y);else c.moveTo(x,y);});c.stroke();});
-    if(paths[0]?.length){const p=paths.at(-1).at(-1);c.fillStyle='#f3efde';c.beginPath();c.arc(18+p.x*(w-36),18+(1-p.y)*(h-36),3,0,Math.PI*2);c.fill();}
+    c.shadowColor=`rgba(255,255,255,${.15+glow*.8})`;c.shadowBlur=1+glow*15;c.lineWidth=2+glow*.35;c.lineJoin=c.lineCap='round';c.strokeStyle='#f7f7f2';paths.forEach(path=>{c.beginPath();path.forEach((p,i)=>{const x=8+p.x*(w-16),y=8+(1-p.y)*(h-16);if(i)c.lineTo(x,y);else c.moveTo(x,y);});c.stroke();});
+    if(paths[0]?.length){const p=paths.at(-1).at(-1);c.fillStyle='#f3efde';c.beginPath();c.arc(8+p.x*(w-16),8+(1-p.y)*(h-16),3,0,Math.PI*2);c.fill();}
     if(activePointer===null&&glow>0&&!document.hidden)boardRAF=requestAnimationFrame(drawBoard);
   }
   const scheduleBoard=()=>{if(!boardRAF)boardRAF=requestAnimationFrame(drawBoard);};const resize=new ResizeObserver(scheduleBoard);resize.observe(board);
@@ -62,7 +62,9 @@ export function mountPatternSearch(host){
   function updateStatus(){
     q('.px').dataset.indexState=busy?'loading':lastError||progress.failed?'partial':'ready';
     const amount=activeEntries().length,matched=new Set([...rows.values()].map(r=>r.symbol)).size;
-    status(`${lastError?lastError+' · ':''}Bitget · ${!universe&&amount?'快取 · ':''}${busy?'預先分類 '+progress.done+'/'+(progress.total||'…')+' 組':amount+' 組已分類'}${query?' · '+matched+' 幣符合':''}${progress.failed?' · '+progress.failed+' 缺漏':''}${lastScan?' · '+stamp(lastScan):''}`);
+    status(busy?`Bitget 掃描 · ${progress.coinsTotal?`${progress.coinsDone}/${progress.coinsTotal}`:'取得清單'} · ${progress.total?Math.round(progress.done/progress.total*100):0}%`:`${lastError?lastError+' · ':''}Bitget · ${amount} 組${query?' · '+matched+' 符合':''}${progress.failed?' · '+progress.failed+' 缺漏':''}`);
+    const percent=progress.total?Math.min(100,Math.max(0,progress.done/progress.total*100)):0;
+    q('.px-pill-arc').style.strokeDashoffset=String(107*(1-percent/100));
     updateCounts();
   }
   function setRows(matches){rows=new Map(matches.map(({entry,match})=>[entry.key,{...entry.data,match,similarity:match.similarity}]));renderResults(!rows.size);updateStatus();}
@@ -113,7 +115,7 @@ export function mountPatternSearch(host){
   }
   function queueRender(){if(!paintTimer)paintTimer=setTimeout(()=>{paintTimer=0;search();},250);}
   function status(text){q('.px-status').textContent=text;}
-  function stop(){version++;controller?.abort();controller=null;busy=false;clearTimeout(paintTimer);paintTimer=0;q('.px-load-track').hidden=true;}
+  function stop(){version++;controller?.abort();controller=null;busy=false;clearTimeout(paintTimer);paintTimer=0;clearTimeout(scanFinishTimer);q('.px-board').classList.remove('is-scanning');q('.px-refresh-pill').classList.remove('is-scanning','is-complete');}
   async function hydrate(entry){
     const old=entries.get(entry.key),same=old?.data.serverTime===entry.data.serverTime&&old?.data.candles.length===entry.data.candles.length;
     if(!hydrated.has(entry.key)||!same){await compute({type:'index',key:entry.key,candles:entry.data.candles,matches:entry.matches});hydrated.add(entry.key);}
@@ -121,24 +123,24 @@ export function mountPatternSearch(host){
   }
   async function scan(){
     stop();if(document.hidden||disposed)return;
-    resumePending=false;lastError='';const run=version;controller=new AbortController();const signal=controller.signal;busy=true;progress={done:0,total:0,failed:0};
-    updateStatus();q('.px-load-track').hidden=false;q('.px-load-track i').style.width='0%';
+    resumePending=false;lastError='';const run=version;controller=new AbortController();const signal=controller.signal;busy=true;progress={done:0,total:0,failed:0,coinsDone:0,coinsTotal:0};
+    q('.px-pill-arc').style.strokeDashoffset='107';q('.px-board').classList.add('is-scanning');q('.px-refresh-pill').classList.add('is-scanning');updateStatus();
     try{
       const cached=await readIndex(frames);if(run!==version)return;
       for(const entry of cached){if(run!==version)return;await hydrate(entry);}
       search();
       if(!universe||Date.now()-universe.serverTime>60000||frames.some(f=>Math.floor(Date.now()/1000/TIMEFRAMES[f])!==Math.floor(universe.serverTime/1000/TIMEFRAMES[f])))universe=await fetchUniverse(signal,limit);
-      if(run!==version)return;const pool=universe;progress.total=pool.tickers.length*frames.length;updateStatus();
+      if(run!==version)return;const pool=universe;progress.total=pool.tickers.length*frames.length;progress.coinsTotal=pool.tickers.length;updateStatus();
       await scanUniverse(pool,frames,{signal,onSeries:async data=>{
         if(run!==version)return;const key=data.symbol+':'+data.frame,existing=entries.get(key),same=existing&&entryCurrent(existing,data.serverTime)&&existing.data.candles.at(-1).time===data.candles.at(-1).time&&(!data.candles.at(-1).provisional||existing.data.serverTime===data.serverTime);
         const matches=same&&hydrated.has(key)?existing.matches:await compute({type:'index',key,candles:data.candles,matches:same?existing.matches:null});
         if(run!==version)return;hydrated.add(key);const entry={key,data,matches,version:INDEX_VERSION};entries.set(key,entry);saveIndex(data,matches);queueRender();
-      },onProgress:p=>{if(run!==version)return;progress=p;q('.px-load-track i').style.width=`${p.done/p.total*100}%`;updateStatus();}});
+      },onProgress:p=>{if(run!==version)return;progress=p;updateStatus();}});
       if(run!==version)return;lastScan=Date.now();
       const keys=activeEntries().map(e=>e.key);worker?.postMessage({type:'retain',keys});for(const key of hydrated)if(!keys.includes(key))hydrated.delete(key);
       pruneIndex();
     }catch(e){if(run===version&&e.name!=='AbortError')lastError=e.message||'行情取得失敗';}
-    finally{if(run===version){busy=false;controller=null;q('.px-load-track').hidden=true;search();}}
+    finally{if(run===version){busy=false;controller=null;q('.px-refresh-pill').classList.remove('is-scanning');q('.px-board').classList.remove('is-scanning');if(!lastError){q('.px-pill-arc').style.strokeDashoffset='0';q('.px-refresh-pill').classList.add('is-complete');}scanFinishTimer=setTimeout(()=>q('.px-refresh-pill').classList.remove('is-complete'),900);search();}}
   }
   function openDialog(selector,button){const d=q(selector);d.classList.remove('px-closing');qa('.px-control').forEach(b=>b.setAttribute('aria-expanded',b===button));d.showModal();}
   function closeDialogs(immediate=false){qa('dialog[open]').forEach(d=>{if(immediate||matchMedia('(prefers-reduced-motion:reduce)').matches)d.close();else{d.classList.add('px-closing');setTimeout(()=>{if(d.classList.contains('px-closing')){d.close();d.classList.remove('px-closing');}},180);}});qa('.px-control').forEach(b=>b.setAttribute('aria-expanded','false'));detailController?.abort();detailController=null;detailVersion++;detailChart?.destroy();detailChart=null;detailFrame=null;selectedRow=null;}
@@ -171,9 +173,9 @@ export function mountPatternSearch(host){
   }
   shadow.addEventListener('click',e=>{
     const preset=e.target.closest('[data-preset]'),frame=e.target.closest('[data-frame]'),tierChoice=e.target.closest('[data-tier-filter]'),detailChoice=e.target.closest('[data-detail-frame]'),result=e.target.closest('[data-result]'),button=e.target.closest('[data-action]');
+    if(e.type==='click'&&suppressControlClick){suppressControlClick=false;e.preventDefault();e.stopPropagation();return;}
     if(tierChoice){tierFilter=tierChoice.dataset.tierFilter;shown=24;renderResults(true);return;}
     if(preset){clearTimeout(drawTimer);query={id:preset.dataset.preset};strokes=[];shown=24;labels();scheduleBoard();closeDialogs();preferences();search();return;}
-    const mode=e.target.closest('[data-mode]');if(mode&&query?.points){query={...query,mode:mode.dataset.mode};shown=24;labels();preferences();search();return;}
     if(frame){const f=frame.dataset.frame;if(frames.includes(f)){if(frames.length===1)return;frames=frames.filter(x=>x!==f);}else frames.push(f);frames.sort((a,b)=>TIMEFRAMES[b]-TIMEFRAMES[a]);labels();preferences();search();clearTimeout(drawTimer);drawTimer=setTimeout(scan,300);return;}
     if(detailChoice){selectDetailFrame(detailChoice.dataset.detailFrame);return;}
     if(result){openResult(result.dataset.result);return;}
@@ -183,7 +185,9 @@ export function mountPatternSearch(host){
       case 'timeframes':labels();openDialog('.px-settings',button);break;
       case 'close':closeDialogs();break;
       case 'undo':clearTimeout(drawTimer);glowEnded=0;strokes=[];query=strokes.length?queryFromStrokes(strokes):null;labels();scheduleBoard();preferences();search();break;
+      case 'toggle-mode':if(query?.points&&query?.id){query={...query,mode:query.mode==='sketch'?'pattern':'sketch'};shown=24;labels();preferences();search();}break;
       case 'refresh':universe=null;scan();break;
+      case 'open-radar':{const symbol=selectedRow?.symbol;if(!symbol)break;closeDialogs(true);window.switchSymbol?.(symbol);requestAnimationFrame(()=>{const toggle=document.getElementById('radar-scanner-toggle');if(toggle?.getAttribute('aria-expanded')==='true')toggle.click();});break;}
       case 'more':shown+=24;renderResults(true);break;
       case 'reset-chart':detailChart?.reset();break;
     }
@@ -191,15 +195,19 @@ export function mountPatternSearch(host){
   q('.px-search').addEventListener('input',e=>presetOptions(e.target.value),{signal:life.signal});
   q('[data-limit]').addEventListener('change',e=>{limit=Number(e.target.value);universe=null;preferences();scan();},{signal:life.signal});
   qa('dialog').forEach(d=>{d.addEventListener('cancel',e=>{e.preventDefault();closeDialogs();},{signal:life.signal});d.addEventListener('click',e=>{if(e.target===d){const r=d.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)closeDialogs();}},{signal:life.signal});});
-  let activePointer=null,currentStroke=null;
-  const position=e=>{const r=board.getBoundingClientRect();return{x:Math.max(0,Math.min(1,(e.clientX-r.left-18)/(r.width-36))),y:Math.max(0,Math.min(1,1-(e.clientY-r.top-18)/(r.height-36)))};};
-  board.addEventListener('pointerdown',e=>{if(activePointer!==null||e.button>0)return;clearTimeout(drawTimer);queryVersion++;rows.clear();query=null;strokes=[];glowEnded=0;activePointer=e.pointerId;currentStroke=[position(e)];strokes=[currentStroke];q('.px-board').classList.add('is-drawing');board.setPointerCapture(e.pointerId);labels();scheduleBoard();},{signal:life.signal});
-  board.addEventListener('pointermove',e=>{if(e.pointerId!==activePointer)return;const p=position(e),last=currentStroke.at(-1);if(Math.hypot(p.x-last.x,p.y-last.y)>.003){currentStroke.push(p);if(currentStroke.length>1200)currentStroke.splice(1,1);scheduleBoard();}},{signal:life.signal});
+  let activePointer=null,currentStroke=null,pendingControl=null,suppressControlClick=false;
+  const position=e=>{const r=board.getBoundingClientRect();return{x:Math.max(0,Math.min(1,(e.clientX-r.left-8)/(r.width-16))),y:Math.max(0,Math.min(1,1-(e.clientY-r.top-8)/(r.height-16)))};};
+  const startStroke=(e,initial=e)=>{clearTimeout(drawTimer);queryVersion++;rows.clear();query=null;strokes=[];glowEnded=0;activePointer=e.pointerId;currentStroke=[position(initial)];strokes=[currentStroke];q('.px-board').classList.add('is-drawing');q('.px-board').setPointerCapture(e.pointerId);labels();scheduleBoard();};
+  q('.px-board').addEventListener('pointerdown',e=>{if(activePointer!==null||e.button>0)return;if(e.target.closest('button')){pendingControl={pointerId:e.pointerId,clientX:e.clientX,clientY:e.clientY};return;}startStroke(e);},{signal:life.signal});
+  document.addEventListener('pointermove',e=>{if(pendingControl?.pointerId===e.pointerId&&Math.hypot(e.clientX-pendingControl.clientX,e.clientY-pendingControl.clientY)>7){const initial=pendingControl;pendingControl=null;suppressControlClick=true;startStroke(e,initial);}if(e.pointerId!==activePointer)return;const p=position(e),last=currentStroke.at(-1);if(Math.hypot(p.x-last.x,p.y-last.y)>.003){currentStroke.push(p);if(currentStroke.length>1200)currentStroke.splice(1,1);scheduleBoard();}},{signal:life.signal});
   const finish=e=>{if(e.pointerId!==activePointer)return;activePointer=null;glowEnded=performance.now();q('.px-board').classList.remove('is-drawing');if(e.type==='pointercancel')strokes.pop();if(currentStroke?.length<2&&strokes.at(-1)===currentStroke)strokes.pop();currentStroke=null;query=queryFromStrokes(strokes);shown=24;labels();scheduleBoard();preferences();renderResults(true);status(query?'正在搜尋已分類資料…':'請由左向右畫一段走勢');clearTimeout(drawTimer);drawTimer=setTimeout(search,100);};
-  board.addEventListener('pointerup',finish,{signal:life.signal});board.addEventListener('pointercancel',finish,{signal:life.signal});
+  document.addEventListener('pointerup',e=>{if(pendingControl?.pointerId===e.pointerId)pendingControl=null;finish(e);if(suppressControlClick)setTimeout(()=>{suppressControlClick=false;},0);},{signal:life.signal});document.addEventListener('pointercancel',e=>{if(pendingControl?.pointerId===e.pointerId)pendingControl=null;finish(e);suppressControlClick=false;},{signal:life.signal});
   board.addEventListener('keydown',e=>{if(e.key==='Delete'||e.key==='Backspace'){e.preventDefault();q('[data-action="undo"]').click();}},{signal:life.signal});
   document.addEventListener('visibilitychange',()=>{if(document.hidden){queryVersion++;if(busy){resumePending=true;stop();status('已暫停 · 返回後重新掃描');}clearTimeout(drawTimer);}else if(resumePending||!lastScan||Date.now()-lastScan>60000)scan();},{signal:life.signal});
   const timer=setInterval(()=>{const cadence=Math.min(300000,...frames.map(f=>TIMEFRAMES[f]*1000));if(!busy&&!document.hidden&&Date.now()-lastScan>=cadence)scan();},15000);
+  const dock=document.querySelector('.app-dock.glass-nav');
+  const syncPill=()=>q('.px-refresh-pill').classList.toggle('is-compact',!!dock?.classList.contains('ox-dock-compact'));
+  const dockObserver=dock?new MutationObserver(syncPill):null;dockObserver?.observe(dock,{attributes:true,attributeFilter:['class']});syncPill();
   labels();scheduleBoard();scan();
-  return {closeInner:closeDialogs,destroy(){disposed=true;queryVersion++;preferences();stop();resetWorker();life.abort();resize.disconnect();clearCharts();moreObserver?.disconnect();detailChart?.destroy();closeDialogs(true);clearInterval(timer);clearTimeout(drawTimer);cancelAnimationFrame(boardRAF);shadow.replaceChildren();}};
+  return {closeInner:closeDialogs,destroy(){disposed=true;queryVersion++;preferences();stop();resetWorker();life.abort();resize.disconnect();dockObserver?.disconnect();clearCharts();moreObserver?.disconnect();detailChart?.destroy();closeDialogs(true);clearInterval(timer);clearTimeout(drawTimer);cancelAnimationFrame(boardRAF);shadow.replaceChildren();}};
 }
