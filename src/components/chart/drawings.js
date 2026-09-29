@@ -30,7 +30,7 @@
   const schedule = () => { if (!raf) raf = requestAnimationFrame(draw); };
   function sync() {
     if (!expanded()) tool = null;
-    toolbar.querySelectorAll('[data-draw]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.draw === tool)));
+    toolbar.querySelectorAll('[data-draw]:not([data-draw="undo"])').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.draw === tool)));
     layer.classList.toggle('is-editing', !!tool && expanded());
     if (!expanded()) preview = null;
     schedule();
