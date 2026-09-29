@@ -228,15 +228,19 @@
   });
   toolbar.querySelector('.drawing-grip').addEventListener('pointermove',event=>{
     if (!railDrag||railDrag.id!==event.pointerId) return;
-    prefs.x=Math.max(0,Math.min(railDrag.parent.width-40,event.clientX-railDrag.parent.left-railDrag.dx));
-    prefs.y=Math.max(42,Math.min(railDrag.parent.height-40,event.clientY-railDrag.parent.top-railDrag.dy));
-    toolbar.style.left=`${prefs.x}px`;toolbar.style.top=`${prefs.y}px`;
+    prefs.x=Math.max(0,Math.min(railDrag.parent.width-toolbar.offsetWidth-4,event.clientX-railDrag.parent.left-railDrag.dx));
+    prefs.y=Math.max(42,Math.min(railDrag.parent.height-toolbar.offsetHeight-4,event.clientY-railDrag.parent.top-railDrag.dy));
+    positionRail();
   });
   for (const name of ['pointerup','pointercancel']) toolbar.querySelector('.drawing-grip').addEventListener(name,()=>{if(railDrag){railDrag=null;savePrefs();}});
   function positionRail() {
     if (Number.isFinite(prefs.x)&&Number.isFinite(prefs.y)) {
-      toolbar.style.left=`${Math.min(box.clientWidth-40,prefs.x)}px`;
-      toolbar.style.top=`${Math.min(box.clientHeight-40,prefs.y)}px`;
+      const x=Math.max(0,Math.min(box.clientWidth-toolbar.offsetWidth-4,prefs.x));
+      const y=Math.max(42,Math.min(box.clientHeight-toolbar.offsetHeight-4,prefs.y));
+      toolbar.style.left=`${x}px`;
+      toolbar.style.top=`${y}px`;
+      toolbar.classList.toggle('near-right',x>box.clientWidth-240);
+      toolbar.classList.toggle('near-bottom',y>box.clientHeight-440);
     }
   }
   document.addEventListener('pointerdown',event=>{if(panel&&!toolbar.contains(event.target)){panel=null;sync();}});
