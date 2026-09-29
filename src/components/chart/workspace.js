@@ -2,6 +2,16 @@ function getChartRightOffset() {
   return window.matchMedia("(max-width: 720px)").matches ? 12 : 12;
 }
 
+function chartAxisPrecision(price) {
+  const value = Math.abs(Number(price) || 0);
+  return value >= 1000 ? 2 : value >= 1 ? 4 : value >= 0.01 ? 6 : 8;
+}
+
+function formatChartAxisPrice(price) {
+  const digits = state.chartAxisDigits ?? 2;
+  return Number(price).toFixed(digits).replace(/(\.\d*?)0+$/, '$1').replace(/\.$/, '');
+}
+
 function applyChartFutureSpace(snapToLatest = false) {
   if (!state.chart) return;
   const ts = state.chart.timeScale();
@@ -158,6 +168,7 @@ function initChart() {
       lockVisibleTimeRangeOnResize: true
     },
     crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
+    handleScale: { mouseWheel: true, pinch: true, axisPressedMouseMove: { price: true, time: true }, axisDoubleClickReset: true },
     // Vertical swipes over the large mobile chart should move the page.
     // Horizontal drags still pan candles and pinch zoom remains available.
     handleScroll: { mouseWheel: true, pressedMouseMove: true, horzTouchDrag: true, vertTouchDrag: false }
@@ -177,7 +188,8 @@ function initChart() {
     downColor: "#ff3078",
     borderVisible: false,
     wickUpColor: "#00b8d4",
-    wickDownColor: "#ff3078"
+    wickDownColor: "#ff3078",
+    priceFormat: { type: "custom", minMove: 0.01, formatter: formatChartAxisPrice }
   });
 
   state.volumeSeries = state.chart.addHistogramSeries({
@@ -256,6 +268,11 @@ async function loadMoreHistoricalCandles() {
 }
 
 function renderChartData(candles, fitContent = false, preservedLogicalRange = null) {
+  const digits = chartAxisPrecision(candles.at(-1)?.close);
+  if (digits !== state.chartAxisDigits) {
+    state.chartAxisDigits = digits;
+    state.candleSeries.applyOptions({ priceFormat: { type: "custom", minMove: 10 ** -digits, formatter: formatChartAxisPrice } });
+  }
   state.candleSeries.setData(candles);
 
   const volData = candles.map(c => ({
@@ -297,6 +314,7 @@ function renderChartData(candles, fitContent = false, preservedLogicalRange = nu
   requestAnimationFrame(updateKeyLevelVisualLabels);
   updateQuickStats();
   renderOxDetail();
+  document.dispatchEvent(new Event('ox:chartdata'));
 }
 
 function averageTrueRange(candles, period = 14) {

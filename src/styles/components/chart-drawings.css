@@ -1,0 +1,13 @@
+#view-radar .chart-drawing-layer {position:absolute;top:0;left:0;z-index:5;pointer-events:none}
+#view-radar #chart > div > table > tbody > tr:first-child > td:last-child canvas {touch-action:none}
+#view-radar .chart-drawing-layer.is-editing {pointer-events:auto;touch-action:none;cursor:crosshair}
+#view-radar .chart-drawing-tools {display:none;position:absolute;left:10px;top:43px;z-index:12;gap:5px;align-items:center}
+body.ox-terminal.chart-focus #view-radar .chart-drawing-tools,
+body.ox-terminal #view-radar .chart-box:fullscreen .chart-drawing-tools,
+body.ox-terminal #view-radar .chart-box:-webkit-full-screen .chart-drawing-tools {display:flex}
+#view-radar .chart-drawing-tools button {display:grid;place-items:center;width:32px;height:32px;padding:0;border:1px solid #ffffff45;border-radius:7px;background:#171b20e8;color:#eeeae2;font:22px/1 system-ui;cursor:pointer}
+#view-radar .chart-drawing-tools button[aria-pressed="true"] {border-color:#fff;background:#ffffff2b;box-shadow:0 0 7px #ffffff67}
+#view-radar .chart-drawing-tools button:focus-visible {outline:2px solid #fff;outline-offset:2px}
+body.theme-light #view-radar .chart-drawing-tools button {background:#f3f5f6f0;color:#273640;border-color:#40505c6b}
+body.theme-light #view-radar .chart-drawing-tools button[aria-pressed="true"] {background:#dce5eb;border-color:#273640;box-shadow:0 0 7px #27364044}
+@media(max-width:900px){body.ox-terminal.chart-focus #view-radar .chart-drawing-tools {top:calc(44px + env(safe-area-inset-top));left:8px}}
