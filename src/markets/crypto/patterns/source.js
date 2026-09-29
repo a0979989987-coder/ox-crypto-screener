@@ -95,7 +95,7 @@ export function classicScore(ticker,candles,tickers){
   return Math.round(liq.score*CONFIG.weights.liquidity+flow.score*CONFIG.weights.moneyFlow+structure.score*CONFIG.weights.structure+setup.setupScore*CONFIG.weights.setupMatch+rs.score*CONFIG.weights.relativeStrength+(trigger.active?5:0));
 }
 export async function scanUniverse(universe,frames,{signal,onSeries,onProgress}){
-  let cursor=0,done=0,failed=0;const total=universe.tickers.length*frames.length;
+  let cursor=0,done=0,failed=0,coinsDone=0;const total=universe.tickers.length*frames.length,coinsTotal=universe.tickers.length;
   const jobs=universe.tickers.map(ticker=>async()=>{
     let hourly=null;
     try{hourly=await fetchSeries(ticker.symbol,'1H',signal,universe.serverTime);}catch(e){if(signal.aborted)throw e;}
@@ -106,8 +106,9 @@ export async function scanUniverse(universe,frames,{signal,onSeries,onProgress})
         const data=frame==='1H'?(hourly||await fetchSeries(ticker.symbol,frame,signal,universe.serverTime)):await fetchSeries(ticker.symbol,frame,signal,universe.serverTime);
         await onSeries({...data,ticker,oxScore,quoteTime:universe.serverTime,turnover:Number(ticker.usdtVolume),change:Number(ticker.change24h)*100});
       }catch(e){if(signal.aborted)throw e;failed++;}
-      done++;onProgress({done,total,failed});
+      done++;onProgress({done,total,failed,coinsDone,coinsTotal});
     }
+    coinsDone++;onProgress({done,total,failed,coinsDone,coinsTotal});
   });
   await Promise.all(Array.from({length:4},async()=>{while(cursor<jobs.length){if(signal.aborted)throw abortError();const job=jobs[cursor++];await job();}}));
   return {done,total,failed};
