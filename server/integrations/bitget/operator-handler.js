@@ -1,6 +1,6 @@
 import { createHash, createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
-import { BitgetLookupError, createBitgetAffiliateClient } from '../../../server/integrations/bitget/affiliate.js';
-import { renderOperatorPage, TEST_PATH } from '../../../server/integrations/bitget/operator-page.js';
+import { BitgetLookupError, createBitgetAffiliateClient } from './affiliate.js';
+import { renderOperatorPage, TEST_PATH, COOKIE_PATH } from './operator-page.js';
 
 const COOKIE = '__Secure-ox-bitget-test';
 const TTL = 600;
@@ -32,7 +32,7 @@ export function createTestHandler({ env = process.env, createClient = createBitg
     const page = (status, data) => res.status(status).send(renderOperatorPage(data));
     const token = env.OX_ACCOUNT_LOOKUP_TOKEN;
     if (typeof token !== 'string' || token.length < 32) return page(503, { message: '管理端查詢尚未啟用，請確認伺服器設定。' });
-    const signatureCookie = value => `${COOKIE}=${value}; Path=${TEST_PATH}; HttpOnly; Secure; SameSite=Strict; Max-Age=${value ? TTL : 0}`;
+    const signatureCookie = value => `${COOKIE}=${value}; Path=${COOKIE_PATH}; HttpOnly; Secure; SameSite=Strict; Max-Age=${value ? TTL : 0}`;
     const redirect = () => { res.setHeader('Location', TEST_PATH); return res.status(303).end(); };
     const raw = (req.headers.cookie || '').split(';').map(part => part.trim()).find(part => part.startsWith(COOKIE + '='))?.slice(COOKIE.length + 1) || '';
     let session;

@@ -1,5 +1,6 @@
 // Server-rendered operator test page. No application scripts or browser storage.
-export const TEST_PATH = '/api/v1/account/bitget-test';
+export const COOKIE_PATH = '/api/v1/account/bitget-status';
+export const TEST_PATH = COOKIE_PATH + '?view=test';
 const escape = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
 
 export function renderOperatorPage({ session, message = '', result, uid = '' } = {}) {

@@ -87,7 +87,7 @@ node --env-file=.env.local scripts/check-bitget-customer.mjs YOUR_CUSTOMER_UID
 
 ## 手機維運測試頁（2026-09-29）
 
-入口：`/api/v1/account/bitget-test`。這是獨立維運工具，不是 OX Account 的正式會員登入。
+入口：`/api/v1/account/bitget-status?view=test`。共用既有函式，不增加 Vercel 函式數量。這是獨立維運工具，不是 OX Account 的正式會員登入。
 管理者手動輸入既有 `OX_ACCOUNT_LOOKUP_TOKEN`，透過 HTTPS 原生表單提交給同源後端。
 密碼不嵌入 HTML／JavaScript、不回顯、不寫入 localStorage／sessionStorage；Bitget 三項憑證仍只在伺服器。
 後端驗證後簽發 10 分鐘、限定測試路徑的 Secure / HttpOnly / SameSite=Strict Cookie，後續 UID 查詢不再傳送原始維運 Token。

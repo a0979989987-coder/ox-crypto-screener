@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createTestHandler } from '../api/v1/account/bitget-test.js';
+import { createTestHandler } from '../server/integrations/bitget/operator-handler.js';
 import { renderOperatorPage } from '../server/integrations/bitget/operator-page.js';
 
 const token = 'synthetic-test-only-operator-password-00000';
@@ -26,7 +26,7 @@ test('login creates a short-lived secure scoped cookie without echoing the opera
   const { handler } = setup();
   const { res } = await login(handler);
   assert.match(res.headers['Set-Cookie'], /HttpOnly; Secure; SameSite=Strict; Max-Age=600/);
-  assert.match(res.headers['Set-Cookie'], /Path=\/api\/v1\/account\/bitget-test;/);
+  assert.match(res.headers['Set-Cookie'], /Path=\/api\/v1\/account\/bitget-status;/);
   assert.equal(JSON.stringify(res).includes(token), false);
   assert.match(res.headers['Content-Security-Policy'], /default-src 'none'/);
 });
