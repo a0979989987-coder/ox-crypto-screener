@@ -61,6 +61,6 @@
 .px-board-bottom>.px-icon{margin-left:0;order:1}
 .px-board-bottom>.px-modes{order:0}
 .px-board-bottom>.px-caption{order:2}
-.px-tier-filters{order:3;margin:0 0 0 auto;min-width:0;max-width:100%;gap:4px}
+.px-tier-filters{order:3;margin:0 0 0 auto;min-width:0;max-width:100%;gap:4px;pointer-events:auto}
 .px-tier-filters button{padding:3px 7px;min-height:25px}
 @media(max-width:600px){.px-controls{min-height:38px;padding:5px 8px 0}.px-board canvas{height:clamp(290px,39svh,450px)}.px-board-bottom{margin:0 7px 6px;width:calc(100% - 14px)}.px-tier-filters{margin:0 0 0 auto;gap:3px}.px-tier-filters button{padding:3px 5px;font-size:9px}.px-board-bottom>.px-caption{display:none}}
