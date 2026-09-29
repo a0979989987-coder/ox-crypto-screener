@@ -2743,32 +2743,6 @@
       "translationStatus": "translated"
     },
     {
-      "id": "31270f0e83371c528dd4",
-      "title": "Small Business Forum’s Report to Congress Highlights Recommendations to Improve Capital-Raising Policy",
-      "link": "https://www.sec.gov/newsroom/press-releases/2026-70-small-business-forums-report-congress-highlights-recommendations-improve-capital-raising-policy",
-      "publishedAt": "2026-07-27T19:59:17.000Z",
-      "source": "U.S. SEC",
-      "sourceId": "sec",
-      "markets": [
-        "us"
-      ],
-      "kind": "news",
-      "verified": "official-source",
-      "impact": {
-        "stars": null,
-        "impactImportance": null,
-        "reason": "尚未評估；標題不足以判定影響力",
-        "ruleVersion": "unassessed-v1",
-        "evidence": null,
-        "sourceConfidence": "official-source",
-        "analysisConfidence": null,
-        "direction": null,
-        "sourceId": "sec"
-      },
-      "titleZh": "小型企業論壇向國會提交報告，提出改善募資政策建議",
-      "translationStatus": "translated"
-    },
-    {
       "id": "5a26ae43a3fa1c29fad7",
       "title": "Minutes of the Board&#39;s discount rate meetings on June 8 and June 17, 2026",
       "link": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260714a.htm",
@@ -4439,43 +4413,6 @@
   ],
   "events": [
     {
-      "id": "3087b4a699f8dcffa243",
-      "title": "Job Openings and Labor Turnover Survey for August 2026",
-      "link": "https://www.bls.gov/schedule/news_release/current_year.asp",
-      "sourceUrl": "https://www.bls.gov/schedule/news_release/current_year.asp",
-      "occursAt": "2026-09-29T14:00:00.000Z",
-      "source": "U.S. BLS",
-      "sourceId": "bls-calendar",
-      "markets": [
-        "us",
-        "forex",
-        "crypto",
-        "tw"
-      ],
-      "symbols": [],
-      "kind": "event",
-      "status": "confirmed",
-      "originalTimezone": "America/New_York",
-      "previous": null,
-      "consensus": null,
-      "actual": null,
-      "revised": null,
-      "updatedAt": null,
-      "impact": {
-        "stars": 3,
-        "impactImportance": 3,
-        "reason": "美國官方經濟數據預定公布；星級只表示事件類別的重要性，不表示多空或結果",
-        "ruleVersion": "official-release-category-v1",
-        "evidence": "https://www.bls.gov/schedule/news_release/current_year.asp",
-        "sourceConfidence": "official-source",
-        "analysisConfidence": null,
-        "direction": null,
-        "sourceId": "bls-calendar"
-      },
-      "titleZh": "美國 2026 年 8 月職缺與勞動流動調查",
-      "translationStatus": "translated"
-    },
-    {
       "id": "f4964d40632c6e2651b9",
       "title": "Employment Situation for September 2026",
       "link": "https://www.bls.gov/schedule/news_release/current_year.asp",
@@ -4922,7 +4859,7 @@
       }
     }
   ],
-  "generatedAt": "2026-09-29T12:42:47.980Z",
+  "generatedAt": "2026-09-29T18:39:48.713Z",
   "sources": [
     {
       "id": "twse",
