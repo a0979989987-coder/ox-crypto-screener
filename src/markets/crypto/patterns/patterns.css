@@ -66,7 +66,7 @@
 @media(max-width:600px){.px-controls{min-height:38px;padding:5px 8px 0}.px-board canvas{height:clamp(290px,39svh,450px)}.px-board-bottom{margin:0 7px 6px;width:calc(100% - 14px)}.px-tier-filters{margin:0 0 0 auto;gap:3px}.px-tier-filters button{padding:3px 5px;font-size:9px}.px-board-bottom>.px-caption{display:none}}
 
 /* The board is the drawing surface; controls float over the ink. */
-.px-board{display:block;height:clamp(320px,43dvh,560px);min-width:0}
+.px-board{display:block;height:clamp(300px,40dvh,520px);min-width:0}
 .px-board canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none;z-index:0}
 .px-controls{position:absolute;z-index:3;inset:9px 9px auto;order:initial;margin:0;padding:0;min-height:0;pointer-events:none}
 .px-controls button,.px-board-bottom button{touch-action:none}
@@ -76,25 +76,27 @@
 .px-mode-toggle:active{transform:scale(.94)}.px-mode-glyph{font-size:18px;line-height:1}
 .px-tier-filters{order:initial;flex:0 1 auto;min-width:0;max-width:calc(100% - 73px);margin:0 0 0 auto;overflow-x:auto;pointer-events:auto}
 .px-tier-filters button{min-width:0;padding:3px 6px}
-.px-scan-count{pointer-events:none;min-width:0;color:#eceee9;font-size:11px;white-space:nowrap;text-shadow:0 0 8px #fff9}
+/* Scan progress lives in the floating control, leaving the board edge quiet. */
 .px-board.is-scanning .px-mode-toggle,.px-board.is-scanning .px-tier-filters{opacity:0;visibility:hidden;pointer-events:none;transition:none}
 .px-board.is-scanning .px-board-bottom>.px-icon{margin-left:auto}
 .px-board.is-scanning .px-tier-filters{display:none}
-.px-scan-border{position:absolute;inset:0;width:100%;height:100%;overflow:visible;z-index:4;pointer-events:none;opacity:0;transition:opacity .35s ease}
-.px-board.is-scanning{border-color:#606b7299}
-.px-scan-border rect{fill:none;stroke:#fff;stroke-width:1.8;vector-effect:non-scaling-stroke;filter:drop-shadow(0 0 5px #fff) drop-shadow(0 0 13px #fffc);stroke-dasharray:0 100;transition:stroke-dasharray .24s linear}
-.px-board.is-scanning .px-scan-border,.px-board.is-scan-finished .px-scan-border{opacity:1}
-.px-board.is-scan-finished .px-scan-border{transition:opacity .7s ease}
-.px-board.is-scan-finished .px-scan-count{opacity:0;transition:opacity .55s ease}
-.px-meta{min-height:22px;margin:4px 0 8px;overflow:hidden}.px-status{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.px-refresh-pill{position:fixed;z-index:18;right:20px;bottom:calc(95px + env(safe-area-inset-bottom));display:grid;place-items:center;width:38px;height:38px;padding:0;border:1px solid #ffffffbd;border-radius:999px;background:radial-gradient(circle at 34% 18%,#ffffff39,#293037ed 45%,#14191ef0);color:#fff;box-shadow:inset 0 1px #fff9,0 0 8px #fff9,0 0 20px #ffffff6c,0 6px 18px #0009;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);transition:transform .5s cubic-bezier(.22,.8,.22,1),box-shadow .3s ease}
-.px-refresh-pill svg{width:19px;height:19px;stroke-width:1.7}.px-refresh-pill:hover{box-shadow:inset 0 1px #fff,0 0 12px #fffc,0 0 25px #ffffff88,0 6px 18px #0009}
-.px-refresh-pill.is-compact{transform:scale(.84)}.px-refresh-pill.is-scanning svg{animation:px-refresh-spin 1.35s linear infinite}
+.px-results{position:relative;margin-top:3px}
+.px-status{position:absolute;right:2px;top:0;z-index:1;width:58%;line-height:30px;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#aeb4b7;font-size:10px;pointer-events:none}
+.px-tier-heading{min-height:31px;padding-right:58%;white-space:nowrap;overflow:hidden}
+.px-tier-heading span{overflow:hidden;text-overflow:ellipsis}
+.px-refresh-pill{position:fixed;z-index:18;right:26px;bottom:calc(85px + env(safe-area-inset-bottom));display:grid;place-items:center;width:38px;height:38px;padding:0;border:1px solid #ffffffbd;border-radius:999px;background:radial-gradient(circle at 34% 18%,#ffffff39,#293037ed 45%,#14191ef0);color:#fff;box-shadow:inset 0 1px #fff9,0 0 8px #fff9,0 0 20px #ffffff6c,0 6px 18px #0009;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);transition:transform .5s cubic-bezier(.22,.8,.22,1),box-shadow .3s ease}
+.px-refresh-pill:hover{box-shadow:inset 0 1px #fff,0 0 12px #fffc,0 0 25px #ffffff88,0 6px 18px #0009}
+.px-refresh-glyph{display:grid;place-items:center}.px-refresh-glyph svg{width:19px;height:19px;stroke-width:1.6}
+.px-pill-progress{position:absolute;inset:-2px;width:calc(100% + 4px);height:calc(100% + 4px);transform:rotate(-90deg);pointer-events:none;fill:none;stroke-width:2.2}
+.px-pill-track{stroke:#ffffff21}.px-pill-arc{stroke:#fff;stroke-linecap:round;stroke-dasharray:107;stroke-dashoffset:107;opacity:0;filter:drop-shadow(0 0 3px #fff);transition:stroke-dashoffset .22s linear,opacity .2s ease}
+.px-refresh-pill.is-scanning .px-pill-arc,.px-refresh-pill.is-complete .px-pill-arc{opacity:1}
+.px-refresh-pill.is-scanning .px-refresh-glyph{animation:px-refresh-spin 2.4s linear infinite}
+.px-refresh-pill.is-compact{transform:scale(.84)}
 @keyframes px-refresh-spin{to{transform:rotate(360deg)}}
 .px-to-radar{border:1px solid #ffffff8a;border-radius:8px;background:linear-gradient(145deg,#ffffff2a,#ffffff08);box-shadow:inset 0 1px #ffffff85,0 0 9px #ffffff36;padding:5px 10px;font-size:11px;white-space:nowrap}
 .px-to-radar:hover{border-color:#fff;box-shadow:inset 0 1px #fff,0 0 14px #ffffff69}
 @media(max-width:600px){
- .px-board{height:clamp(290px,39svh,450px)}
+ .px-board{height:clamp(275px,36svh,420px)}
  .px-board canvas{height:100%}
  .px-controls{inset:8px 8px auto;padding:0;min-height:0}
  .px-board-bottom{inset:auto 7px 7px;width:auto;margin:0;gap:3px}
@@ -102,7 +104,7 @@
  .px-mode-toggle [data-mode-label]{display:none}
  .px-tier-filters{gap:3px;max-width:calc(100% - 69px);margin-left:auto}
  .px-tier-filters button{padding:3px 4px;font-size:9px}
- .px-refresh-pill{right:15px;bottom:calc(89px + env(safe-area-inset-bottom));width:36px;height:36px}
- .px-meta{font-size:10px;min-height:20px}
+ .px-refresh-pill{right:22px;bottom:calc(78px + env(safe-area-inset-bottom));width:36px;height:36px}
+ .px-tier-heading{padding-right:58%}.px-status{font-size:9px}
 }
-@media(prefers-reduced-motion:reduce){.px-refresh-pill.is-scanning svg{animation:none}.px-scan-border rect{transition:none}.px-mode-toggle{transition:none}}
+@media(prefers-reduced-motion:reduce){.px-refresh-pill.is-scanning .px-refresh-glyph{animation:none}.px-pill-arc{transition:none}.px-mode-toggle{transition:none}}

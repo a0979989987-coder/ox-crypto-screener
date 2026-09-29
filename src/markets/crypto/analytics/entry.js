@@ -58,7 +58,7 @@ if (section) {
     pending = true; const token = ++generation;
     try {
       if(selected==='patterns'){
-        const { mountPatternSearch } = await import('../patterns/view.js?v=patterns5g-20260929');
+        const { mountPatternSearch } = await import('../patterns/view.js?v=patterns5h-20260929');
         if(token!==generation||!active())return;
         instance=mountPatternSearch(host);
         return;
