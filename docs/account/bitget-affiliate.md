@@ -83,4 +83,17 @@ node --env-file=.env.local scripts/check-bitget-customer.mjs YOUR_CUSTOMER_UID
 - `accessPolicyChanged=false`：沒有啟用任何會員限制或 CRYPTO_FULL 權限。
 
 未來接入會員時，先完成真實 OX Session、可靠的 UID 所有權證明與唯一綁定，再由後端讀寫認證資料。
-不能直接把本維運 Token 給瀏覽器，也不能因訪客輸入一個通過認證的 UID 就幫他解鎖。
+不能把本維運 Token 嵌入前端程式或瀏覽器儲存，也不能因訪客輸入一個通過認證的 UID 就幫他解鎖。
+
+## 手機維運測試頁（2026-09-29）
+
+入口：`/api/v1/account/bitget-test`。這是獨立維運工具，不是 OX Account 的正式會員登入。
+管理者手動輸入既有 `OX_ACCOUNT_LOOKUP_TOKEN`，透過 HTTPS 原生表單提交給同源後端。
+密碼不嵌入 HTML／JavaScript、不回顯、不寫入 localStorage／sessionStorage；Bitget 三項憑證仍只在伺服器。
+後端驗證後簽發 10 分鐘、限定測試路徑的 Secure / HttpOnly / SameSite=Strict Cookie，後續 UID 查詢不再傳送原始維運 Token。
+每次操作檢查同源 Origin，查詢與登出另驗證 CSRF nonce。頁面沒有 JavaScript、第三方資源或追蹤，回應禁止快取與嵌入。
+登入／查詢各有每執行個體每分鐘 5 次的突發限制；這不是分散式全域限流。
+登出清除本機 Cookie；簽發的授權最遲 10 分鐘失效，輪替維運 Token 會使既有 Cookie 失效。
+此入口採服務端渲染：只有管理者手動輸入密碼的表單會短暫接觸原始 Token，沒有把 Token 交給應用程式腳本。
+登入後使用有權查詢的直客 UID。認證目前查最近 90 天；未找到紀錄仍顯示無法確認，不變更會員權限。
+正式 Bitget 聯通結果仍須由有效憑證與授權測試 UID 的實際請求確認，模擬測試不能代替。
