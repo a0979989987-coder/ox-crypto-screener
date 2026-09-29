@@ -10,13 +10,19 @@ function invoke(handler, body, cookie, extra = {}) {
   const res = { headers: {}, statusCode: 200, setHeader(k, v) { this.headers[k] = v; }, status(v) { this.statusCode = v; return this; }, send(body) { this.body = body; }, end() {} };
   return Promise.resolve(handler({ method: 'POST', headers: { ...headers, ...(cookie ? { cookie } : {}), ...extra }, body }, res)).then(() => res);
 }
+async function challenge(handler) {
+  const res = { headers: {}, statusCode: 200, setHeader(k, v) { this.headers[k] = v; }, status(v) { this.statusCode = v; return this; }, send(body) { this.body = body; }, end() {} };
+  await handler({ method: 'GET', headers: { host: 'ox.example' } }, res);
+  assert.equal(res.statusCode, 200);
+  return res.body.match(/name="challenge" value="([^"]+)"/)[1];
+}
 function setup() {
   let time = 1800000000000, calls = 0;
   const handler = createTestHandler({ env: { OX_ACCOUNT_LOOKUP_TOKEN: token }, now: () => time, limit: () => true, createClient: () => ({ lookupCustomer: async () => { calls++; throw new Error('SECRET-UPSTREAM-DETAIL'); } }) });
   return { handler, calls: () => calls, expire: () => { time += 600001; } };
 }
 async function login(handler) {
-  const res = await invoke(handler, { action: 'login', password: token });
+  const res = await invoke(handler, { action: 'login', password: token, challenge: await challenge(handler) });
   assert.equal(res.statusCode, 303);
   const cookie = res.headers['Set-Cookie'].split(';')[0];
   const payload = cookie.split('=')[1].split('.')[0];
@@ -32,7 +38,7 @@ test('login creates a short-lived secure scoped cookie without echoing the opera
 });
 test('missing, wrong or expired credentials and forged cookies never call Bitget', async () => {
   const env = setup();
-  assert.equal((await invoke(env.handler, { action: 'login', password: 'wrong' })).statusCode, 401);
+  assert.equal((await invoke(env.handler, { action: 'login', password: 'wrong', challenge: await challenge(env.handler) })).statusCode, 401);
   assert.equal((await invoke(env.handler, { action: 'lookup', uid: '123' })).statusCode, 401);
   const { cookie, csrf } = await login(env.handler);
   assert.equal((await invoke(env.handler, { action: 'lookup', uid: '123', csrf }, cookie + 'x')).statusCode, 401);
@@ -40,10 +46,12 @@ test('missing, wrong or expired credentials and forged cookies never call Bitget
   assert.equal((await invoke(env.handler, { action: 'lookup', uid: '123', csrf }, cookie)).statusCode, 401);
   assert.equal(env.calls(), 0);
 });
-test('cross-site POST, missing CSRF and duplicate fields fail closed', async () => {
+test('signed login challenge, missing CSRF and duplicate fields fail closed', async () => {
   const env = setup();
   const { cookie, csrf } = await login(env.handler);
-  assert.equal((await invoke(env.handler, { action: 'login', password: token }, null, { origin: 'https://evil.example' })).statusCode, 403);
+  assert.equal((await invoke(env.handler, { action: 'login', password: token })).statusCode, 403);
+  assert.equal((await invoke(env.handler, { action: 'login', password: token, challenge: 'forged.challenge' })).statusCode, 403);
+  assert.equal((await invoke(env.handler, { action: 'login', password: 'wrong', challenge: await challenge(env.handler) }, null, { origin: 'https://embedded-browser.example' })).statusCode, 401);
   assert.equal((await invoke(env.handler, { action: 'lookup', uid: '123' }, cookie)).statusCode, 403);
   assert.equal((await invoke(env.handler, 'action=lookup&uid=123&uid=456&csrf=' + csrf, cookie)).statusCode, 400);
   assert.equal(env.calls(), 0);
@@ -79,7 +87,7 @@ test('disabled configuration and exhausted burst limits stop before adapter use'
   const disabled = createTestHandler({ env: {} });
   assert.equal((await invoke(disabled, {})).statusCode, 503);
   const limited = createTestHandler({ env: { OX_ACCOUNT_LOOKUP_TOKEN: token }, limit: () => false });
-  const res = await invoke(limited, { action: 'login', password: token });
+  const res = await invoke(limited, { action: 'login', password: token, challenge: await challenge(limited) });
   assert.equal(res.statusCode, 429);
   assert.equal(res.headers['Retry-After'], '60');
 });
