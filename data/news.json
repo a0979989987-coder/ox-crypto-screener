@@ -2,6 +2,58 @@
   "schemaVersion": 1,
   "news": [
     {
+      "id": "52cc055c5910d68deee7",
+      "title": "證交所攜手台經院與資策會推出臺灣創新板(tib-創)半導體及數位雲端產業之洞察報告",
+      "link": "https://www.twse.com.tw/rwd/zh/news/newsDetail/8a8216d6a0bdcc0001a0ebd1549a0090",
+      "publishedAt": "2026-09-29T06:17:00.000Z",
+      "source": "臺灣證券交易所",
+      "sourceId": "twse",
+      "markets": [
+        "tw"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "impactImportance": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "twse"
+      },
+      "titleZh": "證交所攜手台經院與資策會推出臺灣創新板(tib-創)半導體及數位雲端產業之洞察報告",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "5f2902760c156b39d083",
+      "title": "上週外資在集中市場買超701.49億元，買超友達24.73萬張最多，另賣超仁寶4.54萬張最多",
+      "link": "https://www.twse.com.tw/rwd/zh/news/newsDetail/8a8216d6a0bdcc0001a0ebc5221c008c",
+      "publishedAt": "2026-09-29T06:05:00.000Z",
+      "source": "臺灣證券交易所",
+      "sourceId": "twse",
+      "markets": [
+        "tw"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "impactImportance": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "twse"
+      },
+      "titleZh": "上週外資在集中市場買超701.49億元，買超友達24.73萬張最多，另賣超仁寶4.54萬張最多",
+      "translationStatus": "translated"
+    },
+    {
       "id": "475befa837d827eb9800",
       "title": "CFTC Staff Releases Updates to FAQs Concerning Registrants and Registered Entity Activities Relating to Crypto Assets and Blockchain Technologies",
       "link": "https://www.cftc.gov/PressRoom/PressReleases/9303-26",
@@ -1875,58 +1927,6 @@
         "sourceId": "twse"
       },
       "titleZh": "SEMICON Taiwan聚焦半導體供應鏈新動能 7家關鍵供應鏈及創新板企業展現產業多元實力",
-      "translationStatus": "translated"
-    },
-    {
-      "id": "850aab2cc26f5f316250",
-      "title": "瑞宇國際(股)公司於115年9月8日送件申請股票創新板上市",
-      "link": "https://www.twse.com.tw/rwd/zh/news/newsDetail/8a8216d6a066696301a0800d1db9006d",
-      "publishedAt": "2026-09-08T08:05:00.000Z",
-      "source": "臺灣證券交易所",
-      "sourceId": "twse",
-      "markets": [
-        "tw"
-      ],
-      "kind": "news",
-      "verified": "official-source",
-      "impact": {
-        "stars": null,
-        "impactImportance": null,
-        "reason": "尚未評估；標題不足以判定影響力",
-        "ruleVersion": "unassessed-v1",
-        "evidence": null,
-        "sourceConfidence": "official-source",
-        "analysisConfidence": null,
-        "direction": null,
-        "sourceId": "twse"
-      },
-      "titleZh": "瑞宇國際(股)公司於115年9月8日送件申請股票創新板上市",
-      "translationStatus": "translated"
-    },
-    {
-      "id": "4f91e299338f51a5350b",
-      "title": "2026年8月集中市場相關數據",
-      "link": "https://www.twse.com.tw/rwd/zh/news/newsDetail/8a8216d6a066696301a07b4ef65c0064",
-      "publishedAt": "2026-09-07T09:58:00.000Z",
-      "source": "臺灣證券交易所",
-      "sourceId": "twse",
-      "markets": [
-        "tw"
-      ],
-      "kind": "news",
-      "verified": "official-source",
-      "impact": {
-        "stars": null,
-        "impactImportance": null,
-        "reason": "尚未評估；標題不足以判定影響力",
-        "ruleVersion": "unassessed-v1",
-        "evidence": null,
-        "sourceConfidence": "official-source",
-        "analysisConfidence": null,
-        "direction": null,
-        "sourceId": "twse"
-      },
-      "titleZh": "2026年8月集中市場相關數據",
       "translationStatus": "translated"
     },
     {
@@ -4948,7 +4948,7 @@
       }
     }
   ],
-  "generatedAt": "2026-09-29T00:41:48.643Z",
+  "generatedAt": "2026-09-29T06:41:20.890Z",
   "sources": [
     {
       "id": "twse",
@@ -4987,8 +4987,8 @@
     },
     {
       "id": "kraken",
-      "status": "ready",
-      "count": 7
+      "status": "error",
+      "message": "HTTP 403"
     },
     {
       "id": "cftc",
