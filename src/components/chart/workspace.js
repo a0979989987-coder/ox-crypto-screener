@@ -9,7 +9,88 @@ function chartAxisPrecision(price) {
 
 function formatChartAxisPrice(price) {
   const digits = state.chartAxisDigits ?? 2;
+  if (window.matchMedia("(max-width: 720px)").matches && !document.body.classList.contains("chart-focus")) {
+    const value = Math.abs(Number(price));
+    if (value >= 1e6) return `${Number((price / 1e6).toFixed(2))}M`;
+    if (value >= 1e3) return `${Number((price / 1e3).toFixed(2))}k`;
+  }
   return Number(price).toFixed(digits).replace(/(\.\d*?)0+$/, '$1').replace(/\.$/, '');
+}
+
+function formatChartVolume(volume) {
+  const value = Math.abs(Number(volume));
+  if (value >= 1e9) return `${Number((volume / 1e9).toFixed(1))}B`;
+  if (value >= 1e6) return `${Number((volume / 1e6).toFixed(0))}M`;
+  if (value >= 1e3) return `${Number((volume / 1e3).toFixed(0))}k`;
+  return String(Math.round(volume));
+}
+
+function refreshChartPriceViewport() {
+  // Reapplying the provider invalidates the library's autoscale cache.
+  state.candleSeries?.applyOptions({ autoscaleInfoProvider: chartPriceAutoscale });
+  document.dispatchEvent(new Event('ox:chartpriceview'));
+}
+
+function chartPriceAutoscale(original) {
+  const info = original();
+  if (!info) return info;
+  state.chartAutoPriceRange = { ...info.priceRange };
+  return state.chartPriceViewport ? { ...info, priceRange: { ...state.chartPriceViewport } } : info;
+}
+
+function enableMobileChartPriceGestures(container) {
+  let gesture = null;
+  const plot = target => !!target.closest('table > tbody > tr:first-child > td:first-child');
+  const midpoint = touches => ({
+    x: [...touches].reduce((sum, touch) => sum + touch.clientX, 0) / touches.length,
+    y: [...touches].reduce((sum, touch) => sum + touch.clientY, 0) / touches.length
+  });
+  const distance = touches => Math.hypot(touches[0].clientX - touches[1].clientX, touches[0].clientY - touches[1].clientY);
+  const start = event => {
+    if (!window.matchMedia('(max-width:720px)').matches || !plot(event.target) || event.touches.length > 2) return;
+    if (document.querySelector('#view-radar .chart-drawing-layer.is-editing')) return;
+    const priceHeight = container.clientHeight - (state.chart?.timeScale().height() || 0);
+    const range = state.chartPriceViewport || state.chartAutoPriceRange;
+    if (!range || priceHeight <= 0) return;
+    const rect = container.getBoundingClientRect();
+    const mid = midpoint(event.touches);
+    gesture = { count: event.touches.length, startX: mid.x, startY: mid.y - rect.top,
+      range: { ...range }, height: priceHeight, distance: event.touches.length === 2 ? distance(event.touches) : 0,
+      direction: null };
+  };
+  container.addEventListener('touchstart', start, { passive: true, capture: true });
+  container.addEventListener('touchmove', event => {
+    if (!gesture || !plot(event.target) || !event.touches.length) return;
+    if (event.touches.length !== gesture.count) { start(event); return; }
+    const rect = container.getBoundingClientRect();
+    const mid = midpoint(event.touches);
+    const y = mid.y - rect.top;
+    const span = gesture.range.maxValue - gesture.range.minValue;
+    if (!Number.isFinite(span) || span <= 0) return;
+    if (gesture.count === 1) {
+      const dx = mid.x - gesture.startX, dy = y - gesture.startY;
+      if (!gesture.direction && Math.max(Math.abs(dx), Math.abs(dy)) > 6) gesture.direction = Math.abs(dy) > Math.abs(dx) * 1.1 ? 'vertical' : 'horizontal';
+      if (gesture.direction !== 'vertical') return; // Horizontal pan stays with Lightweight Charts.
+      const shift = dy / gesture.height * span;
+      state.chartPriceViewport = { minValue: gesture.range.minValue + shift, maxValue: gesture.range.maxValue + shift };
+    } else {
+      const factor = Math.max(.1, Math.min(10, distance(event.touches) / (gesture.distance || 1)));
+      const newSpan = span / factor;
+      const anchor = gesture.range.maxValue - gesture.startY / gesture.height * span;
+      const maxValue = anchor + y / gesture.height * newSpan;
+      state.chartPriceViewport = { minValue: maxValue - newSpan, maxValue };
+    }
+    event.preventDefault();
+    refreshChartPriceViewport();
+  }, { passive: false, capture: true });
+  container.addEventListener('touchend', event => { if (event.touches.length) start(event); else gesture = null; }, { passive: true, capture: true });
+  container.addEventListener('touchcancel', () => { gesture = null; }, { passive: true, capture: true });
+  container.addEventListener('dblclick', event => {
+    if (event.target.closest('table > tbody > tr:first-child > td:last-child')) {
+      state.chartPriceViewport = null;
+      refreshChartPriceViewport();
+    }
+  }, true);
 }
 
 function applyChartFutureSpace(snapToLatest = false) {
@@ -146,7 +227,8 @@ function initChart() {
     height: container.clientHeight || 440,
     layout: {
       background: { type: "solid", color: "#121417" },
-      textColor: "#929995"
+      textColor: "#929995",
+      attributionLogo: false
     },
     grid: {
       vertLines: { color: "#202725", visible: false },
@@ -189,11 +271,12 @@ function initChart() {
     borderVisible: false,
     wickUpColor: "#00b8d4",
     wickDownColor: "#ff3078",
-    priceFormat: { type: "custom", minMove: 0.01, formatter: formatChartAxisPrice }
+    priceFormat: { type: "custom", minMove: 0.01, formatter: formatChartAxisPrice },
+    autoscaleInfoProvider: chartPriceAutoscale
   });
 
   state.volumeSeries = state.chart.addHistogramSeries({
-    priceFormat: { type: "volume" },
+    priceFormat: { type: "custom", minMove: 1, formatter: formatChartVolume },
     priceScaleId: "vol"
   });
   state.chart.priceScale("vol").applyOptions({
@@ -210,6 +293,7 @@ function initChart() {
   new ResizeObserver(() => {
     resizeChartToContainer();
   }).observe(container);
+  enableMobileChartPriceGestures(container);
 }
 
 async function loadSymbolCandles(isInitial = true) {
@@ -268,6 +352,11 @@ async function loadMoreHistoricalCandles() {
 }
 
 function renderChartData(candles, fitContent = false, preservedLogicalRange = null) {
+  const priceScope = `${state.symbol}:${state.period}`;
+  if (state.chartPriceScope !== priceScope) {
+    state.chartPriceScope = priceScope;
+    state.chartPriceViewport = null;
+  }
   const digits = chartAxisPrecision(candles.at(-1)?.close);
   if (digits !== state.chartAxisDigits) {
     state.chartAxisDigits = digits;

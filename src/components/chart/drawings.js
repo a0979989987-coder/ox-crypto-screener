@@ -11,7 +11,7 @@
   toolbar.className = 'chart-drawing-tools';
   toolbar.setAttribute('role', 'toolbar');
   toolbar.setAttribute('aria-label', '圖表畫線工具');
-  toolbar.innerHTML = '<button type="button" data-draw="trend" aria-label="趨勢線：在圖表拖曳畫線" title="趨勢線">╱</button><button type="button" data-draw="horizontal" aria-label="水平線：點擊圖表設定價格" title="水平線">─</button><button type="button" data-draw="undo" aria-label="復原上一條畫線" title="復原上一條">↶</button>';
+  toolbar.innerHTML = '<button type="button" data-draw="trend" aria-label="趨勢線：拖曳畫線" title="趨勢線">╱</button><button type="button" data-draw="ray" aria-label="射線：拖曳決定方向" title="射線">↗</button><button type="button" data-draw="horizontal" aria-label="水平線：點選價格" title="水平線">─</button><button type="button" data-draw="vertical" aria-label="垂直線：點選時間" title="垂直線">│</button><button type="button" data-draw="rectangle" aria-label="矩形：拖曳範圍" title="矩形">▭</button><button type="button" data-draw="fib" aria-label="斐波那契回撤：拖曳高低點" title="斐波那契回撤">Φ</button><button type="button" data-draw="undo" aria-label="復原上一條畫線" title="復原上一條">↶</button>';
   box.append(toolbar);
   const layer = document.createElement('canvas');
   layer.className = 'chart-drawing-layer';
@@ -55,6 +55,29 @@
     const y2 = item.type === 'horizontal' ? y1 : state.candleSeries.priceToCoordinate(item.b.price);
     const x2 = item.type === 'horizontal' ? width : state.chart.timeScale().timeToCoordinate(item.b.time);
     if (![x1, y1, x2, y2].every(Number.isFinite)) return;
+    if (item.type === 'vertical') { ctx.beginPath(); ctx.moveTo(x1, 0); ctx.lineTo(x1, height); ctx.stroke(); return; }
+    if (item.type === 'rectangle') {
+      ctx.fillStyle = document.body.classList.contains('theme-light') ? '#27364020' : '#f3f1e91c';
+      ctx.fillRect(Math.min(x1, x2), Math.min(y1, y2), Math.abs(x2 - x1), Math.abs(y2 - y1));
+      ctx.strokeRect(Math.min(x1, x2), Math.min(y1, y2), Math.abs(x2 - x1), Math.abs(y2 - y1));
+      ctx.fillStyle = ctx.strokeStyle;
+      return;
+    }
+    if (item.type === 'fib') {
+      ctx.save(); ctx.font = '10px system-ui'; ctx.textAlign = 'right';
+      for (const level of [0, .236, .382, .5, .618, .786, 1]) {
+        const y = y1 + (y2 - y1) * level;
+        ctx.beginPath(); ctx.moveTo(Math.min(x1, x2), y); ctx.lineTo(Math.max(x1, x2), y); ctx.stroke();
+        ctx.fillText(`${(level * 100).toFixed(1)}%`, Math.max(x1, x2) - 3, y - 3);
+      }
+      ctx.restore(); return;
+    }
+    if (item.type === 'ray' && Math.abs(x2 - x1) > 1) {
+      const endX = x2 > x1 ? width : 0;
+      const endY = y1 + (y2 - y1) * (endX - x1) / (x2 - x1);
+      ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(endX, endY); ctx.stroke();
+      return;
+    }
     ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
     if (item.type !== 'horizontal') for (const [x, y] of [[x1, y1], [x2, y2]]) {
       ctx.beginPath(); ctx.arc(x, y, 2, 0, Math.PI * 2); ctx.fill();
@@ -107,7 +130,7 @@
     if (event.pointerId !== pointer || !preview) return;
     if (event.type !== 'pointercancel') {
       preview.b = anchor(event) || preview.b;
-      if (preview.type === 'horizontal' || preview.a.time !== preview.b.time || Math.abs(preview.a.price - preview.b.price) > 0) {
+      if (['horizontal', 'vertical'].includes(preview.type) || preview.a.time !== preview.b.time || Math.abs(preview.a.price - preview.b.price) > 0) {
         drawings[scope()] ||= [];
         drawings[scope()].push(preview);
         save();
@@ -121,6 +144,7 @@
   document.addEventListener('fullscreenchange', sync);
   document.addEventListener('webkitfullscreenchange', sync);
   document.addEventListener('ox:marketchange', sync);
+  document.addEventListener('ox:chartpriceview', schedule);
   window.addEventListener('resize', schedule, { passive: true });
   chartEl.addEventListener('pointermove', schedule, { passive: true });
   chartEl.addEventListener('touchmove', schedule, { passive: true });
