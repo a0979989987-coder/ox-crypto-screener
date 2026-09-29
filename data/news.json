@@ -2,6 +2,58 @@
   "schemaVersion": 1,
   "news": [
     {
+      "id": "b50e712b0bf61dbde885",
+      "title": "TiBOOST創新大步計畫徵件延長至10月5日 重量級產業與創投評審陣容同步揭曉",
+      "link": "https://www.twse.com.tw/rwd/zh/news/newsDetail/8a8216d6a0bdcc0001a0ec877a6b009f",
+      "publishedAt": "2026-09-29T09:37:00.000Z",
+      "source": "臺灣證券交易所",
+      "sourceId": "twse",
+      "markets": [
+        "tw"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "impactImportance": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "twse"
+      },
+      "titleZh": "TiBOOST創新大步計畫徵件延長至10月5日 重量級產業與創投評審陣容同步揭曉",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "eea50b3ba85828a98dd7",
+      "title": "訊聯細胞智藥(股)公司於115年9月29日送件申請股票於臺灣創新板(tib-創)上市",
+      "link": "https://www.twse.com.tw/rwd/zh/news/newsDetail/8a8216d6a0bdcc0001a0ec5a996c0098",
+      "publishedAt": "2026-09-29T08:48:00.000Z",
+      "source": "臺灣證券交易所",
+      "sourceId": "twse",
+      "markets": [
+        "tw"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "impactImportance": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "twse"
+      },
+      "titleZh": "訊聯細胞智藥(股)公司於115年9月29日送件申請股票於臺灣創新板(tib-創)上市",
+      "translationStatus": "translated"
+    },
+    {
       "id": "52cc055c5910d68deee7",
       "title": "證交所攜手台經院與資策會推出臺灣創新板(tib-創)半導體及數位雲端產業之洞察報告",
       "link": "https://www.twse.com.tw/rwd/zh/news/newsDetail/8a8216d6a0bdcc0001a0ebd1549a0090",
@@ -1461,32 +1513,6 @@
       "translationStatus": "translated"
     },
     {
-      "id": "03676dec5d3fc835e6a8",
-      "title": "Isabel Schnabel: Macroeconomic, fiscal and financial stability in a shock-prone world",
-      "link": "https://www.ecb.europa.eu//press/key/date/2026/html/ecb.sp260914~0ffd556bc8.en.pdf",
-      "publishedAt": "2026-09-14T09:15:00.000Z",
-      "source": "European Central Bank",
-      "sourceId": "ecb",
-      "markets": [
-        "forex"
-      ],
-      "kind": "news",
-      "verified": "official-source",
-      "impact": {
-        "stars": null,
-        "impactImportance": null,
-        "reason": "尚未評估；標題不足以判定影響力",
-        "ruleVersion": "unassessed-v1",
-        "evidence": null,
-        "sourceConfidence": "official-source",
-        "analysisConfidence": null,
-        "direction": null,
-        "sourceId": "ecb"
-      },
-      "titleZh": "伊莎貝爾・施納貝爾：衝擊頻仍世界中的總體經濟、財政與金融穩定",
-      "translationStatus": "translated"
-    },
-    {
       "id": "a9c89616313e049116ba",
       "title": "上週外資在集中市場賣超51.04億元，賣超仁寶9.82萬張最多，另買超友達22.36萬張最多",
       "link": "https://www.twse.com.tw/rwd/zh/news/newsDetail/8a8216d6a066696301a09e8b9eb000a8",
@@ -1852,32 +1878,6 @@
       "translationStatus": "translated"
     },
     {
-      "id": "07d9a2aa3955caf9ea66",
-      "title": "臺灣證券交易所訂於9月11日召開有價證券上市審議委員會第895次會議，將審議貝爾威勒電子(股)公司之申請股票上市案",
-      "link": "https://www.twse.com.tw/rwd/zh/news/newsDetail/8a8216d6a066696301a084f07542007a",
-      "publishedAt": "2026-09-09T06:51:00.000Z",
-      "source": "臺灣證券交易所",
-      "sourceId": "twse",
-      "markets": [
-        "tw"
-      ],
-      "kind": "news",
-      "verified": "official-source",
-      "impact": {
-        "stars": null,
-        "impactImportance": null,
-        "reason": "尚未評估；標題不足以判定影響力",
-        "ruleVersion": "unassessed-v1",
-        "evidence": null,
-        "sourceConfidence": "official-source",
-        "analysisConfidence": null,
-        "direction": null,
-        "sourceId": "twse"
-      },
-      "titleZh": "臺灣證券交易所訂於9月11日召開有價證券上市審議委員會第895次會議，將審議貝爾威勒電子(股)公司之申請股票上市案",
-      "translationStatus": "translated"
-    },
-    {
       "id": "9d3ada0e5b894d5d968b",
       "title": "Join Us: EF Protocol Reddit AMA - September 16th, 2026",
       "link": "https://blog.ethereum.org/en/2026/09/09/reddit-ama",
@@ -1901,32 +1901,6 @@
         "sourceId": "ethereum"
       },
       "titleZh": "以太坊基金會協定團隊將於 2026 年 9 月 16 日舉辦線上問答",
-      "translationStatus": "translated"
-    },
-    {
-      "id": "b3554861380b3edfc1a9",
-      "title": "SEMICON Taiwan聚焦半導體供應鏈新動能 7家關鍵供應鏈及創新板企業展現產業多元實力",
-      "link": "https://www.twse.com.tw/rwd/zh/news/newsDetail/8a8216d6a066696301a0802b90c60071",
-      "publishedAt": "2026-09-08T08:38:00.000Z",
-      "source": "臺灣證券交易所",
-      "sourceId": "twse",
-      "markets": [
-        "tw"
-      ],
-      "kind": "news",
-      "verified": "official-source",
-      "impact": {
-        "stars": null,
-        "impactImportance": null,
-        "reason": "尚未評估；標題不足以判定影響力",
-        "ruleVersion": "unassessed-v1",
-        "evidence": null,
-        "sourceConfidence": "official-source",
-        "analysisConfidence": null,
-        "direction": null,
-        "sourceId": "twse"
-      },
-      "titleZh": "SEMICON Taiwan聚焦半導體供應鏈新動能 7家關鍵供應鏈及創新板企業展現產業多元實力",
       "translationStatus": "translated"
     },
     {
@@ -4948,7 +4922,7 @@
       }
     }
   ],
-  "generatedAt": "2026-09-29T06:41:20.890Z",
+  "generatedAt": "2026-09-29T12:42:47.980Z",
   "sources": [
     {
       "id": "twse",
