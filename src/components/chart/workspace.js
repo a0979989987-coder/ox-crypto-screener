@@ -1,5 +1,5 @@
 function getChartRightOffset() {
-  return window.matchMedia("(max-width: 720px)").matches ? 12 : 12;
+  return window.matchMedia("(max-width: 720px)").matches ? 5 : 12;
 }
 
 function chartAxisPrecision(price) {
@@ -9,11 +9,6 @@ function chartAxisPrecision(price) {
 
 function formatChartAxisPrice(price) {
   const digits = state.chartAxisDigits ?? 2;
-  if (window.matchMedia("(max-width: 720px)").matches && !document.body.classList.contains("chart-focus")) {
-    const value = Math.abs(Number(price));
-    if (value >= 1e6) return `${Number((price / 1e6).toFixed(2))}M`;
-    if (value >= 1e3) return `${Number((price / 1e3).toFixed(2))}k`;
-  }
   return Number(price).toFixed(digits).replace(/(\.\d*?)0+$/, '$1').replace(/\.$/, '');
 }
 
@@ -247,7 +242,7 @@ function initChart() {
       borderColor: "#343b37",
       timeVisible: true,
       secondsVisible: false,
-      rightOffset: window.matchMedia("(max-width: 720px)").matches ? 12 : 12,
+      rightOffset: getChartRightOffset(),
       barSpacing: window.matchMedia("(max-width: 720px)").matches ? 4.2 : 6,
       minBarSpacing: window.matchMedia("(max-width: 720px)").matches ? 2.0 : 2.5,
       fixRightEdge: false,
@@ -260,7 +255,7 @@ function initChart() {
     handleScroll: { mouseWheel: true, pressedMouseMove: true, horzTouchDrag: true, vertTouchDrag: false }
   });
 
-  // Mobile only: keep price-axis text compact so the chart has more usable candle space.
+  // Mobile only: use a smaller scale font while preserving the full price.
   if (window.matchMedia("(max-width: 720px)").matches) {
     state.chart.applyOptions({
       layout: { fontSize: 9 },
@@ -275,6 +270,9 @@ function initChart() {
     borderVisible: false,
     wickUpColor: "#00b8d4",
     wickDownColor: "#ff3078",
+    // On narrow charts the native last-price badge sets the entire scale width.
+    // A badge over the scale below keeps the full number without an empty column.
+    lastValueVisible: !window.matchMedia("(max-width:720px)").matches,
     priceFormat: { type: "custom", minMove: 0.01, formatter: formatChartAxisPrice },
     autoscaleInfoProvider: chartPriceAutoscale
   });
@@ -287,6 +285,11 @@ function initChart() {
     scaleMargins: { top: 0.8, bottom: 0 }
   });
 
+  const mobilePriceLabel = document.createElement('span');
+  mobilePriceLabel.className = 'chart-mobile-last-price';
+  mobilePriceLabel.setAttribute('aria-hidden', 'true');
+  container.append(mobilePriceLabel);
+
 
   state.chart.timeScale().subscribeVisibleLogicalRangeChange(range => {
     requestAnimationFrame(() => { updatePriceTimer(); updateKeyLevelVisualLabels(); });
@@ -294,8 +297,16 @@ function initChart() {
     if (range.from <= 12) loadMoreHistoricalCandles();
   });
 
+  let mobileScale = window.matchMedia('(max-width:720px)').matches;
   new ResizeObserver(() => {
+    const mobileNow = window.matchMedia('(max-width:720px)').matches;
+    if (mobileNow !== mobileScale) {
+      mobileScale = mobileNow;
+      state.candleSeries.applyOptions({ lastValueVisible: !mobileNow });
+      applyChartFutureSpace();
+    }
     resizeChartToContainer();
+    updatePriceTimer();
   }).observe(container);
   enableMobileChartPriceGestures(container);
 }
@@ -522,7 +533,14 @@ function updatePriceTimer() {
   const mobile = window.matchMedia("(max-width:720px)").matches;
 
   if (mobile) {
-    // 手機價格軸已顯示即時價格，中央不再重複放大型價格卡；倒數固定在安全的右上角。
+    // Draw the full last price without letting its badge widen the native scale.
+    const badge = document.querySelector('#chart .chart-mobile-last-price');
+    const y = state.candleSeries.priceToCoordinate(last.close);
+    if (badge && Number.isFinite(y)) {
+      badge.textContent = formatChartAxisPrice(last.close);
+      badge.style.top = `${Math.max(20, Math.min(document.getElementById('chart').clientHeight - 26, y))}px`;
+      badge.classList.toggle('is-up', last.close >= last.open);
+    }
     const shortTime = h > 0 ? `${h}h ${String(m).padStart(2,"0")}m` : `${Math.max(1, m)}m`;
     if (timerEl.textContent !== shortTime) timerEl.innerHTML = `<small>${shortTime}</small>`;
     if (timerEl.style.top !== "7px") timerEl.style.top = "7px";
