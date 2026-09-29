@@ -354,12 +354,20 @@ document.addEventListener("click", e => {
   }
 
   if (e.target.closest("#btn-chart-fullscreen")) {
-    if (window.matchMedia("(max-width: 900px)").matches) {
+    if (document.body.classList.contains("chart-focus")) {
+      setChartFocus(false);
+    } else if (window.matchMedia("(max-width: 900px)").matches) {
       setChartFocus(!document.body.classList.contains("chart-focus"));
     } else {
       const box = document.querySelector(".chart-box");
-      if (!document.fullscreenElement) box.requestFullscreen?.();
-      else document.exitFullscreen?.();
+      if (document.fullscreenElement) document.exitFullscreen?.();
+      else {
+        try {
+          const request = box.requestFullscreen?.();
+          if (request?.catch) request.catch(() => setChartFocus(true));
+          else if (!request) setChartFocus(true);
+        } catch (_) { setChartFocus(true); }
+      }
     }
     return;
   }
