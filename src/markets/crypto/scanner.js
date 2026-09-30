@@ -369,9 +369,9 @@ function renderCurrentTab() {
     const previousTier=idx>0?(list[idx-1].displayTier||list[idx-1].tier||'t3'):null;
     const startsTier=displayTier!==previousTier;
     // Follow real group boundaries even while a scan or custom filter has fewer results.
-    const separator = combinedRadar && idx > 0 && startsTier
-      ? '<div class="radar-tier-separator" role="separator" aria-label="雷達分級分隔"></div>' : '';
-    return `${separator}<div class="coin-card ${startsTier?'is-tier-start ':''}${c.symbol === state.symbol ? 'selected' : ''}" data-symbol="${c.symbol}" data-tier="${displayTier}" role="button" tabindex="0">
+    const nextTier=list[idx+1] && (list[idx+1].displayTier||list[idx+1].tier||'t3');
+    const endsTier=combinedRadar && nextTier && nextTier!==displayTier;
+    return `<div class="coin-card ${startsTier?'is-tier-start ':''}${endsTier?'is-tier-end ':''}${c.symbol === state.symbol ? 'selected' : ''}" data-symbol="${c.symbol}" data-tier="${displayTier}" role="button" tabindex="0">
       ${startsTier?`<small class="coin-tier-heading">${displayTier.toUpperCase()}</small>`:''}
       <div class="coin-top">
         <span class="coin-title">
