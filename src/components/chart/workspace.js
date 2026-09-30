@@ -411,6 +411,7 @@ function initChart() {
     // On narrow charts the native last-price badge sets the entire scale width.
     // A badge over the scale below keeps the full number without an empty column.
     lastValueVisible: false,
+    priceLineVisible: false,
     priceFormat: { type: "custom", minMove: 0.01, formatter: formatChartAxisPrice },
     autoscaleInfoProvider: chartPriceAutoscale
   });
@@ -453,7 +454,14 @@ function initChart() {
   compactAxis.addEventListener('pointerup',stopAxisDrag);
   compactAxis.addEventListener('pointercancel',stopAxisDrag);
   compactAxis.addEventListener('lostpointercapture',stopAxisDrag);
-  container.append(mobilePriceLabel);
+  // The line and badge share one transform/layer, so they cannot drift apart.
+  const currentPrice=document.createElement('div');
+  currentPrice.className='chart-current-price';
+  currentPrice.hidden=true;
+  const currentPriceLine=document.createElement('i');
+  currentPriceLine.className='chart-current-price-line';
+  currentPrice.append(currentPriceLine,mobilePriceLabel);
+  container.append(currentPrice);
   const cursorPrice = document.createElement('span');
   cursorPrice.className = 'chart-cursor-price';
   cursorPrice.hidden = true;
@@ -539,7 +547,7 @@ async function loadSymbolCandles(isInitial = true) {
     document.querySelector('#chart .chart-price-grid')?.replaceChildren();
     const cursor=document.querySelector('#chart .chart-cursor-price');
     if(cursor)cursor.hidden=true;
-    document.querySelector('#chart .chart-mobile-last-price')?.setAttribute('hidden','');
+    document.querySelector('#chart .chart-current-price')?.setAttribute('hidden','');
     document.dispatchEvent(new Event('ox:chartdata'));
   }
 
@@ -765,8 +773,12 @@ function updatePriceTimer() {
   // Full last price uses an overlay; native crosshair/last-value labels otherwise
   // reserve width for invisible decimals on every tick and leave a blank column.
   const badge = document.querySelector('#chart .chart-mobile-last-price');
+  const currentPrice=badge?.parentElement;
   const lastY = state.candleSeries.priceToCoordinate(last.close);
-  if (badge && Number.isFinite(lastY)) {
+  const plotHeight=document.getElementById('chart').clientHeight-state.chart.timeScale().height();
+  // Never pin only the badge to an edge: both represent the actual price coordinate.
+  if(currentPrice)currentPrice.hidden=!Number.isFinite(lastY)||lastY<0||lastY>plotHeight;
+  if (badge && currentPrice && Number.isFinite(lastY)) {
     badge.removeAttribute("hidden");
     let priceText=badge.querySelector('strong'),timeText=badge.querySelector('small');
     if(!priceText){priceText=document.createElement('strong');badge.append(priceText);}
@@ -778,9 +790,9 @@ function updatePriceTimer() {
     }else timeText?.remove();
     const label=`價格 ${price}，收線倒數 ${countdown}`;
     if(badge.getAttribute('aria-label')!==label)badge.setAttribute('aria-label',label);
-    const y=Math.max(22, Math.min(document.getElementById('chart').clientHeight - state.chart.timeScale().height() - 22, lastY));
-    const transform=`translate3d(0px, ${y}px, 0px) translateY(-50%)`;
-    if(badge.style.transform!==transform)badge.style.transform=transform;
+    const transform=`translate3d(0px, ${lastY}px, 0px)`;
+    if(currentPrice.style.transform!==transform)currentPrice.style.transform=transform;
+    currentPrice.classList.toggle('is-up', last.close >= last.open);
     badge.classList.toggle('is-up', last.close >= last.open);
   }
   if (mobile) {
