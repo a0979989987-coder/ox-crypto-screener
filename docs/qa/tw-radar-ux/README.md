@@ -34,6 +34,7 @@ No changes to APIs/providers, ranking model, timeframe aggregation or candidate 
 - ResizeObserver limits scanner to actual chart height; list scrolls independently.
 - Radar shell reserves bottom dock/safe-area space.
 - Destruction releases gesture/drawing subscriptions, chart, requests, timers and ResizeObserver.
+- Same-origin TW requests retain the browser's existing preview authentication session. Cross-origin requests still omit credentials; no API/provider or access protection changes. This fixes the protected Vercel preview returning its login page instead of market JSON.
 
 ## Verification
 
