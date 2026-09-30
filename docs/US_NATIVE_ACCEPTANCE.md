@@ -2,7 +2,7 @@
 
 ## 結論：完整公開成品尚未完成
 
-目前的原生介面已用真實日線 OHLCV 驗證；這不代表免費公開分鐘行情、
+目前的原生介面已用真實日線與私人分鐘 OHLCV 驗證；這不代表免費公開分鐘行情、
 300–500 檔全池掃描或實體 iPhone 驗收已完成。正式環境的資料來源設定
 沒有改動，沒有購買資料方案、繞過額度、改寫授權旗標，或發布私人資料。
 
@@ -49,9 +49,31 @@
 
 ## 仍需解決的資料條件
 
+### 新來源實測：Finance Query（私人驗證）
+
+- 官方提供無金鑰的免費 hosted API，預設來源為 Yahoo Finance。
+- `scripts/collect-us-private-intraday.mjs --private-validation` 依序收集 20 檔，
+  每檔 1,254 根日線與 1,950 根正常交易時段的一分鐘 OHLCV，40 次正常請求
+  均成功，沒有 429。這不能推論額度無限、盤中延遲已確認或 300–500 檔容量已通過。
+- 回傳的每檔第 1,951 列是收盤時間的終端報價；按 NY session 範圍排除，
+  不當成開於 16:00 的正常分鐘 K 棒，也不補造缺失 K 棒。
+- Chromium 在 390／430px 原生圖表已通過 TSM 日線／一分鐘切換；確認畫面
+  最後一根的時間與收盤價與來源完全一致，使用實際 400 根分鐘 K 線。
+  手勢、畫線、429 保留、20 檔四種分析工具及 15 個首頁候選也通過，無 app errors。
+- 本次分鐘資料尚未完成 WebKit／實體手機驗證。型態與首頁仍是日線分析，
+  不能描述成盤中全池掃描。
+- JSON 保留在 repository 外，快照有 privateValidation 標記；不進正式服務。
+  快取檔沿用原始取得時間，不把本地重讀算成新行情。
+- 官方文件明示全球 token bucket／429，且提醒 Yahoo 服務條件；
+  hosted API 免費與程式 MIT license 都沒有證明取得公開分發行情的授權。
+
+https://verdenroz.github.io/finance-query/
+https://verdenroz.github.io/finance-query/server/api/openapi/
+
 | 已查證選項 | 目前限制 |
 | --- | --- |
 | FinMind | Keyless 日線實測成功；分鐘資料是 backer／sponsor 能力。服務存取不等於對外散布授權。 |
+| Finance Query | 無金鑰 hosted 日線／分鐘實測成功；全球 token bucket 限流，Yahoo 原始資料對外展示權與延遲尚未确认。 |
 | Twelve Data | 已有 adapter；免費方案有 credit 限制，公開分發須依帳號權限／add-on，不能只修改程式旗標。 |
 | Alpaca | 可用免費 IEX／延遲歷史機制，但需帳號金鑰及用途權限；目前沒有可用設定。 |
 | Tiingo | 免費方案是內部使用、50 requests/hour、1000/day，不是免費公開分發方案。 |

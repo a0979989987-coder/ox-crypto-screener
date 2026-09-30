@@ -1,5 +1,5 @@
-// Verify real daily OHLCV with the OX renderer on loopback only. Network API
-// interception below does not enable public data display or intraday support.
+// Verify real source OHLCV with the OX renderer on loopback only.
+// Interception below never enables production publication.
 const assert = require('node:assert/strict');
 const { chromium, webkit } = require('playwright');
 const { readFileSync, mkdirSync, writeFileSync } = require('node:fs');
@@ -8,7 +8,7 @@ const { server, preparePage, selectMarket, selectView, testBase } = require('./e
 
 (async () => {
   assert.equal(new URL(testBase).hostname, '127.0.0.1');
-  const { snapshot, histories } = JSON.parse(readFileSync(process.env.US_PRIVATE_INPUT || '/tmp/ox-us-private-eod/evaluation.json'));
+  const { snapshot, histories, intraday = {} } = JSON.parse(readFileSync(process.env.US_PRIVATE_INPUT || '/tmp/ox-us-private-eod/evaluation.json'));
   assert.equal(snapshot.privateValidation, true);
   const output = process.env.US_PRIVATE_OUTPUT || '/tmp/ox-us-native-private';
   mkdirSync(output, { recursive: true });
@@ -45,19 +45,20 @@ const { server, preparePage, selectMarket, selectView, testBase } = require('./e
           return route.fulfill({ status: 429, json: { ok: false, error: { message: 'private retention test' } } });
         let data;
         if (endpoint === 'capabilities') data = { source: snapshot.source, chartMode: 'native',
-          privateValidation: true, feed: '真實日 K · 僅私人驗證', delaySeconds: 86400, pollMs: 300000,
-          volumeScope: 'FinMind USStockPrice 日線', extendedHours: false };
+          privateValidation: true, feed: snapshot.quotes[0].feed, delaySeconds: snapshot.quotes[0].delaySeconds, pollMs: 300000,
+          volumeScope: snapshot.quotes[0].volumeScope, extendedHours: false };
         else if (endpoint === 'snapshot') data = snapshot;
         else if (endpoint === 'quote-v2') data = { quote: snapshot.quotes.find(quote => quote.symbol === symbol) };
         else if (endpoint === 'chart-v2') {
-          if (url.searchParams.get('interval') !== '1D')
-            return route.fulfill({ status: 400, json: { ok: false, error: { message: '此私人資料僅有日 K，不以日 K 冒充盤中 K 線' } } });
+          const interval = url.searchParams.get('interval');
+          if (interval !== '1D' && !(interval === '1m' && intraday[symbol]))
+            return route.fulfill({ status: 400, json: { ok: false, error: { message: '此私人資料不支援請求的級別' } } });
           const to = url.searchParams.get('to'), limit = Number(url.searchParams.get('limit')) || 400;
-          const available = (histories[symbol] || []).filter(bar => !to || bar.date <= to.slice(0, 10));
-          data = { symbol, interval: '1D', bars: available.slice(-limit), source: snapshot.source,
-            feed: '真實日 K · 僅私人驗證', adjustment: snapshot.adjustment,
-            delaySeconds: 86400, receivedAt: snapshot.quotes.find(quote => quote.symbol === symbol)?.receivedAt,
-            session: 'regular', volumeScope: 'FinMind USStockPrice 日線', historyExhausted: available.length < limit };
+          const available = ((interval === '1m' ? intraday : histories)[symbol] || []).filter(bar => !to || bar.time < Date.parse(to) / 1000);
+          data = { symbol, interval, bars: available.slice(-limit), source: snapshot.source,
+            feed: snapshot.quotes[0].feed, adjustment: snapshot.adjustment,
+            delaySeconds: snapshot.quotes[0].delaySeconds, receivedAt: snapshot.quotes.find(quote => quote.symbol === symbol)?.receivedAt,
+            session: 'regular', volumeScope: snapshot.quotes[0].volumeScope, historyExhausted: available.length < limit };
         } else return route.fulfill({ status: 404, json: {} });
         return route.fulfill({ json: { ok: true, data } });
       });
@@ -131,9 +132,23 @@ const { server, preparePage, selectMarket, selectView, testBase } = require('./e
       const stage = await page.locator('.us2-chart-stage').boundingBox();
       await page.mouse.move(stage.x + 45, stage.y + 80); await page.mouse.down();
       await page.mouse.move(stage.x + 130, stage.y + 130); await page.mouse.up();
-      assert.ok(await page.evaluate(() => Object.keys(JSON.parse(localStorage.getItem('ox-us-v2-finmind-private-eod-chart-drawings-v1') || '{}')).length) > 0);
+      assert.ok(await page.evaluate(source => Object.keys(JSON.parse(localStorage.getItem(`ox-us-v2-${source}-chart-drawings-v1`) || '{}')).length, snapshot.source) > 0);
       await page.locator('.us2-chart-root [data-action="none"]').click();
       await page.locator('[data-exit-focus]').click();
+      const minuteValidation = [];
+      if (intraday.TSM) {
+        await page.locator('.us2-chart-root [data-tf="1m"]').click();
+        await page.waitForFunction(time => window.__privateNativeSeries?.data().at(-1)?.time === time, intraday.TSM.at(-1).time);
+        await page.waitForTimeout(500);
+        const rendered = await page.evaluate(() => window.__privateNativeSeries.data());
+        assert.equal(rendered.at(-1).time, intraday.TSM.at(-1).time);
+        assert.equal(rendered.at(-1).close, intraday.TSM.at(-1).close);
+        assert.ok(rendered.length >= 300, 'Minute chart uses the actual intraday candles');
+        minuteValidation.push({ symbol: 'TSM', bars: rendered.length, lastTime: rendered.at(-1).time });
+        await page.screenshot({ path: resolve(output, `native-minute-${engine}-${width}.png`) });
+        await page.locator('.us2-chart-root [data-tf="1D"]').click();
+        await page.waitForFunction(time => window.__privateNativeSeries?.data().at(-1)?.time === time, histories.TSM.at(-1).time);
+      }
       outage = true;
       await page.locator('[data-indicator-open]').click();
       await page.locator('[data-retry]').click();
@@ -164,7 +179,7 @@ const { server, preparePage, selectMarket, selectView, testBase } = require('./e
       const homeCandidates = await page.locator('.ox-home-t1 .ox-home-t1-row').count();
       assert.ok(homeCandidates > 0, 'The native home uses real long/short OX tier candidates');
       assert.ok((await page.locator('.ox-home-t1-head').first().textContent()).includes('上漲 · T1/T2/T3'));
-      assert.ok((await page.locator('.us2-display-source').textContent()).includes('FinMind'));
+      assert.ok((await page.locator('.us2-display-source').textContent()).includes(snapshot.source === 'finmind-private-eod' ? 'FinMind' : snapshot.source));
       await page.screenshot({ path: resolve(output, `native-home-${engine}-${width}.png`) });
       const homePriceFont = await page.locator('.us2-price-label strong').evaluate(node => parseFloat(getComputedStyle(node).fontSize));
       assert.ok(homePriceFont <= 10, 'Home chart price badge stays compact');
@@ -181,7 +196,7 @@ const { server, preparePage, selectMarket, selectView, testBase } = require('./e
       assert.equal(await page.locator('[data-market-choice="forex"]').count(), 0);
       assert.deepEqual(audit.pageErrors, []);
       report.push({ width, engine, crypto, native, collapsed, gestures, homeCandidates, toolCounts, source: snapshot.source,
-        privateValidation: true, intervalsValidated: ['1D'], symbols: snapshot.analyses.length, errors: audit.pageErrors });
+        privateValidation: true, intervalsValidated: minuteValidation.length ? ['1D', '1m'] : ['1D'], minuteValidation, symbols: snapshot.analyses.length, errors: audit.pageErrors });
       await context.close();
     }
     writeFileSync(resolve(output, `report-${engine}.json`), JSON.stringify(report, null, 2));
