@@ -1,6 +1,6 @@
 import { getTWApiBase } from './api.js';
 const KEY = 'ox-tw-research-v1';
-let value, pending;
+let value, pending, lastSuccess = 0;
 export function savedResearch() {
   if (value) return value;
   try { const saved = JSON.parse(localStorage.getItem(KEY)); if (Array.isArray(saved?.stocks)) value = saved; } catch {}
@@ -15,7 +15,10 @@ function accept(data) {
   return value;
 }
 export async function loadResearch({ force = false, onCached } = {}) {
+  savedResearch();
+  if (value) onCached?.(value);
   if (pending) return pending;
+  if (!force && value && Date.now() - lastSuccess < 300000) return { data: value, error: null };
   pending = (async () => {
     if (!force) {
       try {
@@ -27,7 +30,8 @@ export async function loadResearch({ force = false, onCached } = {}) {
       const response = await fetch(`${getTWApiBase()}/v1/tw/research`, { signal: AbortSignal.timeout(30000) });
       if (!response.ok) throw new Error('官方資料暫時無法更新');
       const payload = await response.json();
-      return { data: accept(payload.data), error: null };
+      const data = accept(payload.data); lastSuccess = Date.now();
+      return { data, error: null };
     } catch (error) { return { data: value, error: error.message }; }
   })().finally(() => { pending = null; });
   return pending;

@@ -1,4 +1,4 @@
-import { stopResearch } from "./research-page.js";
+import { stopResearch, preloadResearch } from "./research-page.js";
 import {
   TW_MODULE_CONFIG
 } from "./config.js";
@@ -20,6 +20,8 @@ import {
   renderTWRadar
 } from "./radar.js";
 import { cancelTWLookup } from "./lookup.js";
+import { stopTWStrength, preloadTWStrength } from "./strength.js";
+import { createPreloader } from "./preload.js";
 
 
 /*
@@ -52,7 +54,7 @@ import { cancelTWLookup } from "./lookup.js";
  * - Enter / leave Taiwan market.
  * - Manage Home / Indicator / Radar.
  * - Start Taiwan market refresh.
- * - Cancel TW requests when leaving.
+ * - Keep shared TW data loading while another market is visible.
  * - Prevent stale requests repainting another market.
  * - Restore shared market host.
  *
@@ -78,9 +80,6 @@ let activeView =
 let isActive =
   false;
 
-
-let requestController =
-  null;
 
 const TW_RADAR_CACHE_KEY = "ox-tw-official-radar-session-v2";
 const TW_RADAR_CACHE_MS = 15 * 60 * 1000;
@@ -357,6 +356,7 @@ function render(
   }
 
 
+  if (activeView !== "strength") stopTWStrength();
   if (activeView === "radar") stopResearch();
   prepareSharedHostForView(
     activeView
@@ -378,146 +378,31 @@ function render(
 /* Request lifecycle                                                         */
 /* ========================================================================== */
 
-function cancelRequest() {
+const ensureMarketData = createPreloader(async () => {
+  const controller = new AbortController();
+  const state = await refreshTWMarketState({
+    signal: controller.signal,
+    force: true,
+    onRadarReady(state) {
+      cacheRadarState(state);
+      if (isActive && activeView === "radar") render(state);
+    }
+  });
+  cacheRadarState(state);
+  if (isActive) render(state);
+  return state;
+}, { usable: state => ["ready", "partial"].includes(state?.status) && !!state?.data?.radar?.length });
 
-  if (
-    !requestController
-  ) {
-    return;
-  }
-
-
-  try {
-
-    requestController
-      .abort();
-
-  } catch {
-
-    /*
-     * Cancellation must never
-     * block market switching.
-     */
-  }
-
-
-  requestController =
-    null;
+function loadMarketData(options = {}) {
+  const pending = ensureMarketData(options);
+  if (isActive) render(createTWMarketState());
+  return pending;
 }
 
-
-/*
- * Load the complete Taiwan market state.
- *
- *
- * Important:
- *
- * The renderer first gets the current
- * cached/loading state.
- *
- * Then it gets repainted only when:
- *
- * - TW is still active
- * - this is still the latest request
- *
- *
- * This prevents:
- *
- * TW request
- *   ↓
- * user switches to Crypto
- *   ↓
- * old TW request finishes
- *   ↓
- * TW UI paints over Crypto
- *
- * from ever happening.
- */
-async function loadMarketData(
-  {
-    force =
-      false
-  } = {}
-) {
-
-  cancelRequest();
-
-
-  const controller =
-    new AbortController();
-
-
-  requestController =
-    controller;
-
-
-  const pending =
-    refreshTWMarketState({
-
-      signal:
-        controller.signal,
-
-      force,
-
-      onRadarReady(state) {
-        if (!isActive || requestController !== controller) return;
-        cacheRadarState(state);
-        if (activeView === "radar") render(state);
-      }
-
-    });
-
-
-  /*
-   * refreshTWMarketState()
-   * immediately changes the engine
-   * to loading / unconfigured.
-   *
-   * Render that state first.
-   */
-  if (
-    isActive
-  ) {
-
-    render(
-      createTWMarketState()
-    );
-  }
-
-
-  const state =
-    await pending;
-
-  if (!controller.signal.aborted) cacheRadarState(state);
-
-
-  /*
-   * Only latest active request
-   * may repaint the UI.
-   */
-  if (
-    isActive &&
-    requestController ===
-      controller
-  ) {
-
-    render(
-      state
-    );
-  }
-
-
-  if (
-    requestController ===
-    controller
-  ) {
-
-    requestController =
-      null;
-  }
-
-
-  return state;
+function preload() {
+  // UI modules and the bundled official snapshot can load while Crypto is visible.
+  preloadTWStrength().catch(() => {});
+  return Promise.allSettled([loadMarketData(), preloadResearch()]);
 }
 
 
@@ -545,6 +430,8 @@ export const twModule =
      * Enter Taiwan Market                                              *
      * ================================================================ *
      */
+    preload,
+
     async activate(
       {
         view =
@@ -618,7 +505,7 @@ export const twModule =
         false;
 
 
-      cancelRequest();
+      stopTWStrength();
       cancelTWLookup();
       stopResearch();
 

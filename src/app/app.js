@@ -10,7 +10,7 @@ export function bootOXModules(modules = []) {
 }
 
 const router = bootOXModules([cryptoModule, usModule, twModule, forexModule]);
-let currentView = "home";
+let currentView = document.body.dataset.view || "home";
 let renderToken = 0;
 
 function scheduleMarketView() {
@@ -51,3 +51,9 @@ document.addEventListener("ox:marketchange", event => {
 });
 
 window.OXModules = Object.freeze({ router, forex: forexModule });
+
+// Preload before the user opens Taiwan; idle scheduling leaves initial UI paint free.
+const preloadTaiwan = () => { if (!document.hidden) twModule.preload(); };
+if ('requestIdleCallback' in window) window.requestIdleCallback(preloadTaiwan, { timeout: 1200 });
+else setTimeout(preloadTaiwan, 300);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) preloadTaiwan(); });

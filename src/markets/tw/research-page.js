@@ -111,8 +111,16 @@ async function refresh(s, force) {
   loading = false; lastFetch = Date.now(); data = result.data; error = result.error;
   if (session && current(session)) paint(session);
 }
-export function renderResearch(view, state) {
-  const root = mountResearch(view); if (!root) return null;
+export async function preloadResearch() {
+  const result = await loadResearch({ onCached(snapshot) { data = snapshot; if (session && current(session)) paint(session); } });
+  data = result.data; error = result.error; lastFetch = Date.now();
+  if (session && current(session)) paint(session);
+  return result;
+}
+export function renderResearch(view, state, { host } = {}) {
+  const outer = mountResearch(view); if (!outer) return null;
+  const root = host || outer;
+  data = savedResearch() || data;
   if (session?.view === view && session.root === root && root.querySelector(`[data-twx-view="${view}"]`)) { session.state = state; if (!document.querySelector('.twx-dialog') && document.activeElement?.tagName !== 'INPUT') paint(session); loadOutlook(session); return root; }
   stopResearch();
   const s = { view, root, state, controller: new AbortController() }; session = s; paint(s); loadOutlook(s);
@@ -122,7 +130,7 @@ export function renderResearch(view, state) {
     if (button.dataset.watch) { event.stopPropagation(); watchClick(button); return; }
     if (button.dataset.stock) { showStock(data?.stocks.find(stock => stock.symbol === button.dataset.stock)); return; }
     if (button.dataset.sector) { const sector = selectSectors(data, prefs).find(x => x.name === button.dataset.sector) || selectSectors(data).find(x => x.name === button.dataset.sector); if (sector) showSector(sector); return; }
-    if (button.dataset.go) { document.querySelector(`.dock-btn[data-view-target="${button.dataset.go}"]`)?.click(); return; }
+    if (button.dataset.go) { if(button.dataset.go==='strength') document.dispatchEvent(new CustomEvent('ox:tw-tool',{detail:{tool:'rotation'}})); document.querySelector(`.dock-btn[data-view-target="${button.dataset.go}"]`)?.click(); return; }
     if (button.dataset.vote) {
       submitOutlook(s, button.dataset.vote); return;
     }
