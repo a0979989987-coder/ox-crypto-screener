@@ -53,7 +53,7 @@ const DEFAULT_TIMEOUT_MS =
 
 
 const MAX_MONTHS =
-  24;
+  36;
 
 
 const REQUEST_CONCURRENCY =
@@ -709,6 +709,10 @@ function resolveRange(
         break;
 
 
+      case "3Y":
+        start = subtractMonths(end, 36);
+        break;
+
       default:
 
         start =
@@ -793,7 +797,7 @@ function buildMonths(
   ) {
 
     throw new TWCandleProviderError(
-      "Current Taiwan historical candle provider supports up to 24 months per request.",
+      "Current Taiwan historical candle provider supports up to 36 months per request.",
       {
         code:
           "TW_CANDLES_RANGE_TOO_LARGE",

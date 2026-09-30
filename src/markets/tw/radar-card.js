@@ -5,6 +5,7 @@
 // repeatRiskDays, startDate, endDate, batchMinutes, condition, margin, short,
 // dayTrade, fullDelivery }. No exchange rule is implemented here.
 export const TW_RADAR_MODES = Object.freeze([
+  { id: "chart", label: "圖表雷達" },
   { id: "risk", label: "風險股" },
   { id: "disposal", label: "處置中" },
   { id: "release", label: "即將出關" },

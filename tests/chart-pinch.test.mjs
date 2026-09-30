@@ -5,17 +5,17 @@ import { runInNewContext } from 'node:vm';
 
 function harness(){
   const source=readFileSync(new URL('../src/components/chart/workspace.js',import.meta.url),'utf8');
-  const fn=source.slice(source.indexOf('function enableMobileChartPriceGestures('),source.indexOf('\nfunction applyChartFutureSpace('));
+  const fn=source.slice(source.indexOf('window.OXChartGestures ='),source.indexOf('\nfunction applyChartFutureSpace('));
   const listeners=new Map(),prices=[],table={rows:[{},{}]};
   let logical={from:0,to:100};
   const ts={getVisibleLogicalRange:()=>({...logical}),setVisibleLogicalRange:r=>{logical={...r};},width:()=>300,height:()=>26};
   const state={chartPriceViewport:{minValue:-10,maxValue:10},chartPriceViewportMargins:{above:0,below:0},chart:{timeScale:()=>ts,clearCrosshairPosition(){}}};
-  const container={clientWidth:300,clientHeight:426,querySelector:()=>table,getBoundingClientRect:()=>({left:0,top:0}),addEventListener(type,fn){listeners.set(type,fn);}};
+  const container={clientWidth:300,clientHeight:426,querySelector:selector=>selector.includes('table')?table:null,getBoundingClientRect:()=>({left:0,top:0}),addEventListener(type,fn,options){listeners.set(type,fn);options?.signal?.addEventListener('abort',()=>listeners.delete(type));}};
   const target=area=>({closest:selector=>selector==='.chart-price-axis'?(area==='price'?{}:null):selector==='td'?{cellIndex:1,parentElement:table.rows[area==='time'?1:0],closest:()=>table}:null});
-  const bind=runInNewContext(`${fn}\nenableMobileChartPriceGestures`,{state,document:{querySelector:()=>null},window:{matchMedia:()=>({matches:true})},performance:{now:()=>1000},setTimeout:()=>1,clearTimeout(){},getChartVisiblePriceRange:()=>({minValue:0,maxValue:10}),setChartVisiblePriceRange:r=>prices.push(r),refreshChartPriceViewport(){}});
-  bind(container);
+  const bind=runInNewContext(`${fn}\nenableMobileChartPriceGestures`,{AbortController,formatChartAxisPrice:String,state,document:{querySelector:()=>null},window:{matchMedia:()=>({matches:true})},performance:{now:()=>1000},setTimeout:()=>1,clearTimeout(){},getChartVisiblePriceRange:()=>({minValue:0,maxValue:10}),setChartVisiblePriceRange:r=>prices.push(r),refreshChartPriceViewport(){}});
+  const instance=bind(container);
   const emit=(type,points,area='plot')=>listeners.get(type)({target:target(area),touches:points.map(([clientX,clientY])=>({clientX,clientY})),preventDefault(){},stopPropagation(){}});
-  return {state,prices,emit,logical:()=>logical};
+  return {state,prices,emit,logical:()=>logical,instance,listeners};
 }
 
 test('pinch changes visible candle count and restores price autoscale instead of stretching the price range',()=>{
@@ -37,4 +37,8 @@ test('releasing fingers separately cannot shift prices, and the next axis drag s
   assert.equal(h.prices.length,0);assert.equal(h.state.chartPriceViewport,null);
   h.emit('touchstart',[[280,100]],'price');h.emit('touchmove',[[280,180]],'price');h.emit('touchend',[]);
   assert.equal(h.prices.length,1,'one-finger price-axis ratio control is preserved');
+});
+
+test('shared gesture instance releases touch listeners when Taiwan radar leaves the page',()=>{
+ const h=harness();assert.ok(h.listeners.size>0);h.instance.destroy();assert.equal(h.listeners.size,0);
 });

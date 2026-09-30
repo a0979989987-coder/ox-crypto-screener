@@ -1,12 +1,11 @@
 import { renderResearch, stopResearch } from './research-page.js';
 import { mountResearch } from './research-ui.js';
 import { createToolsRail } from '../../components/strength/tools-rail.js';
-import { openTWStockDetail } from './radar-candles.js';
 import { createTWMarketState } from './engine.js';
 let selected = 'patterns', session = null, modules;
 export function preloadTWStrength() {
   return modules ??= Promise.all([
-    import('../crypto/patterns/view.js?v=patterns-tw-20260930'),
+    import('../crypto/patterns/view.js?v=tw-all-20260930'),
     import('./patterns/source.js'), import('./patterns/index-cache.js')
   ]).catch(error => { modules = null; throw error; });
 }
@@ -26,13 +25,8 @@ async function show(s) {
     if (session !== s || generation !== s.generation || selected !== 'patterns') return;
     s.host.textContent = '';
     s.instance = mountPatternSearch(s.host, { source, cache, onOpenRadar(symbol) {
+      document.dispatchEvent(new CustomEvent('ox:tw-chart-symbol',{detail:{symbol}}));
       document.querySelector('.dock-btn[data-view-target="radar"]')?.click();
-      requestAnimationFrame(() => requestAnimationFrame(() => {
-        if (document.body.dataset.market !== 'tw' || document.body.dataset.view !== 'radar') return;
-        const root = document.getElementById('market-unavailable-card');
-        const row = createTWMarketState()?.data?.radar?.find(r => r.symbol === symbol);
-        if (root && row) openTWStockDetail(root, row);
-      }));
     } });
   } catch (error) {
     if (session !== s || generation !== s.generation) return;

@@ -1,3 +1,4 @@
+import { mountTWChartRadar } from './chart-radar.js';
 import { TW_RADAR_MODES, normalizeTWStockCard, rowsForTWMode, renderTWStockCard } from "./radar-card.js";
 import { observeTWMiniCandles, resetTWMiniCandles, openTWStockDetail } from "./radar-candles.js";
 
@@ -112,6 +113,9 @@ let sortKey =
   "oxScore";
 
 let activeMode = "risk";
+let chartRadar=null,latestRadarState=null,pendingChartSymbol=null;
+export function stopTWRadar(){chartRadar?.destroy();chartRadar=null;pageObserver?.disconnect();modeResizeObserver?.disconnect();resetTWMiniCandles();}
+if(typeof document!=='undefined')document.addEventListener('ox:tw-chart-symbol',event=>{if(!/^\d{4}$/.test(event.detail?.symbol))return;activeMode='chart';pendingChartSymbol=event.detail.symbol;if(document.body.dataset.market==='tw'&&document.body.dataset.view==='radar')renderTWRadar(latestRadarState);});
 let pageObserver = null;
 let modeResizeObserver = null;
 
@@ -2977,6 +2981,15 @@ function refreshRadarDataUI(
   });
   positionModeIndicator(root);
   root.querySelectorAll(".twr-classic-only").forEach(section => section.hidden = activeMode !== "classic");
+  const chartHost=root.querySelector('#twr-chart-radar');
+  if(chartHost)chartHost.hidden=activeMode!=='chart';
+  if(activeMode==='chart'){
+    pageObserver?.disconnect();resetTWMiniCandles();if(resultsPanel)resultsPanel.hidden=true;if(marketScan)marketScan.hidden=true;
+    if(!chartRadar)chartRadar=mountTWChartRadar(chartHost,{state,watchlist});else chartRadar.update(state);
+    if(pendingChartSymbol){chartRadar.openSymbol(pendingChartSymbol);pendingChartSymbol=null;}
+    return;
+  }
+  if(chartRadar){chartRadar.destroy();chartRadar=null;}
   const label = root.querySelector("#twr-mode-label");
   if (label) label.textContent = TW_RADAR_MODES.find(mode => mode.id === activeMode)?.label || "";
 
@@ -3221,6 +3234,9 @@ export function renderTWRadar(
   }
 
 
+  latestRadarState=state;
+  if(activeMode==='chart'&&chartRadar&&root.querySelector('#twr-chart-radar')){chartRadar.update(state);if(pendingChartSymbol){chartRadar.openSymbol(pendingChartSymbol);pendingChartSymbol=null;}return {view:'radar',status:state?.status};}
+  stopTWRadar();
   ensureStyles();
 
 
@@ -3262,6 +3278,7 @@ export function renderTWRadar(
 
 
       <nav class="twr-mode-viewport" aria-label="台股雷達模式"><div class="twr-mode-rail" role="tablist"><span class="twr-mode-indicator" aria-hidden="true"></span>${TW_RADAR_MODES.map(mode => `<button type="button" role="tab" data-twr-mode="${mode.id}" aria-selected="${mode.id === activeMode}">${mode.label}</button>`).join("")}</div></nav>
+      <section id="twr-chart-radar" hidden></section>
 
 
       <!-- ============================================================ -->
@@ -4231,7 +4248,7 @@ export function renderTWRadar(
         if (modeButton) {
           activeMode = modeButton.dataset.twrMode;
           modeButton.scrollIntoView({ block: "nearest", inline: "center", behavior: "smooth" });
-          refresh();
+          renderTWRadar(latestRadarState||state);
           if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
             root.querySelector('#twr-list')?.animate([
               { opacity: .25, transform: 'translateY(4px)' },

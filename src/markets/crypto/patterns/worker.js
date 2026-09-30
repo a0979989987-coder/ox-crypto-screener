@@ -5,6 +5,9 @@ self.onmessage=({data})=>{
     if(data.type==='index'){
       const context=prepareCandles(data.candles);index.set(data.key,context);
       self.postMessage({id:data.id,result:data.matches||classifyPrepared(context)});
+    }else if(data.type==='prepare'){
+      for(const entry of data.entries)index.set(entry.key,prepareCandles(entry.candles));
+      self.postMessage({id:data.id,result:true});
     }else if(data.type==='search'){
       const results=[];
       for(const key of data.keys){const context=index.get(key);if(!context)continue;const match=matchPrepared(context,data.query);if(match)results.push({key,match});}

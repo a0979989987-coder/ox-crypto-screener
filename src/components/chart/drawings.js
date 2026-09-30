@@ -1,16 +1,15 @@
-/* Crypto chart drawings. The existing chart and candle feed remain the source of truth. */
-(() => {
-  'use strict';
-  const box = document.querySelector('#view-radar .chart-box');
-  const chartEl = document.getElementById('chart');
+/* Shared chart drawings. Each market supplies its own chart state and storage scope. */
+window.OXChartDrawings = function mountChartDrawings({box,chartEl,state,market='crypto',isExpanded}={}) {
   if (!box || !chartEl) return;
-  const drawingKey = 'ox-chart-drawings-v1';
-  const prefsKey = 'ox-chart-drawing-preferences-v1';
+  const drawingKey = market==='crypto'?'ox-chart-drawings-v1':`ox-${market}-chart-drawings-v1`;
+  const prefsKey = market==='crypto'?'ox-chart-drawing-preferences-v1':`ox-${market}-chart-drawing-preferences-v1`;
   const read = (key, fallback) => { try { return JSON.parse(localStorage.getItem(key)) || fallback; } catch (_) { return fallback; } };
   const drawings = read(drawingKey, {});
   const prefs = Object.assign({ color: '#f3f1e9', width: 2, fill: 12, magnet: false, fib: [0, .236, .382, .5, .618, .786, 1], x: null, y: null, collapsed: false }, read(prefsKey, {}));
   const save = () => { try { localStorage.setItem(drawingKey, JSON.stringify(drawings)); } catch (_) {} };
   const savePrefs = () => { try { localStorage.setItem(prefsKey, JSON.stringify(prefs)); } catch (_) {} };
+  const life=new AbortController();let bindTimer=0;
+  const listen=(target,type,handler,options={})=>target.addEventListener(type,handler,{...(typeof options==='boolean'?{capture:options}:options),signal:life.signal});
   const toolbar = document.createElement('div');
   toolbar.className = 'chart-drawing-tools';
   toolbar.setAttribute('role', 'toolbar');
@@ -52,7 +51,7 @@
   layer.setAttribute('aria-label', '圖表畫線區');
   chartEl.append(layer);
   let tool = null, selected = null, panel = null, preview = null, gesture = null, raf = 0, width = 0, height = 0;
-  const expanded = () => document.body.classList.contains('chart-focus') || document.fullscreenElement === box || document.webkitFullscreenElement === box;
+  const expanded = isExpanded || (() => document.body.classList.contains('chart-focus') || document.fullscreenElement === box || document.webkitFullscreenElement === box);
   const scope = () => `${state.symbol}:${state.period}`;
   const current = () => Array.isArray(drawings[scope()]) ? drawings[scope()] : [];
   const schedule = () => { if (!raf) raf = requestAnimationFrame(draw); };
@@ -188,7 +187,7 @@
     if (document.activeElement!==input) input.value=levelsOf(settings).join(', ');
     schedule();
   }
-  toolbar.addEventListener('click', event=>{
+  listen(toolbar,'click', event=>{
     const button=event.target.closest('[data-draw],[data-action]');
     if (!button||!expanded()) return;
     const action=button.dataset.action||button.dataset.draw;
@@ -203,7 +202,7 @@
     else {tool=action;selected=null;panel=null;}
     sync();
   });
-  toolbar.addEventListener('input',event=>{
+  listen(toolbar,'input',event=>{
     const name=event.target.dataset.setting;
     if (!name||name==='fib') return;
     const value=name==='color'?event.target.value:Number(event.target.value);
@@ -211,7 +210,7 @@
     else {prefs[name]=value;savePrefs();}
     sync();
   });
-  toolbar.addEventListener('change',event=>{
+  listen(toolbar,'change',event=>{
     if (event.target.dataset.setting!=='fib') return;
     const values=event.target.value.split(/[,，\s]+/).map(Number).filter(n=>Number.isFinite(n)&&n>=-5&&n<=10).slice(0,30);
     if (!values.length) {sync();return;}
@@ -220,19 +219,19 @@
     sync();
   });
   let railDrag=null;
-  toolbar.querySelector('.drawing-grip').addEventListener('pointerdown',event=>{
+  listen(toolbar.querySelector('.drawing-grip'),'pointerdown',event=>{
     if (!expanded()) return;
     const rect=toolbar.getBoundingClientRect(),parent=box.getBoundingClientRect();
     railDrag={id:event.pointerId,dx:event.clientX-rect.left,dy:event.clientY-rect.top,parent};
     event.target.setPointerCapture(event.pointerId);event.preventDefault();
   });
-  toolbar.querySelector('.drawing-grip').addEventListener('pointermove',event=>{
+  listen(toolbar.querySelector('.drawing-grip'),'pointermove',event=>{
     if (!railDrag||railDrag.id!==event.pointerId) return;
     prefs.x=Math.max(0,Math.min(railDrag.parent.width-toolbar.offsetWidth-4,event.clientX-railDrag.parent.left-railDrag.dx));
     prefs.y=Math.max(42,Math.min(railDrag.parent.height-toolbar.offsetHeight-4,event.clientY-railDrag.parent.top-railDrag.dy));
     positionRail();
   });
-  for (const name of ['pointerup','pointercancel']) toolbar.querySelector('.drawing-grip').addEventListener(name,()=>{if(railDrag){railDrag=null;savePrefs();}});
+  for (const name of ['pointerup','pointercancel']) listen(toolbar.querySelector('.drawing-grip'),name,()=>{if(railDrag){railDrag=null;savePrefs();}});
   function positionRail() {
     if (Number.isFinite(prefs.x)&&Number.isFinite(prefs.y)) {
       const x=Math.max(0,Math.min(box.clientWidth-toolbar.offsetWidth-4,prefs.x));
@@ -243,14 +242,14 @@
       toolbar.classList.toggle('near-bottom',y>box.clientHeight-440);
     }
   }
-  document.addEventListener('pointerdown',event=>{if(panel&&!toolbar.contains(event.target)){panel=null;sync();}});
-  document.addEventListener('keydown',event=>{
+  listen(document,'pointerdown',event=>{if(panel&&!toolbar.contains(event.target)){panel=null;sync();}});
+  listen(document,'keydown',event=>{
     if (!expanded()||['INPUT','TEXTAREA'].includes(document.activeElement?.tagName)) return;
     if (event.key.toLowerCase()==='m'&&!event.altKey&&!event.ctrlKey&&!event.metaKey) {prefs.magnet=!prefs.magnet;savePrefs();sync();event.preventDefault();}
     if (event.key==='Escape') {panel=null;selected=null;tool=null;sync();}
     if ((event.key==='Delete'||event.key==='Backspace')&&selected) {const i=current().indexOf(selected);if(i>=0){current().splice(i,1);save();}selected=null;sync();event.preventDefault();}
   });
-  layer.addEventListener('pointerdown',event=>{
+  listen(layer,'pointerdown',event=>{
     if (!tool||!expanded()||gesture||event.button>0) return;
     const rect=layer.getBoundingClientRect(),x=event.clientX-rect.left,y=event.clientY-rect.top;
     if (tool==='select') {
@@ -267,7 +266,7 @@
     gesture={id:event.pointerId,handle:'draw'};preview={type:tool,a,b:{...a},color:prefs.color,width:prefs.width,fill:prefs.fill,levels:tool==='fib'?[...prefs.fib]:undefined};
     layer.setPointerCapture(event.pointerId);schedule();event.preventDefault();
   });
-  layer.addEventListener('pointermove',event=>{
+  listen(layer,'pointermove',event=>{
     if(!gesture||event.pointerId!==gesture.id)return;
     const rect=layer.getBoundingClientRect(),x=event.clientX-rect.left,y=event.clientY-rect.top;
     if(gesture.handle==='draw'){preview.b=pointAt(x,y,event)||preview.b;schedule();return;}
@@ -291,17 +290,19 @@
     } else if(gesture.handle!=='draw') save();
     gesture=null;preview=null;schedule();
   }
-  layer.addEventListener('pointerup',finish);layer.addEventListener('pointercancel',finish);
-  new MutationObserver(sync).observe(document.body,{attributes:true,attributeFilter:['class']});
-  document.addEventListener('fullscreenchange',sync);
-  document.addEventListener('webkitfullscreenchange',sync);
-  document.addEventListener('ox:marketchange',sync);
-  document.addEventListener('ox:chartpriceview',schedule);
-  window.addEventListener('resize',()=>{positionRail();schedule();},{passive:true});
-  chartEl.addEventListener('pointermove',schedule,{passive:true});
-  chartEl.addEventListener('touchmove',schedule,{passive:true});
-  chartEl.addEventListener('wheel',schedule,{passive:true});
-  new ResizeObserver(schedule).observe(chartEl);
-  const bind=()=>{if(!state.chart){setTimeout(bind,50);return;}state.chart.timeScale().subscribeVisibleLogicalRangeChange(schedule);document.addEventListener('ox:chartdata',schedule);positionRail();sync();};
+  listen(layer,'pointerup',finish);listen(layer,'pointercancel',finish);
+  const mutation=new MutationObserver(sync);mutation.observe(document.body,{attributes:true,attributeFilter:['class']});
+  listen(document,'fullscreenchange',sync);
+  listen(document,'webkitfullscreenchange',sync);
+  listen(document,'ox:marketchange',sync);
+  listen(document,'ox:chartpriceview',schedule);
+  listen(window,'resize',()=>{positionRail();schedule();},{passive:true});
+  listen(chartEl,'pointermove',schedule,{passive:true});
+  listen(chartEl,'touchmove',schedule,{passive:true});
+  listen(chartEl,'wheel',schedule,{passive:true});
+  const resize=new ResizeObserver(schedule);resize.observe(chartEl);
+  const bind=()=>{if(life.signal.aborted)return;if(!state.chart){bindTimer=setTimeout(bind,50);return;}state.chart.timeScale().subscribeVisibleLogicalRangeChange(schedule);listen(document,'ox:chartdata',schedule);positionRail();sync();};
   bind();
-})();
+  return {sync,destroy(){life.abort();clearTimeout(bindTimer);cancelAnimationFrame(raf);mutation.disconnect();resize.disconnect();state.chart?.timeScale().unsubscribeVisibleLogicalRangeChange?.(schedule);toolbar.remove();layer.remove();}};
+};
+window.OXChartDrawings({box:document.querySelector('#view-radar .chart-box'),chartEl:document.getElementById('chart'),state});

@@ -1,9 +1,9 @@
-import { dataDate } from './source.js';
-export const INDEX_VERSION = 1;
+import { dataDate, TIMEFRAMES } from './source.js';
+export const INDEX_VERSION = 2;
 const memory = new Map(); let opening;
 export function entryCurrent(entry) {
   const d = entry?.data, date = dataDate();
-  return entry?.version === INDEX_VERSION && ['1D', '1W'].includes(d?.frame) && d.candles?.length >= 35 && (date ? d.dataDate === date : Date.now() - d.serverTime < 86400000);
+  return entry?.version === INDEX_VERSION && Object.hasOwn(TIMEFRAMES,d?.frame||'') && d.candles?.length >= 35 && (date ? d.dataDate === date : Date.now() - d.serverTime < 86400000);
 }
 function database() {
   if (typeof indexedDB === 'undefined') return Promise.resolve(null);

@@ -84,7 +84,9 @@ function setChartVisiblePriceRange(range) {
   refreshChartPriceViewport();
 }
 
-function enableMobileChartPriceGestures(container) {
+window.OXChartGestures = function({container,state,getRange,setRange,refreshRange,isDrawing,formatPrice=formatChartAxisPrice}) {
+  const life=new AbortController();
+  const listen=(type,handler,options={})=>container.addEventListener(type,handler,{...(typeof options==='boolean'?{capture:options}:options),signal:life.signal});
   let gesture = null,inspectTimer=null,lastAxisTap=0,waitForRelease=false;
   const zone = target => {
     if (target.closest('.chart-price-axis')) return 'price';
@@ -110,7 +112,7 @@ function enableMobileChartPriceGestures(container) {
       state.chart.setCrosshairPosition(price,time,state.candleSeries);
       // Programmatic LWC crosshairs do not emit subscribeCrosshairMove.
       const label=container.querySelector('.chart-cursor-price');
-      if(label){label.hidden=false;label.textContent=formatChartAxisPrice(price);label.style.top=`${y}px`;}
+      if(label){label.hidden=false;label.textContent=formatPrice(price);label.style.top=`${y}px`;}
     }
   };
   const start = event => {
@@ -124,8 +126,8 @@ function enableMobileChartPriceGestures(container) {
     // A finger may land on the compact price labels while the other is in the
     // plot. Two fingers always adjust candle density, never the price axis.
     const area = event.touches.length===2?'plot':zone(event.target);
-    if (!area || document.querySelector('#view-radar .chart-drawing-layer.is-editing')) return;
-    const range = getChartVisiblePriceRange();
+    if (!area || isDrawing?.()) return;
+    const range = getRange();
     const logical = state.chart.timeScale().getVisibleLogicalRange();
     if (!range || !logical) return;
     const point = mid(event.touches), rect = container.getBoundingClientRect();
@@ -135,13 +137,13 @@ function enableMobileChartPriceGestures(container) {
     if(gesture.count===2){
       clearInspection();
       state.chartPriceViewport=null;state.chartPriceViewportMargins=null;
-      refreshChartPriceViewport();
+      refreshRange();
     }
     if(area==='plot'&&gesture.count===1)inspectTimer=setTimeout(()=>{if(gesture){gesture.inspect=true;inspect({x:gesture.x,y:gesture.y});}},450);
     event.preventDefault(); event.stopPropagation();
   };
-  container.addEventListener('touchstart', start, { passive:false, capture:true });
-  container.addEventListener('touchmove', event => {
+  listen('touchstart', start, { passive:false, capture:true });
+  listen('touchmove', event => {
     if (!gesture || !event.touches.length) return;
     if (event.touches.length!==gesture.count) { start(event); return; }
     const point=mid(event.touches), dx=point.x-gesture.x, dy=point.y-gesture.y;
@@ -165,7 +167,7 @@ function enableMobileChartPriceGestures(container) {
     } else if (gesture.area==='price') {
       const factor=Math.exp(-dy/Math.max(80,gesture.height)*3);
       const center=(gesture.range.maxValue+gesture.range.minValue)/2;
-      setChartVisiblePriceRange({minValue:center-span/factor/2,maxValue:center+span/factor/2});
+      setRange({minValue:center-span/factor/2,maxValue:center+span/factor/2});
     } else {
       const bars=gesture.logical.to-gesture.logical.from;
       const move=-dx/gesture.width*bars;
@@ -173,7 +175,7 @@ function enableMobileChartPriceGestures(container) {
       if(gesture.vertical||Math.abs(dy)>Math.max(6,Math.abs(dx)*1.1)){
         gesture.vertical=true;
         const shift=dy/gesture.height*span;
-        setChartVisiblePriceRange({minValue:gesture.range.minValue+shift,maxValue:gesture.range.maxValue+shift});
+        setRange({minValue:gesture.range.minValue+shift,maxValue:gesture.range.maxValue+shift});
       }
     }
     event.preventDefault(); event.stopPropagation();
@@ -188,16 +190,19 @@ function enableMobileChartPriceGestures(container) {
         if(gesture.area==='plot'&&!gesture.inspect)inspect({x:gesture.x,y:gesture.y});
         if(gesture.area==='price'){
           const now=performance.now();
-          if(lastAxisTap&&now-lastAxisTap<350){state.chartPriceViewport=null;refreshChartPriceViewport();lastAxisTap=0;}else lastAxisTap=now;
+          if(lastAxisTap&&now-lastAxisTap<350){state.chartPriceViewport=null;refreshRange();lastAxisTap=0;}else lastAxisTap=now;
         }
       }
     }
     gesture=null;if(event.touches.length)start(event);
   };
-  container.addEventListener('touchend',end,{passive:false,capture:true});
-  container.addEventListener('touchcancel',()=>{clearTimeout(inspectTimer);gesture=null;waitForRelease=false;},{passive:true,capture:true});
-  container.addEventListener('dblclick',event=>{if(zone(event.target)==='price'){state.chartPriceViewport=null;refreshChartPriceViewport();}},true);
-}
+  listen('touchend',end,{passive:false,capture:true});
+  listen('touchcancel',()=>{clearTimeout(inspectTimer);gesture=null;waitForRelease=false;},{passive:true,capture:true});
+  listen('dblclick',event=>{if(zone(event.target)==='price'){state.chartPriceViewport=null;refreshRange();}},true);
+  return {destroy(){life.abort();clearTimeout(inspectTimer);gesture=null;}};
+};
+
+function enableMobileChartPriceGestures(container) {return window.OXChartGestures({container,state,getRange:getChartVisiblePriceRange,setRange:setChartVisiblePriceRange,refreshRange:refreshChartPriceViewport,isDrawing:()=>document.querySelector('#view-radar .chart-drawing-layer.is-editing')});}
 
 function applyChartFutureSpace(snapToLatest = false) {
   if (!state.chart) return;

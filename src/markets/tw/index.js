@@ -17,11 +17,12 @@ import {
 } from "./strength.js";
 
 import {
-  renderTWRadar
+  renderTWRadar, stopTWRadar
 } from "./radar.js";
 import { cancelTWLookup } from "./lookup.js";
 import { stopTWStrength, preloadTWStrength } from "./strength.js";
 import { createPreloader } from "./preload.js";
+import { preloadBundle } from "./patterns/bundle.js";
 
 
 /*
@@ -312,7 +313,7 @@ const renderers =
 
 
     radar:
-      renderTWRadar
+      renderTWRadar, stopTWRadar
 
   });
 
@@ -356,6 +357,7 @@ function render(
   }
 
 
+  if (activeView !== "radar") stopTWRadar();
   if (activeView !== "strength") stopTWStrength();
   if (activeView === "radar") stopResearch();
   prepareSharedHostForView(
@@ -402,7 +404,7 @@ function loadMarketData(options = {}) {
 function preload() {
   // UI modules and the bundled official snapshot can load while Crypto is visible.
   preloadTWStrength().catch(() => {});
-  return Promise.allSettled([loadMarketData(), preloadResearch()]);
+  return Promise.allSettled([loadMarketData(), preloadResearch(), preloadBundle()]);
 }
 
 
@@ -506,6 +508,7 @@ export const twModule =
 
 
       stopTWStrength();
+      stopTWRadar();
       cancelTWLookup();
       stopResearch();
 

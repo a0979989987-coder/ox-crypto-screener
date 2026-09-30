@@ -51,9 +51,10 @@ export function mountPatternSearch(host,options={}){
   const scheduleBoard=()=>{if(!boardRAF)boardRAF=requestAnimationFrame(drawBoard);};const resize=new ResizeObserver(scheduleBoard);resize.observe(board);
   function resetWorker(){worker?.terminate();worker=null;for(const j of jobs.values())j.reject(new DOMException('Aborted','AbortError'));jobs.clear();fallback.clear();hydrated.clear();}
   function compute(message){
-    if(!worker){try{worker=new Worker(new URL('./worker.js?v=patterns5d-20260929',import.meta.url),{type:'module'});worker.onmessage=({data})=>{const job=jobs.get(data.id);jobs.delete(data.id);if(job)data.error?job.reject(Error(data.error)):job.resolve(data.result);};worker.onerror=()=>{for(const j of jobs.values())j.reject(Error('型態計算失敗'));jobs.clear();worker?.terminate();worker=null;hydrated.clear();};}catch{}}
+    if(!worker){try{worker=new Worker(new URL('./worker.js?v=tw-all-20260930',import.meta.url),{type:'module'});worker.onmessage=({data})=>{const job=jobs.get(data.id);jobs.delete(data.id);if(job)data.error?job.reject(Error(data.error)):job.resolve(data.result);};worker.onerror=()=>{for(const j of jobs.values())j.reject(Error('型態計算失敗'));jobs.clear();worker?.terminate();worker=null;hydrated.clear();};}catch{}}
     if(!worker)return new Promise(resolve=>setTimeout(()=>{
       if(message.type==='index'){const context=prepareCandles(message.candles);fallback.set(message.key,context);resolve(message.matches||classifyPrepared(context));}
+      else if(message.type==='prepare'){for(const entry of message.entries)fallback.set(entry.key,prepareCandles(entry.candles));resolve(true);}
       else resolve(message.keys.flatMap(key=>{const context=fallback.get(key),match=context&&matchPrepared(context,message.query);return match?[{key,match}]:[];}));
     },0));
     return new Promise((resolve,reject)=>{const id=++workerId;jobs.set(id,{resolve,reject});worker.postMessage({...message,id});});
@@ -97,6 +98,8 @@ export function mountPatternSearch(host,options={}){
     if(searchRunning){searchPending=true;return;}
     searchRunning=true;searchPending=false;
     try{
+      const missing=list.filter(e=>!hydrated.has(e.key));
+      for(let i=0;i<missing.length;i+=100){if(run!==queryVersion||disposed)return;const batch=missing.slice(i,i+100);await compute({type:'prepare',entries:batch.map(e=>({key:e.key,candles:e.data.candles}))});batch.forEach(e=>hydrated.add(e.key));}
       const result=await compute({type:'search',keys:list.map(e=>e.key),query:target});
       if(run!==queryVersion||disposed)return;
       const byKey=new Map(list.map(e=>[e.key,e]));setRows(result.filter(r=>byKey.has(r.key)).map(r=>({entry:byKey.get(r.key),match:r.match})));
@@ -127,7 +130,7 @@ export function mountPatternSearch(host,options={}){
   function stop(){version++;controller?.abort();controller=null;busy=false;clearTimeout(paintTimer);paintTimer=0;clearTimeout(scanFinishTimer);q('.px-board').classList.remove('is-scanning');q('.px-refresh-pill').classList.remove('is-scanning','is-complete');}
   async function hydrate(entry){
     const old=entries.get(entry.key),same=old?.data.serverTime===entry.data.serverTime&&old?.data.candles.length===entry.data.candles.length;
-    if(!hydrated.has(entry.key)||!same){await compute({type:'index',key:entry.key,candles:entry.data.candles,matches:entry.matches});hydrated.add(entry.key);}
+    if(!entry.data.preclassified&&(!hydrated.has(entry.key)||!same)){await compute({type:'index',key:entry.key,candles:entry.data.candles,matches:entry.matches});hydrated.add(entry.key);}
     entries.set(entry.key,entry);primeCandleCache(entry.data);
   }
   async function scan(){
@@ -142,8 +145,8 @@ export function mountPatternSearch(host,options={}){
       if(run!==version)return;const pool=universe;progress.total=pool.tickers.length*frames.length;progress.coinsTotal=pool.tickers.length;updateStatus();
       await scanUniverse(pool,frames,{signal,onSeries:async data=>{
         if(run!==version)return;const key=data.symbol+':'+data.frame,existing=entries.get(key),same=existing&&entryCurrent(existing,data.serverTime)&&existing.data.candles.at(-1).time===data.candles.at(-1).time&&(!data.candles.at(-1).provisional||existing.data.serverTime===data.serverTime);
-        const matches=same&&hydrated.has(key)?existing.matches:await compute({type:'index',key,candles:data.candles,matches:same?existing.matches:null});
-        if(run!==version)return;hydrated.add(key);const entry={key,data,matches,version:INDEX_VERSION};entries.set(key,entry);saveIndex(data,matches);queueRender();
+        const readyMatches=data.preclassified||(same?existing.matches:null);const matches=data.preclassified||(readyMatches&&hydrated.has(key)&&same?readyMatches:await compute({type:'index',key,candles:data.candles,matches:readyMatches}));
+        if(run!==version)return;if(!data.preclassified)hydrated.add(key);const entry={key,data,matches,version:INDEX_VERSION};entries.set(key,entry);saveIndex(data,matches);queueRender();
       },onProgress:p=>{if(run!==version)return;progress=p;updateStatus();}});
       if(run!==version)return;lastScan=Date.now();
       const keys=activeEntries().map(e=>e.key);worker?.postMessage({type:'retain',keys});for(const key of hydrated)if(!keys.includes(key))hydrated.delete(key);
