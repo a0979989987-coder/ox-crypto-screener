@@ -1,6 +1,6 @@
-import { icon, openDialog, closeDialog, positionTimeframe } from "./ui.js?v=20260930-us-free1";
-import { INTERVALS } from "./calendar.js?v=20260930-us-free1";
-import { chartWidgetSettings, widgetSymbol } from "./widget-config.js?v=20260930-us-free1";
+import { icon, openDialog, closeDialog, positionTimeframe } from "./ui.js?v=20260930-us-compact2";
+import { INTERVALS } from "./calendar.js?v=20260930-us-compact2";
+import { chartWidgetSettings, widgetSymbol } from "./widget-config.js?v=20260930-us-compact2";
 
 // Keep mounted provider frames across OX page switches. No polling or DOM rebuild
 // occurs when the provider updates prices. Bounded cache is cleared on page unload.
@@ -11,6 +11,14 @@ export class USWidgetChart {
     root.classList.add("us2-widget-chart");
     root.innerHTML = `<div class="chart-controls us2-chart-toolbar"><div class="ctrl-group chart-timeframe-group"><div class="chart-timeframe-strip us2-timeframes" aria-label="圖表時間級別"><span class="tf-glass-indicator" aria-hidden="true"></span>${INTERVALS.map(tf=>`<button class="btn-tf ${tf===interval?'active':''}" data-tf="${tf}" aria-pressed="${tf===interval}">${tf}</button>`).join('')}</div></div><div class="ctrl-group chart-tool-actions"><button class="chart-tool-icon" data-widget-info aria-label="圖表工具與資料來源">${icon('settings')}</button>${onCollapse?`<button class="chart-tool-icon us2-list-toggle" data-collapse aria-label="收起／展開雷達清單">${icon('collapse')}</button>`:''}<button class="chart-tool-icon us2-expand-control" data-expand aria-label="展開圖表">${icon('expand')}</button></div></div><button class="us2-focus-exit chart-tool-icon" data-exit-focus aria-label="收合圖表" hidden>${icon('expand')}</button><div class="us2-widget-stage"></div><dialog class="chart-tools-dialog us2-widget-info" aria-label="圖表工具與資料來源"><header><b>圖表工具與資料來源</b><button data-close-widget-info aria-label="關閉">${icon('close')}</button></header><p>指標、繪圖、成交量與時段，使用圖表內工具。美股為 Cboe One 延遲來源；行情時間以圖表標示為準，成交量不保證全市場口徑。</p><p>免費圖表不提供原始 OHLCV 給 OX；OX 經典與型態畫板不會讀取或假造它的資料。</p><p>畫線由 TradingView 管理；免費圖表不保證切頁或重新整理後保留畫線。</p><a href="https://www.tradingview.com/widget-docs/" target="_blank" rel="noopener">TradingView 官方圖表說明 ↗</a></dialog>`;
     this.stage=root.querySelector('.us2-widget-stage');
+    this.tools=false;
+    const toolsButton=document.createElement('button');
+    toolsButton.type='button';toolsButton.dataset.widgetTools='';
+    toolsButton.textContent='開啟指標／繪圖工具';toolsButton.setAttribute('aria-pressed','false');
+    const toolsNote=document.createElement('p');
+    toolsNote.textContent='切換工具模式會重新載入圖表；縮放與畫線不保證保留。';
+    root.querySelector('.us2-widget-info header').after(toolsButton);
+    toolsButton.after(toolsNote);
     this.events=new AbortController();
     root.addEventListener('click', event=>{
       const button=event.target.closest('button');
@@ -18,6 +26,12 @@ export class USWidgetChart {
       if(button.dataset.tf)this.change({interval:button.dataset.tf});
       if(button.hasAttribute('data-widget-info'))openDialog(root.querySelector('dialog'),button);
       if(button.hasAttribute('data-close-widget-info'))closeDialog(root.querySelector('dialog'));
+      if(button.hasAttribute('data-widget-tools')) {
+        this.tools=!this.tools;
+        button.setAttribute('aria-pressed',String(this.tools));
+        button.textContent=this.tools?'收起指標／繪圖工具':'開啟指標／繪圖工具';
+        closeDialog(root.querySelector('dialog'));this.mount();
+      }
       if(button.hasAttribute('data-collapse'))onCollapse?.();
       if(button.hasAttribute('data-expand')||button.hasAttribute('data-exit-focus'))this.expand();
     },{signal:this.events.signal});
@@ -27,8 +41,8 @@ export class USWidgetChart {
   mount(force=false) {
     if(this.disposed)return;
     this.release();
-    const key=`${widgetSymbol(this.symbol,this.asset)}:${this.interval}`;
-    const settings=chartWidgetSettings(this.symbol,this.interval,this.asset);
+    const key=`${widgetSymbol(this.symbol,this.asset)}:${this.interval}:${this.tools?'tools':'compact'}`;
+    const settings=chartWidgetSettings(this.symbol,this.interval,this.asset,{tools:this.tools});
     if(!settings){
       this.stage.replaceChildren();
       const note=document.createElement('p');note.className='us2-empty';note.textContent='無法確認此股票的美股交易所，請選擇另一檔股票。';

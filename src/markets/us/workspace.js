@@ -12,18 +12,18 @@ import {
   toolNames,
   patterns,
   sectorETF,
-} from "./view-utils.js?v=20260930-us-free1";
-import { toolsViews } from "./tools.js?v=20260930-us-free1";
-import { newsViews } from "./news.js?v=20260930-us-free1";
-import { USAdapter, fetchJSON } from "./provider.js?v=20260930-us-free1";
-import { USChart } from "./chart.js?v=20260930-us-free1";
-import { USWidgetChart } from "./widget-chart.js?v=20260930-us-free1";
-import { FREE_US_DISPLAY } from "./widget-config.js?v=20260930-us-free1";
-import { searchDirectory, quoteStatus } from "./model.js?v=20260930-us-free1";
-import { sessionAt, nyParts } from "./calendar.js?v=20260930-us-free1";
+} from "./view-utils.js?v=20260930-us-compact2";
+import { toolsViews } from "./tools.js?v=20260930-us-compact2";
+import { newsViews } from "./news.js?v=20260930-us-compact2";
+import { USAdapter, fetchJSON } from "./provider.js?v=20260930-us-compact2";
+import { USChart } from "./chart.js?v=20260930-us-compact2";
+import { USWidgetChart } from "./widget-chart.js?v=20260930-us-compact2";
+import { FREE_US_DISPLAY } from "./widget-config.js?v=20260930-us-compact2";
+import { searchDirectory, quoteStatus } from "./model.js?v=20260930-us-compact2";
+import { sessionAt, nyParts } from "./calendar.js?v=20260930-us-compact2";
 
-import { tierResults } from "./analysis.js?v=20260930-us-free1";
-import { icon, openDialog, closeDialog } from "./ui.js?v=20260930-us-free1";
+import { tierResults } from "./analysis.js?v=20260930-us-compact2";
+import { icon, openDialog, closeDialog } from "./ui.js?v=20260930-us-compact2";
 export class USWorkspace {
   constructor() {
     const storedPrefs = read(prefsKey, {});
@@ -547,16 +547,35 @@ export class USWorkspace {
     }
     this.updateDataBrief();
     const picker = main.querySelector(".us2-symbol-picker");
-    if (picker) picker.innerHTML = `${e(symbol)} <span>▾</span>`;
+    if (picker) picker.textContent = symbol; // shared Crypto selector supplies its own chevron
     const value = main.querySelector(".us2-quote-value"), change = main.querySelector(".us2-quote-change"), volume = main.querySelector(".us2-quote-volume");
     const widget=this.cap.chartMode === "widget";
     main.classList.toggle('us2-free-display',widget);
+    const ticker=main.querySelector('.us2-ticker');
+    if(ticker) {
+      const card=ticker.querySelector('.metric-card');
+      card.classList.toggle('market-line-card',!widget);
+      card.classList.toggle('us2-widget-summary',widget);
+      const identityCell=ticker.querySelector('.market-line-price');
+      let name=identityCell.querySelector('.us2-ticker-name');
+      if(!name){name=document.createElement('small');name.className='us2-ticker-name';identityCell.append(name);}
+      name.hidden=!widget;name.textContent=item?.alias||item?.name||symbol;name.title=name.textContent;
+      if(widget)identityCell.append(ticker.querySelector('[data-watch]'));
+      else ticker.querySelector('.us2-volume-cell').append(ticker.querySelector('[data-watch]'));
+      let reserved=card.querySelector('[data-native-summary]');
+      if(widget) {
+        if(!reserved){reserved=document.createElement('div');reserved.dataset.nativeSummary='';reserved.hidden=true;card.append(reserved);}
+        for(const field of card.querySelectorAll('.us2-volume-cell,.radar-analysis-cell'))reserved.append(field);
+      } else if(reserved) {
+        card.append(...reserved.children);reserved.remove();
+      }
+    }
     if (value) {
       value.textContent = widget ? "行情見圖表" : price(q?.price);
       value.hidden=widget;
       const homePrice=value.closest('.ox-home-price');if(homePrice)homePrice.hidden=widget;
     }
-    if (change) {change.textContent = widget ? "依圖表標示" : pct(q?.changePct);change.className = `us2-quote-change ${widget?'':tone(q?.changePct)}`;}
+    if (change) {change.hidden=widget;change.textContent = widget ? "依圖表標示" : pct(q?.changePct);change.className = `us2-quote-change ${widget?'':tone(q?.changePct)}`;}
     if (volume) {volume.textContent = widget ? "見圖表" : q?.volume == null ? "—" : compact(q.volume); volume.title = q?.volumeScope || "成交量口徑未確認";}
     const identity = main.querySelector(".us2-selected-identity");
     if (identity)

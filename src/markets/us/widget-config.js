@@ -33,13 +33,16 @@ export const WIDGET_INTERVALS = Object.freeze({
   "1H": "60", "4H": "240", "1D": "D", "1W": "W", "1M": "M",
 });
 
-export function chartWidgetSettings(symbol, interval, asset) {
+export function chartWidgetSettings(symbol, interval, asset, {tools = false} = {}) {
   const qualified = widgetSymbol(symbol, asset);
   if (!qualified || !WIDGET_INTERVALS[interval]) return null;
   return {
     autosize: true, symbol: qualified, interval: WIDGET_INTERVALS[interval],
     timezone: "Asia/Taipei", theme: "dark", style: "1", locale: "zh_TW",
-    allow_symbol_change: false, hide_side_toolbar: false, hide_volume: false,
+    // The OX toolbar owns the normal view. Provider analysis tools are opt-in;
+    // never crop/mask the iframe or its required branding.
+    allow_symbol_change: false, hide_side_toolbar: !tools, hide_top_toolbar: !tools,
+    hide_legend: false, hide_volume: false,
     backgroundColor: "rgba(17, 20, 23, 1)", gridColor: "rgba(255, 255, 255, 0.04)",
     save_image: false, calendar: false, support_host: "https://www.tradingview.com",
     overrides: {
