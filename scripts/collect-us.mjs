@@ -10,6 +10,8 @@ import {
 import { analyzeStock } from "../src/markets/us/analysis.js";
 import { aggregate4H } from "../src/markets/us/aggregate.js";
 import { nyParts } from "../src/markets/us/calendar.js";
+if (process.env.US_DATA_PROVIDER !== "twelve-data")
+  throw Error("免費嵌入圖表不提供掃描 API；舊行情收集器已停用，避免消耗額度。");
 const root = new URL("../", import.meta.url),
   arg = (name) => {
     const i = process.argv.indexOf(name);

@@ -55,6 +55,9 @@ async function verify(browser, engine, base, scenario, width) {
   }, { corrupt: scenario === 'corrupt-storage' });
   await page.route('**/*', async route => {
     const url = new URL(route.request().url());
+    if (url.href.includes('tradingview.com/external-embedding/')) return route.abort();
+    if (url.pathname.endsWith('/v1/us/capabilities')) return route.fulfill({json:{ok:true,data:{externalDisplayConfirmed:false,source:'twelve-data',extendedHours:false}}});
+    if (url.pathname.endsWith('/v1/us/snapshot')) return route.fulfill({json:{ok:true,data:{schemaVersion:2,quotes:[],analyses:[],counts:{quoted:0,scanned:0},error:'行情展示授權未確認；公開掃描尚未開通。'}}});
     if (blocked && url.pathname === '/src/markets/us/config.js') return route.abort();
     if (url.origin === base) {
       if (url.pathname === '/' && scenario === 'late-module') {

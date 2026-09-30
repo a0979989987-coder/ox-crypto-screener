@@ -8,13 +8,13 @@ import {
   toolNames,
   patterns,
   sectorETF,
-} from "./view-utils.js?v=20260930-us-data4";
-import { USBubbles, bindPatternBoard } from "./visuals.js?v=20260930-us-data4";
-import { tierResults, matchPath } from "./analysis.js?v=20260930-us-data4";
+} from "./view-utils.js?v=20260930-us-free1";
+import { USBubbles, bindPatternBoard } from "./visuals.js?v=20260930-us-free1";
+import { tierResults, matchPath } from "./analysis.js?v=20260930-us-free1";
 import { createToolsRail } from "../../components/strength/tools-rail.js";
 import { candleChart } from "../crypto/patterns/charts.js";
 import { createToolChart } from "../crypto/analytics/tools-charts.js";
-import { icon, openDialog, closeDialog } from "./ui.js?v=20260930-us-data4";
+import { icon, openDialog, closeDialog } from "./ui.js?v=20260930-us-free1";
 export const toolsViews = {
   renderTools(main) {
     main.innerHTML = '<div class="us2-tools-nav"></div><div class="us2-tool-content"></div>';
@@ -185,6 +185,10 @@ export const toolsViews = {
       (x) => x.interval === this.state.patternInterval,
     );
     if(!rows.length){
+      if(this.cap.chartMode === 'widget'){
+        this.patternPhase='unavailable';status.textContent='免費圖表不提供原始 K 線，OX 型態掃描目前無資料。';
+        pill.classList.remove('is-scanning');this.patternRows=[];this.paintPatternResults([]);return;
+      }
       this.patternPhase=this.snapshotError?"error":this.snapshot?"unavailable":"loading";
       status.textContent=this.snapshotError?"共用分析取得失敗":this.snapshot?`${this.state.patternInterval} · 尚無分析資料`:"取得共用分析…";
       pill.classList.remove("is-scanning");this.patternRows=[];this.paintPatternResults([]);return;
@@ -200,7 +204,7 @@ export const toolsViews = {
       let result;
       if (typeof Worker === "function") {
         if (!this.worker) {
-          this.worker = new Worker(new URL("./worker.js?v=20260930-us-data4", import.meta.url), {
+          this.worker = new Worker(new URL("./worker.js?v=20260930-us-free1", import.meta.url), {
             type: "module",
           });
           this.worker.onmessage = (ev) => {
@@ -244,7 +248,7 @@ export const toolsViews = {
     this.patternSurface.querySelector(".px-tier-filters").hidden = rows.length === 0;
     const filtered=tier==="all"?rows:rows.filter(x=>x.tier===tier);
     let last="";
-    const messages={loading:"正在取得共用分析資料。",analyzing:"正在分析真實美股 K 線。",unavailable:`${this.state.patternInterval} 尚無共用分析資料。`,error:"共用分析取得失敗，可稍後重新掃描。",complete:"已完成分析，目前沒有符合條件的標的。"};
+    const messages={loading:"正在取得共用分析資料。",analyzing:"正在分析真實美股 K 線。",unavailable:this.cap.chartMode==='widget'?"可在首頁／雷達看免費行情；型態掃描需要原始 K 線資料。":`${this.state.patternInterval} 尚無共用分析資料。`,error:"共用分析取得失敗，可稍後重新掃描。",complete:"已完成分析，目前沒有符合條件的標的。"};
     list.innerHTML=filtered.length?filtered.map((r,i)=>{
       const heading=last!==r.tier?`<div class="px-tier-heading" data-tier-heading="${r.tier.slice(1)}">${e(r.tier)}<span>${r.forming?"形成中":"已收線觀察"}</span></div>`:"";last=r.tier;
       return `${heading}<article class="px-card" data-tier="${r.tier.slice(1)}" data-symbol="${e(r.symbol)}" data-interval="${e(r.interval)}" tabindex="0" role="button" aria-label="開啟 ${e(r.symbol)} ${e(r.interval)} 圖表"><div class="px-card-top"><span class="px-symbol">${e(r.symbol)}<span class="px-frame">${e(r.interval)}</span></span><span class="px-card-right"><b class="px-tier-badge">${e(r.tier)}</b><span class="px-change ${r.changePct>=0?"px-up":"px-down"}">${pct(r.changePct)}</span></span></div><div class="px-match"><span>${e(r.setup||"型態觀察")}</span><span>${price(r.price)}</span></div><canvas aria-label="${e(r.symbol)} 真實 OHLCV"></canvas><div class="px-turnover"><span>20日平均成交額</span><b>${compact(r.liquidity)} USD</b></div><button class="us-pattern-star ${this.watch.has(r.symbol)?"is-saved":""}" data-watch="${e(r.symbol)}" aria-label="收藏 ${e(r.symbol)}">${this.watch.has(r.symbol)?"★":"☆"}</button></article>`;

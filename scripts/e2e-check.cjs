@@ -156,10 +156,11 @@ async function preparePage(context, viewport) {
     return route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ ok: true, data }) });
   });
   await page.route("**/data/us-snapshot.json", route => route.fulfill({json:{schemaVersion:2,quotes:[],analyses:[],counts:{quoted:0,scanned:0}}}));
+  await page.route("https://www.tradingview-widget.com/**", route => route.fulfill({contentType:"text/html",body:"<p>Isolated widget fixture, no prices</p>"}));
   await page.route("https://ox-crypto-screener.vercel.app/api/v1/us/**", route => {
     const url = new URL(route.request().url());
     const symbol = url.searchParams.get("symbol") || "SPY";
-    const data = url.pathname.endsWith("quote-v2") ? {quote:{symbol,price:123.45,changePct:2.31,marketTime:now/1000,receivedAt:now,marketOpen:false,delaySeconds:null}} : url.pathname.endsWith("chart-v2") ? {symbol,interval:url.searchParams.get("interval"),bars:[],source:"TEST",adjustment:"splits"} : {source:"TEST",extendedHours:false,pollMs:60000,externalDisplayConfirmed:false};
+    const data = url.pathname.endsWith("quote-v2") ? {quote:{symbol,price:123.45,changePct:2.31,marketTime:now/1000,receivedAt:now,marketOpen:false,delaySeconds:null}} : url.pathname.endsWith("chart-v2") ? {symbol,interval:url.searchParams.get("interval"),bars:[],source:"TEST",adjustment:"splits"} : {source:"TEST",extendedHours:false,pollMs:60000,externalDisplayConfirmed:true};
     return route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ ok: true, data }) });
   });
   return { page, audit };
