@@ -1,4 +1,4 @@
-import { usProvider } from "./api.js?v=20260930-us-compact2";
+import { usProvider } from "./api.js?v=20260930-us-native4";
 
 /*
  * OX v4.0 Modular

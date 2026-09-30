@@ -48,10 +48,6 @@
       label: "台股"
     },
     {
-      id: "forex",
-      label: "外匯"
-    },
-    {
       id: "news",
       label: "新聞"
     }

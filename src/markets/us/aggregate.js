@@ -1,4 +1,4 @@
-import { nyParts, nyEpoch, tradingDay } from "./calendar.js?v=20260930-us-compact2";
+import { nyParts, nyEpoch, tradingDay } from "./calendar.js?v=20260930-us-native4";
 // 09:30–13:30 and 13:30–session close. Never spans an overnight gap.
 export function aggregate4H(bars, now = Date.now()) {
   const map = new Map();

@@ -1,4 +1,4 @@
-import { tierResults, matchPath } from "./analysis.js?v=20260930-us-compact2";
+import { tierResults, matchPath } from "./analysis.js?v=20260930-us-native4";
 self.onmessage = ({ data }) => {
   try {
     self.postMessage({

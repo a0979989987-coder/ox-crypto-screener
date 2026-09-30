@@ -60,7 +60,8 @@ async function readDirectory() {
   );
   return j;
 }
-export async function snapshot() {
+export async function snapshot(readSnapshot = async () => JSON.parse(await readFile(
+  new URL("../../../data/us-snapshot.json", import.meta.url), "utf8"))) {
   const empty = { schemaVersion: 2, asOf: null, quotes: [], analyses: [],
     counts: { searchable: 0, quoted: 0, scanned: 0 } };
   if (capabilities().chartMode === "widget")
@@ -69,10 +70,11 @@ export async function snapshot() {
   if (!capabilities().externalDisplayConfirmed)
     return { ...empty, error: "行情展示授權未確認；公開掃描尚未開通。" };
   try {
-    const data = JSON.parse(await readFile(
-      new URL("../../../data/us-snapshot.json", import.meta.url), "utf8"));
-    if (data.privateValidation)
+    const data = await readSnapshot();
+    if (data.privateValidation || data.collection?.privateValidation)
       return { ...empty, error: "私下驗證快照不可公開展示。" };
+    if (data.schemaVersion !== 2 || !Array.isArray(data.quotes) || !Array.isArray(data.analyses))
+      return { ...empty, error: "掃描快照格式無效，暫無分析結果。" };
     return data;
   } catch {
     return { ...empty, error: "共用掃描快照尚未建立，暫無分析結果。" };
@@ -110,18 +112,18 @@ export async function handleUS2(endpoint, query, upstream) {
     throw error;
   }
   if (endpoint === "quote-v2") {
-    const raw = await cachedRequest(
+    const saved = await cachedRequest(
       `quote:${symbol}`,
       () => withinBudget(1, () => upstream("/quote", { symbol })),
-      { ttl: 60000 },
+      { ttl: 60000, stale: 86400000, withMetadata: true },
     );
-    const q = normalizeQuote(raw, Date.now(), cap);
+    const q = normalizeQuote(saved.value, saved.cache.fetchedAt, cap);
     if (!q) {
       const e = Error("資料源沒有有效報價或此代號已失效。");
       e.code = 404;
       throw e;
     }
-    return { quote: q, capabilities: cap };
+    return { quote: { ...q, stale: saved.cache.stale, cache: saved.cache }, capabilities: cap };
   }
   const interval = query.interval || "1D",
     extended = query.extendedHours === "true";
@@ -142,10 +144,13 @@ export async function handleUS2(endpoint, query, upstream) {
     throw e;
   }
   const limit = Math.max(1, Math.min(5000, Number(query.limit) || 400));
+  // Standard bootstrap and tail updates share one upstream cache. A changed
+  // outputsize used to consume another credit and strand the last good bars.
+  const cacheLimit = Math.max(400, limit);
   const params = {
     symbol,
     interval: interval === "4H" ? "30min" : intervalMap[interval],
-    outputsize: interval === "4H" ? Math.min(5000, limit * 8) : limit,
+    outputsize: interval === "4H" ? Math.min(5000, cacheLimit * 8) : cacheLimit,
     timezone: "UTC",
     adjust: "splits",
     ...(extended ? { prepost: "true" } : {}),
@@ -159,12 +164,13 @@ export async function handleUS2(endpoint, query, upstream) {
     e.code = 400;
     throw e;
   }
-  const key = `bars:${symbol}:${interval}:${extended}:${limit}:${query.to || ""}`;
-  const raw = await cachedRequest(
+  const key = `bars:${symbol}:${interval}:${extended}:${cacheLimit}:${query.to || ""}`;
+  const saved = await cachedRequest(
     key,
     () => withinBudget(1, () => upstream("/time_series", params)),
-    { ttl: query.to ? 86400000 : 60000 },
+    { ttl: query.to ? 86400000 : 60000, stale: 86400000, withMetadata: true },
   );
+  const raw = saved.value;
   let bars = normalizeCandles(raw, interval, "UTC");
   if (interval === "4H")
     bars = (await import("../../../src/markets/us/aggregate.js")).aggregate4H(
@@ -176,10 +182,12 @@ export async function handleUS2(endpoint, query, upstream) {
   return {
     symbol,
     interval,
-    bars,
+    bars: bars.slice(-limit),
     source: "twelve-data",
     feed: cap.feed,
-    receivedAt: Date.now(),
+    receivedAt: saved.cache.fetchedAt,
+    stale: saved.cache.stale,
+    cache: saved.cache,
     delaySeconds: cap.delaySeconds,
     adjustment: "splits",
     session: extended ? "extended" : "regular",

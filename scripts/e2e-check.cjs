@@ -272,12 +272,8 @@ async function desktopRegression(browser) {
   assert((await page.locator('.twcr-results [data-stock="2330"]').innerText()).includes("123.5"), "TW radar did not retain official-shaped fixture data");
   await selectMarket(page, "crypto");
   assert(await page.locator("#view-radar").isVisible(), "Crypto market did not restore");
-  await selectMarket(page, "forex");
-  await page.waitForSelector("#ox-forex-module:not([hidden]) .fx-radar-grid");
-  assert(await page.locator("#ox-forex-module .fx-session-state").isVisible(), "Forex session status did not render");
-  assert(await page.locator("#ox-forex-module .fx-pair-card").count() === 11, "Forex radar did not render primary and reserved pairs");
-  await selectMarket(page, "crypto");
-  assert(await page.locator("#view-radar").isVisible(), "Crypto did not restore after Forex");
+  assert(await page.locator('[data-market-choice="forex"]').count() === 0, "Removed Forex control is still visible");
+  assert(await page.evaluate(() => window.OXModules.router.get('forex')) === null, "Removed Forex module is still registered");
 
   await openControl(page);
   assert(await page.locator("#ox-control-panel").isVisible(), "Control Panel did not open");
@@ -389,11 +385,7 @@ async function mobileRegression(browser) {
   assert(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth) <= 2, "Mobile TW chart radar overflowed");
   await selectMarket(page, "crypto");
   assert(await page.locator("#view-radar").isVisible(), "Mobile market switch back to Crypto failed");
-  await selectMarket(page, "forex");
-  await page.waitForSelector("#ox-forex-module:not([hidden]) .fx-radar-grid");
-  assert(await page.locator("#ox-forex-module .fx-pulse-row").isVisible(), "Mobile Forex pulse did not render");
-  await selectMarket(page, "crypto");
-  assert(await page.locator("#view-radar").isVisible(), "Mobile Crypto did not restore after Forex");
+  assert(await page.locator('[data-market-choice="forex"]').count() === 0, "Mobile removed Forex control is still visible");
   await page.click("#ox-control-close");
   await page.waitForSelector("#ox-control-overlay:not(.is-open)");
 

@@ -1,6 +1,6 @@
 (() => {
   'use strict';
-  const MARKET_NAMES = { crypto: '加密', us: '美股', tw: '台股', forex: '外匯' };
+  const MARKET_NAMES = { crypto: '加密', us: '美股', tw: '台股' };
   const SOURCE_NAMES = { fed: '美國聯準會', 'bls-cpi': '美國勞工統計局・物價', 'bls-jobs': '美國勞工統計局・就業', 'bls-calendar': '美國勞工統計局・行事曆', ecb: '歐洲央行', sec: '美國證券交易委員會', ethereum: '以太坊基金會', cftc: '美國商品期貨交易委員會', 'bitcoin-core': '比特幣核心開發團隊', kraken: 'Kraken 交易所', aptos: 'Aptos 基金會', twse: '臺灣證券交易所' };
   const sourceName = item => SOURCE_NAMES[item.sourceId || item.id] || '官方來源';
   const titleName = item => item.titleZh || '官方消息（繁體中文翻譯待補）';

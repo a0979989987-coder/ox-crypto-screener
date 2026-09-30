@@ -12,18 +12,19 @@ import {
   toolNames,
   patterns,
   sectorETF,
-} from "./view-utils.js?v=20260930-us-compact2";
-import { toolsViews } from "./tools.js?v=20260930-us-compact2";
-import { newsViews } from "./news.js?v=20260930-us-compact2";
-import { USAdapter, fetchJSON } from "./provider.js?v=20260930-us-compact2";
-import { USChart } from "./chart.js?v=20260930-us-compact2";
-import { USWidgetChart } from "./widget-chart.js?v=20260930-us-radar3";
-import { FREE_US_DISPLAY } from "./widget-config.js?v=20260930-us-compact2";
-import { searchDirectory, quoteStatus } from "./model.js?v=20260930-us-compact2";
-import { sessionAt, nyParts } from "./calendar.js?v=20260930-us-compact2";
+  sourceInfo,
+} from "./view-utils.js?v=20260930-us-native4";
+import { toolsViews } from "./tools.js?v=20260930-us-native4";
+import { newsViews } from "./news.js?v=20260930-us-native4";
+import { USAdapter, fetchJSON } from "./provider.js?v=20260930-us-native4";
+import { USChart } from "./chart.js?v=20260930-us-native4";
+import { USWidgetChart } from "./widget-chart.js?v=20260930-us-native4";
+import { FREE_US_DISPLAY } from "./widget-config.js?v=20260930-us-native4";
+import { searchDirectory, quoteStatus } from "./model.js?v=20260930-us-native4";
+import { sessionAt, nyParts } from "./calendar.js?v=20260930-us-native4";
 
-import { tierResults } from "./analysis.js?v=20260930-us-compact2";
-import { icon, openDialog, closeDialog } from "./ui.js?v=20260930-us-compact2";
+import { tierResults } from "./analysis.js?v=20260930-us-native4";
+import { icon, openDialog, closeDialog } from "./ui.js?v=20260930-us-native4";
 export class USWorkspace {
   constructor() {
     const storedPrefs = read(prefsKey, {});
@@ -99,6 +100,7 @@ export class USWorkspace {
         if(changedMode)this.lookupQuote(this.state.view==='home'?this.state.homeSymbol:this.state.symbol);
         this.updateCounts();
         this.paintList();
+        this.updateSections();
         this.updateLive();
       }),
       USAdapter.snapshot({ signal })
@@ -238,7 +240,7 @@ export class USWorkspace {
     const item=this.directory.find(x=>x.symbol===symbol),q=this.quotes.get(symbol);
     const detail=this.root?.querySelector(".us2-stock-detail");
     if(detail)detail.textContent=[symbol,item?.alias||item?.name,item?.type,item?.exchange].filter(Boolean).join(" · ");
-    this.root?.querySelectorAll(".us2-display-source").forEach(n=>n.textContent=this.cap.chartMode === "widget" ? "TradingView" : "Twelve Data");
+    this.root?.querySelectorAll(".us2-display-source").forEach(n=>n.textContent=sourceInfo(this.cap.source).label);
     const provider=this.root?.querySelector(".us2-provider-detail");
     if(provider)provider.textContent=this.cap.chartMode === "widget" ? "TradingView 官方免費圖表。價格、行情時間與延遲狀態由圖表標示；不將單一交易所資料稱為全市場。搜尋目錄沿用既有公司資料，實際涵蓋以圖表為準。免費圖表不提供原始 K 線給 OX 掃描。" : `來源 ${q?.source||this.cap?.source||"Twelve Data"} · feed ${q?.feed||"未確認"} · ${q?.volumeScope||"成交量口徑未確認"} · ${this.snapshotError||"共用掃描快照狀態可查閱上方統計"}`;
   }
@@ -394,10 +396,10 @@ export class USWorkspace {
       },
       onState: (result) => {
         if (!this.active) return;
-        if (!result.error && result.bars?.length)
+        if (!result.error && !result.stale && result.bars?.length)
           this.lookupQuote(result.symbol || this.chart?.symbol || symbol);
         const hadError = Boolean(this.chartError);
-        this.chartError = result.error;
+        this.chartError = result.stale ? '更新暫停 · 保留前次 K 線' : result.error;
         this.chartErrorStatus = result.errorStatus;
         this.chartErrorCode = result.errorCode;
         const empty = !result.widget && !!result.error && !result.bars?.length;
@@ -682,6 +684,21 @@ export class USWorkspace {
       ),
       node = this.root.querySelector(".us2-home-watch");
     if (!node) return;
+    if (this.cap.chartMode !== 'widget') {
+      this.renderHomeCandidates(rows, node, 'long');
+      this.renderHomeCandidates(rows, this.root.querySelector('.us2-home-sectors'), 'short');
+      const headings = this.root.querySelectorAll('.ox-home-t1-head');
+      headings[0].querySelector('span').textContent = '上漲 · T1/T2/T3';
+      headings[1].querySelector('span').textContent = '下跌 · T1/T2/T3';
+      headings[1].querySelector('small').textContent = '已收線型態';
+      const shortcut = this.root.querySelector('[data-home-watch]');
+      shortcut.setAttribute('aria-label', '查看上漲候選雷達');
+      shortcut.onclick = () => {
+        this.state.side = 'long'; this.state.watchOnly = false;
+        this.state.scanInterval = '1D'; this.state.tier = 'all';
+        window.switchAppView?.('radar');
+      };
+    } else {
     const watched = [...this.watch]
       .slice(0, 5)
       .map(
@@ -707,6 +724,7 @@ export class USWorkspace {
           .join("")
       : this.cap.chartMode === 'widget' ? Object.entries(sectorETF).map(([symbol,name])=>`<button data-symbol="${e(symbol)}"><span>${e(name)} ${e(symbol)}</span><small>查看行情 ↗</small></button>`).join('') : '<div class="us2-empty">類股 ETF 快照尚未收集。</div>';
     this.bindRows(sectors);
+    }
     const events = (this.newsData?.events || [])
       .filter(
         (x) =>
@@ -724,6 +742,42 @@ export class USWorkspace {
           )
           .join("")
       : '<div class="us2-empty">目前沒有來源已確認的近期事件。</div>';
+  }
+  renderHomeCandidates(rows, box, side) {
+    if (!box) return;
+    const candidates = tierResults(rows, { side, mode: 'classic', type: 'stock' })
+      .filter(row => side === 'long' ? row.changePct > 0 : row.changePct < 0);
+    const existing = new Map([...box.querySelectorAll('[data-symbol]')].map(row => [row.dataset.symbol, row]));
+    const displayed = [];
+    let previousTier = null;
+    for (const candidate of candidates) {
+      const row = existing.get(candidate.symbol) || document.createElement('button');
+      const starts = candidate.tier !== previousTier;
+      previousTier = candidate.tier;
+      row.type = 'button'; row.className = `ox-home-t1-row${starts ? ' is-tier-start' : ''}`;
+      row.dataset.symbol = candidate.symbol; row.dataset.interval = '1D';
+      row.dataset.homeTier = candidate.tier;
+      row.title = `${candidate.symbol} · ${candidate.setup} · 距關鍵位 ${candidate.distance.toFixed(2)}%`;
+      const markup = `<small class="ox-home-row-tier" ${starts ? '' : 'hidden'}>${e(candidate.tier)}</small><span class="ox-home-t1-identity"><strong>${e(candidate.symbol)}</strong></span><small>距 ${candidate.distance.toFixed(1)}%</small><em class="${tone(candidate.changePct)}">${pct(candidate.changePct)}</em>`;
+      if (row._markup !== markup) { row.innerHTML = markup; row._markup = markup; }
+      displayed.push(row);
+    }
+    if (!displayed.length) {
+      const empty = document.createElement('span'); empty.className = 'ox-home-t1-empty';
+      empty.textContent = this.snapshotError || `目前沒有${side === 'long' ? '上漲' : '下跌'}型態候選`;
+      box.replaceChildren(empty);
+    } else {
+      displayed.forEach((row, i) => { if (box.children[i] !== row) box.insertBefore(row, box.children[i] || null); });
+      for (const child of [...box.children]) if (!displayed.includes(child)) child.remove();
+      box.style.setProperty('--home-five-rows', `${displayed.slice(0, 5).reduce((sum, row) => sum + (row.classList.contains('is-tier-start') ? 64 : 51), 0) + Math.max(0, Math.min(displayed.length, 5) - 1) * 9}px`);
+    }
+    box.onclick = event => {
+      const row = event.target.closest('[data-symbol]');
+      if (!row) return;
+      this.state.side = side; this.state.watchOnly = false;
+      this.state.tier = 'all'; this.state.scanInterval = '1D';
+      this.openStock(row.dataset.symbol, { interval: '1D', collapse: true });
+    };
   }
   toolRows() {
     let rows = (this.snapshot?.analyses || []).filter(

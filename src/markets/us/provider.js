@@ -1,8 +1,13 @@
-import { usProvider, getUSApiBase } from "./api.js?v=20260930-us-compact2";
-import { normalizeCandles, normalizeQuote } from "./model.js?v=20260930-us-compact2";
-import { aggregate4H, aggregateMonthly } from "./aggregate.js?v=20260930-us-compact2";
-import { FREE_US_DISPLAY } from "./widget-config.js?v=20260930-us-compact2";
+import { usProvider, getUSApiBase } from "./api.js?v=20260930-us-native4";
+import { normalizeCandles, normalizeQuote, mergeCandles } from "./model.js?v=20260930-us-native4";
+import { aggregate4H, aggregateMonthly } from "./aggregate.js?v=20260930-us-native4";
+import { FREE_US_DISPLAY } from "./widget-config.js?v=20260930-us-native4";
 const cache = new Map();
+const quoteCache = new Map();
+const temporaryFailure = e => !e.status || e.status === 429 || e.status >= 500;
+const previousData = (hit, error) => hit && Date.now() - hit.receivedAt < 86400000 && temporaryFailure(error)
+  ? { ...hit, stale: true, cache: { ...(hit.cache || {}), stale: true, reason: error.status === 429 ? "RATE_LIMITED" : "UPDATE_FAILED" } }
+  : null;
 // Old endpoints are used only to validate the existing integration locally.
 // A public preview must never bypass the new redistribution-rights gate.
 const localValidation = () =>
@@ -60,8 +65,14 @@ export const USAdapter = {
   async quote(symbol, options = {}) {
     try {
       const j = await endpoint("quote-v2", { symbol }, options);
+      quoteCache.set(symbol, j.quote);
+      while (quoteCache.size > 100) quoteCache.delete(quoteCache.keys().next().value);
       return j.quote;
     } catch (e) {
+      if (!options.signal?.aborted) {
+        const previous = previousData(quoteCache.get(symbol), e);
+        if (previous) return previous;
+      }
       if (options.signal?.aborted || e.status !== 404 || !localValidation())
         throw e;
       const raw = await usProvider.getQuote(symbol, options);
@@ -82,9 +93,10 @@ export const USAdapter = {
       capabilities = {},
     } = {},
   ) {
-    const key = `${symbol}:${interval}:${extendedHours}:${to || ""}:${limit}`,
+    const key = `${capabilities.source || "twelve-data"}:${symbol}:${interval}:${extendedHours}:${to || ""}`,
       hit = cache.get(key);
-    if (hit && !force && Date.now() - hit.receivedAt < 60000) return hit;
+    if (hit && !force && Date.now() - hit.receivedAt < 60000 &&
+      (hit.bars.length >= limit || hit.historyExhausted)) return hit;
     let result;
     try {
       result = await endpoint(
@@ -93,6 +105,10 @@ export const USAdapter = {
         { signal },
       );
     } catch (e) {
+      if (!signal?.aborted) {
+        const previous = previousData(hit, e);
+        if (previous) return previous;
+      }
       if (signal?.aborted || e.status !== 404 || !localValidation()) throw e;
       if (extendedHours && !capabilities.extendedHours)
         throw Error("盤前盤後權限尚未確認。");
@@ -131,6 +147,12 @@ export const USAdapter = {
     }
     if (!result.bars?.length)
       throw Error("沒有有效 K 線，可能未上市、缺少成交或方案不支援。");
+    // Polls fetch a small tail, while a reopened chart needs the full history.
+    // Share one series cache so a 400-bar bootstrap and an 8-bar update cannot
+    // strand each other's last usable response during a provider outage.
+    if (hit && hit.adjustment === result.adjustment) result = { ...result,
+      bars: mergeCandles(hit.bars, result.bars).slice(-5000),
+      historyExhausted: hit.historyExhausted || result.historyExhausted };
     cache.set(key, result);
     while (cache.size > 50) cache.delete(cache.keys().next().value);
     return result;

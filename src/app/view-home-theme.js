@@ -298,8 +298,7 @@ function renderOxLive() {
   if (state.activeMarket && state.activeMarket !== "crypto") {
     el.textContent = ({
       us: document.getElementById("ox-live-text")?.dataset.usText || "美股 · 行情與交易時段更新中",
-      tw: "台股官方日資料已接入 · 非即時",
-      forex: "外匯 ECB 每日參考匯率 · 非即時"
+      tw: "台股官方日資料已接入 · 非即時"
     })[state.activeMarket] || "市場資料切換中";
     el.title = el.textContent;
     return;

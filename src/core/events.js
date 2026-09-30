@@ -1,8 +1,6 @@
 export const OX_EVENTS = Object.freeze({
   marketChange: "ox:marketchange",
-  themeChange: "ox:themechange",
-  forexUpdate: "ox:forex:update",
-  forexError: "ox:forex:error"
+  themeChange: "ox:themechange"
 });
 
 export function createEventBus() {

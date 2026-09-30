@@ -1,7 +1,7 @@
 (() => {
   "use strict";
   const themeLabel=v=>({dark:"深色",light:"淺色",system:"自動"}[v]||"自動");
-  const marketLabel=v=>({crypto:"加密",us:"美股",tw:"台股",forex:"外匯"}[v]||"加密");
+  const marketLabel=v=>({crypto:"加密",us:"美股",tw:"台股"}[v]||"加密");
   window.syncAccountSummary=function(){
     const email=typeof currentLocalAccountEmail==="function"?currentLocalAccountEmail():"";
     const root=document.getElementById("ox-account-summary");if(!root)return;

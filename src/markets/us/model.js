@@ -1,4 +1,4 @@
-import { nyEpoch, nyParts, candleEnd } from "./calendar.js?v=20260930-us-compact2";
+import { nyEpoch, nyParts, candleEnd } from "./calendar.js?v=20260930-us-native4";
 export const num = (v) =>
   v === null || v === undefined || v === ""
     ? null
@@ -93,6 +93,7 @@ export function normalizeQuote(raw, receivedAt = Date.now(), cap = {}) {
   };
 }
 export function quoteStatus(q, now = Date.now()) {
+  if (q?.stale) return "更新暫停 · 保留前次報價";
   if (!q?.marketTime) return "行情時間未提供";
   const age = now / 1000 - q.marketTime;
   if (q.receivedAt && now - q.receivedAt > 180000) return "快取過期";

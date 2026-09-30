@@ -1,44 +1,53 @@
-// Warm-instance request coalescing complements CDN caching. Not a distributed quota lock.
-const cache = new Map(),
-  pending = new Map();
+// Warm-instance request coalescing complements CDN caching. This is not an
+// account-wide quota lock. Stale data is returned only with explicit metadata.
+const cache = new Map(), pending = new Map();
 let backoffUntil = 0;
-export async function cachedRequest(
-  key,
-  load,
-  { ttl = 60000, stale = 300000 } = {},
-) {
-  const now = Date.now(),
-    hit = cache.get(key);
-  if (hit && now - hit.at < ttl) return hit.value;
-  if (pending.has(key)) return pending.get(key);
-  if (now < backoffUntil) {
-    const e = Error("行情供應商限流，請稍後重試。");
-    e.code = 429;
-    throw e;
+export async function cachedRequest(key, load, {
+  ttl = 60000, stale = 300000, withMetadata = false,
+} = {}) {
+  const now = Date.now(), hit = cache.get(key);
+  const result = (entry, isStale = false, reason = null) => withMetadata
+    ? { value: entry.value, cache: { fetchedAt: entry.at, stale: isStale, reason } }
+    : entry.value;
+  const fallback = reason => withMetadata && hit && now - hit.at < stale
+    ? result(hit, true, reason) : null;
+  if (hit && now - hit.at < ttl) return result(hit);
+  if (now < backoffUntil && !pending.has(key)) {
+    const previous = fallback("RATE_LIMITED");
+    if (previous) return previous;
+    const error = Error("行情供應商限流，請稍後重試。");
+    error.code = 429;
+    throw error;
   }
-  const p = Promise.resolve()
-    .then(load)
-    .then((value) => {
-      cache.set(key, { at: Date.now(), value });
+  if (!pending.has(key)) {
+    const request = Promise.resolve().then(load).then(value => {
+      const entry = { at: Date.now(), value };
+      cache.set(key, entry);
       while (cache.size > 250) cache.delete(cache.keys().next().value);
-      return value;
-    })
-    .catch((e) => {
-      if (Number(e.code) === 429 || e.status === 429)
+      return entry;
+    }).catch(error => {
+      if (Number(error.code) === 429 || error.status === 429)
         backoffUntil = Date.now() + 60000;
-      if (hit && now - hit.at < stale) {
-        const error = Error("資料更新失敗；快取資料已過期。");
-        error.code = "STALE_DATA";
-        throw error;
-      }
-      throw e;
-    })
-    .finally(() => pending.delete(key));
-  pending.set(key, p);
-  return p;
+      throw error;
+    }).finally(() => pending.delete(key));
+    pending.set(key, request);
+  }
+  try {
+    return result(await pending.get(key));
+  } catch (error) {
+    const status = Number(error.status) || Number(error.code);
+    // Never hide lost authorization, an invalid symbol or invalid input.
+    if ([400, 401, 403, 404].includes(status)) throw error;
+    const previous = fallback(status === 429 ? "RATE_LIMITED" : "UPDATE_FAILED");
+    if (previous) return previous;
+    if (hit && now - hit.at < stale) {
+      const expired = Error("資料更新失敗；快取資料已過期。");
+      expired.code = "STALE_DATA";
+      throw expired;
+    }
+    throw error;
+  }
 }
 export function resetCache() {
-  cache.clear();
-  pending.clear();
-  backoffUntil = 0;
+  cache.clear(); pending.clear(); backoffUntil = 0;
 }

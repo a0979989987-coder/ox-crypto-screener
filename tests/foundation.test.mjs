@@ -31,30 +31,30 @@ test("storage service supports JSON", () => {
     removeItem: key => values.delete(key)
   };
   const service = createStorageService(storage);
-  assert.equal(service.setJson("prefs", { market: "forex" }), true);
-  assert.deepEqual(service.getJson("prefs"), { market: "forex" });
+  assert.equal(service.setJson("prefs", { market: "us" }), true);
+  assert.deepEqual(service.getJson("prefs"), { market: "us" });
 });
 
 test("market router activates one registered module", async () => {
   const calls = [];
   const router = createMarketRouter();
   router.register({ id: "crypto", activate: () => calls.push("crypto:on"), deactivate: () => calls.push("crypto:off") });
-  router.register({ id: "forex", activate: () => calls.push("forex:on") });
+  router.register({ id: "us", activate: () => calls.push("us:on") });
   assert.equal(await router.activate("crypto"), true);
-  assert.equal(await router.activate("forex"), true);
-  assert.deepEqual(calls, ["crypto:on", "crypto:off", "forex:on"]);
+  assert.equal(await router.activate("us"), true);
+  assert.deepEqual(calls, ["crypto:on", "crypto:off", "us:on"]);
 });
 
 test("late market activation cannot leave the prior market visible", async () => {
-  let finishForex;
+  let finishUS;
   const calls = [];
   const router = createMarketRouter();
-  router.register({ id: "forex", activate: () => new Promise(resolve => { finishForex = resolve; }), deactivate: () => calls.push("forex:hidden") });
+  router.register({ id: "us", activate: () => new Promise(resolve => { finishUS = resolve; }), deactivate: () => calls.push("us:hidden") });
   router.register({ id: "crypto", activate: () => calls.push("crypto:visible") });
-  const first = router.activate("forex");
+  const first = router.activate("us");
   await router.activate("crypto");
-  finishForex();
+  finishUS();
   await first;
   assert.equal(router.current(), "crypto");
-  assert.ok(calls.includes("forex:hidden"));
+  assert.ok(calls.includes("us:hidden"));
 });

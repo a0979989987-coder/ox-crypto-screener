@@ -1,7 +1,8 @@
-import { USAdapter } from "./provider.js?v=20260930-us-compact2";
-import { INTERVALS, countdown, sessionAt, nyParts } from "./calendar.js?v=20260930-us-compact2";
-import { mergeCandles, movingAverage, vwap } from "./model.js?v=20260930-us-compact2";
-import { icon, positionTimeframe, openDialog, closeDialog } from "./ui.js?v=20260930-us-compact2";
+import { USAdapter } from "./provider.js?v=20260930-us-native4";
+import { INTERVALS, countdown, sessionAt, nyParts } from "./calendar.js?v=20260930-us-native4";
+import { mergeCandles, movingAverage, vwap } from "./model.js?v=20260930-us-native4";
+import { icon, positionTimeframe, openDialog, closeDialog } from "./ui.js?v=20260930-us-native4";
+import { sourceInfo } from "./view-utils.js?v=20260930-us-native4";
 const UP = "#00b8d4",
   DOWN = "#ff3078";
 const esc = (s) =>
@@ -83,7 +84,8 @@ export class USChart {
         background: { type: "solid", color: "transparent" },
         textColor: "#aeb3b3",
         fontSize: 10,
-        attributionLogo: true,
+        // The shared source dialog and OX settings retain the required attribution.
+        attributionLogo: false,
       },
       grid: {
         vertLines: { visible: false },
@@ -103,12 +105,12 @@ export class USChart {
       crosshair: { mode: LC.CrosshairMode.Normal },
       handleScroll: {
         pressedMouseMove: true,
-        horzTouchDrag: true,
+        horzTouchDrag: !globalThis.OXChartGestures,
         vertTouchDrag: false,
         mouseWheel: true,
       },
       handleScale: {
-        pinch: true,
+        pinch: !globalThis.OXChartGestures,
         mouseWheel: true,
         axisPressedMouseMove: { price: true, time: true },
       },
@@ -136,6 +138,30 @@ export class USChart {
       borderVisible: false,
       lastValueVisible: false,
       priceLineVisible: false,
+    });
+    const owner = this;
+    this.gestureState = {
+      get chart() { return owner.chart; },
+      get candleSeries() { return owner.series; },
+      get candleData() { return owner.bars; },
+      chartPriceViewport: null,
+      chartPriceViewportMargins: null,
+    };
+    this.autoscale = original => {
+      const info = original();
+      if (!info) return info;
+      this.gestureState.chartAutoPriceMargins = info.margins || { above: 0, below: 0 };
+      return this.gestureState.chartPriceViewport ? { ...info,
+        priceRange: { ...this.gestureState.chartPriceViewport },
+        margins: this.gestureState.chartPriceViewportMargins } : info;
+    };
+    this.series.applyOptions({ autoscaleInfoProvider: this.autoscale });
+    this.gestures = globalThis.OXChartGestures?.({ container,
+      state: this.gestureState, formatPrice: money,
+      getRange: () => this.getPriceRange(),
+      setRange: range => this.setPriceRange(range),
+      refreshRange: () => this.refreshPriceRange(),
+      isDrawing: () => root.querySelector('.chart-drawing-layer.is-editing'),
     });
     this.volume = this.chart.addHistogramSeries({
       priceScaleId: "",
@@ -185,11 +211,19 @@ export class USChart {
         this.loadOlder();
     });
     this.ro = new ResizeObserver(() => {
-      if (this.disposed) return;
-      this.chart.resize(container.clientWidth, container.clientHeight);
-      this.draw();
-      this.priceTimer();
-      positionTimeframe(root);
+      if (this.disposed || this.resizeFrame) return;
+      // WebKit reports an observer loop if LWC updates its canvas inside the
+      // resize notification. Batch it into the next frame and skip equal sizes.
+      this.resizeFrame = requestAnimationFrame(() => {
+        this.resizeFrame = 0;
+        if (this.disposed) return;
+        const width = container.clientWidth, height = container.clientHeight;
+        if (this.lastWidth !== width || this.lastHeight !== height) {
+          this.lastWidth = width; this.lastHeight = height;
+          this.chart.resize(width, height);
+        }
+        this.draw(); this.priceTimer(); positionTimeframe(root);
+      });
     });
     this.ro.observe(container);
     this.overlayEvents = new AbortController();
@@ -224,8 +258,12 @@ export class USChart {
     positionTimeframe(root,true);
     root.querySelector("[data-session]").onchange = (e) =>
       this.change({ extended: e.target.value === "extended" });
-    root.querySelector("[data-latest]").onclick = () =>
+    root.querySelector("[data-latest]").onclick = () => {
+      this.gestureState.chartPriceViewport = null;
+      this.gestureState.chartPriceViewportMargins = null;
+      this.refreshPriceRange();
       this.chart.timeScale().scrollToRealTime();
+    };
     root.querySelector("[data-ma]").onclick = (e) => {
       this.ma = !this.ma;
       e.currentTarget.setAttribute("aria-pressed", this.ma);
@@ -240,17 +278,47 @@ export class USChart {
     this.timer = setInterval(() => this.priceTimer(), 1000);
     this.load();
   }
+  getPriceRange() {
+    const container = this.root.querySelector('.us2-chart-canvas');
+    const height = container.clientHeight - this.chart.timeScale().height();
+    const maxValue = this.series.coordinateToPrice(0), minValue = this.series.coordinateToPrice(height - 1);
+    return Number.isFinite(minValue) && Number.isFinite(maxValue) && maxValue > minValue ? { minValue, maxValue } : null;
+  }
+  setPriceRange(range) {
+    const state = this.gestureState, margins = this.chart.priceScale('right').options().scaleMargins;
+    const extra = (state.chartPriceViewport ? state.chartPriceViewportMargins : state.chartAutoPriceMargins) || { above: 0, below: 0 };
+    const height = this.root.querySelector('.us2-chart-canvas').clientHeight - this.chart.timeScale().height();
+    if (height <= 1) return;
+    const span = range.maxValue - range.minValue;
+    state.chartPriceViewportMargins = extra;
+    state.chartPriceViewport = {
+      minValue: range.minValue + span * (height * margins.bottom + extra.below) / (height - 1),
+      maxValue: range.maxValue - span * (height * margins.top + extra.above) / (height - 1),
+    };
+    this.refreshPriceRange();
+  }
+  refreshPriceRange() {
+    this.chart.priceScale('right').applyOptions({ autoScale: true });
+    this.series.applyOptions({ autoscaleInfoProvider: this.autoscale });
+    this.scheduleOverlay();
+    this.sharedDrawings?.sync();
+  }
   mountDrawings() {
     if(!globalThis.OXChartDrawings)return;
-    const market="us-v2-twelve-data";
+    const source = this.result?.source || this.capabilities.source || 'twelve-data';
+    const market=`us-v2-${source.replace(/[^a-z0-9-]/gi, '-')}`;
     const drawingKey=`ox-${market}-chart-drawings-v1`;
+    if (this.drawingMarket && this.drawingMarket !== market) {
+      this.sharedDrawings?.destroy(); this.sharedDrawings = null;
+    }
+    this.drawingMarket = market;
     // Existing Crypto component; only OHLCV getters and US-specific persistence are supplied.
     if(!this.sharedDrawings){
       // Migrate all existing US stocks before the component takes its storage snapshot.
       const saved=stored(drawingKey,{});
       try{for(let i=0;i<localStorage.length;i++){
         const key=localStorage.key(i),match=/^ox-us-v2:drawings:([^:]+):twelve-data:(.+)$/.exec(key);
-        if(!match)continue;
+        if(!match || source !== 'twelve-data')continue;
         const scope=`${match[1]}:${match[2]}`,legacy=stored(key,[]);
         if(!saved[scope]&&Array.isArray(legacy)&&legacy.length)saved[scope]=legacy;
       }put(drawingKey,saved);}catch{}
@@ -293,17 +361,19 @@ export class USChart {
     this.onState({ error: message, errorStatus: status, errorCode: code, bars: this.bars });
   }
   key() {
-    return `ox-us-v2:drawings:${this.symbol}:twelve-data:${this.result?.adjustment || "pending"}`;
+    return `ox-us-v2:drawings:${this.symbol}:${this.result?.source || this.capabilities.source || 'twelve-data'}:${this.result?.adjustment || "pending"}`;
   }
   persist() {
     put(this.key(), this.drawings);
   }
   viewportKey() {
-    return `${this.symbol}:${this.interval}:${this.extended}`;
+    return `${this.capabilities.source || 'twelve-data'}:${this.symbol}:${this.interval}:${this.extended}:${this.result?.adjustment || 'pending'}`;
   }
   saveViewport() {
     const r = this.chart?.timeScale().getVisibleLogicalRange();
-    if (r) viewports.set(this.viewportKey(), r);
+    if (r) viewports.set(this.viewportKey(), { logical: r,
+      price: this.gestureState?.chartPriceViewport,
+      margins: this.gestureState?.chartPriceViewportMargins });
   }
   async change({
     symbol = this.symbol,
@@ -327,6 +397,8 @@ export class USChart {
     this.selected = -1;
     this.bars = [];
     this.result = null;
+    this.gestureState.chartPriceViewport = null;
+    this.gestureState.chartPriceViewportMargins = null;
     this.series.setData([]);
     this.volume.setData([]);
     this.ma20.setData([]);
@@ -378,8 +450,9 @@ export class USChart {
         : this.historyExhausted;
       this.applyBars(result.bars, first);
       this.sharedDrawings?.sync();
-      this.message.hidden = true;
-      this.error = false;
+      this.message.hidden = !result.stale;
+      this.message.textContent = result.stale ? "更新暫停 · 保留前次 K 線，稍後自動重試" : "";
+      this.error = Boolean(result.stale);
       this.blocked = false;
       this.root.classList.remove("is-blocked","is-empty-chart");
       this.root.querySelector(".us2-chart-stage").classList.remove("us2-empty-stage");
@@ -391,6 +464,10 @@ export class USChart {
       }
       this.root.querySelector(".us2-chart-meta").textContent =
         `${result.source} · ${result.feed} · ${this.extended ? "含盤前盤後" : "正常盤"} · ${result.adjustment} · ${this.bars.length} 根 · ${result.volumeScope}`;
+      const provider = sourceInfo(result.source), link = this.root.querySelector('.us2-attribution a:last-child');
+      link.textContent = provider.label;
+      if (provider.url) link.href = provider.url;
+      else link.removeAttribute('href');
       this.onState({ ...result, bars: this.bars, error: null });
     } catch (e) {
       if (controller.signal.aborted || this.disposed || id !== this.request)
@@ -455,11 +532,14 @@ export class USChart {
     if (first) {
       const saved = viewports.get(this.viewportKey());
       this.chart.timeScale().setVisibleLogicalRange(
-        saved || {
+        saved?.logical || {
           from: Math.max(0, this.bars.length - (innerWidth < 600 ? 75 : 125)),
           to: this.bars.length + 3,
         },
       );
+      this.gestureState.chartPriceViewport = saved?.price || null;
+      this.gestureState.chartPriceViewportMargins = saved?.margins || null;
+      this.refreshPriceRange();
     }
     this.indicators();
     this.sharedDrawings?.sync();
@@ -570,7 +650,7 @@ export class USChart {
     const timer = countdown(c, this.interval, this.extended);
     const compactTimer = {"正常盤已收線":"已收線","等待成交／收線校正":"待校正","交易日曆待更新":"日曆未知"}[timer] || timer;
     const delay = this.result?.delaySeconds === null ? "未確認" : this.result?.delaySeconds > 0 ? `延${Math.round(this.result.delaySeconds / 60)}分` : "輪詢";
-    const timerText = this.error ? "舊資料" : `${compactTimer}·${delay}`;
+    const timerText = this.error || this.result?.stale ? "舊資料" : `${compactTimer}·${delay}`;
     if (priceNode.textContent !== priceText) priceNode.textContent = priceText;
     if (timerNode.textContent !== timerText) timerNode.textContent = timerText;
     node.title = `${this.error ? "更新失敗，保留舊資料" : timer} · ${delay}`;
@@ -759,7 +839,9 @@ export class USChart {
     this.ro?.disconnect();
     this.overlayEvents?.abort();
     cancelAnimationFrame(this.overlayFrame);
+    cancelAnimationFrame(this.resizeFrame);
     this.sharedDrawings?.destroy();
+    this.gestures?.destroy();
     this.chart?.remove();
     this.root.classList.remove("us2-chart-full");
     document.body.classList.remove("us2-chart-focus");

@@ -597,7 +597,7 @@ export default async function handler(req, res) {
     if (v2 !== null) {
       setShortCache(
         res,
-        endpoint === "directory" ? 86400 : endpoint === "snapshot" ? 300 : 60,
+        v2.stale || v2.quote?.stale ? 5 : endpoint === "directory" ? 86400 : endpoint === "snapshot" ? 300 : 60,
       );
       return ok(res, v2, { provider: capabilities().source, contract: 2 });
     }
