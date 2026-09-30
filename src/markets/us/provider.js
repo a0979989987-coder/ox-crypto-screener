@@ -1,6 +1,6 @@
-import { usProvider, getUSApiBase } from "./api.js?v=20260930-us-boot3";
-import { normalizeCandles, normalizeQuote } from "./model.js?v=20260930-us-boot3";
-import { aggregate4H, aggregateMonthly } from "./aggregate.js?v=20260930-us-boot3";
+import { usProvider, getUSApiBase } from "./api.js?v=20260930-us-data4";
+import { normalizeCandles, normalizeQuote } from "./model.js?v=20260930-us-data4";
+import { aggregate4H, aggregateMonthly } from "./aggregate.js?v=20260930-us-data4";
 const cache = new Map();
 // Old endpoints are used only to validate the existing integration locally.
 // A public preview must never bypass the new redistribution-rights gate.
@@ -19,6 +19,7 @@ export async function fetchJSON(url, { signal, timeout = 12000 } = {}) {
     if (!r.ok || j.ok === false) {
       const e = Error(j.error?.message || `資料請求失敗（${r.status}）`);
       e.status = r.status;
+      e.code = j.error?.code;
       throw e;
     }
     return j.data ?? j;
@@ -42,7 +43,7 @@ export const USAdapter = {
     return j;
   },
   async snapshot(options) {
-    const j = await fetchJSON("data/us-snapshot.json", options);
+    const j = await endpoint("snapshot", {}, options);
     if (j.schemaVersion !== 2 || !Array.isArray(j.analyses))
       throw Error("掃描快照格式錯誤。");
     return j;

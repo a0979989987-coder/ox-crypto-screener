@@ -12,16 +12,16 @@ import {
   toolNames,
   patterns,
   sectorETF,
-} from "./view-utils.js?v=20260930-us-boot3";
-import { toolsViews } from "./tools.js?v=20260930-us-boot3";
-import { newsViews } from "./news.js?v=20260930-us-boot3";
-import { USAdapter, fetchJSON } from "./provider.js?v=20260930-us-boot3";
-import { USChart } from "./chart.js?v=20260930-us-boot3";
-import { searchDirectory, quoteStatus } from "./model.js?v=20260930-us-boot3";
-import { sessionAt, nyParts } from "./calendar.js?v=20260930-us-boot3";
+} from "./view-utils.js?v=20260930-us-data4";
+import { toolsViews } from "./tools.js?v=20260930-us-data4";
+import { newsViews } from "./news.js?v=20260930-us-data4";
+import { USAdapter, fetchJSON } from "./provider.js?v=20260930-us-data4";
+import { USChart } from "./chart.js?v=20260930-us-data4";
+import { searchDirectory, quoteStatus } from "./model.js?v=20260930-us-data4";
+import { sessionAt, nyParts } from "./calendar.js?v=20260930-us-data4";
 
-import { tierResults } from "./analysis.js?v=20260930-us-boot3";
-import { icon, openDialog, closeDialog } from "./ui.js?v=20260930-us-boot3";
+import { tierResults } from "./analysis.js?v=20260930-us-data4";
+import { icon, openDialog, closeDialog } from "./ui.js?v=20260930-us-data4";
 export class USWorkspace {
   constructor() {
     const storedPrefs = read(prefsKey, {});
@@ -87,11 +87,13 @@ export class USWorkspace {
         this.cap = c;
         this.chart?.setCapabilities(c);
         this.updateCounts();
+        this.paintList();
+        this.updateLive();
       }),
       USAdapter.snapshot({ signal })
         .then((s) => {
           if(signal.aborted)return;
-          this.snapshotError=null;
+          this.snapshotError=s.error || null;
           this.snapshot = s;
           for (const q of s.quotes || []) this.quotes.set(q.symbol, q);
           this.updateCounts();
@@ -193,6 +195,12 @@ export class USWorkspace {
     if (!this.active || document.body.dataset.market !== "us") return;
     const live = document.getElementById("ox-live-text");
     if (live) {
+      if ((this.cap.externalDisplayConfirmed === false && !this.cap.legacy) || this.chartErrorCode === "US_DATA_DISPLAY_RIGHTS_REQUIRED") {
+        live.textContent = "美股 · 行情展示未開通 · 股票搜尋與收藏可用";
+        live.title = live.textContent;
+        live.dataset.usText = live.textContent;
+        return;
+      }
       const benchmarks = ["SPY", "QQQ", "IWM"]
         .map((s) => this.quotes.get(s))
         .filter(Boolean);
@@ -208,7 +216,7 @@ export class USWorkspace {
   openData(opener) { this.updateDataBrief(); openDialog(this.root.querySelector(".us2-data-dialog"),opener); }
   updateDataBrief() {
     const error=this.chartError || this.quoteError;
-    const label=error?.includes("授權")?"授權未確認":error?"資料異常":sessionAt().label;
+    const label=((this.cap.externalDisplayConfirmed === false && !this.cap.legacy) || this.chartErrorCode === "US_DATA_DISPLAY_RIGHTS_REQUIRED")?"行情未開通":error?.includes("授權")?"授權未確認":error?"資料異常":sessionAt().label;
     this.root?.querySelectorAll("[data-data-open]").forEach(node=>{node.textContent=label;node.title=error||"查看行情時間、來源、股票資料與掃描狀態";});
     const symbol=this.state.view==="home"?this.state.homeSymbol:this.state.symbol;
     const item=this.directory.find(x=>x.symbol===symbol),q=this.quotes.get(symbol);
@@ -284,6 +292,11 @@ export class USWorkspace {
   }
   async lookupQuote(symbol) {
     this.quoteController?.abort();
+    if (this.cap.externalDisplayConfirmed === false && !this.cap.legacy) {
+      this.quoteError = "美股行情尚未開通對外展示。";
+      this.updateDataBrief();
+      return;
+    }
     const c = new AbortController();
     this.quoteController = c;
     try {
@@ -363,7 +376,19 @@ export class USWorkspace {
         if (!this.active) return;
         if (!result.error && result.bars?.length)
           this.lookupQuote(result.symbol || this.chart?.symbol || symbol);
+        const hadError = Boolean(this.chartError);
         this.chartError = result.error;
+        this.chartErrorStatus = result.errorStatus;
+        this.chartErrorCode = result.errorCode;
+        const empty = !!result.error && !result.bars?.length;
+        const homeWrap = container.closest(".btc-premium-chart-wrap,.us2-unavailable-chart-wrap");
+        if (homeWrap) {
+          homeWrap.classList.toggle("btc-premium-chart-wrap", !empty);
+          homeWrap.classList.toggle("us2-unavailable-chart-wrap", empty);
+          homeWrap.closest(".ox-home-chart").style.minHeight = empty ? "0" : "";
+        }
+        this.root.querySelector(".us2-radar-layout")?.classList.toggle("is-unavailable", empty);
+        if (result.error || hadError) this.paintList();
         this.updateIdentity();
         this.updateLive();
       },
@@ -555,7 +580,7 @@ export class USWorkspace {
             return this.rowHTML(row, {reasons:true, tierStart, tierEnd: row.tier && rows[i + 1]?.tier !== row.tier});
           })
           .join("")
-      : `<div class="us2-empty">${this.state.watchOnly ? "自選尚無標的。搜尋股票並點星星收藏。" : this.snapshot?.analyses?.length ? "目前沒有符合條件的候選，請切換策略或多空。" : "共用掃描資料尚未取得。搜尋股票可查看真實報價與完整 K 線。"}</div>`;
+      : `<div class="us2-empty">${this.state.watchOnly ? "自選尚無標的。搜尋股票並點星星收藏。" : this.snapshot?.analyses?.length ? "目前沒有符合條件的候選，請切換策略或多空。" : ((this.cap.externalDisplayConfirmed === false && !this.cap.legacy) || this.chartErrorCode === "US_DATA_DISPLAY_RIGHTS_REQUIRED") ? "行情與掃描尚未開通。可先搜尋股票、建立自選。" : "共用掃描資料尚未取得，暫無分析結果。"}</div>`;
     list.scrollTop = y;
     this.bindRows(list);
     const control = this.root.querySelector(".us2-tier .radar-tier-current");

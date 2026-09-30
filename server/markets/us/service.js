@@ -58,22 +58,18 @@ async function readDirectory() {
   return j;
 }
 export async function snapshot() {
+  const empty = { schemaVersion: 2, asOf: null, quotes: [], analyses: [],
+    counts: { searchable: 0, quoted: 0, scanned: 0 } };
+  if (!capabilities().externalDisplayConfirmed)
+    return { ...empty, error: "行情展示授權未確認；公開掃描尚未開通。" };
   try {
-    return JSON.parse(
-      await readFile(
-        new URL("../../../data/us-snapshot.json", import.meta.url),
-        "utf8",
-      ),
-    );
+    const data = JSON.parse(await readFile(
+      new URL("../../../data/us-snapshot.json", import.meta.url), "utf8"));
+    if (data.privateValidation)
+      return { ...empty, error: "私下驗證快照不可公開展示。" };
+    return data;
   } catch {
-    return {
-      schemaVersion: 2,
-      asOf: null,
-      quotes: [],
-      analyses: [],
-      counts: { searchable: 0, quoted: 0, scanned: 0 },
-      error: "尚未完成共用股票池收集；可使用搜尋與個股 K 線。",
-    };
+    return { ...empty, error: "共用掃描快照尚未建立，暫無分析結果。" };
   }
 }
 export async function handleUS2(endpoint, query, upstream) {

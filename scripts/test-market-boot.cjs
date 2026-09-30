@@ -41,6 +41,7 @@ mkdirSync(output, { recursive: true });
 async function verify(browser, engine, base, scenario, width) {
   const context = await browser.newContext({ viewport: { width, height: 932 }, isMobile: true, hasTouch: true });
   const page = await context.newPage();
+  page.setDefaultTimeout(10000);
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));
   let blocked = scenario === 'module-failure';
@@ -63,6 +64,8 @@ async function verify(browser, engine, base, scenario, width) {
       }
       if (url.pathname === '/data/us-snapshot.json') return route.fulfill({ json: { schemaVersion: 2, analyses: [], quotes: [], counts: { quoted: 0, scanned: 0 }, analysisIntervals: ['1D'] } });
       if (url.pathname === '/data/us-directory.json') return route.fulfill({ json: { schemaVersion: 2, items: [], receivedAt: Date.now() } });
+      if (url.pathname.endsWith('/snapshot')) return route.fulfill({json:{ok:true,data:{schemaVersion:2,quotes:[],analyses:[],counts:{quoted:0,scanned:0},error:'行情展示授權未確認；公開掃描尚未開通。'}}});
+      if (url.pathname.endsWith('/capabilities')) return route.fulfill({ json: {ok:true,data:{externalDisplayConfirmed:false,source:'twelve-data',extendedHours:false}} });
       if (url.pathname.startsWith('/api/')) return route.fulfill({ status: 403, json: { ok: false, error: { message: 'TEST FIXTURE：美股對外展示授權尚未確認。' } } });
       return route.continue();
     }
@@ -79,7 +82,7 @@ async function verify(browser, engine, base, scenario, width) {
     assert.equal(await page.locator('.us2-ticker').count(), 0);
     await page.evaluate(() => {
       const script = document.createElement('script');
-      script.src = '/src/app/market-boot.js?v=20260930-us-boot3';
+      script.src = '/src/app/market-boot.js?v=20260930-us-data4';
       document.body.append(script);
     });
   }
@@ -98,7 +101,16 @@ async function verify(browser, engine, base, scenario, width) {
   }
   await page.locator('.us2-ticker').waitFor({ timeout: 5000 });
   const mountedMs = Date.now() - start;
-  await page.waitForFunction(() => document.querySelector('.us2-chart-message')?.textContent.includes('授權尚未確認'));
+  await page.waitForFunction(() => document.querySelector('.us2-chart-message')?.textContent.includes('行情尚未開通'));
+  const compact = await page.locator('.us2-chart-stage').evaluate(el => el.getBoundingClientRect().height);
+  assert.ok(compact <= 140, `blocked chart occupies ${compact}px`);
+  const layout = await page.locator('.us2-radar-layout').evaluate(el => {
+    const chart=el.querySelector('.us2-chart-root').getBoundingClientRect();
+    const list=el.querySelector('.us2-scanner').getBoundingClientRect();
+    return {chartRight:chart.right,listLeft:list.left,chartBottom:chart.bottom,listTop:list.top};
+  });
+  assert.ok(layout.listTop >= layout.chartBottom-1, 'unavailable mobile scanner must follow compact chart');
+  assert.equal(await page.locator('.us2-scanner').innerText().then(s=>s.includes('搜尋股票可查看真實報價')), false);
   assert.equal(await page.locator('.us2-timeframes .btn-tf').count(), 7);
   assert.equal(await page.locator('.us2-timeframe-dialog input').count(), 9);
   assert.equal(await page.locator('.us-boot-status').count(), 0);
@@ -114,7 +126,12 @@ async function verify(browser, engine, base, scenario, width) {
   await page.locator('[data-market-choice="us"]').click();
   await page.locator('#ox-control-close').click();
   await page.locator('.us2-ticker').waitFor();
-  console.log(JSON.stringify({ engine, scenario, width, mountedMs, overflow, expectedGraphErrors: errors.length }));
+  await page.locator('.dock-btn[data-view-target="home"]').click();
+  await page.waitForFunction(()=>document.querySelector('.us2-home-pane .us2-chart-message')?.textContent.includes('行情尚未開通'));
+  const heroHeight=await page.locator('.us2-home-chart').evaluate(el=>el.getBoundingClientRect().height);
+  assert.ok(heroHeight < 370, `unavailable homepage hero occupies ${heroHeight}px`);
+  await page.screenshot({path:`${output}/${engine}-${scenario}-${width}-home.png`});
+  console.log(JSON.stringify({ engine, scenario, width, mountedMs, overflow, compact, heroHeight, expectedGraphErrors: errors.length }));
   await context.close();
 }
 (async () => {

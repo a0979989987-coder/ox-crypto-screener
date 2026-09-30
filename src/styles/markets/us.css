@@ -50,7 +50,10 @@ body[data-market="us"] #market-unavailable-card.us2-root[hidden],.us2-root [hidd
 .us2-drawings {position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2}
 .us2-ohlc {position:absolute;top:5px;left:7px;right:60px;z-index:3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted);font-size:8px;pointer-events:none}
 .us2-chart-message {position:absolute;top:42px;left:9px;right:9px;z-index:3;color:var(--muted);font-size:11px;line-height:1.6;padding:10px 7px;background:var(--panel);border-radius:8px}
-.us2-chart-root.is-empty-chart .us2-chart-stage {height:clamp(180px,28svh,260px)}
+.us2-chart-root.is-empty-chart .us2-chart-stage {height:112px;min-height:112px}
+.us2-chart-root.is-empty-chart .us2-chart-message {top:8px}
+.us2-unavailable-chart-wrap {margin:10px 0 5px;min-width:0}
+.us2-radar-layout.is-unavailable .us2-scanner .scanner-body {min-height:0;max-height:160px}
 .us2-chart-root.is-blocked .us2-latest {display:none}
 .us2-latest {position:absolute;right:66px;bottom:28px;z-index:6;width:26px;height:26px;padding:4px;border:1px solid #ffffff42;border-radius:7px;background:#161b22df;color:var(--ink)}
 .us2-price-label {position:absolute;right:2px;top:0;z-index:7;pointer-events:none;background:#ad2350;color:#fff;border-radius:2px;padding:1px 2px;min-width:52px;text-align:right}
@@ -114,6 +117,8 @@ body[data-market="us"][data-us-workspace="1"] :is(#scan-status,#btn-rescan,#mark
 body[data-market="us"][data-us-workspace="1"] #view-data:has(#ox-news-center),body[data-market="us"][data-us-workspace="1"] #view-media:has(.media-page) {display:none!important}
 @media(max-width:720px){
  .us2-radar-layout {gap:7px}
+ .us2-radar-layout.is-unavailable {display:flex;flex-direction:column}
+ .us2-radar-layout.is-unavailable>.us2-chart-root,.us2-radar-layout.is-unavailable>.us2-scanner {width:100%}
  .us2-symbol-picker {font-size:10px}.us2-data-brief {font-size:8px}
  .us2-home-grid {grid-template-columns:1fr;gap:8px}
  .us2-filter-line small {max-width:45%;text-align:right}

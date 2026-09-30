@@ -83,3 +83,14 @@ test("chart provider requests splits-only adjustment and passes native OHLCV and
   assert.equal(result.delaySeconds, null);
   assert.equal(result.adjustment, "splits");
 });
+
+test("unlicensed public snapshot returns explicit state and no private quotes", async () => {
+  const result = await handleUS2("snapshot", {}, () => {
+    throw Error("snapshot must not request upstream");
+  });
+  assert.equal(result.asOf, null);
+  assert.deepEqual(result.quotes, []);
+  assert.deepEqual(result.analyses, []);
+  assert.equal(result.counts.scanned, 0);
+  assert.match(result.error, /授權未確認/);
+});

@@ -1,7 +1,7 @@
-import { USAdapter } from "./provider.js?v=20260930-us-boot3";
-import { INTERVALS, countdown, sessionAt, nyParts } from "./calendar.js?v=20260930-us-boot3";
-import { mergeCandles, movingAverage, vwap } from "./model.js?v=20260930-us-boot3";
-import { icon, positionTimeframe, openDialog, closeDialog } from "./ui.js?v=20260930-us-boot3";
+import { USAdapter } from "./provider.js?v=20260930-us-data4";
+import { INTERVALS, countdown, sessionAt, nyParts } from "./calendar.js?v=20260930-us-data4";
+import { mergeCandles, movingAverage, vwap } from "./model.js?v=20260930-us-data4";
+import { icon, positionTimeframe, openDialog, closeDialog } from "./ui.js?v=20260930-us-data4";
 const UP = "#00b8d4",
   DOWN = "#ff3078";
 const esc = (s) =>
@@ -267,8 +267,30 @@ export class USChart {
   }
   setCapabilities(capabilities) {
     this.capabilities=capabilities;
+    if (capabilities.externalDisplayConfirmed === false && !capabilities.legacy) {
+      ++this.request;
+      this.controller?.abort();
+      this.loading = false;
+      this.unavailable("美股行情尚未開通對外展示；等待不會載入。", 403, "US_DATA_DISPLAY_RIGHTS_REQUIRED");
+    }
     const option=this.root.querySelector('[data-session] option[value="extended"]');
     if(option){option.disabled=!capabilities.extendedHours;option.textContent=capabilities.extendedHours?'含盤前盤後':'含盤前盤後 · 權限未確認';}
+  }
+  unavailable(message, status = 0, code = null) {
+    this.error = true;
+    this.blocked = status === 403;
+    clearTimeout(this.poll);
+    const empty = !this.bars.length;
+    this.root.classList.toggle("is-blocked", this.blocked);
+    this.root.classList.toggle("is-empty-chart", empty);
+    const stage = this.root.querySelector(".us2-chart-stage");
+    stage.classList.toggle("us2-empty-stage", empty);
+    stage.classList.toggle("chart-container", !empty);
+    if (empty) this.root.querySelector(".us2-ohlc").textContent = "";
+    this.root.querySelector("[data-expand]").disabled = empty;
+    this.message.hidden = false;
+    this.message.textContent = `${empty ? "" : "保留前次資料 · "}${message}`;
+    this.onState({ error: message, errorStatus: status, errorCode: code, bars: this.bars });
   }
   key() {
     return `ox-us-v2:drawings:${this.symbol}:twelve-data:${this.result?.adjustment || "pending"}`;
@@ -325,6 +347,10 @@ export class USChart {
   }
   async load(force = false) {
     if (this.disposed || !this.chart || this.loading) return;
+    if (this.capabilities.externalDisplayConfirmed === false && !this.capabilities.legacy) {
+      this.unavailable("美股行情尚未開通對外展示；等待不會載入。", 403, "US_DATA_DISPLAY_RIGHTS_REQUIRED");
+      return;
+    }
     const id = ++this.request,
       controller = new AbortController();
     this.controller = controller;
@@ -357,6 +383,8 @@ export class USChart {
       this.blocked = false;
       this.root.classList.remove("is-blocked","is-empty-chart");
       this.root.querySelector(".us2-chart-stage").classList.remove("us2-empty-stage");
+      this.root.querySelector(".us2-chart-stage").classList.add("chart-container");
+      this.root.querySelector("[data-expand]").disabled = false;
       if (first) {
         this.mountDrawings();
         this.draw();
@@ -367,15 +395,10 @@ export class USChart {
     } catch (e) {
       if (controller.signal.aborted || this.disposed || id !== this.request)
         return;
-      this.error = true;
-      this.blocked = e.status === 403;
-      this.root.classList.toggle("is-blocked",this.blocked);
-      this.root.classList.toggle("is-empty-chart",!this.bars.length);
-      this.root.querySelector(".us2-chart-stage").classList.toggle("us2-empty-stage",!this.bars.length);
-      if(!this.bars.length)this.root.querySelector(".us2-ohlc").textContent="";
-      this.message.hidden = false;
-      this.message.textContent = `${this.bars.length ? "保留前次資料 · " : ""}${e.status === 429 ? "額度用盡，稍後自動重試" : e.message}`;
-      this.onState({ error: e.message, bars: this.bars });
+      const licenseRequired = e.code === "US_DATA_DISPLAY_RIGHTS_REQUIRED" || e.message.includes("對外展示授權");
+      this.unavailable(licenseRequired
+        ? "美股行情尚未開通對外展示；等待不會載入。"
+        : e.status === 429 ? "額度用盡，稍後自動重試" : e.message, e.status, licenseRequired ? "US_DATA_DISPLAY_RIGHTS_REQUIRED" : e.code);
     } finally {
       if (id === this.request) {
         this.loading = false;
