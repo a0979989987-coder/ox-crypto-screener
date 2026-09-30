@@ -57,3 +57,6 @@ const preloadTaiwan = () => { if (!document.hidden) twModule.preload(); };
 if ('requestIdleCallback' in window) window.requestIdleCallback(preloadTaiwan, { timeout: 1200 });
 else setTimeout(preloadTaiwan, 300);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) preloadTaiwan(); });
+
+// Keep the next Taiwan switch warm during longer sessions in another market.
+setInterval(() => { if (document.body.dataset.market !== 'tw') preloadTaiwan(); }, 300000);
