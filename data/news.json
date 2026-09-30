@@ -1357,32 +1357,6 @@
       "translationStatus": "translated"
     },
     {
-      "id": "32d3cbc35db37bca19fe",
-      "title": "ECB wage tracker at 2.7% in H1 2027, pointing to a modest uptick in negotiated wage growth",
-      "link": "https://www.ecb.europa.eu//press/pr/date/2026/html/ecb.pr260916~7bc58ebef4.en.html",
-      "publishedAt": "2026-09-16T08:00:00.000Z",
-      "source": "European Central Bank",
-      "sourceId": "ecb",
-      "markets": [
-        "forex"
-      ],
-      "kind": "news",
-      "verified": "official-source",
-      "impact": {
-        "stars": null,
-        "impactImportance": null,
-        "reason": "尚未評估；標題不足以判定影響力",
-        "ruleVersion": "unassessed-v1",
-        "evidence": null,
-        "sourceConfidence": "official-source",
-        "analysisConfidence": null,
-        "direction": null,
-        "sourceId": "ecb"
-      },
-      "titleZh": "歐洲央行薪資追蹤指標：2027 年上半年為 2.7%，協商薪資成長略有回升",
-      "translationStatus": "translated"
-    },
-    {
       "id": "f99ba758387d160ad776",
       "title": "臺灣全球金融中心排名兩年躍升31名 亞資政策國際能見度大幅提升",
       "link": "https://www.twse.com.tw/rwd/zh/news/newsDetail/8a8216d6a066696301a0a8e012790103",
@@ -1536,32 +1510,6 @@
         "sourceId": "sec"
       },
       "titleZh": "美國證管會豁免部分內嵌式可延伸商業報導語言申報或提交要求",
-      "translationStatus": "translated"
-    },
-    {
-      "id": "86b43637921b32c4422e",
-      "title": "Christine Lagarde: A new age of capital: growth, sovereignty and AI",
-      "link": "https://www.ecb.europa.eu//press/key/date/2026/html/ecb.sp260914_2~a3f0efbee4.en.html",
-      "publishedAt": "2026-09-14T15:15:00.000Z",
-      "source": "European Central Bank",
-      "sourceId": "ecb",
-      "markets": [
-        "forex"
-      ],
-      "kind": "news",
-      "verified": "official-source",
-      "impact": {
-        "stars": null,
-        "impactImportance": null,
-        "reason": "尚未評估；標題不足以判定影響力",
-        "ruleVersion": "unassessed-v1",
-        "evidence": null,
-        "sourceConfidence": "official-source",
-        "analysisConfidence": null,
-        "direction": null,
-        "sourceId": "ecb"
-      },
-      "titleZh": "克莉絲汀・拉加德：資本新時代——成長、主權與人工智慧",
       "translationStatus": "translated"
     },
     {
@@ -2586,32 +2534,6 @@
       "translationStatus": "translated"
     },
     {
-      "id": "1c9e1bbeb9e7eb51909f",
-      "title": "SEC Establishes Financial Reporting and Accounting Unit in Enforcement Division",
-      "link": "https://www.sec.gov/newsroom/press-releases/2026-72-sec-establishes-financial-reporting-accounting-unit-enforcement-division",
-      "publishedAt": "2026-08-05T18:30:00.000Z",
-      "source": "U.S. SEC",
-      "sourceId": "sec",
-      "markets": [
-        "us"
-      ],
-      "kind": "news",
-      "verified": "official-source",
-      "impact": {
-        "stars": null,
-        "impactImportance": null,
-        "reason": "尚未評估；標題不足以判定影響力",
-        "ruleVersion": "unassessed-v1",
-        "evidence": null,
-        "sourceConfidence": "official-source",
-        "analysisConfidence": null,
-        "direction": null,
-        "sourceId": "sec"
-      },
-      "titleZh": "美國證管會在執法部門成立財務報導與會計小組",
-      "translationStatus": "translated"
-    },
-    {
       "id": "bf6945162d68dc5a1887",
       "title": "Announcing a Trillion Dollar Security grant for WEBCAT",
       "link": "https://blog.ethereum.org/en/2026/08/05/1ts-grant",
@@ -2635,32 +2557,6 @@
         "sourceId": "ethereum"
       },
       "titleZh": "以太坊「兆美元安全」計畫宣布提供 WEBCAT 專案補助",
-      "translationStatus": "translated"
-    },
-    {
-      "id": "b49643d97ea1e3486909",
-      "title": "SEC Announces Continuation of Small Business Advisory Committee Meeting",
-      "link": "https://www.sec.gov/newsroom/press-releases/2026-71-sec-announces-continuation-small-business-advisory-committee-meeting",
-      "publishedAt": "2026-07-30T13:53:38.000Z",
-      "source": "U.S. SEC",
-      "sourceId": "sec",
-      "markets": [
-        "us"
-      ],
-      "kind": "news",
-      "verified": "official-source",
-      "impact": {
-        "stars": null,
-        "impactImportance": null,
-        "reason": "尚未評估；標題不足以判定影響力",
-        "ruleVersion": "unassessed-v1",
-        "evidence": null,
-        "sourceConfidence": "official-source",
-        "analysisConfidence": null,
-        "direction": null,
-        "sourceId": "sec"
-      },
-      "titleZh": "美國證管會宣布續開小型企業諮詢委員會會議",
       "translationStatus": "translated"
     },
     {
@@ -4833,7 +4729,7 @@
       }
     }
   ],
-  "generatedAt": "2026-09-30T12:45:32.148Z",
+  "generatedAt": "2026-09-30T18:39:21.835Z",
   "sources": [
     {
       "id": "twse",
@@ -4872,8 +4768,8 @@
     },
     {
       "id": "kraken",
-      "status": "ready",
-      "count": 7
+      "status": "error",
+      "message": "HTTP 403"
     },
     {
       "id": "cftc",
