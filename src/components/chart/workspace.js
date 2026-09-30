@@ -4,6 +4,17 @@ function getChartRightOffset() {
   return ((state.chartPriceAxisWidth || 44) + 16) / spacing;
 }
 
+let chartPriceOverlayFrame = 0;
+function scheduleChartPriceOverlayUpdate() {
+  if (chartPriceOverlayFrame) return;
+  // Chart mutations queue LWC's paint first; align labels in that same frame.
+  chartPriceOverlayFrame = requestAnimationFrame(() => {
+    chartPriceOverlayFrame = 0;
+    updatePriceTimer();
+    updateKeyLevelVisualLabels();
+  });
+}
+
 function renderCompactChartPriceAxis() {
   const axis=document.querySelector('#chart .chart-price-axis');
   if (!axis || !state.candleSeries || !state.candleData.length) return;
@@ -26,10 +37,20 @@ function renderCompactChartPriceAxis() {
   const badge=document.querySelector('#chart .chart-mobile-last-price');
   const width=Math.ceil(Math.max(24,badge?.offsetWidth || 0,...labels.map(l=>ctx.measureText(l.text).width))+6);
   state.chartPriceAxisWidth=width;
-  axis.style.width=`${width}px`;axis.style.height=`${height}px`;
-  axis.replaceChildren(...labels.map(label=>{const el=document.createElement('span');el.textContent=label.text;el.style.top=`${label.y}px`;return el;}));
+  if(axis.style.width!==`${width}px`)axis.style.width=`${width}px`;
+  if(axis.style.height!==`${height}px`)axis.style.height=`${height}px`;
   const grid=document.querySelector('#chart .chart-price-grid');
-  grid?.replaceChildren(...labels.map(label=>{const line=document.createElement('i');line.style.top=`${label.y}px`;return line;}));
+  // Reuse the ticks/grid instead of allocating and removing dozens of nodes on every move.
+  for (const [parent,tag] of [[axis,'span'],[grid,'i']]) {
+    if(!parent)continue;
+    while(parent.children.length<labels.length)parent.append(document.createElement(tag));
+    while(parent.children.length>labels.length)parent.lastElementChild.remove();
+    labels.forEach((label,index)=>{
+      const el=parent.children[index],top=`${label.y}px`;
+      if(tag==='span'&&el.textContent!==label.text)el.textContent=label.text;
+      if(el.style.top!==top)el.style.top=top;
+    });
+  }
 }
 
 function chartAxisPrecision(price) {
@@ -54,7 +75,8 @@ function refreshChartPriceViewport() {
   // Reapplying the provider invalidates the library's autoscale cache.
   state.chart?.priceScale("right").applyOptions({ autoScale: true });
   state.candleSeries?.applyOptions({ autoscaleInfoProvider: chartPriceAutoscale });
-  requestAnimationFrame(renderCompactChartPriceAxis);
+  // Vertical price pans do not emit a time-scale range change.
+  scheduleChartPriceOverlayUpdate();
   document.dispatchEvent(new Event('ox:chartpriceview'));
 }
 
@@ -447,7 +469,7 @@ function initChart() {
 
 
   state.chart.timeScale().subscribeVisibleLogicalRangeChange(range => {
-    requestAnimationFrame(() => { updatePriceTimer(); updateKeyLevelVisualLabels(); });
+    scheduleChartPriceOverlayUpdate();
     if (!range || state.isLoadingOlder || !state.hasMoreHistory || !state.candleData.length) return;
     if (range.from <= 12) loadMoreHistoricalCandles();
   });
@@ -461,7 +483,7 @@ function initChart() {
       applyChartFutureSpace();
     }
     resizeChartToContainer();
-    updatePriceTimer();
+    scheduleChartPriceOverlayUpdate();
   }).observe(container);
   enableMobileChartPriceGestures(container);
 }
@@ -746,9 +768,19 @@ function updatePriceTimer() {
   const lastY = state.candleSeries.priceToCoordinate(last.close);
   if (badge && Number.isFinite(lastY)) {
     badge.removeAttribute("hidden");
-    badge.innerHTML = `<strong>${formatChartAxisPrice(last.close)}</strong>${mobile ? `<small>${countdown}</small>` : ''}`;
-    badge.setAttribute('aria-label',`價格 ${formatChartAxisPrice(last.close)}，收線倒數 ${countdown}`);
-    badge.style.top = `${Math.max(22, Math.min(document.getElementById('chart').clientHeight - state.chart.timeScale().height() - 22, lastY))}px`;
+    let priceText=badge.querySelector('strong'),timeText=badge.querySelector('small');
+    if(!priceText){priceText=document.createElement('strong');badge.append(priceText);}
+    const price=formatChartAxisPrice(last.close);
+    if(priceText.textContent!==price)priceText.textContent=price;
+    if(mobile){
+      if(!timeText){timeText=document.createElement('small');badge.append(timeText);}
+      if(timeText.textContent!==countdown)timeText.textContent=countdown;
+    }else timeText?.remove();
+    const label=`價格 ${price}，收線倒數 ${countdown}`;
+    if(badge.getAttribute('aria-label')!==label)badge.setAttribute('aria-label',label);
+    const y=Math.max(22, Math.min(document.getElementById('chart').clientHeight - state.chart.timeScale().height() - 22, lastY));
+    const transform=`translate3d(0px, ${y}px, 0px) translateY(-50%)`;
+    if(badge.style.transform!==transform)badge.style.transform=transform;
     badge.classList.toggle('is-up', last.close >= last.open);
   }
   if (mobile) {
@@ -760,7 +792,8 @@ function updatePriceTimer() {
   const timeStr = `${h > 0 ? `${h}h ` : ''}${String(m).padStart(2, "0")}m ${String(s).padStart(2, "0")}s`;
   const y = state.candleSeries.priceToCoordinate(last.close);
   timerEl.style.transform = "translateY(-50%)";
-  timerEl.innerHTML = `${fmtPrice(last.close)}<small>倒數 ${timeStr}</small>`;
+  const markup=`${fmtPrice(last.close)}<small>倒數 ${timeStr}</small>`;
+  if(timerEl.innerHTML!==markup)timerEl.innerHTML=markup;
   if (Number.isFinite(y)) {
     timerEl.style.top = `${Math.max(16, Math.min(document.getElementById("chart").clientHeight - 24, y))}px`;
   }

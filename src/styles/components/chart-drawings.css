@@ -83,7 +83,7 @@ body.ox-terminal :is(#view-radar,.tw-chart-radar) .chart-box:-webkit-full-screen
 body.ox-terminal :is(#view-radar,.tw-chart-radar) .chart-box>#btn-chart-exit-overlay svg {width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.6}
 
 /* Opaque, high-contrast numerals survive the terminal theme's inherited colors. */
-body.ox-terminal #view-radar #chart .chart-mobile-last-price {background:#a80f45!important;color:#fff!important;opacity:1!important;padding:1px 2px;font:600 10px/1.15 system-ui;text-align:right;box-shadow:0 0 0 .5px #ffffff38}
+body.ox-terminal #view-radar #chart .chart-mobile-last-price {background:#a80f45!important;color:#fff!important;opacity:1!important;padding:1px 2px;font:600 10px/1.15 system-ui;text-align:right;box-shadow:0 0 0 .5px #ffffff38;top:0;will-change:transform;transition:none!important}
 body.ox-terminal #view-radar #chart .chart-mobile-last-price.is-up {background:#00687f!important}
 body.ox-terminal #view-radar #chart .chart-mobile-last-price strong {display:block;color:#fff!important;font:inherit!important;letter-spacing:0!important}
 body.ox-terminal #view-radar #chart .chart-mobile-last-price small {display:block;color:#fff!important;font:600 8px/1.15 system-ui!important;margin:0;letter-spacing:0!important}
