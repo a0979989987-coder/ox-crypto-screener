@@ -60,7 +60,9 @@ body[data-market="us"] #market-unavailable-card.us2-root[hidden],.us2-root [hidd
 .us2-radar-layout.is-widget .scanner-body {min-height:0;max-height:180px}
 .us2-free-display .us2-quote-value {font-size:12px;color:var(--muted);font-weight:500}
 .us2-free-display .ox-home-price {display:none}
-.us2-widget-summary {display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;padding:0;overflow:hidden}
+.us2-widget-summary {display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;min-height:52px;padding:6px 8px;overflow:hidden}
+.us2-widget-summary .us2-symbol-picker,.us2-widget-summary .us2-data-brief {min-height:30px}
+.us2-widget-summary .us2-data-brief {font-size:10px}
 .us2-free-display .us2-ticker .market-line-price {position:relative;padding-right:36px}
 .us2-free-display .us2-ticker .market-line-price>.us2-star {position:absolute;right:3px;top:50%;transform:translateY(-50%);width:32px;height:36px;font-size:17px}
 .us2-widget-summary .us2-symbol-picker,.us2-widget-summary .us2-ticker-name {max-width:calc(100% - 38px)}

@@ -560,7 +560,7 @@ export class USWorkspace {
       card.classList.toggle('us2-widget-summary',widget);
       const identityCell=ticker.querySelector('.market-line-price');
       let name=identityCell.querySelector('.us2-ticker-name');
-      if(!name){name=document.createElement('small');name.className='us2-ticker-name';identityCell.append(name);}
+      if(!name){name=document.createElement('span');name.className='us2-ticker-name';identityCell.append(name);}
       name.hidden=!widget;name.textContent=item?.alias||item?.name||symbol;name.title=name.textContent;
       if(widget)identityCell.append(ticker.querySelector('[data-watch]'));
       else ticker.querySelector('.us2-volume-cell').append(ticker.querySelector('[data-watch]'));
