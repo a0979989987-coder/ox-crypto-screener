@@ -1,3 +1,4 @@
+import { handleUS2 } from "../../../server/markets/us/service.js";
 const TWELVE_DATA_BASE_URL = "https://api.twelvedata.com";
 
 const DEFAULT_TIMEOUT_MS = 10000;
@@ -7,7 +8,7 @@ const DEFAULT_ALLOWED_ORIGINS = [
   "http://localhost:3000",
   "http://localhost:5173",
   "http://127.0.0.1:3000",
-  "http://127.0.0.1:5173"
+  "http://127.0.0.1:5173",
 ];
 
 /* -------------------------------------------------------------------------- */
@@ -25,41 +26,28 @@ function ok(res, data, meta = undefined) {
   return json(res, 200, {
     ok: true,
     data,
-    ...(meta ? { meta } : {})
+    ...(meta ? { meta } : {}),
   });
 }
 
-function fail(
-  res,
-  status,
-  code,
-  message,
-  details = undefined
-) {
+function fail(res, status, code, message, details = undefined) {
   return json(res, status, {
     ok: false,
     error: {
       code,
       message,
-      ...(details ? { details } : {})
-    }
+      ...(details ? { details } : {}),
+    },
   });
 }
 
 function getAllowedOrigins() {
-  const extra = String(
-    process.env.OX_ALLOWED_ORIGINS || ""
-  )
+  const extra = String(process.env.OX_ALLOWED_ORIGINS || "")
     .split(",")
-    .map(value => value.trim())
+    .map((value) => value.trim())
     .filter(Boolean);
 
-  return [
-    ...new Set([
-      ...DEFAULT_ALLOWED_ORIGINS,
-      ...extra
-    ])
-  ];
+  return [...new Set([...DEFAULT_ALLOWED_ORIGINS, ...extra])];
 }
 
 function applyCors(req, res) {
@@ -75,33 +63,19 @@ function applyCors(req, res) {
     return false;
   }
 
-  res.setHeader(
-    "Access-Control-Allow-Origin",
-    origin
-  );
+  res.setHeader("Access-Control-Allow-Origin", origin);
 
-  res.setHeader(
-    "Vary",
-    "Origin"
-  );
+  res.setHeader("Vary", "Origin");
 
-  res.setHeader(
-    "Access-Control-Allow-Methods",
-    "GET, OPTIONS"
-  );
+  res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
 
-  res.setHeader(
-    "Access-Control-Allow-Headers",
-    "Content-Type"
-  );
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
   return true;
 }
 
 function getApiKey() {
-  return String(
-    process.env.TWELVE_DATA_API_KEY || ""
-  ).trim();
+  return String(process.env.TWELVE_DATA_API_KEY || "").trim();
 }
 
 function stringParam(value, fallback = "") {
@@ -110,28 +84,18 @@ function stringParam(value, fallback = "") {
   }
 
   return String(
-    value === undefined || value === null
-      ? fallback
-      : value
+    value === undefined || value === null ? fallback : value,
   ).trim();
 }
 
-function numberParam(
-  value,
-  fallback,
-  min,
-  max
-) {
+function numberParam(value, fallback, min, max) {
   const parsed = Number(value);
 
   if (!Number.isFinite(parsed)) {
     return fallback;
   }
 
-  return Math.max(
-    min,
-    Math.min(max, Math.floor(parsed))
-  );
+  return Math.max(min, Math.min(max, Math.floor(parsed)));
 }
 
 function booleanParam(value, fallback = false) {
@@ -139,23 +103,13 @@ function booleanParam(value, fallback = false) {
     return fallback;
   }
 
-  const normalized = String(value)
-    .trim()
-    .toLowerCase();
+  const normalized = String(value).trim().toLowerCase();
 
-  if (
-    normalized === "true" ||
-    normalized === "1" ||
-    normalized === "yes"
-  ) {
+  if (normalized === "true" || normalized === "1" || normalized === "yes") {
     return true;
   }
 
-  if (
-    normalized === "false" ||
-    normalized === "0" ||
-    normalized === "no"
-  ) {
+  if (normalized === "false" || normalized === "0" || normalized === "no") {
     return false;
   }
 
@@ -163,17 +117,13 @@ function booleanParam(value, fallback = false) {
 }
 
 function normalizeSymbol(value) {
-  const symbol = stringParam(value)
-    .toUpperCase();
+  const symbol = stringParam(value).toUpperCase();
 
   if (!symbol) {
     throw new Error("SYMBOL_REQUIRED");
   }
 
-  if (
-    symbol.length > 32 ||
-    /[\s,?&#=]/.test(symbol)
-  ) {
+  if (symbol.length > 32 || /[\s,?&#=]/.test(symbol)) {
     throw new Error("INVALID_SYMBOL");
   }
 
@@ -183,7 +133,7 @@ function normalizeSymbol(value) {
 function normalizeSymbols(value) {
   const symbols = String(value || "")
     .split(",")
-    .map(symbol => symbol.trim())
+    .map((symbol) => symbol.trim())
     .filter(Boolean)
     .map(normalizeSymbol);
 
@@ -197,77 +147,52 @@ function normalizeSymbols(value) {
 async function twelveDataRequest(
   pathname,
   params = {},
-  {
-    timeoutMs = DEFAULT_TIMEOUT_MS
-  } = {}
+  { timeoutMs = DEFAULT_TIMEOUT_MS } = {},
 ) {
   const apiKey = getApiKey();
 
   if (!apiKey) {
-    const error = new Error(
-      "TWELVE_DATA_API_KEY is not configured."
-    );
+    const error = new Error("TWELVE_DATA_API_KEY is not configured.");
 
     error.code = "API_KEY_MISSING";
 
     throw error;
   }
 
-  const url = new URL(
-    pathname,
-    TWELVE_DATA_BASE_URL
-  );
+  const url = new URL(pathname, TWELVE_DATA_BASE_URL);
 
-  Object.entries(params).forEach(
-    ([key, value]) => {
-      if (
-        value === undefined ||
-        value === null ||
-        value === ""
-      ) {
-        return;
-      }
-
-      url.searchParams.set(
-        key,
-        String(value)
-      );
+  Object.entries(params).forEach(([key, value]) => {
+    if (value === undefined || value === null || value === "") {
+      return;
     }
-  );
 
-  const controller =
-    new AbortController();
+    url.searchParams.set(key, String(value));
+  });
 
-  const timer = setTimeout(
-    () => controller.abort(),
-    timeoutMs
-  );
+  const controller = new AbortController();
+
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
-    const response = await fetch(
-      url.toString(),
-      {
-        method: "GET",
+    const response = await fetch(url.toString(), {
+      method: "GET",
 
-        headers: {
-          Accept: "application/json",
+      headers: {
+        Accept: "application/json",
 
-          /*
-           * IMPORTANT:
-           *
-           * API Key stays on the server.
-           * It is NEVER returned to the browser.
-           */
-          Authorization:
-            `apikey ${apiKey}`
-        },
+        /*
+         * IMPORTANT:
+         *
+         * API Key stays on the server.
+         * It is NEVER returned to the browser.
+         */
+        Authorization: `apikey ${apiKey}`,
+      },
 
-        signal: controller.signal
-      }
-    );
+      signal: controller.signal,
+    });
 
-    const text =
-      await response.text();
+    const text = await response.text();
 
     let payload = null;
 
@@ -275,12 +200,9 @@ async function twelveDataRequest(
       try {
         payload = JSON.parse(text);
       } catch {
-        const error = new Error(
-          "Twelve Data returned invalid JSON."
-        );
+        const error = new Error("Twelve Data returned invalid JSON.");
 
-        error.code =
-          "UPSTREAM_INVALID_JSON";
+        error.code = "UPSTREAM_INVALID_JSON";
 
         throw error;
       }
@@ -290,40 +212,26 @@ async function twelveDataRequest(
      * Twelve Data may return API errors
      * inside a JSON payload.
      */
-    if (
-      !response.ok ||
-      payload?.status === "error"
-    ) {
+    if (!response.ok || payload?.status === "error") {
       const error = new Error(
-        payload?.message ||
-        `Twelve Data HTTP ${response.status}`
+        payload?.message || `Twelve Data HTTP ${response.status}`,
       );
 
-      error.code =
-        payload?.code ||
-        "UPSTREAM_ERROR";
+      error.code = payload?.code || "UPSTREAM_ERROR";
 
-      error.status =
-        response.status;
+      error.status = response.status;
 
-      error.details =
-        payload;
+      error.details = payload;
 
       throw error;
     }
 
     return payload;
   } catch (error) {
-    if (
-      error?.name === "AbortError"
-    ) {
-      const timeoutError =
-        new Error(
-          "Twelve Data request timed out."
-        );
+    if (error?.name === "AbortError") {
+      const timeoutError = new Error("Twelve Data request timed out.");
 
-      timeoutError.code =
-        "UPSTREAM_TIMEOUT";
+      timeoutError.code = "UPSTREAM_TIMEOUT";
 
       throw timeoutError;
     }
@@ -343,8 +251,8 @@ function setShortCache(res, seconds = 10) {
     "Cache-Control",
     `public, s-maxage=${seconds}, stale-while-revalidate=${Math.max(
       10,
-      seconds * 2
-    )}`
+      seconds * 2,
+    )}`,
   );
 }
 
@@ -353,23 +261,16 @@ function setShortCache(res, seconds = 10) {
 /* -------------------------------------------------------------------------- */
 
 async function handleQuote(req, res) {
-  const symbol =
-    normalizeSymbol(
-      req.query.symbol
-    );
+  const symbol = normalizeSymbol(req.query.symbol);
 
-  const data =
-    await twelveDataRequest(
-      "/quote",
-      {
-        symbol
-      }
-    );
+  const data = await twelveDataRequest("/quote", {
+    symbol,
+  });
 
   setShortCache(res, 5);
 
   return ok(res, data, {
-    provider: "twelve-data"
+    provider: "twelve-data",
   });
 }
 
@@ -378,17 +279,14 @@ async function handleQuote(req, res) {
 /* -------------------------------------------------------------------------- */
 
 async function handleQuotes(req, res) {
-  const symbols =
-    normalizeSymbols(
-      req.query.symbols
-    );
+  const symbols = normalizeSymbols(req.query.symbols);
 
   if (!symbols.length) {
     return fail(
       res,
       400,
       "SYMBOLS_REQUIRED",
-      "At least one symbol is required."
+      "At least one symbol is required.",
     );
   }
 
@@ -397,22 +295,18 @@ async function handleQuotes(req, res) {
       res,
       400,
       "TOO_MANY_SYMBOLS",
-      "A maximum of 20 symbols can be requested at once."
+      "A maximum of 20 symbols can be requested at once.",
     );
   }
 
-  const data =
-    await twelveDataRequest(
-      "/quote",
-      {
-        symbol: symbols.join(",")
-      }
-    );
+  const data = await twelveDataRequest("/quote", {
+    symbol: symbols.join(","),
+  });
 
   setShortCache(res, 5);
 
   return ok(res, data, {
-    provider: "twelve-data"
+    provider: "twelve-data",
   });
 }
 
@@ -421,9 +315,7 @@ async function handleQuotes(req, res) {
 /* -------------------------------------------------------------------------- */
 
 function mapInterval(interval) {
-  const value =
-    String(interval || "1D")
-      .trim();
+  const value = String(interval || "1D").trim();
 
   const map = {
     "1m": "1min",
@@ -446,22 +338,16 @@ function mapInterval(interval) {
 
     "1W": "1week",
     "1w": "1week",
-    "1week": "1week"
+    "1week": "1week",
   };
 
   return map[value] || "1day";
 }
 
-function outputSizeFromRange(
-  range,
-  interval
-) {
-  const normalizedRange =
-    String(range || "3M")
-      .toUpperCase();
+function outputSizeFromRange(range, interval) {
+  const normalizedRange = String(range || "3M").toUpperCase();
 
-  const normalizedInterval =
-    mapInterval(interval);
+  const normalizedInterval = mapInterval(interval);
 
   /*
    * These values are not trading signals.
@@ -473,17 +359,14 @@ function outputSizeFromRange(
     "1M": 35,
     "3M": 100,
     "6M": 190,
-    "YTD": 300,
+    YTD: 300,
     "1Y": 380,
     "2Y": 760,
     "5Y": 1400,
-    "MAX": 5000
+    MAX: 5000,
   };
 
-  if (
-    normalizedInterval === "1day" ||
-    normalizedInterval === "1week"
-  ) {
+  if (normalizedInterval === "1day" || normalizedInterval === "1week") {
     return daily[normalizedRange] || 100;
   }
 
@@ -492,69 +375,37 @@ function outputSizeFromRange(
     "5D": 1000,
     "1M": 1500,
     "3M": 2500,
-    "6M": 3500
+    "6M": 3500,
   };
 
   return intraday[normalizedRange] || 500;
 }
 
 async function handleCandles(req, res) {
-  const symbol =
-    normalizeSymbol(
-      req.query.symbol
-    );
+  const symbol = normalizeSymbol(req.query.symbol);
 
-  const interval =
-    mapInterval(
-      req.query.interval
-    );
+  const interval = mapInterval(req.query.interval);
 
-  const range =
-    stringParam(
-      req.query.range,
-      "3M"
-    );
+  const range = stringParam(req.query.range, "3M");
 
-  const requestedLimit =
-    req.query.limit
-      ? numberParam(
-          req.query.limit,
-          100,
-          1,
-          5000
-        )
-      : null;
+  const requestedLimit = req.query.limit
+    ? numberParam(req.query.limit, 100, 1, 5000)
+    : null;
 
-  const outputsize =
-    requestedLimit ||
-    outputSizeFromRange(
-      range,
-      interval
-    );
+  const outputsize = requestedLimit || outputSizeFromRange(range, interval);
 
-  const from =
-    stringParam(
-      req.query.from
-    );
+  const from = stringParam(req.query.from);
 
-  const to =
-    stringParam(
-      req.query.to
-    );
+  const to = stringParam(req.query.to);
 
-  const extendedHours =
-    booleanParam(
-      req.query.extendedHours,
-      false
-    );
+  const extendedHours = booleanParam(req.query.extendedHours, false);
 
   const params = {
     symbol,
     interval,
     outputsize,
     format: "JSON",
-    timezone:
-      "America/New_York"
+    timezone: "America/New_York",
   };
 
   if (from) {
@@ -576,22 +427,13 @@ async function handleCandles(req, res) {
     params.prepost = "true";
   }
 
-  const data =
-    await twelveDataRequest(
-      "/time_series",
-      params
-    );
+  const data = await twelveDataRequest("/time_series", params);
 
-  setShortCache(
-    res,
-    interval === "1day"
-      ? 60
-      : 10
-  );
+  setShortCache(res, interval === "1day" ? 60 : 10);
 
   return ok(res, data, {
     provider: "twelve-data",
-    interval
+    interval,
   });
 }
 
@@ -600,58 +442,40 @@ async function handleCandles(req, res) {
 /* -------------------------------------------------------------------------- */
 
 async function handleSearch(req, res) {
-  const query =
-    stringParam(req.query.q);
+  const query = stringParam(req.query.q);
 
   if (!query) {
     return ok(res, []);
   }
 
-  const limit =
-    numberParam(
-      req.query.limit,
-      12,
-      1,
-      50
-    );
+  const limit = numberParam(req.query.limit, 12, 1, 50);
 
-  const data =
-    await twelveDataRequest(
-      "/symbol_search",
-      {
-        symbol: query,
-        outputsize: limit
-      }
-    );
+  const data = await twelveDataRequest("/symbol_search", {
+    symbol: query,
+    outputsize: limit,
+  });
 
-  const rows =
-    Array.isArray(data?.data)
-      ? data.data
-      : [];
+  const rows = Array.isArray(data?.data) ? data.data : [];
 
   /*
    * OX US market should not suddenly
    * mix foreign listings into US search.
    */
-  const usOnly =
-    rows.filter(item => {
-      const country =
-        String(
-          item?.country || ""
-        ).toLowerCase();
+  const usOnly = rows.filter((item) => {
+    const country = String(item?.country || "").toLowerCase();
 
-      return (
-        !country ||
-        country === "united states" ||
-        country === "usa" ||
-        country === "us"
-      );
-    });
+    return (
+      !country ||
+      country === "united states" ||
+      country === "usa" ||
+      country === "us"
+    );
+  });
 
   setShortCache(res, 300);
 
   return ok(res, usOnly, {
-    provider: "twelve-data"
+    provider: "twelve-data",
   });
 }
 
@@ -659,10 +483,7 @@ async function handleSearch(req, res) {
 /* Market Pulse                                                               */
 /* -------------------------------------------------------------------------- */
 
-async function handleMarketPulse(
-  req,
-  res
-) {
+async function handleMarketPulse(req, res) {
   /*
    * These are the four benchmarks already
    * planned for OX US Market:
@@ -673,28 +494,23 @@ async function handleMarketPulse(
    * VIX = volatility index
    */
 
-  const symbols = [
-    "SPY",
-    "QQQ",
-    "IWM",
-    "VIX"
-  ];
+  const symbols = ["SPY", "QQQ", "IWM", "VIX"];
 
-  const data =
-    await twelveDataRequest(
-      "/quote",
-      {
-        symbol: symbols.join(",")
-      }
-    );
+  const data = await twelveDataRequest("/quote", {
+    symbol: symbols.join(","),
+  });
 
   setShortCache(res, 5);
 
-  return ok(res, {
-    benchmarks: data
-  }, {
-    provider: "twelve-data"
-  });
+  return ok(
+    res,
+    {
+      benchmarks: data,
+    },
+    {
+      provider: "twelve-data",
+    },
+  );
 }
 
 /* -------------------------------------------------------------------------- */
@@ -702,26 +518,18 @@ async function handleMarketPulse(
 /* -------------------------------------------------------------------------- */
 
 async function handleHealth(req, res) {
-  const configured =
-    Boolean(getApiKey());
+  const configured = Boolean(getApiKey());
 
   return ok(res, {
-    service:
-      "ox-us-market-data",
+    service: "ox-us-market-data",
 
-    status:
-      configured
-        ? "ready"
-        : "missing-api-key",
+    status: configured ? "ready" : "missing-api-key",
 
-    provider:
-      "twelve-data",
+    provider: "twelve-data",
 
-    apiKeyConfigured:
-      configured,
+    apiKeyConfigured: configured,
 
-    timestamp:
-      new Date().toISOString()
+    timestamp: new Date().toISOString(),
   });
 }
 
@@ -729,10 +537,7 @@ async function handleHealth(req, res) {
 /* Not implemented yet                                                        */
 /* -------------------------------------------------------------------------- */
 
-function handleNotImplemented(
-  res,
-  feature
-) {
+function handleNotImplemented(res, feature) {
   /*
    * IMPORTANT:
    *
@@ -748,7 +553,7 @@ function handleNotImplemented(
     res,
     501,
     "US_DATA_NOT_IMPLEMENTED",
-    `${feature} real-data integration has not been connected yet.`
+    `${feature} real-data integration has not been connected yet.`,
   );
 }
 
@@ -756,16 +561,13 @@ function handleNotImplemented(
 /* Main handler                                                               */
 /* -------------------------------------------------------------------------- */
 
-export default async function handler(
-  req,
-  res
-) {
+export default async function handler(req, res) {
   if (!applyCors(req, res)) {
     return fail(
       res,
       403,
       "ORIGIN_NOT_ALLOWED",
-      "This origin is not allowed to access the OX US market API."
+      "This origin is not allowed to access the OX US market API.",
     );
   }
 
@@ -779,125 +581,86 @@ export default async function handler(
       res,
       405,
       "METHOD_NOT_ALLOWED",
-      "Only GET requests are supported."
+      "Only GET requests are supported.",
     );
   }
 
-  const endpoint =
-    stringParam(
-      req.query.endpoint
-    ).toLowerCase();
+  const endpoint = stringParam(req.query.endpoint).toLowerCase();
 
   try {
+    const v2 = await handleUS2(endpoint, req.query, twelveDataRequest);
+    if (v2 !== null) {
+      setShortCache(
+        res,
+        endpoint === "directory" ? 86400 : endpoint === "snapshot" ? 300 : 60,
+      );
+      return ok(res, v2, { provider: "twelve-data", contract: 2 });
+    }
     switch (endpoint) {
       case "health":
-        return await handleHealth(
-          req,
-          res
-        );
+        return await handleHealth(req, res);
 
       case "quote":
-        return await handleQuote(
-          req,
-          res
-        );
+        return await handleQuote(req, res);
 
       case "quotes":
-        return await handleQuotes(
-          req,
-          res
-        );
+        return await handleQuotes(req, res);
 
       case "candles":
-        return await handleCandles(
-          req,
-          res
-        );
+        return await handleCandles(req, res);
 
       case "search":
-        return await handleSearch(
-          req,
-          res
-        );
+        return await handleSearch(req, res);
 
       case "market-pulse":
-        return await handleMarketPulse(
-          req,
-          res
-        );
+        return await handleMarketPulse(req, res);
 
       case "breadth":
-        return handleNotImplemented(
-          res,
-          "US market breadth"
-        );
+        return handleNotImplemented(res, "US market breadth");
 
       case "sectors":
-        return handleNotImplemented(
-          res,
-          "US sector strength"
-        );
+        return handleNotImplemented(res, "US sector strength");
 
       case "radar":
-        return handleNotImplemented(
-          res,
-          "US radar"
-        );
+        return handleNotImplemented(res, "US radar");
 
       default:
         return fail(
           res,
           404,
           "ENDPOINT_NOT_FOUND",
-          `Unknown US market endpoint: ${endpoint || "(empty)"}`
+          `Unknown US market endpoint: ${endpoint || "(empty)"}`,
         );
     }
   } catch (error) {
-    if (
-      error?.message ===
-      "SYMBOL_REQUIRED"
-    ) {
-      return fail(
-        res,
-        400,
-        "SYMBOL_REQUIRED",
-        "A symbol is required."
-      );
+    if (error?.message === "SYMBOL_REQUIRED") {
+      return fail(res, 400, "SYMBOL_REQUIRED", "A symbol is required.");
     }
 
-    if (
-      error?.message ===
-      "INVALID_SYMBOL"
-    ) {
+    if (error?.message === "INVALID_SYMBOL") {
       return fail(
         res,
         400,
         "INVALID_SYMBOL",
-        "The supplied symbol is invalid."
+        "The supplied symbol is invalid.",
       );
     }
 
-    if (
-      error?.code ===
-      "API_KEY_MISSING"
-    ) {
+    if (error?.code === "API_KEY_MISSING") {
       return fail(
         res,
         503,
         "US_DATA_API_KEY_MISSING",
-        "The server-side Twelve Data API key has not been configured."
+        "The server-side Twelve Data API key has not been configured.",
       );
     }
 
-    if (
-      error?.code ===
-      "UPSTREAM_TIMEOUT"
-    ) {
+    if (error?.code === "UPSTREAM_TIMEOUT") {
       return fail(
         res,
         504,
         "US_DATA_UPSTREAM_TIMEOUT",
-        "The US market data provider timed out."
+        "The US market data provider timed out.",
       );
     }
 
@@ -906,26 +669,34 @@ export default async function handler(
      * stack traces or server internals
      * to the browser.
      */
-    console.error(
-      "[OX US API]",
-      {
-        endpoint,
-        code:
-          error?.code ||
-          "UNKNOWN",
-
-        message:
-          error?.message ||
-          "Unknown error"
-      }
-    );
+    if (error?.code === "LICENSE_NOT_CONFIRMED")
+      return fail(
+        res,
+        403,
+        "US_DATA_DISPLAY_RIGHTS_REQUIRED",
+        "美股對外展示授權尚未確認。",
+      );
+    const code = Number(error?.code) || error?.status;
+    if (code === 429) res.setHeader("Retry-After", "60");
+    if ([400, 403, 404, 429].includes(code))
+      return fail(
+        res,
+        code,
+        `US_DATA_${code}`,
+        {
+          400: "請求參數無效。",
+          403: "目前資料方案不支援此功能。",
+          404: "此代號沒有可用資料。",
+          429: "行情額度暫時用盡，請稍後重試。",
+        }[code],
+      );
+    console.error("[OX US API]", { endpoint, code: error?.code || "UNKNOWN" });
 
     return fail(
       res,
       502,
       "US_DATA_UPSTREAM_ERROR",
-      error?.message ||
-      "Unable to retrieve US market data."
+      "目前無法取得美股資料，請稍後重試。",
     );
   }
 }

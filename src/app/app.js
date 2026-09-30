@@ -12,14 +12,16 @@ export function bootOXModules(modules = []) {
 const router = bootOXModules([cryptoModule, usModule, twModule, forexModule]);
 let currentView = document.body.dataset.view || "home";
 let renderToken = 0;
+const isMarketView = () => ["home", "strength", "radar"].includes(currentView) || (document.body.dataset.market === "us" && ["data", "media"].includes(currentView));
 
 function scheduleMarketView() {
   const token = ++renderToken;
   requestAnimationFrame(() => requestAnimationFrame(() => {
-    if (token !== renderToken || !["home", "strength", "radar"].includes(currentView)) return;
+    if (token !== renderToken || !isMarketView()) return;
     const market = document.body.dataset.market || "crypto";
     if (router.current() !== market) router.activate(market, { view: currentView }).then(() => {
-      if (token !== renderToken || !["home", "strength", "radar"].includes(currentView)) {
+      if (token !== renderToken) return;
+      if (!isMarketView()) {
         const host = document.getElementById("market-unavailable-card");
         if (host) host.hidden = true;
         const forex = document.getElementById("ox-forex-module");
@@ -36,7 +38,7 @@ document.addEventListener("ox:viewchange", event => {
   currentView = event.detail?.to || currentView;
   // Market modules live outside .app-view; hide them synchronously when a
   // Data, News, Media or Settings page opens, even if activation is pending.
-  if (!["home", "strength", "radar"].includes(currentView)) {
+  if (!isMarketView()) {
     ++renderToken;
     for (const id of ["ox-forex-module", "market-unavailable-card"]) {
       const root = document.getElementById(id);

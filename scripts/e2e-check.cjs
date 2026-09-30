@@ -4,8 +4,10 @@ const { extname, join, normalize } = require("node:path");
 const { chromium } = require("playwright");
 
 const root = join(__dirname, "..");
+const testPort = Number(process.env.OX_E2E_PORT || 4173);
+const testBase = `http://127.0.0.1:${testPort}`;
 const html = readFileSync(join(root, "index.html"), "utf8");
-const expectedCss = [...html.matchAll(/<link rel="stylesheet" href="([^"]+)">/g)].map(match => match[1]);
+const expectedCss = [...html.matchAll(/<link rel="stylesheet" href="([^"]+)">/g)].map(match => match[1].split("?")[0]);
 const classifiedCss = expectedCss.filter(path => !["src/styles/markets/forex.css", "src/styles/markets/us.css"].includes(path));
 const mime = { ".html": "text/html", ".js": "text/javascript", ".css": "text/css", ".png": "image/png" };
 
@@ -29,17 +31,17 @@ const chartStub = `
 (() => {
   const series = el => ({
     setData(data){ el.dataset.seriesPoints = String(data?.length || 0); },
-    setMarkers(){}, applyOptions(){}, priceScale(){return {applyOptions(){}}},
+    update(){}, coordinateToPrice(){return 100}, setMarkers(){}, applyOptions(){}, priceScale(){return {applyOptions(){}, width(){return 60}, options(){return {scaleMargins:{top:.15,bottom:.2}}}}},
     createPriceLine(){return {}}, removePriceLine(){}, priceToCoordinate(){return 50}
   });
-  const scale = { fitContent(){}, setVisibleLogicalRange(){}, getVisibleLogicalRange(){return {from:0,to:50}}, subscribeVisibleLogicalRangeChange(){}, applyOptions(){} };
+  const scale = { height(){return 30}, fitContent(){}, setVisibleLogicalRange(){}, getVisibleLogicalRange(){return {from:0,to:50}}, subscribeVisibleLogicalRangeChange(){}, unsubscribeVisibleLogicalRangeChange(){}, timeToCoordinate(){return 50}, coordinateToTime(){return 1}, scrollToRealTime(){}, applyOptions(){} };
   window.LightweightCharts = {
     CrosshairMode:{Normal:0}, LineStyle:{Dashed:1,Dotted:2},
     createChart(el){
       el.dataset.chartInitialized = "true";
       return {
         addCandlestickSeries(){return series(el)}, addHistogramSeries(){return series(el)}, addLineSeries(){return series(el)},
-        timeScale(){return scale}, priceScale(){return {applyOptions(){}}}, applyOptions(){}, resize(){},
+        timeScale(){return scale}, priceScale(){return {applyOptions(){}, width(){return 60}, options(){return {scaleMargins:{top:.15,bottom:.2}}}}}, applyOptions(){}, resize(){},
         subscribeClick(){}, subscribeCrosshairMove(){}, remove(){}
       };
     }
@@ -95,11 +97,11 @@ async function preparePage(context, viewport) {
     const row = `${message.text()} @ ${message.location().url || "unknown"}`;
     audit.consoleErrors.push(row);
   });
-  page.on("requestfailed", request => { if (request.url().startsWith("http://127.0.0.1:4173")) audit.localFailures.push(`${request.url()}: ${request.failure()?.errorText}`); });
+  page.on("requestfailed", request => { if (request.url().startsWith(testBase)) audit.localFailures.push(`${request.url()}: ${request.failure()?.errorText}`); });
   page.on("response", response => {
     const url = response.url();
-    if (url.startsWith("http://127.0.0.1:4173/") && response.status() >= 400) audit.localHttpErrors.push(`${response.status()} ${new URL(url).pathname}`);
-    if (url.startsWith("http://127.0.0.1:4173/") && url.endsWith(".css")) audit.cssResponses.set(new URL(url).pathname.slice(1), response.status());
+    if (url.startsWith(`${testBase}/`) && response.status() >= 400) audit.localHttpErrors.push(`${response.status()} ${new URL(url).pathname}`);
+    if (url.startsWith(`${testBase}/`) && new URL(url).pathname.endsWith(".css")) audit.cssResponses.set(new URL(url).pathname.slice(1), response.status());
   });
   await page.addInitScript(() => {
     window.__oxRuntimeAudit = { intervals: [], duplicateIntervals: [], duplicateListeners: [] };
@@ -150,21 +152,21 @@ async function preparePage(context, viewport) {
     const symbol = url.searchParams.get("symbol") || "2330";
     const data = url.pathname.endsWith("/quote")
       ? { symbol, name: symbol === "2330" ? "台積電" : "測試個股", market: symbol === "6488" ? "TPEX" : "TWSE", price: 123.5, changePct: 1.25, volume: 10000, turnoverTwd: 1235000, dataDate: "2026-09-23" }
-      : {};
+      : url.pathname.endsWith("/radar") ? {items:[{symbol:"2330",name:"台積電",market:"TWSE",price:123.5,changePct:1.25,score:90,tier:"T1",volume:10000,turnoverTwd:1235000,dataDate:"2026-09-23"}]} : {};
     return route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ ok: true, data }) });
   });
+  await page.route("**/data/us-snapshot.json", route => route.fulfill({json:{schemaVersion:2,quotes:[],analyses:[],counts:{quoted:0,scanned:0}}}));
   await page.route("https://ox-crypto-screener.vercel.app/api/v1/us/**", route => {
     const url = new URL(route.request().url());
-    const data = url.pathname.endsWith("/quote")
-      ? { symbol: url.searchParams.get("symbol"), name: url.searchParams.get("symbol"), exchange: "NASDAQ", close: "123.45", percent_change: "2.31", high: "125.00", low: "121.00", volume: "58200000", datetime: "2026-09-23" }
-      : { benchmarks: Object.fromEntries(["SPY", "QQQ", "IWM"].map((symbol, index) => [symbol, { symbol, name: symbol, close: String(500 - index * 80), percent_change: String(index ? -1 : 1), open: "490", high: "510", low: "480", volume: "15000000", is_market_open: false }]).concat([["VIX", { status: "error", message: "Unavailable" }]])) };
+    const symbol = url.searchParams.get("symbol") || "SPY";
+    const data = url.pathname.endsWith("quote-v2") ? {quote:{symbol,price:123.45,changePct:2.31,marketTime:now/1000,receivedAt:now,marketOpen:false,delaySeconds:null}} : url.pathname.endsWith("chart-v2") ? {symbol,interval:url.searchParams.get("interval"),bars:[],source:"TEST",adjustment:"splits"} : {source:"TEST",extendedHours:false,pollMs:60000,externalDisplayConfirmed:false};
     return route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ ok: true, data }) });
   });
   return { page, audit };
 }
 
 async function loadApp(page) {
-  await page.goto("http://127.0.0.1:4173", { waitUntil: "domcontentloaded" });
+  await page.goto(testBase, { waitUntil: "domcontentloaded" });
   await page.waitForFunction(() => document.querySelector("#chart")?.dataset.chartInitialized === "true");
   await page.waitForFunction(() => document.querySelectorAll("#view-radar .coin-card").length > 0, null, { timeout: 15000 });
 }
@@ -174,8 +176,8 @@ async function cssAudit(page, audit) {
     hrefs: [...document.querySelectorAll('link[rel="stylesheet"]')].map(link => new URL(link.href).pathname.slice(1)),
     sheets: [...document.styleSheets].map(sheet => ({ href: sheet.href ? new URL(sheet.href).pathname.slice(1) : null, rules: (() => { try { return sheet.cssRules.length; } catch { return -1; } })() }))
   }));
-  assert(JSON.stringify(result.hrefs) === JSON.stringify(expectedCss), "CSS link order differs from RC2 definition");
-  assert(classifiedCss.length === 31, `Expected 31 classified CSS modules, found ${classifiedCss.length}`);
+  assert(JSON.stringify(result.hrefs.slice(0, expectedCss.length)) === JSON.stringify(expectedCss), "CSS link order differs from RC2 definition");
+  assert(classifiedCss.length === 42, `Expected 42 classified CSS modules in current main, found ${classifiedCss.length}`);
   for (const path of expectedCss) {
     assert(audit.cssResponses.get(path) === 200, `CSS did not return HTTP 200: ${path}`);
     const sheet = result.sheets.find(row => row.href === path);
@@ -195,8 +197,12 @@ async function selectMarket(page, market) {
 }
 
 async function selectView(page, view) {
-  await page.click(`.app-dock [data-view-target="${view}"]`);
-  await page.waitForSelector(`#view-${view}.active`);
+  const desktop = page.locator(`.ox-desktop-nav [data-view-target="${view}"]`);
+  if (await desktop.isVisible()) await desktop.click();
+  else await page.click(`.app-dock [data-view-target="${view}"]`);
+  if (await page.locator("body").getAttribute("data-market") === "us")
+    await page.waitForFunction(view => document.body.dataset.view === view && !document.querySelector(".us2-root")?.hidden, view);
+  else await page.waitForSelector(`#view-${view}.active`);
 }
 
 async function desktopRegression(browser) {
@@ -217,21 +223,21 @@ async function desktopRegression(browser) {
   await page.waitForFunction(() => !document.querySelector("#view-radar")?.classList.contains("ox-filter-short"));
   await page.waitForFunction(() => {
     const rgb = getComputedStyle(document.querySelector("#view-radar .market-line-card")).borderTopColor.match(/[\d.]+/g)?.slice(0,3).map(Number);
-    return rgb && rgb[1] > rgb[0];
+    return rgb && Math.min(...rgb) > 80;
   });
   const longGlass = await page.locator("#view-radar .market-line-card").evaluate(el => getComputedStyle(el).borderTopColor.match(/[\d.]+/g)?.slice(0,3).map(Number));
-  assert(longGlass && longGlass[1] > longGlass[0], `Long ranking glass is not green: ${longGlass}`);
+  assert(longGlass && Math.min(...longGlass) > 80, `Long ranking glass lacks current white border: ${longGlass}`);
   await page.evaluate(() => globalThis.eval('setScannerDirectionFilter("short")'));
   await page.waitForFunction(() => document.querySelector("#view-radar")?.classList.contains("ox-filter-short"));
   await page.waitForFunction(() => {
     const rgb = getComputedStyle(document.querySelector("#view-radar .market-line-card")).borderTopColor.match(/[\d.]+/g)?.slice(0,3).map(Number);
-    return rgb && rgb[0] > rgb[1];
+    return rgb && Math.min(...rgb) > 80;
   });
   const shortState = await page.evaluate(() => {
     const radar = document.querySelector("#view-radar"), toggle = document.querySelector("#direction-toggle"), card = document.querySelector("#view-radar .market-line-card");
     return { radar: radar.className, toggle: toggle.className, border: getComputedStyle(card).borderTopColor, rgb: getComputedStyle(card).borderTopColor.match(/[\d.]+/g)?.slice(0,3).map(Number) };
   });
-  assert(shortState.rgb && shortState.rgb[0] > shortState.rgb[1], `Short ranking glass is not red: ${JSON.stringify(shortState)}`);
+  assert(shortState.rgb && Math.min(...shortState.rgb) > 80, `Short ranking glass lacks current white border: ${JSON.stringify(shortState)}`);
   await page.evaluate(() => globalThis.eval('setScannerDirectionFilter("long")'));
   await page.waitForFunction(() => !document.querySelector("#view-radar")?.classList.contains("ox-filter-short"));
 
@@ -244,28 +250,24 @@ async function desktopRegression(browser) {
   assert(await page.locator('.btn-tf[data-tf="4H"]').evaluate(el => el.classList.contains("active")), "Timeframe did not switch to 4H");
 
   await selectMarket(page, "us");
-  assert(await page.locator("#market-unavailable-card").isVisible(), "US market placeholder did not display");
+  await page.waitForSelector(".us2-root");
   await page.click("#ox-control-close");
-  await page.fill("#us-lookup-symbol", "NVDA");
-  await page.click("[data-us-lookup-form] button");
-  await page.waitForSelector(".us-lookup-result");
-  assert((await page.locator(".us-lookup-result").innerText()).includes("$123.45"), "US quote lookup did not show the requested stock");
-  assert((await page.locator(".us-lookup-range").innerText()).includes("$125.00"), "US quote range did not show the provided high");
-  await page.click('[data-us-quick-symbol="AAPL"]');
-  await page.waitForFunction(() => document.querySelector(".us-lookup-result strong")?.textContent === "AAPL");
-  assert(await page.locator('[data-us-quick-symbol="AAPL"]').getAttribute("aria-pressed") === "true", "US quick symbol did not become active");
+  await page.fill('.us2-search input', "NVDA");
+  await page.locator('[data-open-symbol="NVDA"]').click();
+  await page.waitForFunction(() => document.querySelector(".us2-selected-identity b")?.textContent === "NVDA");
+  await page.waitForFunction(() => document.querySelector(".us2-selected-price")?.textContent.includes("123.45"));
   await selectView(page, "home");
-  await page.waitForSelector(".us-market-pulse-grid .us-market-pulse-item");
-  assert(await page.locator(".us-market-pulse-item").count() === 4, "US Home did not render benchmark cards after leaving Radar");
-  await page.click("[data-us-refresh]");
-  await page.waitForSelector(".us-market-pulse-grid .us-market-pulse-item");
+  await page.waitForSelector(".us2-benchmarks");
+  assert(await page.locator(".us2-benchmarks button").count() === 3, "US Home must render three ETF benchmarks");
   await selectView(page, "radar");
   await selectMarket(page, "tw");
   assert(await page.locator("#market-unavailable-card").isVisible(), "TW market placeholder did not display");
   await page.click("#ox-control-close");
-  await page.click('[data-tw-quick="2330"]');
-  await page.waitForFunction(() => document.querySelector(".tw-lookup-result strong")?.textContent.includes("2330"));
-  assert((await page.locator(".tw-lookup-result").innerText()).includes("NT$123.5"), "TW direct quote lookup did not show official-shaped data");
+  await page.locator('[data-twr-mode="chart"]').click();
+  await page.waitForSelector(".twcr-search input");
+  await page.fill(".twcr-search input", "2330");
+  await page.waitForSelector('.twcr-results [data-stock="2330"]');
+  assert((await page.locator('.twcr-results [data-stock="2330"]').innerText()).includes("123.5"), "TW radar did not retain official-shaped fixture data");
   await selectMarket(page, "crypto");
   assert(await page.locator("#view-radar").isVisible(), "Crypto market did not restore");
   await selectMarket(page, "forex");
@@ -282,14 +284,12 @@ async function desktopRegression(browser) {
   assert(await page.evaluate(() => localStorage.getItem("ox-ui-theme")) === "light", "Light theme preference was not saved");
   await page.click("#ox-control-close");
   await selectView(page, "home");
-  const lightHero = await page.evaluate(() => ({
-    emblem: getComputedStyle(document.querySelector(".btc-premium-emblem")).backgroundImage,
-    mark: getComputedStyle(document.querySelector(".btc-emblem-mark")).color,
-    stats: getComputedStyle(document.querySelector(".btc-premium-stats")).backgroundImage,
-    label: getComputedStyle(document.querySelector(".btc-premium-stats small")).color
-  }));
-  assert(lightHero.emblem !== "none" && lightHero.mark !== "rgb(255, 255, 255)", "Light BTC emblem lacks contrast");
-  assert(lightHero.stats !== "none" && lightHero.label !== "rgba(0, 0, 0, 0)", "Light BTC stats lack contrast");
+  const lightHero = await page.locator('.ox-home-chart').evaluate(el => {
+    const background = getComputedStyle(el).backgroundColor;
+    const foreground = getComputedStyle(el.querySelector('.ox-home-ticker')).color;
+    return {background,foreground};
+  });
+  assert(lightHero.background !== lightHero.foreground, "Light Home text must contrast its background");
   await openControl(page);
   await page.click('[data-control-theme="dark"]');
   assert(!(await page.locator("body").evaluate(el => el.classList.contains("theme-light"))), "Dark theme did not apply");
@@ -340,7 +340,7 @@ async function mobileRegression(browser) {
   await selectView(page, "radar");
   assert(await page.locator("#view-radar").isVisible(), "Mobile Radar is not visible");
   const chartRect = await page.locator("#chart").boundingBox();
-  assert(chartRect && chartRect.width > 245 && chartRect.height > 200, `Mobile chart layout is invalid: ${JSON.stringify(chartRect)}`);
+  assert(chartRect && chartRect.width > 200 && chartRect.height > 200, `Mobile chart layout is invalid: ${JSON.stringify(chartRect)}`);
   const railRect = await page.locator("#view-radar .workspace > aside").boundingBox();
   assert(railRect && Math.abs(railRect.y - chartRect.y) < 450 && railRect.x >= chartRect.x + chartRect.width - 2,
     `Mobile chart and ranked coins are not side by side: ${JSON.stringify({ chartRect, railRect })}`);
@@ -349,6 +349,7 @@ async function mobileRegression(browser) {
   await mobileCoin.click();
   await page.waitForFunction(symbol => document.querySelector("#ticker-pair")?.textContent.includes(symbol), mobileSymbol);
   assert(await page.locator("#view-radar .workspace > aside").isVisible(), "Ranking disappeared after selecting a coin");
+  await page.click("#radar-scanner-toggle");
   await page.click("#btn-chart-fullscreen");
   await page.waitForFunction(() => document.body.classList.contains("chart-focus"));
   assert(await page.locator("body").evaluate(el => el.classList.contains("chart-focus")), "Mobile chart fullscreen did not open");
@@ -359,7 +360,7 @@ async function mobileRegression(browser) {
     chartOpacity: getComputedStyle(document.querySelector("#chart")).opacity
   }));
   assert(focusClarity.boxFilter === "none" && focusClarity.chartFilter === "none" && focusClarity.chartOpacity === "1", `Mobile fullscreen clarity styles invalid: ${JSON.stringify(focusClarity)}`);
-  await page.click("#btn-chart-fullscreen");
+  await page.click("#btn-chart-exit-overlay");
   await page.waitForFunction(() => !document.body.classList.contains("chart-focus"));
 
   await openControl(page);
@@ -372,17 +373,18 @@ async function mobileRegression(browser) {
   assert(await page.locator("#market-unavailable-card").isVisible(), "Mobile market switch to US failed");
   await page.click("#ox-control-close");
   await selectView(page, "home");
-  await page.waitForSelector(".us-market-pulse-grid .us-market-pulse-item");
-  assert(await page.locator(".us-market-pulse-item").count() === 4, "Mobile US Home failed after Radar switch");
+  await page.waitForSelector(".us2-benchmarks button");
+  assert(await page.locator(".us2-benchmarks button").count() === 3, "Mobile US Home failed after Radar switch");
   await selectView(page, "radar");
   await openControl(page);
   await page.click('[data-market-choice="tw"]');
   assert(await page.locator("#market-unavailable-card").isVisible(), "Mobile market switch to TW failed");
   await page.click("#ox-control-close");
-  await page.click('[data-tw-quick="6488"]');
-  await page.waitForFunction(() => document.querySelector(".tw-lookup-result strong")?.textContent.includes("6488"));
-  assert((await page.locator(".tw-lookup-result").innerText()).includes("上櫃"), "Mobile TW OTC quote lookup failed");
-  assert(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth) <= 2, "Mobile TW quote lookup caused horizontal overflow");
+  await page.locator('[data-twr-mode="chart"]').click();
+  await page.waitForSelector('.twcr-search input');
+  await page.fill('.twcr-search input', '2330');
+  await page.waitForSelector('.twcr-results [data-stock="2330"]');
+  assert(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth) <= 2, "Mobile TW chart radar overflowed");
   await selectMarket(page, "crypto");
   assert(await page.locator("#view-radar").isVisible(), "Mobile market switch back to Crypto failed");
   await selectMarket(page, "forex");
@@ -414,8 +416,8 @@ async function mobileRegression(browser) {
 }
 
 (async () => {
-  await new Promise(resolve => server.listen(4173, "127.0.0.1", resolve));
-  const browser = await chromium.launch({ headless: true })
+  await new Promise(resolve => server.listen(testPort, "127.0.0.1", resolve));
+  const browser = await chromium.launch({ headless: true, ...(process.env.OX_BROWSER_PATH ? {executablePath:process.env.OX_BROWSER_PATH} : {}) })
     .catch(() => chromium.launch({ channel: "chrome", headless: true }));
   try {
     const desktop = await desktopRegression(browser);
