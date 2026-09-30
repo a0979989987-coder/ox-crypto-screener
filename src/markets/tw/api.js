@@ -922,7 +922,8 @@ async function request(
             "cors",
 
           credentials:
-            "omit",
+            typeof window !== "undefined" && url.origin === window.location.origin
+              ? "same-origin" : "omit",
 
           cache:
             "no-store",

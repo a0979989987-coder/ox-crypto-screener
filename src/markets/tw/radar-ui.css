@@ -9,7 +9,7 @@ body.ox-terminal #market-unavailable-card.tw-radar-root { margin-top: 16px !impo
 .tw-stock-announcement { font-size: 12px; line-height: 1.7; }
 .tw-stock-announcement a { color: #ede9df; }
 .tw-stock-announcement details p { white-space: pre-line; }
-.tw-radar-root .twr-shell { max-width: 1440px; margin-inline: auto; gap: 12px; }
+.tw-radar-root .twr-shell { max-width: 1440px; margin-inline: auto; gap: 8px; padding-bottom:calc(100px + env(safe-area-inset-bottom)); }
 .tw-radar-root .twr-header { padding: 0 3px; }
 .tw-radar-root .twr-header p { max-width: 52ch; }
 .tw-radar-root .twr-mode-viewport { width: 100%; overflow-x: auto; overscroll-behavior-inline: contain; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
