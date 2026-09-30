@@ -84,7 +84,7 @@ function setChartVisiblePriceRange(range) {
 }
 
 function enableMobileChartPriceGestures(container) {
-  let gesture = null,inspectTimer=null,lastAxisTap=0;
+  let gesture = null,inspectTimer=null,lastAxisTap=0,waitForRelease=false;
   const zone = target => {
     if (target.closest('.chart-price-axis')) return 'price';
     const cell = target.closest('td');
@@ -97,16 +97,32 @@ function enableMobileChartPriceGestures(container) {
   };
   const mid = touches => ({ x: [...touches].reduce((n,t)=>n+t.clientX,0)/touches.length,
     y: [...touches].reduce((n,t)=>n+t.clientY,0)/touches.length });
-  const separation = touches => ({x:Math.abs(touches[0].clientX-touches[1].clientX),y:Math.abs(touches[0].clientY-touches[1].clientY)});
+  const distance = touches => Math.hypot(touches[0].clientX-touches[1].clientX,touches[0].clientY-touches[1].clientY);
+  const clearInspection=()=>{
+    state.chart.clearCrosshairPosition();
+    const label=container.querySelector('.chart-cursor-price');if(label)label.hidden=true;
+  };
   const inspect=point=>{
     const rect=container.getBoundingClientRect(),x=point.x-rect.left,y=point.y-rect.top;
     const time=state.chart.timeScale().coordinateToTime(x),price=state.candleSeries.coordinateToPrice(y);
-    if(time!==null&&Number.isFinite(price))state.chart.setCrosshairPosition(price,time,state.candleSeries);
+    if(time!==null&&Number.isFinite(price)){
+      state.chart.setCrosshairPosition(price,time,state.candleSeries);
+      // Programmatic LWC crosshairs do not emit subscribeCrosshairMove.
+      const label=container.querySelector('.chart-cursor-price');
+      if(label){label.hidden=false;label.textContent=formatChartAxisPrice(price);label.style.top=`${y}px`;}
+    }
   };
   const start = event => {
     clearTimeout(inspectTimer);gesture=null;
     if (!window.matchMedia('(pointer:coarse)').matches || event.touches.length > 2) return;
-    const area = zone(event.target);
+    if(waitForRelease){
+      // A fresh single-touch start also proves the previous pinch ended, even
+      // if the browser delivered its final release outside this container.
+      if(event.touches.length===1)waitForRelease=false;else return;
+    }
+    // A finger may land on the compact price labels while the other is in the
+    // plot. Two fingers always adjust candle density, never the price axis.
+    const area = event.touches.length===2?'plot':zone(event.target);
     if (!area || document.querySelector('#view-radar .chart-drawing-layer.is-editing')) return;
     const range = getChartVisiblePriceRange();
     const logical = state.chart.timeScale().getVisibleLogicalRange();
@@ -114,7 +130,12 @@ function enableMobileChartPriceGestures(container) {
     const point = mid(event.touches), rect = container.getBoundingClientRect();
     gesture = { area, count:event.touches.length, x:point.x, y:point.y, top:rect.top,left:rect.left,width:state.chart.timeScale().width(),
       height:container.clientHeight-state.chart.timeScale().height()-1, range:{...range}, logical:{...logical},
-      separation:event.touches.length===2?separation(event.touches):null };
+      distance:event.touches.length===2?distance(event.touches):0 };
+    if(gesture.count===2){
+      clearInspection();
+      state.chartPriceViewport=null;state.chartPriceViewportMargins=null;
+      refreshChartPriceViewport();
+    }
     if(area==='plot'&&gesture.count===1)inspectTimer=setTimeout(()=>{if(gesture){gesture.inspect=true;inspect({x:gesture.x,y:gesture.y});}},450);
     event.preventDefault(); event.stopPropagation();
   };
@@ -124,10 +145,19 @@ function enableMobileChartPriceGestures(container) {
     if (event.touches.length!==gesture.count) { start(event); return; }
     const point=mid(event.touches), dx=point.x-gesture.x, dy=point.y-gesture.y;
     if(gesture.inspect){inspect(point);event.preventDefault();event.stopPropagation();return;}
-    if(Math.hypot(dx,dy)>6){clearTimeout(inspectTimer);gesture.moved=true;state.chart.clearCrosshairPosition();}
+    if(Math.hypot(dx,dy)>6){clearTimeout(inspectTimer);gesture.moved=true;clearInspection();}
     const span=gesture.range.maxValue-gesture.range.minValue;
     if (!Number.isFinite(span)||span<=0) return;
-    if (gesture.area==='time') {
+    if (gesture.count===2) {
+      // Bitget-style pinch: change candle width / number of visible bars.
+      // Let the chart fit the highs and lows of those bars automatically.
+      const factor=Math.max(.1,Math.min(10,distance(event.touches)/(gesture.distance||1)));
+      const oldBars=gesture.logical.to-gesture.logical.from;
+      const bars=Math.max(8,Math.min(3000,oldBars/factor));
+      const anchorBar=gesture.logical.from+(gesture.x-gesture.left)/gesture.width*oldBars;
+      const from=anchorBar-(point.x-gesture.left)/gesture.width*bars;
+      state.chart.timeScale().setVisibleLogicalRange({from,to:from+bars});
+    } else if (gesture.area==='time') {
       const factor=Math.exp(dx/Math.max(80,container.clientWidth)*2);
       const bars=Math.max(8,Math.min(3000,(gesture.logical.to-gesture.logical.from)/factor));
       state.chart.timeScale().setVisibleLogicalRange({from:gesture.logical.to-bars,to:gesture.logical.to});
@@ -135,33 +165,24 @@ function enableMobileChartPriceGestures(container) {
       const factor=Math.exp(-dy/Math.max(80,gesture.height)*3);
       const center=(gesture.range.maxValue+gesture.range.minValue)/2;
       setChartVisiblePriceRange({minValue:center-span/factor/2,maxValue:center+span/factor/2});
-    } else if (gesture.count===2) {
-      // Horizontal spread changes candle width; vertical spread changes candle
-      // height. Moving both fingers together still pans around their midpoint.
-      const gap=separation(event.touches);
-      const factor=axis=>gesture.separation[axis]<24?1:Math.max(.1,Math.min(10,gap[axis]/gesture.separation[axis]));
-      const newSpan=span/factor('y'), ratio=(gesture.y-gesture.top)/gesture.height;
-      const anchor=gesture.range.maxValue-ratio*span;
-      const maxValue=anchor+(point.y-gesture.top)/gesture.height*newSpan;
-      const oldBars=gesture.logical.to-gesture.logical.from;
-      const bars=Math.max(8,Math.min(3000,oldBars/factor('x')));
-      const anchorBar=gesture.logical.from+(gesture.x-gesture.left)/gesture.width*oldBars;
-      const from=anchorBar-(point.x-gesture.left)/gesture.width*bars;
-      state.chart.timeScale().setVisibleLogicalRange({from,to:from+bars});
-      setChartVisiblePriceRange({minValue:maxValue-newSpan,maxValue});
     } else {
       const bars=gesture.logical.to-gesture.logical.from;
       const move=-dx/gesture.width*bars;
       state.chart.timeScale().setVisibleLogicalRange({from:gesture.logical.from+move,to:gesture.logical.to+move});
-      const shift=dy/gesture.height*span;
-      setChartVisiblePriceRange({minValue:gesture.range.minValue+shift,maxValue:gesture.range.maxValue+shift});
+      if(gesture.vertical||Math.abs(dy)>Math.max(6,Math.abs(dx)*1.1)){
+        gesture.vertical=true;
+        const shift=dy/gesture.height*span;
+        setChartVisiblePriceRange({minValue:gesture.range.minValue+shift,maxValue:gesture.range.maxValue+shift});
+      }
     }
     event.preventDefault(); event.stopPropagation();
   }, {passive:false,capture:true});
   const end=event=>{
     clearTimeout(inspectTimer);
+    if(waitForRelease){if(!event.touches.length)waitForRelease=false;event.stopPropagation();return;}
     if(gesture){
       event.stopPropagation();
+      if(gesture.count===2){waitForRelease=event.touches.length>0;gesture=null;return;}
       if(!gesture.moved&&gesture.count===1){
         if(gesture.area==='plot'&&!gesture.inspect)inspect({x:gesture.x,y:gesture.y});
         if(gesture.area==='price'){
@@ -173,7 +194,7 @@ function enableMobileChartPriceGestures(container) {
     gesture=null;if(event.touches.length)start(event);
   };
   container.addEventListener('touchend',end,{passive:false,capture:true});
-  container.addEventListener('touchcancel',()=>{clearTimeout(inspectTimer);gesture=null;},{passive:true,capture:true});
+  container.addEventListener('touchcancel',()=>{clearTimeout(inspectTimer);gesture=null;waitForRelease=false;},{passive:true,capture:true});
   container.addEventListener('dblclick',event=>{if(zone(event.target)==='price'){state.chartPriceViewport=null;refreshChartPriceViewport();}},true);
 }
 

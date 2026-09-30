@@ -351,7 +351,6 @@ function renderCurrentTab() {
   const sourceList = combinedRadar ? tierGroups.flat() : isTierTab
     ? (sideTiers[tab] || [])
     : (state.tierMap[tab] || []).filter(c => passesDirectionFilter(c.side));
-  const groupByCoin = new Map(tierGroups.flatMap((group, index) => group.map(coin => [coin, index])));
   const list = window.OXChartToolbar?.filterList(sourceList) || sourceList;
   const directionLabel = state.directionFilter === "long" ? "多頭" : "空頭";
   document.getElementById("pool-count").textContent = `${list.length} 檔${directionLabel}`;
@@ -367,11 +366,13 @@ function renderCurrentTab() {
     const fit = displayTier === "t1" ? c.t1Fit : displayTier === "t2" ? c.t2Fit : c.t3Fit;
     const allowStar = combinedRadar || isTierTab;
     const starred = isWatchlisted(c.symbol);
+    const previousTier=idx>0?(list[idx-1].displayTier||list[idx-1].tier||'t3'):null;
+    const startsTier=displayTier!==previousTier;
     // Follow real group boundaries even while a scan or custom filter has fewer results.
-    const separator = combinedRadar && idx > 0 && groupByCoin.get(c) !== groupByCoin.get(list[idx - 1])
+    const separator = combinedRadar && idx > 0 && startsTier
       ? '<div class="radar-tier-separator" role="separator" aria-label="雷達分級分隔"></div>' : '';
-    return `${separator}<div class="coin-card ${c.symbol === state.symbol ? 'selected' : ''}" data-symbol="${c.symbol}" data-tier="${displayTier}" role="button" tabindex="0">
-      <small class="coin-tier-heading">${displayTier.toUpperCase()}</small>
+    return `${separator}<div class="coin-card ${startsTier?'is-tier-start ':''}${c.symbol === state.symbol ? 'selected' : ''}" data-symbol="${c.symbol}" data-tier="${displayTier}" role="button" tabindex="0">
+      ${startsTier?`<small class="coin-tier-heading">${displayTier.toUpperCase()}</small>`:''}
       <div class="coin-top">
         <span class="coin-title">
           <span class="coin-rank">#${idx + 1}</span>

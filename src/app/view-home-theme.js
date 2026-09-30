@@ -189,6 +189,7 @@ function renderHomeOverview() {
       box.replaceChildren(empty);
       continue;
     }
+    let previousTier=null;
     for (const candidate of rows.slice(0, 30)) {
       const row = existing.get(candidate.symbol) || document.createElement("button");
       row.type = "button";
@@ -196,6 +197,10 @@ function renderHomeOverview() {
       row.dataset.homeSymbol = candidate.symbol;
       row.dataset.homeSide = side;
       row.dataset.homeTier = candidate.displayTier || candidate.tier;
+      const startsTier=row.dataset.homeTier!==previousTier;
+      previousTier=row.dataset.homeTier;
+      row.classList.toggle('is-tier-start',startsTier);
+      row.dataset.groupStart=String(startsTier);
       const identity = row.querySelector('.ox-home-t1-identity') || document.createElement("span");
       if(!identity.children.length){
         const symbol = document.createElement("strong");
@@ -208,6 +213,7 @@ function renderHomeOverview() {
       const tier = row.querySelector('.ox-home-row-tier') || document.createElement("small");
       tier.className = 'ox-home-row-tier';
       tier.textContent = row.dataset.homeTier.toUpperCase();
+      tier.hidden=!startsTier;
       const change = row.querySelector('em') || document.createElement("em");
       change.className = num(candidate.change24h) > 0 ? "positive" : "negative";
       change.textContent = fmtPct(candidate.change24h);
@@ -218,6 +224,9 @@ function renderHomeOverview() {
     // survive live updates. Only move rows when the actual ranking changes.
     displayed.forEach((row,index)=>{if(box.children[index]!==row)box.insertBefore(row,box.children[index]||null);});
     for(const child of [...box.children])if(!displayed.includes(child))child.remove();
+    const firstFive=displayed.slice(0,5);
+    const height=firstFive.reduce((sum,row)=>sum+(row.dataset.groupStart==='true'?64:51),0)+Math.max(0,firstFive.length-1)*9;
+    box.style.setProperty('--home-five-rows',`${height}px`);
   }
 
   setText("home-btc-price", btc ? fmtPrice(btc.lastPr) : "—"); setChange("home-btc-change", btc);
