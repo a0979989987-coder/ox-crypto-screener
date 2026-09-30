@@ -3,6 +3,7 @@ import { createTWMarketState } from '../engine.js';
 import { savedResearch, loadResearch } from '../research-data.js';
 import { TIMEFRAMES, selectUniverse, dailyCandles, weeklyCandles } from './model.js';
 export { TIMEFRAMES };
+export const detailStamp = row => `${row.frame==='1W'?'已完成週 · 截至':'資料日'} ${row.candles.at(-1).lastDate || row.candles.at(-1).date}`;
 export const id = 'tw', label = '台股 · TWSE／TPEx', asset = '股票', currency = '元', period = '當日', defaultFrames = ['1D'], defaultLimit = 80;
 export const displayName = row => `${row.symbol} ${row.name || row.ticker?.name || ''}`.trim();
 export const help = '<p>以官方上市、上櫃普通股的成交額選取觀察池，日線使用官方 OHLC；週線由實際日線合併，只比對已完成的週。休市與缺漏不補造 K 線。首次分類逐步顯示進度，同一交易日再次進入可沿用裝置快取。</p><p>型態 T1／T2／T3 代表觀察階段，與原雷達分級分開；相似度不是勝率。未畫圖先顯示雷達候選，畫圖或選型態後搜尋已分類股票。OX 沿用台股雷達官方資料評分，未知顯示 —，不使用加密合約公式。成交額與漲跌為資料日行情，非即時。</p><p>白線標示比對區段，W／M 可切換型態條件與相似路徑。點選股票卡片可拖曳與雙指縮放 K 線；資料缺漏會跳過並顯示缺漏數。</p>';
