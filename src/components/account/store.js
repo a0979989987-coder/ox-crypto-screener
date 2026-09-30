@@ -41,10 +41,15 @@ const MarketController = (() => {
     if(market!=="crypto"){state.chartLiveFeed?.stop();state.chartLiveFeed=null;state.chartLiveQuote=null;}
     state.activeMarket=market; localStorage.setItem("ox-active-market",market); document.body.dataset.market=market;
     document.querySelectorAll("[data-terminal-view]").forEach(el => { el.textContent = {crypto:"Crypto",us:"美股",tw:"台股",forex:"外匯"}[market]; });
+    // Paint the non-Crypto host before notifying the router. US activation is
+    // synchronous through its first paint, so the fallback is replaced in the
+    // same task instead of remaining visible while the mobile frame settles.
+    if (market === "us") syncPlaceholder();
     document.dispatchEvent(new CustomEvent("ox:marketchange",{detail:{market}}));
     document.querySelectorAll("[data-market-choice]").forEach(b=>b.classList.toggle("active",b.dataset.marketChoice===market));
     const st=document.getElementById("ox-market-status-text"); if(st) st.textContent = market==="crypto" ? "加密市場行情已連線" : market==="forex" ? "外匯每日參考匯率 · 非即時" : market==="tw" ? "台股官方收盤資料已連線" : "美股 ETF 行情已連線 · 廣度與類股待接";
-    syncPlaceholder(); renderOxLive();
+    if (market !== "us") syncPlaceholder();
+    renderOxLive();
     if (market === "crypto" && kick) { refreshMarketTickers(); if(state.activeView==="radar") loadSymbolCandles(true); if(state.activeView==="home") HomeMiniChart.ensureAndLoad(true); }
     if(toast) showMarketToast(`已切換至${labels[market]}`);
     try { AccountStore.capturePrefs(); } catch (e) {}

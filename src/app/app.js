@@ -16,7 +16,7 @@ const isMarketView = () => ["home", "strength", "radar"].includes(currentView) |
 
 function scheduleMarketView() {
   const token = ++renderToken;
-  requestAnimationFrame(() => requestAnimationFrame(() => {
+  const activate = () => {
     if (token !== renderToken || !isMarketView()) return;
     const market = document.body.dataset.market || "crypto";
     if (router.current() !== market) router.activate(market, { view: currentView }).then(() => {
@@ -31,7 +31,12 @@ function scheduleMarketView() {
       if (document.body.dataset.market !== market) scheduleMarketView();
     });
     else router.get(market)?.view?.(currentView);
-  }));
+  };
+  // The US workspace replaces the temporary market placeholder with its own
+  // stable shell before awaiting data. Mount it in the same task as the market
+  // switch so mobile users never land on the centered architecture screen.
+  if (document.body.dataset.market === "us") activate();
+  else requestAnimationFrame(() => requestAnimationFrame(activate));
 }
 
 document.addEventListener("ox:viewchange", event => {
