@@ -11,15 +11,18 @@ function renderCompactChartPriceAxis() {
   if (height<20) return;
   const high=state.candleSeries.coordinateToPrice(0),low=state.candleSeries.coordinateToPrice(height);
   if (!Number.isFinite(high)||!Number.isFinite(low)||high<=low) return;
-  const raw=(high-low)/Math.max(2,Math.floor(height/55)),power=10**Math.floor(Math.log10(raw));
-  const step=[1,2,5,10].find(n=>n*power>=raw)*power;
+  const mobile=window.matchMedia('(max-width:720px)').matches;
+  const raw=(high-low)/Math.max(2,Math.floor(height/(mobile?30:34))),power=10**Math.floor(Math.log10(raw));
+  const multiplier=[1,2,2.5,5,10].find(n=>n*power>=raw),step=multiplier*power;
+  const digits=Math.max(0,-Math.floor(Math.log10(power))+(multiplier===2.5?1:0),Math.abs(high)<10?2:0);
   const labels=[];
-  for(let value=Math.ceil(low/step)*step;value<high&&labels.length<40;value+=step){
+  for(let index=Math.ceil(low/step);index*step<high&&labels.length<80;index++){
+    const value=index*step;
     const y=state.candleSeries.priceToCoordinate(value);
-    if (y>8&&y<height-8) labels.push({text:formatChartAxisPrice(value),y});
+    if (y>8&&y<height-8) labels.push({text:value.toFixed(Math.min(12,digits)),y});
   }
   const ctx=renderCompactChartPriceAxis.context ||= document.createElement('canvas').getContext('2d');
-  ctx.font='11px system-ui';
+  ctx.font=`${mobile?9:10}px system-ui`;
   const width=Math.ceil(Math.max(24,...labels.map(l=>ctx.measureText(l.text).width))+6);
   state.chartPriceAxisWidth=width;
   axis.style.width=`${width}px`;axis.style.height=`${height}px`;
@@ -30,7 +33,7 @@ function renderCompactChartPriceAxis() {
 
 function chartAxisPrecision(price) {
   const value = Math.abs(Number(price) || 0);
-  return value >= 1000 ? 2 : value >= 1 ? 4 : value >= 0.01 ? 6 : 8;
+  return value >= 1000 ? 2 : value >= 1 ? 4 : Math.max(6,Math.min(12,4-Math.floor(Math.log10(value||1))));
 }
 
 function formatChartAxisPrice(price) {
@@ -58,11 +61,30 @@ function chartPriceAutoscale(original) {
   const info = original();
   if (!info) return info;
   state.chartAutoPriceRange = { ...info.priceRange };
-  return state.chartPriceViewport ? { ...info, priceRange: { ...state.chartPriceViewport } } : info;
+  state.chartAutoPriceMargins = info.margins || { above:0,below:0 };
+  return state.chartPriceViewport ? { ...info, priceRange: { ...state.chartPriceViewport },margins:state.chartPriceViewportMargins } : info;
+}
+
+function getChartVisiblePriceRange() {
+  const height=document.getElementById('chart').clientHeight-state.chart.timeScale().height();
+  const maxValue=state.candleSeries.coordinateToPrice(0),minValue=state.candleSeries.coordinateToPrice(height-1);
+  return Number.isFinite(minValue)&&Number.isFinite(maxValue)&&maxValue>minValue?{minValue,maxValue}:null;
+}
+
+function setChartVisiblePriceRange(range) {
+  // The provider describes the inner price range. Remove the chart's margins
+  // from screen coordinates so the first movement never jumps or stretches it.
+  const margins=state.chart.priceScale('right').options().scaleMargins;
+  const extra=state.chartPriceViewport?state.chartPriceViewportMargins:state.chartAutoPriceMargins;
+  const height=document.getElementById('chart').clientHeight-state.chart.timeScale().height();
+  const span=range.maxValue-range.minValue;
+  state.chartPriceViewportMargins=extra||{above:0,below:0};
+  state.chartPriceViewport={minValue:range.minValue+span*(height*margins.bottom+(extra?.below||0))/(height-1),maxValue:range.maxValue-span*(height*margins.top+(extra?.above||0))/(height-1)};
+  refreshChartPriceViewport();
 }
 
 function enableMobileChartPriceGestures(container) {
-  let gesture = null;
+  let gesture = null,inspectTimer=null,lastAxisTap=0;
   const zone = target => {
     if (target.closest('.chart-price-axis')) return 'price';
     const cell = target.closest('td');
@@ -75,25 +97,34 @@ function enableMobileChartPriceGestures(container) {
   };
   const mid = touches => ({ x: [...touches].reduce((n,t)=>n+t.clientX,0)/touches.length,
     y: [...touches].reduce((n,t)=>n+t.clientY,0)/touches.length });
-  const distance = touches => Math.hypot(touches[0].clientX-touches[1].clientX,touches[0].clientY-touches[1].clientY);
+  const separation = touches => ({x:Math.abs(touches[0].clientX-touches[1].clientX),y:Math.abs(touches[0].clientY-touches[1].clientY)});
+  const inspect=point=>{
+    const rect=container.getBoundingClientRect(),x=point.x-rect.left,y=point.y-rect.top;
+    const time=state.chart.timeScale().coordinateToTime(x),price=state.candleSeries.coordinateToPrice(y);
+    if(time!==null&&Number.isFinite(price))state.chart.setCrosshairPosition(price,time,state.candleSeries);
+  };
   const start = event => {
+    clearTimeout(inspectTimer);gesture=null;
     if (!window.matchMedia('(pointer:coarse)').matches || event.touches.length > 2) return;
     const area = zone(event.target);
     if (!area || document.querySelector('#view-radar .chart-drawing-layer.is-editing')) return;
-    const range = state.chartPriceViewport || state.chartAutoPriceRange;
+    const range = getChartVisiblePriceRange();
     const logical = state.chart.timeScale().getVisibleLogicalRange();
     if (!range || !logical) return;
     const point = mid(event.touches), rect = container.getBoundingClientRect();
-    gesture = { area, count:event.touches.length, x:point.x, y:point.y, top:rect.top,
-      height:container.clientHeight-state.chart.timeScale().height(), range:{...range}, logical:{...logical},
-      distance:event.touches.length===2?distance(event.touches):0, direction:null };
-    if (area !== 'plot' || gesture.count===2) { event.preventDefault(); event.stopPropagation(); }
+    gesture = { area, count:event.touches.length, x:point.x, y:point.y, top:rect.top,left:rect.left,width:state.chart.timeScale().width(),
+      height:container.clientHeight-state.chart.timeScale().height()-1, range:{...range}, logical:{...logical},
+      separation:event.touches.length===2?separation(event.touches):null };
+    if(area==='plot'&&gesture.count===1)inspectTimer=setTimeout(()=>{if(gesture){gesture.inspect=true;inspect({x:gesture.x,y:gesture.y});}},450);
+    event.preventDefault(); event.stopPropagation();
   };
   container.addEventListener('touchstart', start, { passive:false, capture:true });
   container.addEventListener('touchmove', event => {
     if (!gesture || !event.touches.length) return;
     if (event.touches.length!==gesture.count) { start(event); return; }
     const point=mid(event.touches), dx=point.x-gesture.x, dy=point.y-gesture.y;
+    if(gesture.inspect){inspect(point);event.preventDefault();event.stopPropagation();return;}
+    if(Math.hypot(dx,dy)>6){clearTimeout(inspectTimer);gesture.moved=true;state.chart.clearCrosshairPosition();}
     const span=gesture.range.maxValue-gesture.range.minValue;
     if (!Number.isFinite(span)||span<=0) return;
     if (gesture.area==='time') {
@@ -101,31 +132,48 @@ function enableMobileChartPriceGestures(container) {
       const bars=Math.max(8,Math.min(3000,(gesture.logical.to-gesture.logical.from)/factor));
       state.chart.timeScale().setVisibleLogicalRange({from:gesture.logical.to-bars,to:gesture.logical.to});
     } else if (gesture.area==='price') {
-      const factor=Math.exp(dy/Math.max(80,gesture.height)*3);
+      const factor=Math.exp(-dy/Math.max(80,gesture.height)*3);
       const center=(gesture.range.maxValue+gesture.range.minValue)/2;
-      state.chartPriceViewport={minValue:center-span/factor/2,maxValue:center+span/factor/2};
-      refreshChartPriceViewport();
+      setChartVisiblePriceRange({minValue:center-span/factor/2,maxValue:center+span/factor/2});
     } else if (gesture.count===2) {
-      const factor=Math.max(.1,Math.min(10,distance(event.touches)/(gesture.distance||1)));
-      const newSpan=span/factor, ratio=(gesture.y-gesture.top)/gesture.height;
+      // Horizontal spread changes candle width; vertical spread changes candle
+      // height. Moving both fingers together still pans around their midpoint.
+      const gap=separation(event.touches);
+      const factor=axis=>gesture.separation[axis]<24?1:Math.max(.1,Math.min(10,gap[axis]/gesture.separation[axis]));
+      const newSpan=span/factor('y'), ratio=(gesture.y-gesture.top)/gesture.height;
       const anchor=gesture.range.maxValue-ratio*span;
       const maxValue=anchor+(point.y-gesture.top)/gesture.height*newSpan;
-      state.chartPriceViewport={minValue:maxValue-newSpan,maxValue};
-      const bars=(gesture.logical.to-gesture.logical.from)/factor;
-      state.chart.timeScale().setVisibleLogicalRange({from:gesture.logical.to-bars,to:gesture.logical.to});
-      refreshChartPriceViewport();
+      const oldBars=gesture.logical.to-gesture.logical.from;
+      const bars=Math.max(8,Math.min(3000,oldBars/factor('x')));
+      const anchorBar=gesture.logical.from+(gesture.x-gesture.left)/gesture.width*oldBars;
+      const from=anchorBar-(point.x-gesture.left)/gesture.width*bars;
+      state.chart.timeScale().setVisibleLogicalRange({from,to:from+bars});
+      setChartVisiblePriceRange({minValue:maxValue-newSpan,maxValue});
     } else {
-      if (!gesture.direction&&Math.max(Math.abs(dx),Math.abs(dy))>6) gesture.direction=Math.abs(dy)>Math.abs(dx)*1.1?'vertical':'horizontal';
-      if (gesture.direction!=='vertical') return; // Native horizontal pan.
+      const bars=gesture.logical.to-gesture.logical.from;
+      const move=-dx/gesture.width*bars;
+      state.chart.timeScale().setVisibleLogicalRange({from:gesture.logical.from+move,to:gesture.logical.to+move});
       const shift=dy/gesture.height*span;
-      state.chartPriceViewport={minValue:gesture.range.minValue+shift,maxValue:gesture.range.maxValue+shift};
-      refreshChartPriceViewport();
+      setChartVisiblePriceRange({minValue:gesture.range.minValue+shift,maxValue:gesture.range.maxValue+shift});
     }
     event.preventDefault(); event.stopPropagation();
   }, {passive:false,capture:true});
-  const end=event=>{if(gesture&&(gesture.area!=='plot'||gesture.count===2||gesture.direction==='vertical'))event.stopPropagation();gesture=null;if(event.touches.length)start(event);};
+  const end=event=>{
+    clearTimeout(inspectTimer);
+    if(gesture){
+      event.stopPropagation();
+      if(!gesture.moved&&gesture.count===1){
+        if(gesture.area==='plot'&&!gesture.inspect)inspect({x:gesture.x,y:gesture.y});
+        if(gesture.area==='price'){
+          const now=performance.now();
+          if(lastAxisTap&&now-lastAxisTap<350){state.chartPriceViewport=null;refreshChartPriceViewport();lastAxisTap=0;}else lastAxisTap=now;
+        }
+      }
+    }
+    gesture=null;if(event.touches.length)start(event);
+  };
   container.addEventListener('touchend',end,{passive:false,capture:true});
-  container.addEventListener('touchcancel',()=>{gesture=null;},{passive:true,capture:true});
+  container.addEventListener('touchcancel',()=>{clearTimeout(inspectTimer);gesture=null;},{passive:true,capture:true});
   container.addEventListener('dblclick',event=>{if(zone(event.target)==='price'){state.chartPriceViewport=null;refreshChartPriceViewport();}},true);
 }
 
@@ -289,8 +337,7 @@ function initChart() {
     },
     crosshair: { mode: LightweightCharts.CrosshairMode.Normal, horzLine: { labelVisible: false } },
     handleScale: { mouseWheel: true, pinch: true, axisPressedMouseMove: { price: true, time: true }, axisDoubleClickReset: true },
-    // Vertical swipes over the large mobile chart should move the page.
-    // Horizontal drags still pan candles and pinch zoom remains available.
+    // Touch gestures are handled above; mouse drag/wheel remain native.
     handleScroll: { mouseWheel: true, pressedMouseMove: true, horzTouchDrag: true, vertTouchDrag: false }
   });
 
@@ -304,6 +351,9 @@ function initChart() {
 
   // User chart reference (Display P3 converted to sRGB): cyan up, magenta down.
   state.candleSeries = state.chart.addCandlestickSeries({
+    // Hidden scales do not participate in LWC's default-scale selection.
+    // Bind explicitly so viewport margins and resets affect the candle scale.
+    priceScaleId: 'right',
     upColor: "#00b8d4",
     downColor: "#ff3078",
     borderVisible: false,
@@ -338,18 +388,17 @@ function initChart() {
   let axisDrag=null;
   compactAxis.addEventListener('pointerdown',event=>{
     if(event.pointerType!=='mouse'||event.button!==0)return;
-    const range=state.chartPriceViewport||state.chartAutoPriceRange;
+    const range=getChartVisiblePriceRange();
     if(!range)return;
     axisDrag={y:event.clientY,range:{...range}};
     compactAxis.setPointerCapture(event.pointerId);event.preventDefault();
   });
   compactAxis.addEventListener('pointermove',event=>{
     if(!axisDrag)return;
-    const factor=Math.exp((event.clientY-axisDrag.y)/Math.max(80,compactAxis.clientHeight)*3);
+    const factor=Math.exp(-(event.clientY-axisDrag.y)/Math.max(80,compactAxis.clientHeight)*3);
     const center=(axisDrag.range.minValue+axisDrag.range.maxValue)/2;
     const span=(axisDrag.range.maxValue-axisDrag.range.minValue)/factor;
-    state.chartPriceViewport={minValue:center-span/2,maxValue:center+span/2};
-    refreshChartPriceViewport();
+    setChartVisiblePriceRange({minValue:center-span/2,maxValue:center+span/2});
   });
   const stopAxisDrag=()=>{axisDrag=null;};
   compactAxis.addEventListener('pointerup',stopAxisDrag);

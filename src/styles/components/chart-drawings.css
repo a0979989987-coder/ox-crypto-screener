@@ -70,7 +70,8 @@ body.ox-terminal #view-radar .chart-box:-webkit-full-screen>#btn-chart-exit-over
 body.ox-terminal.chart-focus #view-radar .chart-timeframe-group {padding-right:40px!important}
 
 #view-radar .chart-price-axis {position:absolute;right:0;top:0;z-index:6;touch-action:none!important;cursor:ns-resize;user-select:none;-webkit-user-select:none}
-#view-radar .chart-price-axis span {position:absolute;right:2px;transform:translateY(-50%);color:var(--muted,#929995);background:var(--bg,#121417);padding-left:2px;font:11px/1.2 system-ui;white-space:nowrap;pointer-events:none;font-variant-numeric:tabular-nums}
+#view-radar .chart-price-axis span {position:absolute;right:2px;transform:translateY(-50%);color:var(--muted,#929995);background:var(--bg,#121417);padding-left:2px;font:10px/1.2 system-ui;white-space:nowrap;pointer-events:none;font-variant-numeric:tabular-nums}
+@media(max-width:720px){#view-radar .chart-price-axis span {font-size:9px}#view-radar .chart-mobile-last-price,#view-radar .chart-cursor-price {font-size:9px}}
 
 #view-radar .chart-mobile-last-price[hidden]{display:none!important}
 

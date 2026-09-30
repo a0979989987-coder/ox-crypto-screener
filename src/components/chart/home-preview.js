@@ -29,7 +29,7 @@
     const symbol=row.dataset.homeSymbol;
     const candidate=state.analyzedCache.get(symbol);
     selected={symbol,tier:row.dataset.homeTier||candidate?.tier||'t3',score:candidate?.oxScore??'—',side:row.dataset.homeSide};
-    frame='1H';focusBefore=row;
+    frame='1H';focusBefore=row.focusTarget||row;
     if(!dialog.open)dialog.showModal();
     if(!chart){
       chart=LightweightCharts.createChart(stage,{width:stage.clientWidth,height:stage.clientHeight,layout:{background:{type:'solid',color:'#15191d'},textColor:'#aeb3b3',attributionLogo:false},grid:{vertLines:{visible:false},horzLines:{color:'#ffffff0b'}},rightPriceScale:{autoScale:true,scaleMargins:{top:.12,bottom:.12}},timeScale:{timeVisible:true,rightOffset:5},handleScroll:{pressedMouseMove:true,horzTouchDrag:true,vertTouchDrag:false},handleScale:{pinch:true,mouseWheel:true,axisPressedMouseMove:{price:true,time:true}}});
@@ -49,13 +49,43 @@
   dialog.addEventListener('close',()=>{request++;focusBefore?.isConnected&&focusBefore.focus({preventScroll:true});});
   let press=null,holdTimer=null,singleTimer=null,lastTap=null,suppressedUntil=0;
   const rowAt=event=>event.target.closest('#view-home .ox-home-t1-row[data-home-symbol]');
+  function cancelPress(){clearTimeout(holdTimer);holdTimer=null;press=null;}
+  function showHeldPreview(){
+    if(!press||press.opened)return;
+    press.opened=true;suppressedUntil=performance.now()+3000;lastTap=null;open(press.row);
+  }
+  function beginPress(kind,id,row,x,y){
+    cancelPress();clearTimeout(singleTimer);
+    // Capture the candidate before live ticker updates can replace its content.
+    press={kind,id,row:{dataset:{...row.dataset},focusTarget:row},x,y,started:performance.now(),opened:false};
+    holdTimer=setTimeout(showHeldPreview,2000);
+  }
+  function movePress(x,y){if(Math.hypot(x-press.x,y-press.y)>12){suppressedUntil=performance.now()+400;cancelPress();}}
+  function finishPress(cancelled){
+    if(!cancelled&&press&&!press.opened&&performance.now()-press.started>=2000)showHeldPreview();
+    cancelPress();
+  }
   document.addEventListener('pointerdown',event=>{
-    const row=rowAt(event);if(!row||event.button>0)return;
-    clearTimeout(holdTimer);press={row,x:event.clientX,y:event.clientY,id:event.pointerId};
-    holdTimer=setTimeout(()=>{if(!press)return;suppressedUntil=performance.now()+3000;open(press.row);press=null;},2000);
+    const row=rowAt(event);if(!row||!event.isPrimary||event.button>0)return;
+    beginPress('pointer',event.pointerId,row,event.clientX,event.clientY);
   },true);
-  document.addEventListener('pointermove',event=>{if(press&&Math.hypot(event.clientX-press.x,event.clientY-press.y)>9){clearTimeout(holdTimer);press=null;}},true);
-  for(const type of ['pointerup','pointercancel'])document.addEventListener(type,()=>{clearTimeout(holdTimer);press=null;},true);
+  document.addEventListener('pointermove',event=>{if(press?.kind==='pointer'&&press.id===event.pointerId)movePress(event.clientX,event.clientY);},true);
+  for(const type of ['pointerup','pointercancel'])document.addEventListener(type,event=>{if(press?.kind==='pointer'&&press.id===event.pointerId)finishPress(type==='pointercancel');},true);
+  // Safari can cancel a compatibility pointer while the finger is still held.
+  // Touch events own that lifecycle, and remain passive so lists can scroll.
+  document.addEventListener('touchstart',event=>{
+    if(event.touches.length!==1){cancelPress();return;}
+    const row=rowAt(event);if(!row)return;
+    const t=event.changedTouches[0];beginPress('touch',t.identifier,row,t.clientX,t.clientY);
+  },{capture:true,passive:true});
+  document.addEventListener('touchmove',event=>{
+    if(press?.kind!=='touch')return;
+    const t=[...event.touches].find(t=>t.identifier===press.id);if(t)movePress(t.clientX,t.clientY);
+  },{capture:true,passive:true});
+  for(const type of ['touchend','touchcancel'])document.addEventListener(type,event=>{
+    if(press?.kind==='touch'&&[...event.changedTouches].some(t=>t.identifier===press.id))finishPress(type==='touchcancel');
+  },{capture:true,passive:true});
+  document.addEventListener('visibilitychange',()=>{if(document.hidden)cancelPress();});
   document.addEventListener('contextmenu',event=>{if(rowAt(event))event.preventDefault();},true);
   document.addEventListener('click',event=>{
     const row=rowAt(event);if(!row)return;

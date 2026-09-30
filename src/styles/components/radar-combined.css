@@ -1,4 +1,12 @@
 /* Combined T1 / T2 / T3 display and existing toolbar controls. */
+body.ox-terminal #view-radar #screener-list .coin-tier-heading {display:block;flex:0 0 100%;margin:0 0 4px;color:var(--muted);font:9px/1.2 system-ui;letter-spacing:.06em}
+@media(max-width:720px){
+ body.ox-terminal #view-radar #screener-list .coin-card[data-tier] {grid-template-rows:auto auto auto auto!important}
+ body.ox-terminal #view-radar #screener-list .coin-tier-heading {grid-column:1/-1!important;grid-row:1!important;margin:0;font-size:8px;line-height:10px}
+ body.ox-terminal #view-radar #screener-list .coin-card[data-tier] :is(.coin-title,.coin-top-right) {grid-row:2!important}
+ body.ox-terminal #view-radar #screener-list .coin-card[data-tier] .coin-mid {grid-row:3!important}
+ body.ox-terminal #view-radar #screener-list .coin-card[data-tier] .coin-mobile-bottom {grid-row:4!important}
+}
 body.ox-terminal #view-radar #radar-scanner-panel .scanner-tabs {
   grid-template-columns:repeat(3,minmax(0,1fr))!important;
 }

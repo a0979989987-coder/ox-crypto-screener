@@ -180,34 +180,44 @@ function renderHomeOverview() {
     );
     const box = document.getElementById(`home-t1-${side}-list`);
     if (!box) continue;
-    box.replaceChildren();
+    const existing=new Map([...box.querySelectorAll('.ox-home-t1-row')].map(row=>[row.dataset.homeSymbol,row]));
+    const displayed=[];
     if (!rows.length) {
       const empty = document.createElement("span");
       empty.className = "ox-home-t1-empty";
       empty.textContent = `等待${label}候選`;
-      box.append(empty);
+      box.replaceChildren(empty);
       continue;
     }
     for (const candidate of rows.slice(0, 30)) {
-      const row = document.createElement("button");
+      const row = existing.get(candidate.symbol) || document.createElement("button");
       row.type = "button";
       row.className = "ox-home-t1-row";
       row.dataset.homeSymbol = candidate.symbol;
       row.dataset.homeSide = side;
       row.dataset.homeTier = candidate.displayTier || candidate.tier;
-      const symbol = document.createElement("strong");
-      symbol.textContent = String(candidate.symbol || "—").replace(/USDT$/, "");
-      const identity = document.createElement("span");
-      identity.className = "ox-home-t1-identity";
-      identity.append(createCoinLogo(candidate.symbol), symbol);
-      const score = document.createElement("small");
-      score.textContent = `${(candidate.displayTier || candidate.tier).toUpperCase()} · OX ${candidate.oxScore ?? "—"}`;
-      const change = document.createElement("em");
+      const identity = row.querySelector('.ox-home-t1-identity') || document.createElement("span");
+      if(!identity.children.length){
+        const symbol = document.createElement("strong");
+        symbol.textContent = String(candidate.symbol || "—").replace(/USDT$/, "");
+        identity.className = "ox-home-t1-identity";
+        identity.append(createCoinLogo(candidate.symbol), symbol);
+      }
+      const score = row.querySelector('small:not(.ox-home-row-tier)') || document.createElement("small");
+      score.textContent = `OX ${candidate.oxScore ?? "—"}`;
+      const tier = row.querySelector('.ox-home-row-tier') || document.createElement("small");
+      tier.className = 'ox-home-row-tier';
+      tier.textContent = row.dataset.homeTier.toUpperCase();
+      const change = row.querySelector('em') || document.createElement("em");
       change.className = num(candidate.change24h) > 0 ? "positive" : "negative";
       change.textContent = fmtPct(candidate.change24h);
-      row.append(identity, score, change);
-      box.append(row);
+      if(!row.children.length)row.append(tier,identity,score,change);
+      displayed.push(row);
     }
+    // Reuse buttons during ticker refreshes so a held touch and scroll position
+    // survive live updates. Only move rows when the actual ranking changes.
+    displayed.forEach((row,index)=>{if(box.children[index]!==row)box.insertBefore(row,box.children[index]||null);});
+    for(const child of [...box.children])if(!displayed.includes(child))child.remove();
   }
 
   setText("home-btc-price", btc ? fmtPrice(btc.lastPr) : "—"); setChange("home-btc-change", btc);

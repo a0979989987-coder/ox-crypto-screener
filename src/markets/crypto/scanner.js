@@ -370,7 +370,8 @@ function renderCurrentTab() {
     // Follow real group boundaries even while a scan or custom filter has fewer results.
     const separator = combinedRadar && idx > 0 && groupByCoin.get(c) !== groupByCoin.get(list[idx - 1])
       ? '<div class="radar-tier-separator" role="separator" aria-label="雷達分級分隔"></div>' : '';
-    return `${separator}<div class="coin-card ${c.symbol === state.symbol ? 'selected' : ''}" data-symbol="${c.symbol}" role="button" tabindex="0">
+    return `${separator}<div class="coin-card ${c.symbol === state.symbol ? 'selected' : ''}" data-symbol="${c.symbol}" data-tier="${displayTier}" role="button" tabindex="0">
+      <small class="coin-tier-heading">${displayTier.toUpperCase()}</small>
       <div class="coin-top">
         <span class="coin-title">
           <span class="coin-rank">#${idx + 1}</span>
