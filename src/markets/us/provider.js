@@ -1,6 +1,6 @@
-import { usProvider, getUSApiBase } from "./api.js";
-import { normalizeCandles, normalizeQuote } from "./model.js";
-import { aggregate4H, aggregateMonthly } from "./aggregate.js";
+import { usProvider, getUSApiBase } from "./api.js?v=20260930-us-boot3";
+import { normalizeCandles, normalizeQuote } from "./model.js?v=20260930-us-boot3";
+import { aggregate4H, aggregateMonthly } from "./aggregate.js?v=20260930-us-boot3";
 const cache = new Map();
 // Old endpoints are used only to validate the existing integration locally.
 // A public preview must never bypass the new redistribution-rights gate.

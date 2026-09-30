@@ -1,4 +1,8 @@
 /* US adaptations only: actual radar geometry, tools, cards and typography use shared Crypto CSS. */
+body[data-market="us"] .us-boot-status {margin:12px 0;padding:16px;border:1px solid var(--line);border-radius:16px;background:var(--panel);font-size:12px;line-height:1.6;color:var(--ink)}
+.us-boot-status p {margin:8px 0;color:var(--muted)}
+.us-boot-status button {min-height:44px;padding:8px 14px;border:1px solid var(--line);border-radius:10px;background:transparent;color:inherit;font:inherit}
+.us-boot-status details {margin-top:10px;overflow-wrap:anywhere}
 body[data-market="us"][data-us-workspace="1"] #view-data,body[data-market="us"][data-us-workspace="1"] #view-media {display:none!important}
 body[data-market="us"][data-us-workspace="1"] #market-unavailable-card.us2-root {display:block!important;width:100%;max-width:none;min-width:0;padding:0;border:0;background:none;box-shadow:none;text-align:left;backdrop-filter:none;-webkit-backdrop-filter:none;filter:none;transform:none}
 body[data-market="us"] #market-unavailable-card.us2-root[hidden],.us2-root [hidden] {display:none!important}

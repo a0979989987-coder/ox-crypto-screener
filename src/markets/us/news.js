@@ -1,4 +1,4 @@
-import { icon } from "./ui.js";
+import { icon } from "./ui.js?v=20260930-us-boot3";
 import {
   e,
   price,
@@ -9,8 +9,8 @@ import {
   toolNames,
   patterns,
   sectorETF,
-} from "./view-utils.js";
-import { fetchJSON } from "./provider.js";
+} from "./view-utils.js?v=20260930-us-boot3";
+import { fetchJSON } from "./provider.js?v=20260930-us-boot3";
 export const newsViews = {
   async loadNewsData() {
     if (this.newsData) return this.newsData;

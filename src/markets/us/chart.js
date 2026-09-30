@@ -1,7 +1,7 @@
-import { USAdapter } from "./provider.js";
-import { INTERVALS, countdown, sessionAt, nyParts } from "./calendar.js";
-import { mergeCandles, movingAverage, vwap } from "./model.js";
-import { icon, positionTimeframe, openDialog, closeDialog } from "./ui.js";
+import { USAdapter } from "./provider.js?v=20260930-us-boot3";
+import { INTERVALS, countdown, sessionAt, nyParts } from "./calendar.js?v=20260930-us-boot3";
+import { mergeCandles, movingAverage, vwap } from "./model.js?v=20260930-us-boot3";
+import { icon, positionTimeframe, openDialog, closeDialog } from "./ui.js?v=20260930-us-boot3";
 const UP = "#00b8d4",
   DOWN = "#ff3078";
 const esc = (s) =>
@@ -62,7 +62,8 @@ export class USChart {
     this.magnet = true;
     this.ma = false;
     this.vwap = false;
-    this.frames=stored('ox-us-v2-chart-timeframes',['1m','5m','15m','1H','4H','1D','1W']).filter(tf=>INTERVALS.includes(tf));
+    const savedFrames = stored('ox-us-v2-chart-timeframes', null);
+    this.frames=(Array.isArray(savedFrames) ? savedFrames : ['1m','5m','15m','1H','4H','1D','1W']).filter(tf=>INTERVALS.includes(tf));
     if(!this.frames.length)this.frames=[interval];
     root.innerHTML = `<div class="chart-controls us2-chart-toolbar"><div class="ctrl-group chart-timeframe-group"><div class="chart-timeframe-strip us2-timeframes" aria-label="圖表時間級別"><span class="tf-glass-indicator" aria-hidden="true"></span>${INTERVALS.map((tf,i)=>`<button class="btn-tf ${tf===interval?"active":""}" type="button" data-tf="${tf}" aria-pressed="${tf===interval}">${tf}${i===INTERVALS.length-1?'<span class="tf-hint">▾</span>':''}</button>`).join("")}</div></div><div class="ctrl-group chart-tool-actions"><button class="chart-tool-icon us2-indicator-open" type="button" data-indicator-open aria-label="指標與時段設定" aria-haspopup="dialog">${icon("settings")}</button>${onCollapse?`<button class="chart-tool-icon us2-list-toggle" type="button" data-collapse aria-label="收起／展開雷達清單">${icon("collapse")}</button>`:""}<button class="chart-tool-icon ox-chart-expand-dot us2-expand-control" type="button" data-expand aria-label="展開圖表">${icon("expand")}</button></div></div><button class="us2-focus-exit chart-tool-icon" data-exit-focus aria-label="收合圖表" hidden>${icon("expand")}</button>
       <div class="us2-chart-stage chart-container"><div class="us2-chart-canvas"></div><svg class="us2-drawings" aria-label="型態關鍵線"></svg><div class="us2-ohlc" role="status"></div><div class="chart-current-price" hidden><span class="chart-current-price-line"></span><div class="chart-mobile-last-price us2-price-label"><strong></strong><small></small></div></div><div class="us2-chart-message" role="status">取得歷史 OHLCV…</div><button class="chart-tool-icon us2-latest" data-latest title="回到最新行情" aria-label="回到最新行情">${icon("latest")}</button></div>

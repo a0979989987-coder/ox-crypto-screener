@@ -1,6 +1,6 @@
-import { US_MODULE_CONFIG } from "./config.js";
-import { createUSMarketState } from "./engine.js";
-import { USWorkspace } from "./workspace.js";
+import { US_MODULE_CONFIG } from "./config.js?v=20260930-us-boot3";
+import { createUSMarketState } from "./engine.js?v=20260930-us-boot3";
+import { USWorkspace } from "./workspace.js?v=20260930-us-boot3";
 const workspace = new USWorkspace();
 let active = false,
   entered = false;

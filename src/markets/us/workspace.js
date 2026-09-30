@@ -12,19 +12,21 @@ import {
   toolNames,
   patterns,
   sectorETF,
-} from "./view-utils.js";
-import { toolsViews } from "./tools.js";
-import { newsViews } from "./news.js";
-import { USAdapter, fetchJSON } from "./provider.js";
-import { USChart } from "./chart.js";
-import { searchDirectory, quoteStatus } from "./model.js";
-import { sessionAt, nyParts } from "./calendar.js";
+} from "./view-utils.js?v=20260930-us-boot3";
+import { toolsViews } from "./tools.js?v=20260930-us-boot3";
+import { newsViews } from "./news.js?v=20260930-us-boot3";
+import { USAdapter, fetchJSON } from "./provider.js?v=20260930-us-boot3";
+import { USChart } from "./chart.js?v=20260930-us-boot3";
+import { searchDirectory, quoteStatus } from "./model.js?v=20260930-us-boot3";
+import { sessionAt, nyParts } from "./calendar.js?v=20260930-us-boot3";
 
-import { tierResults } from "./analysis.js";
-import { icon, openDialog, closeDialog } from "./ui.js";
+import { tierResults } from "./analysis.js?v=20260930-us-boot3";
+import { icon, openDialog, closeDialog } from "./ui.js?v=20260930-us-boot3";
 export class USWorkspace {
   constructor() {
-    const p = read(prefsKey, {});
+    const storedPrefs = read(prefsKey, {});
+    const p = storedPrefs && typeof storedPrefs === "object" && !Array.isArray(storedPrefs)
+      ? storedPrefs : {};
     this.state = {
       view: "radar",
       symbol: p.symbol || "SPY",
@@ -45,7 +47,10 @@ export class USWorkspace {
       patternMode: "conditions",
       watchOnly: false,
     };
-    this.watch = new Set(read(watchKey, []));
+    const storedWatch = read(watchKey, []);
+    this.watch = new Set(Array.isArray(storedWatch)
+      ? storedWatch.map(item => typeof item === "string" ? item : item?.symbol)
+        .filter(symbol => typeof symbol === "string" && /^[A-Z0-9.-]{1,15}$/.test(symbol)) : []);
     this.directory = [];
     this.snapshot = null;
     this.cap = {};
@@ -60,6 +65,7 @@ export class USWorkspace {
     this.root = document.getElementById("market-unavailable-card");
     if (!this.root) return;
     this.root.classList.add("us2-root");
+    this.root.classList.remove("us-boot-status");
     this.root.classList.remove("market-unavailable-card");
     document.body.dataset.usWorkspace = "1";
     this.controller?.abort();
@@ -560,7 +566,7 @@ export class USWorkspace {
       `${rows.length} 個結果 · 每組最多10檔 · ${this.state.scanInterval} 已收線分析${this.snapshot?.asOf ? " · " + fmt(this.snapshot.asOf) : ""}`;
   }
   renderHome(main) {
-    main.innerHTML = `<div class="ox-editorial-home"><section class="ox-home-main" aria-label="美股市場主圖與摘要"><article class="ox-home-chart us2-home-chart"><div class="ox-home-quote"><div class="ox-home-identity"><div><span class="ox-home-ticker us2-home-symbol">${e(this.state.homeSymbol)}</span><small>美股 ETF · Twelve Data <button class="us2-data-brief" data-data-open>${e(sessionAt().label)}</button></small></div></div><div class="ox-home-price"><strong class="us2-quote-value">—</strong><small>USD</small><span class="us2-quote-change">—</span></div></div><div class="ox-chart-heading"><div class="us2-benchmarks" role="group" aria-label="市場基準 ETF">${["SPY","QQQ","IWM"].map(s=>`<button data-benchmark="${s}" aria-pressed="${this.state.homeSymbol===s}"><b>${s}</b></button>`).join("")}</div><div class="v34-home-main-toolbar" aria-label="首頁主圖週期">${["1H","4H","1D","1W"].map(tf=>`<button class="v34-home-mini-tf ${this.state.homeInterval===tf?"active":""}" type="button" data-us-home-tf="${tf}">${tf}</button>`).join("")}</div><button class="ox-text-button" data-home-analyze aria-label="在雷達分析目前 ETF">↗</button></div><div class="btc-premium-chart-wrap"><div class="us2-chart-root"></div></div></article><section class="ox-home-t1" aria-label="自選與類股摘要"><div class="ox-home-t1-side"><header class="ox-home-t1-head"><span>自選摘要</span><button class="ox-text-button" data-home-watch aria-label="查看自選雷達">↗</button></header><div class="us2-home-watch ox-home-t1-list"></div></div><div class="ox-home-t1-side"><header class="ox-home-t1-head"><span>類股 ETF</span><small>代理指標</small></header><div class="us2-home-sectors ox-home-t1-list"></div></div></section><aside class="ox-home-analysis"><header class="ox-analysis-heading"><h2>重要事件</h2><button class="ox-text-button" data-home-events aria-label="查看美股事件">↗</button></header><div class="us2-home-events"></div></aside></section></div>`;
+    main.innerHTML = `<div class="ox-editorial-home"><section class="ox-home-main" aria-label="美股市場主圖與摘要"><article class="ox-home-chart us2-home-chart"><div class="ox-home-quote"><div class="ox-home-identity"><div><span class="ox-home-ticker us2-home-symbol">${e(this.state.homeSymbol)}</span><small>美股 ETF · Twelve Data <button class="us2-data-brief" data-data-open>${e(sessionAt().label)}</button></small></div></div><div class="ox-home-price"><strong class="us2-quote-value">—</strong><small>USD</small><span class="us2-quote-change">—</span></div></div><div class="ox-chart-heading"><nav class="us2-benchmarks" role="group" aria-label="市場基準 ETF">${["SPY","QQQ","IWM"].map(s=>`<button data-benchmark="${s}" aria-pressed="${this.state.homeSymbol===s}"><b>${s}</b></button>`).join("")}</nav><div class="v34-home-main-toolbar" aria-label="首頁主圖週期">${["1H","4H","1D","1W"].map(tf=>`<button class="v34-home-mini-tf ${this.state.homeInterval===tf?"active":""}" type="button" data-us-home-tf="${tf}">${tf}</button>`).join("")}</div><button class="ox-text-button" data-home-analyze aria-label="在雷達分析目前 ETF">↗</button></div><div class="btc-premium-chart-wrap"><div class="us2-chart-root"></div></div></article><section class="ox-home-t1" aria-label="自選與類股摘要"><div class="ox-home-t1-side"><header class="ox-home-t1-head"><span>自選摘要</span><button class="ox-text-button" data-home-watch aria-label="查看自選雷達">↗</button></header><div class="us2-home-watch ox-home-t1-list"></div></div><div class="ox-home-t1-side"><header class="ox-home-t1-head"><span>類股 ETF</span><small>代理指標</small></header><div class="us2-home-sectors ox-home-t1-list"></div></div></section><aside class="ox-home-analysis"><header class="ox-analysis-heading"><h2>重要事件</h2><button class="ox-text-button" data-home-events aria-label="查看美股事件">↗</button></header><div class="us2-home-events"></div></aside></section></div>`;
     main.querySelector("[data-data-open]").onclick = event => this.openData(event.currentTarget);
     this.chartIn(
       main.querySelector(".us2-chart-root"),
