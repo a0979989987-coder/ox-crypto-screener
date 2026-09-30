@@ -22,9 +22,11 @@ export function mountTWChartRadar(host,{state:marketState,watchlist=new Set()}={
  summary.querySelectorAll('.radar-analysis-cell').forEach(n=>n.remove());
  summary.classList.add('twcr-quote');
  summary.querySelector('[id$="-ticker-pair"]').removeAttribute('role');
+ summary.querySelector('[id$="-ticker-pair"]').removeAttribute('aria-label');
  summary.querySelector('[id$="-ticker-pair"]').dataset.quoteName='';
  summary.querySelector('[id$="-price"]').dataset.quotePrice='';
  summary.querySelector('[id$="-change"]').dataset.quoteChange='';
+ summary.querySelector('[id$="-change"]').classList.remove('positive','negative');
  summary.querySelector('[id$="-btc-rel"]').textContent='官方日行情 · 非即時';
  summary.querySelector('[id$="-change"]').previousElementSibling.textContent='日漲跌幅';
  summary.querySelector('[id$="-quote"]').dataset.quoteTurnover='';
