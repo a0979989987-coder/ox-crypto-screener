@@ -4248,7 +4248,7 @@ export function renderTWRadar(
         if (modeButton) {
           activeMode = modeButton.dataset.twrMode;
           modeButton.scrollIntoView({ block: "nearest", inline: "center", behavior: "smooth" });
-          renderTWRadar(latestRadarState||state);
+          refreshRadarDataUI(root,latestRadarState||state,watchlist);
           if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
             root.querySelector('#twr-list')?.animate([
               { opacity: .25, transform: 'translateY(4px)' },
