@@ -1,4 +1,4 @@
-import { usProvider } from "./api.js";
+import { usProvider } from "./api.js?v=20260930-us-boot3";
 
 /*
  * OX v4.0 Modular

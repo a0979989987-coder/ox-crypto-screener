@@ -1,6 +1,6 @@
 import { marketRouter } from "./marketRouter.js";
 import { cryptoModule } from "../markets/crypto/index.js";
-import { usModule } from "../markets/us/index.js";
+import { usModule } from "../markets/us/index.js?v=20260930-us-boot3";
 import { twModule } from "../markets/tw/index.js";
 import { forexModule } from "../markets/forex/index.js";
 
@@ -12,14 +12,20 @@ export function bootOXModules(modules = []) {
 const router = bootOXModules([cryptoModule, usModule, twModule, forexModule]);
 let currentView = document.body.dataset.view || "home";
 let renderToken = 0;
+const isMarketView = () => ["home", "strength", "radar"].includes(currentView) || (document.body.dataset.market === "us" && ["data", "media"].includes(currentView));
 
 function scheduleMarketView() {
   const token = ++renderToken;
-  requestAnimationFrame(() => requestAnimationFrame(() => {
-    if (token !== renderToken || !["home", "strength", "radar"].includes(currentView)) return;
+  const activate = () => {
+    if (token !== renderToken || !isMarketView()) return;
     const market = document.body.dataset.market || "crypto";
+    const onFailure = error => {
+      if (token !== renderToken || document.body.dataset.market !== market) return;
+      document.dispatchEvent(new CustomEvent("ox:marketerror", { detail: { market, message: error?.message || "市場介面啟動失敗" } }));
+    };
     if (router.current() !== market) router.activate(market, { view: currentView }).then(() => {
-      if (token !== renderToken || !["home", "strength", "radar"].includes(currentView)) {
+      if (token !== renderToken) return;
+      if (!isMarketView()) {
         const host = document.getElementById("market-unavailable-card");
         if (host) host.hidden = true;
         const forex = document.getElementById("ox-forex-module");
@@ -27,16 +33,25 @@ function scheduleMarketView() {
         return;
       }
       if (document.body.dataset.market !== market) scheduleMarketView();
-    });
-    else router.get(market)?.view?.(currentView);
-  }));
+    }).catch(onFailure);
+    else {
+      try {
+        Promise.resolve(router.get(market)?.view?.(currentView)).catch(onFailure);
+      } catch (error) { onFailure(error); }
+    }
+  };
+  // The US workspace replaces the temporary market placeholder with its own
+  // stable shell before awaiting data. Mount it in the same task as the market
+  // switch so mobile users never land on the centered architecture screen.
+  if (document.body.dataset.market === "us") activate();
+  else requestAnimationFrame(() => requestAnimationFrame(activate));
 }
 
 document.addEventListener("ox:viewchange", event => {
   currentView = event.detail?.to || currentView;
   // Market modules live outside .app-view; hide them synchronously when a
   // Data, News, Media or Settings page opens, even if activation is pending.
-  if (!["home", "strength", "radar"].includes(currentView)) {
+  if (!isMarketView()) {
     ++renderToken;
     for (const id of ["ox-forex-module", "market-unavailable-card"]) {
       const root = document.getElementById(id);
@@ -51,6 +66,15 @@ document.addEventListener("ox:marketchange", event => {
 });
 
 window.OXModules = Object.freeze({ router, forex: forexModule });
+
+// A slow module graph may finish after the user already selected a market.
+// Restore the actual DOM context instead of requiring another market gesture.
+const restoreMarketView = () => {
+  currentView = document.body.dataset.view || currentView;
+  scheduleMarketView();
+};
+if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", restoreMarketView, { once: true });
+else restoreMarketView();
 
 // Preload before the user opens Taiwan; idle scheduling leaves initial UI paint free.
 const preloadTaiwan = () => { if (!document.hidden) twModule.preload(); };

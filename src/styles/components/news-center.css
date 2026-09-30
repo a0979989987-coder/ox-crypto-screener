@@ -84,7 +84,7 @@ html{scroll-behavior:auto!important}
 body[data-news-mode="1"] #ox-forex-module,body[data-news-mode="1"] #market-unavailable-card,
 body[data-news-mode="1"] #ox-us-module,body[data-news-mode="1"] #ox-tw-module{display:none!important}
 body:has(#view-news.active,#view-data.active,#view-media.active,#view-settings.active) #ox-forex-module,
-body:has(#view-news.active,#view-data.active,#view-media.active,#view-settings.active) #market-unavailable-card{display:none!important}
+body:not([data-us-workspace="1"]):has(#view-news.active,#view-data.active,#view-media.active,#view-settings.active) #market-unavailable-card{display:none!important}
 @media(max-width:720px){
   .ox-news-page{padding:15px 12px 120px}
   .ox-news-heading{align-items:start;flex-direction:column;gap:12px}

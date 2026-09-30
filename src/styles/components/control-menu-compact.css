@@ -34,6 +34,6 @@ body.ox-terminal .ox-mobile-location {color:var(--ink)!important;font-size:13px!
   body.ox-terminal .ox-control-panel {width:clamp(238px,64vw,265px)!important;max-width:calc(100% - 16px)!important}
   body.ox-terminal .ox-control-edge-close {right:clamp(238px,64vw,265px)}
   body.ox-terminal .ox-control-scroll {padding-top:7px!important;padding-inline:7px!important}
-  body.ox-terminal:not(.chart-focus) #view-radar .chart-container {height:clamp(430px,calc(100dvh - 320px),650px)!important}
+  body.ox-terminal:not(.chart-focus):not(.us2-chart-focus) :is(#view-radar,.us2-radar-pane) .chart-container:not(.us2-empty-stage) {height:clamp(430px,calc(100dvh - 320px),650px)!important}
 }
 @media(prefers-reduced-motion:reduce){body.ox-terminal .ox-control-panel,body.ox-terminal .ox-control-overlay,body.ox-terminal .ox-control-edge-close,body.ox-terminal .ox-control-toggle span,body.ox-terminal .ox-control-toggle span::after,body.ox-terminal .ox-theme-segment button,body.ox-terminal .ox-market-chip {transition:none!important}body.ox-terminal .ox-control-view.active {animation:none!important}}

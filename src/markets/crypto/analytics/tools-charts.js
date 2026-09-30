@@ -8,7 +8,7 @@ export function partition(items,rect,value) {
 }
 const volumeLabel=v=>Math.abs(v)>=1000?compact(v):Number(v.toPrecision(3)).toString();
 const timeLabel=t=>new Date(t).toLocaleTimeString('zh-TW',{timeZone:'Asia/Taipei',hour:'2-digit',minute:'2-digit',hour12:false});
-export function createToolChart(canvas,{onSelect=()=>{},signal}={}) {
+export function createToolChart(canvas,{onSelect=()=>{},signal,heatColors=['116,174,147','188,114,123']}={}) {
  const ctx=canvas.getContext('2d');let current={type:'empty'},hits=[],raf=0,w=0,h=0;
  const text=(s,x,y,{align='left',size=11,color='#a4b0b4'}={})=>{ctx.font=`${size}px Inter,-apple-system,"Noto Sans CJK TC",sans-serif`;ctx.fillStyle=color;ctx.textAlign=align;ctx.fillText(String(s),x,y);};
  const line=(x1,y1,x2,y2,color='#2a373e')=>{ctx.strokeStyle=color;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();};
@@ -20,7 +20,7 @@ export function createToolChart(canvas,{onSelect=()=>{},signal}={}) {
    let tiles=[];
    if(current.grouped){const groups=[...new Set(valid.map(r=>r.sector))].map(sector=>({sector,rows:valid.filter(r=>r.sector===sector)}));for(const g of partition(groups,[0,0,w,h],g=>g.rows.reduce((s,r)=>s+value(r),0))){const [x,y,ww,hh]=g.rect;ctx.fillStyle='#202c31';ctx.fillRect(x+1,y+1,ww-2,hh-2);if(ww>70&&hh>45)text(g.sector,x+9,y+18,{size:11,color:'#cdd2ce'});tiles.push(...partition(g.rows,[x+2,y+25,Math.max(0,ww-4),Math.max(0,hh-27)],value));}}
    else tiles=partition(valid,[0,0,w,h],value);
-   for(const r of tiles){const [x,y,ww,hh]=r.rect;if(ww<2||hh<2)continue;const intensity=Math.min(.68,.18+Math.abs(r.returnPct)/10);ctx.fillStyle=r.returnPct>=0?`rgba(116,174,147,${intensity})`:`rgba(188,114,123,${intensity})`;ctx.fillRect(x+1,y+1,ww-2,hh-2);if(current.selected===r.symbol){ctx.strokeStyle='#eeeadd';ctx.strokeRect(x+2,y+2,ww-4,hh-4);}const cx=x+ww/2,cy=y+hh/2;
+   for(const r of tiles){const [x,y,ww,hh]=r.rect;if(ww<2||hh<2)continue;const intensity=Math.min(.68,.18+Math.abs(r.returnPct)/10);ctx.fillStyle=`rgba(${heatColors[r.returnPct>=0?0:1]},${intensity})`;ctx.fillRect(x+1,y+1,ww-2,hh-2);if(current.selected===r.symbol){ctx.strokeStyle='#eeeadd';ctx.strokeRect(x+2,y+2,ww-4,hh-4);}const cx=x+ww/2,cy=y+hh/2;
     if(ww>48&&hh>25){text(r.base,cx,cy-(hh>65?12:0),{align:'center',size:Math.min(27,Math.max(12,ww/10)),color:'#eee'});if(hh>45)text(signed(r.returnPct,2)+'%',cx,cy+(hh>65?9:16),{align:'center',size:12,color:'#eee'});if(hh>95&&ww>85)text(r.price.toLocaleString('en-US',{maximumFractionDigits:r.price<1?5:2}),cx,cy+30,{align:'center',size:11});}
     hits.push({x,y,w:ww,h:hh,value:r.symbol});
    }
