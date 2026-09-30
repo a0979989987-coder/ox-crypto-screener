@@ -1,7 +1,7 @@
 import { rankChartRows, chartUniverse } from './chart-radar-model.js';
 import { escapeTW as esc } from './radar-card.js';
 import { savedResearch } from './research-data.js';
-import { bundleState, subscribeBundle, preloadBundle } from './patterns/bundle.js';
+import { bundleState, bundleEntry, subscribeBundle, preloadBundle } from './patterns/bundle.js';
 import { fetchSeries } from './patterns/source.js';
 import { TIMEFRAMES, FRAME_LABELS } from './patterns/model.js';
 const UP='#f16a70',DOWN='#48b78e';
@@ -27,10 +27,10 @@ export function mountTWChartRadar(host,{state:marketState,watchlist=new Set()}={
   $('[data-surge-count]').textContent=rankChartRows(universe(),{tab:'surge'}).length;
   $('[data-watch-count]').textContent=watchlist.size;
   $('[data-action="side"]').textContent=side==='long'?'↑':'↓';$('[data-action="side"]').setAttribute('aria-pressed',String(side==='short'));$('[data-action="side"]').style.color=side==='long'?UP:DOWN;
-  $('.twcr-pool-info').textContent=tab==='all'?`${side==='long'?'當日上漲':'當日下跌'} · 官方雷達分級 · ${rows.length} 檔`:tab==='surge'?`當日成交額前 ${rows.length} 檔`:`自選 ${rows.length} 檔`;
+  $('.twcr-pool-info').textContent=tab==='all'?`${side==='long'?'當日上漲':'當日下跌'} · 分級／觀察候選 · ${rows.length} 檔`:tab==='surge'?`當日成交額前 ${rows.length} 檔`:`自選 ${rows.length} 檔`;
   $('.twcr-date').textContent=snapshot()?.date?`資料日 ${snapshot().date}`:'官方資料載入中';
   $('#twcr-stocks').innerHTML=universe().map(r=>`<option value="${esc(r.symbol)}">${esc(r.name)}</option>`).join('');
-  $('.twcr-results').innerHTML=rows.map(r=>{const heading=tab==='all'&&r.displayTier!==lastTier?`<div class="twcr-tier-heading">${esc(r.displayTier)}</div>`:'';lastTier=r.displayTier;return `${heading}<article class="twcr-card ${r.symbol===symbol?'selected':''}" role="listitem" data-stock="${r.symbol}"><button type="button" class="twcr-select" data-symbol="${r.symbol}" aria-label="開啟 ${esc(r.symbol+' '+r.name)} 圖表"><span class="twcr-card-name">${esc(r.symbol)} <b>${esc(r.name)}</b></span><span class="twcr-card-price">${num(r.price)}</span><span class="twcr-card-change" style="color:${r.changePct>=0?UP:DOWN}">${change(r.changePct)}</span><span class="twcr-card-turnover">成交額 ${money(r.turnoverTwd)}</span></button><button type="button" class="twcr-star ${watchlist.has(r.symbol)?'saved':''}" data-favorite="${r.symbol}" aria-pressed="${watchlist.has(r.symbol)}" aria-label="${watchlist.has(r.symbol)?'移除':'加入'} ${esc(r.name)} 自選">${glyph('star')}</button></article>`;}).join('')||'<div class="twcr-empty">目前沒有符合條件的股票</div>';
+  $('.twcr-results').innerHTML=rows.map(r=>{const heading=tab==='all'&&r.displayTier!==lastTier?`<div class="twcr-tier-heading">${esc(r.displayTier)}</div>`:'';lastTier=r.displayTier;return `${heading}<article class="twcr-card ${r.symbol===symbol?'selected':''}" role="listitem" data-stock="${r.symbol}"><button type="button" class="twcr-select" data-symbol="${r.symbol}" aria-label="開啟 ${esc(r.symbol+' '+r.name)} 圖表"><span class="twcr-card-name">${esc(r.symbol)} <b>${esc(r.name)}</b></span><span class="twcr-card-price">${num(r.price)}</span><span class="twcr-card-change" style="color:${r.changePct>=0?UP:DOWN}">${change(r.changePct)}</span><span class="twcr-card-turnover">成交額 ${money(r.turnoverTwd)}</span>${r.rankStatus==='WATCH'?'<span class="twcr-card-rank">觀察候選 · 分級待確認</span>':''}</button><button type="button" class="twcr-star ${watchlist.has(r.symbol)?'saved':''}" data-favorite="${r.symbol}" aria-pressed="${watchlist.has(r.symbol)}" aria-label="${watchlist.has(r.symbol)?'移除':'加入'} ${esc(r.name)} 自選">${glyph('star')}</button></article>`;}).join('')||`<div class="twcr-empty">${marketState?.status==='loading'?'官方雷達資料載入中…':'目前沒有符合條件的股票'}</div>`;
  }
  function refreshRange(){state.candleSeries?.applyOptions({autoscaleInfoProvider:provider});}
  function provider(original){const info=original();return state.chartPriceViewport?{...info,priceRange:state.chartPriceViewport,margins:{above:0,below:0}}:info;}
@@ -52,7 +52,7 @@ export function mountTWChartRadar(host,{state:marketState,watchlist=new Set()}={
   const row=universe().find(r=>r.symbol===symbol);$('[data-quote-name]').textContent=`${symbol} ${row?.name||''}`;$('[data-quote-price]').textContent=num(row?.price);$('[data-quote-change]').textContent=change(row?.changePct);$('[data-quote-change]').style.color=row?.changePct>=0?UP:DOWN;
   $('.twcr-status').textContent='官方 K 線載入中';renderList();if(!ensureChart())return;
   state.candleData=[];state.candleSeries.setData([]);state.volumeSeries.setData([]);levels();
-  try{await preloadBundle().catch(()=>{});if(run!==serial||life.signal.aborted)return;const data=await fetchSeries(next,frame,controller.signal,snapshot()?.date,{minimum:1});if(run!==serial||life.signal.aborted)return;
+  try{if(!bundleEntry(next,'1D',snapshot()?.date))await preloadBundle().catch(()=>{});if(run!==serial||life.signal.aborted)return;const data=await fetchSeries(next,frame,controller.signal,snapshot()?.date,{minimum:1});if(run!==serial||life.signal.aborted)return;
    state.candleData=data.candles;state.candleSeries.setData(data.candles);state.volumeSeries.setData(data.candles.map(c=>({time:c.time,value:c.volume,color:c.close>=c.open?'#f16a7035':'#48b78e35'})));state.chart.timeScale().fitContent();refreshRange();levels();drawings?.sync();
    $('.twcr-status').textContent=`TWSE／TPEx · ${FRAME_LABELS[frame]} K · 截至 ${data.candles.at(-1)?.lastDate||data.candles.at(-1)?.date} · 拖曳／雙指縮放`;
   }catch(error){if(run===serial&&!life.signal.aborted&&error.name!=='AbortError')$('.twcr-status').textContent='官方 K 線暫時無法取得，請稍後重試';}

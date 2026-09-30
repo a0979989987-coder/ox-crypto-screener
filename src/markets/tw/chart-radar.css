@@ -24,3 +24,4 @@ body.ox-terminal .tw-chart-radar .twcr-levels{margin:0!important;flex:0 0 auto}
 body.ox-terminal .tw-chart-radar.is-focused .chart-controls{padding-right:44px!important}
 body.ox-terminal .tw-chart-radar .chart-controls{flex-direction:row!important;justify-content:flex-start!important}
 body.ox-terminal.tw-chart-focus .app-dock{display:none!important}
+.twcr-card-rank{grid-column:1/-1;color:#b8b7a7;font:10px/1.4 system-ui}
