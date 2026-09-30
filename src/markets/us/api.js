@@ -1,4 +1,4 @@
-import { US_MODULE_CONFIG } from "./config.js?v=20260930-us-native4";
+import { US_MODULE_CONFIG } from "./config.js?v=20261001-us-native5";
 
 /*
  * OX v4.0 Modular

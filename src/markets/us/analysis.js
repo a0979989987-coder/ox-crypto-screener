@@ -1,4 +1,4 @@
-import { closedCandles, relativeStrength } from "./model.js?v=20260930-us-native4";
+import { closedCandles, relativeStrength } from "./model.js?v=20261001-us-native5";
 const mean = (a) => a.reduce((s, x) => s + x, 0) / a.length;
 export function pivots(bars, radius = 3) {
   const p = [];
@@ -120,8 +120,19 @@ export function analyzeStock(
   interval = "1D",
   now = Date.now(),
 ) {
-  const data = closedCandles(bars, interval, now),
-    last = data.at(-1);
+  const data = closedCandles(bars, interval, now);
+  if (data.length < 60) return null;
+  return preparedAnalysis(item, data, closedCandles(benchmark, interval, now), interval);
+}
+export function analyzeStockPool(items, histories, benchmark, interval = "1D", now = Date.now()) {
+  const lookup = new Map(items.map(item => [item.symbol, item]));
+  const closedBenchmark = closedCandles(benchmark, interval, now);
+  return Object.entries(histories).map(([symbol, bars]) => preparedAnalysis(
+    lookup.get(symbol), closedCandles(bars, interval, now), closedBenchmark, interval,
+  )).filter(Boolean);
+}
+function preparedAnalysis(item, data, benchmark, interval) {
+  const last = data.at(-1);
   if (data.length < 60 || !last) return null;
   const volumes = data
       .slice(-21, -1)
@@ -147,7 +158,7 @@ export function analyzeStock(
     rvol,
     rvolBasis:
       interval === "1D" ? "完整日 K／前20完整交易日" : "同級別已收線 K／前20根",
-    rs: relativeStrength(data, closedCandles(benchmark, interval, now)),
+    rs: relativeStrength(data, benchmark),
     gapPct: (last.open / prev.close - 1) * 100,
     ma20: ma(20),
     ma50: ma(50),

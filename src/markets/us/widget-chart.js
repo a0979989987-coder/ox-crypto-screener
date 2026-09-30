@@ -1,6 +1,6 @@
-import { icon, openDialog, closeDialog, positionTimeframe } from "./ui.js?v=20260930-us-native4";
-import { INTERVALS } from "./calendar.js?v=20260930-us-native4";
-import { chartWidgetSettings, widgetSymbol } from "./widget-config.js?v=20260930-us-native4";
+import { icon, openDialog, closeDialog, positionTimeframe } from "./ui.js?v=20261001-us-native5";
+import { INTERVALS } from "./calendar.js?v=20261001-us-native5";
+import { chartWidgetSettings, widgetSymbol } from "./widget-config.js?v=20261001-us-native5";
 
 // Keep mounted provider frames across OX page switches. No polling or DOM rebuild
 // occurs when the provider updates prices. Bounded cache is cleared on page unload.

@@ -1,6 +1,7 @@
-import { nyParts, nyEpoch, tradingDay } from "./calendar.js?v=20260930-us-native4";
+import { nyParts, nyEpoch, tradingDay } from "./calendar.js?v=20261001-us-native5";
 // 09:30–13:30 and 13:30–session close. Never spans an overnight gap.
-export function aggregate4H(bars, now = Date.now()) {
+export function aggregate4H(bars, now = Date.now(), componentMinutes = 30) {
+  if (![30, 60].includes(componentMinutes)) throw Error("4H requires 30m or 1H source candles.");
   const map = new Map();
   for (const c of bars) {
     const p = nyParts(c.time * 1000),
@@ -40,12 +41,13 @@ export function aggregate4H(bars, now = Date.now()) {
         nyEpoch(c.date, day.closeMinute),
         now / 1000,
       );
-      // A missing 30m component is a gap, not a candle to interpolate.
+      // A missing source component is a gap, not a candle to interpolate.
       // Keep the current partial bucket only when its available components are continuous.
-      const expected = Math.max(1, Math.ceil((end - c.time) / 1800));
+      const step = componentMinutes * 60;
+      const expected = Math.max(1, Math.ceil((end - c.time) / step));
       return (
         c.componentTimes.length === expected &&
-        c.componentTimes.every((time, i) => time === c.time + i * 1800)
+        c.componentTimes.every((time, i) => time === c.time + i * step)
       );
     })
     .map(({ componentTimes, ...c }) => c);

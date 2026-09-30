@@ -13,18 +13,18 @@ import {
   patterns,
   sectorETF,
   sourceInfo,
-} from "./view-utils.js?v=20260930-us-native4";
-import { toolsViews } from "./tools.js?v=20260930-us-native4";
-import { newsViews } from "./news.js?v=20260930-us-native4";
-import { USAdapter, fetchJSON } from "./provider.js?v=20260930-us-native4";
-import { USChart } from "./chart.js?v=20260930-us-native4";
-import { USWidgetChart } from "./widget-chart.js?v=20260930-us-native4";
-import { FREE_US_DISPLAY } from "./widget-config.js?v=20260930-us-native4";
-import { searchDirectory, quoteStatus } from "./model.js?v=20260930-us-native4";
-import { sessionAt, nyParts } from "./calendar.js?v=20260930-us-native4";
+} from "./view-utils.js?v=20261001-us-native5";
+import { toolsViews } from "./tools.js?v=20261001-us-native5";
+import { newsViews } from "./news.js?v=20261001-us-native5";
+import { USAdapter, fetchJSON } from "./provider.js?v=20261001-us-native5";
+import { USChart } from "./chart.js?v=20261001-us-native5";
+import { USWidgetChart } from "./widget-chart.js?v=20261001-us-native5";
+import { FREE_US_DISPLAY } from "./widget-config.js?v=20261001-us-native5";
+import { searchDirectory, quoteStatus } from "./model.js?v=20261001-us-native5";
+import { sessionAt, nyParts } from "./calendar.js?v=20261001-us-native5";
 
-import { tierResults } from "./analysis.js?v=20260930-us-native4";
-import { icon, openDialog, closeDialog } from "./ui.js?v=20260930-us-native4";
+import { tierResults } from "./analysis.js?v=20261001-us-native5";
+import { icon, openDialog, closeDialog } from "./ui.js?v=20261001-us-native5";
 export class USWorkspace {
   constructor() {
     const storedPrefs = read(prefsKey, {});

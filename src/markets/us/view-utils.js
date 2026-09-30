@@ -19,6 +19,7 @@ export const tone = (n) => (n >= 0 ? "us2-up" : "us2-down");
 export const sourceInfo = source => ({
   'twelve-data': { label: 'Twelve Data', url: 'https://twelvedata.com/' },
   'finmind-private-eod': { label: 'FinMind · 私人日線驗證', url: 'https://finmind.github.io/' },
+  'finance-query-private': { label: 'Finance Query / Yahoo · 私人驗證', url: 'https://verdenroz.github.io/finance-query/' },
   'tradingview-widget': { label: 'TradingView', url: 'https://www.tradingview.com/' },
 }[source] || { label: source || '來源未確認', url: null });
 export const compact = (n) =>

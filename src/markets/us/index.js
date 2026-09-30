@@ -1,6 +1,6 @@
-import { US_MODULE_CONFIG } from "./config.js?v=20260930-us-native4";
-import { createUSMarketState } from "./engine.js?v=20260930-us-native4";
-import { USWorkspace } from "./workspace.js?v=20260930-us-native4";
+import { US_MODULE_CONFIG } from "./config.js?v=20261001-us-native5";
+import { createUSMarketState } from "./engine.js?v=20261001-us-native5";
+import { USWorkspace } from "./workspace.js?v=20261001-us-native5";
 const workspace = new USWorkspace();
 let active = false,
   entered = false;

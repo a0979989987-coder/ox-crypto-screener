@@ -8,8 +8,10 @@ const { server, preparePage, selectMarket, selectView, testBase } = require('./e
 
 (async () => {
   assert.equal(new URL(testBase).hostname, '127.0.0.1');
-  const { snapshot, histories, intraday = {} } = JSON.parse(readFileSync(process.env.US_PRIVATE_INPUT || '/tmp/ox-us-private-eod/evaluation.json'));
+  const { snapshot, histories, intraday = {}, frameHistories = {} } = JSON.parse(readFileSync(process.env.US_PRIVATE_INPUT || '/tmp/ox-us-private-eod/evaluation.json'));
   assert.equal(snapshot.privateValidation, true);
+  const chartHistories = { '1D': histories, ...(Object.keys(intraday).length ? { '1m': intraday } : {}), ...frameHistories };
+  const dailyCount = snapshot.analyses.filter(row => row.interval === '1D').length;
   const output = process.env.US_PRIVATE_OUTPUT || '/tmp/ox-us-native-private';
   mkdirSync(output, { recursive: true });
   const engine = process.env.OX_BROWSER_ENGINE || 'chromium';
@@ -22,6 +24,7 @@ const { server, preparePage, selectMarket, selectView, testBase } = require('./e
   try {
     for (const width of (process.env.US_PRIVATE_WIDTHS || '390,430').split(',').map(Number)) {
       const context = await browser.newContext({ viewport: { width, height: 932 }, hasTouch: true, isMobile: true });
+      await context.addInitScript(frames => localStorage.setItem('ox-us-v2-chart-timeframes', JSON.stringify(frames)), Object.keys(chartHistories));
       const { page, audit } = await preparePage(context, { width, height: 932 });
       let phase = 'crypto';
       page.on('pageerror', error => console.error(JSON.stringify({ engine, width, phase, error: error.message })));
@@ -51,10 +54,10 @@ const { server, preparePage, selectMarket, selectView, testBase } = require('./e
         else if (endpoint === 'quote-v2') data = { quote: snapshot.quotes.find(quote => quote.symbol === symbol) };
         else if (endpoint === 'chart-v2') {
           const interval = url.searchParams.get('interval');
-          if (interval !== '1D' && !(interval === '1m' && intraday[symbol]))
+          if (!chartHistories[interval]?.[symbol])
             return route.fulfill({ status: 400, json: { ok: false, error: { message: '此私人資料不支援請求的級別' } } });
           const to = url.searchParams.get('to'), limit = Number(url.searchParams.get('limit')) || 400;
-          const available = ((interval === '1m' ? intraday : histories)[symbol] || []).filter(bar => !to || bar.time < Date.parse(to) / 1000);
+          const available = (chartHistories[interval][symbol] || []).filter(bar => !to || bar.time < Date.parse(to) / 1000);
           data = { symbol, interval, bars: available.slice(-limit), source: snapshot.source,
             feed: snapshot.quotes[0].feed, adjustment: snapshot.adjustment,
             delaySeconds: snapshot.quotes[0].delaySeconds, receivedAt: snapshot.quotes.find(quote => quote.symbol === symbol)?.receivedAt,
@@ -136,16 +139,27 @@ const { server, preparePage, selectMarket, selectView, testBase } = require('./e
       await page.locator('.us2-chart-root [data-action="none"]').click();
       await page.locator('[data-exit-focus]').click();
       const minuteValidation = [];
-      if (intraday.TSM) {
-        await page.locator('.us2-chart-root [data-tf="1m"]').click();
-        await page.waitForFunction(time => window.__privateNativeSeries?.data().at(-1)?.time === time, intraday.TSM.at(-1).time);
-        await page.waitForTimeout(500);
+      for (const interval of Object.keys(chartHistories).filter(frame => frame !== '1D' && chartHistories[frame].TSM)) {
+        const expected = chartHistories[interval].TSM.at(-1);
+        await page.locator(`.us2-chart-root [data-tf="${interval}"]`).click();
+        await page.waitForFunction(({ time, close }) => window.__privateNativeSeries?.data().at(-1)?.time === time && window.__privateNativeSeries?.data().at(-1)?.close === close, expected);
         const rendered = await page.evaluate(() => window.__privateNativeSeries.data());
-        assert.equal(rendered.at(-1).time, intraday.TSM.at(-1).time);
-        assert.equal(rendered.at(-1).close, intraday.TSM.at(-1).close);
-        assert.ok(rendered.length >= 300, 'Minute chart uses the actual intraday candles');
-        minuteValidation.push({ symbol: 'TSM', bars: rendered.length, lastTime: rendered.at(-1).time });
-        await page.screenshot({ path: resolve(output, `native-minute-${engine}-${width}.png`) });
+        assert.equal(rendered.at(-1).time, expected.time);
+        assert.equal(rendered.at(-1).close, expected.close);
+        const ohlc = bars => bars.map(({ time, open, high, low, close }) => ({ time, open, high, low, close }));
+        assert.deepEqual(ohlc(rendered), ohlc(chartHistories[interval].TSM.slice(-400)), `${interval} plots every requested source OHLC bar`);
+        assert.ok(rendered.length >= 60, `${interval} uses actual source candles`);
+        minuteValidation.push({ symbol: 'TSM', interval, bars: rendered.length, lastTime: rendered.at(-1).time });
+        await page.waitForTimeout(550);
+        const markerAligned = await page.locator('.us2-chart-root .chart-timeframe-strip').evaluate(rail => {
+          const active = rail.querySelector('[aria-pressed="true"]').getBoundingClientRect();
+          const marker = rail.querySelector('.tf-glass-indicator').getBoundingClientRect();
+          return Math.abs(active.x - marker.x) < 2 && Math.abs(active.width - marker.width) < 2;
+        });
+        assert.ok(markerAligned, 'The timeframe glass indicator follows the selected interval');
+        await page.screenshot({ path: resolve(output, `native-${interval}-${engine}-${width}.png`) });
+      }
+      if (minuteValidation.length) {
         await page.locator('.us2-chart-root [data-tf="1D"]').click();
         await page.waitForFunction(time => window.__privateNativeSeries?.data().at(-1)?.time === time, histories.TSM.at(-1).time);
       }
@@ -158,8 +172,24 @@ const { server, preparePage, selectMarket, selectView, testBase } = require('./e
       outage = false;
       phase = 'patterns';
       await selectView(page, 'strength');
-      await page.waitForFunction(() => document.querySelector('.us2-pattern-host')?.shadowRoot?.querySelector('.us2-pattern-status')?.textContent.includes('20 檔分析'));
+      await page.waitForFunction(count => document.querySelector('.us2-pattern-host')?.shadowRoot?.querySelector('.us2-pattern-status')?.textContent.includes(`${count} 檔分析`), dailyCount);
       await page.screenshot({ path: resolve(output, `native-patterns-${engine}-${width}.png`) });
+      const patternCounts = { '1D': dailyCount };
+      for (const interval of ['1H', '4H'].filter(frame => snapshot.analysisIntervals.includes(frame))) {
+        const count = snapshot.analyses.filter(row => row.interval === interval).length;
+        const host = page.locator('.us2-pattern-host');
+        await host.locator('[data-open-frames]').click();
+        await host.locator(`[data-pattern-interval="${interval}"]`).click();
+        await page.waitForFunction(({ count, interval }) => {
+          const text = document.querySelector('.us2-pattern-host')?.shadowRoot?.querySelector('.us2-pattern-status')?.textContent || '';
+          return text.includes(`${count} 檔分析`) && text.includes(interval);
+        }, { count, interval });
+        patternCounts[interval] = count;
+      }
+      if (Object.keys(patternCounts).length > 1) {
+        await page.locator('.us2-pattern-host').locator('[data-open-frames]').click();
+        await page.locator('.us2-pattern-host').locator('[data-pattern-interval="1D"]').click();
+      }
       const toolCounts = {};
       for (const tool of ['bubbles', 'heatmap', 'relative', 'ranking']) {
         phase = tool;
@@ -175,11 +205,26 @@ const { server, preparePage, selectMarket, selectView, testBase } = require('./e
       }
       phase = 'home';
       await selectView(page, 'home');
-      await page.waitForFunction(() => document.querySelector('.us2-ohlc')?.textContent.startsWith('SPY '));
+      await page.waitForFunction(() => document.querySelector('.us2-home-chart .us2-ohlc')?.textContent.startsWith('SPY ')
+        && window.__privateNativeSeries?.data().length >= 60);
+      await page.waitForTimeout(550);
+      const homeCanvas = await page.locator('.us2-home-chart .us2-chart-canvas').boundingBox();
+      assert.ok(homeCanvas.width > 100 && homeCanvas.height > 100, 'Home has a visible native chart viewport');
+      await page.waitForFunction(() => {
+        let bluePixels = 0;
+        for (const canvas of document.querySelectorAll('.us2-home-chart .us2-chart-canvas canvas')) {
+          const context = canvas.getContext('2d');
+          if (!context || !canvas.width || !canvas.height) continue;
+          const pixels = context.getImageData(0, 0, canvas.width, canvas.height).data;
+          for (let i = 0; i < pixels.length; i += 16)
+            if (pixels[i] < 90 && pixels[i + 1] > 100 && pixels[i + 2] > 100) bluePixels++;
+        }
+        return bluePixels > 15;
+      });
       const homeCandidates = await page.locator('.ox-home-t1 .ox-home-t1-row').count();
       assert.ok(homeCandidates > 0, 'The native home uses real long/short OX tier candidates');
       assert.ok((await page.locator('.ox-home-t1-head').first().textContent()).includes('上漲 · T1/T2/T3'));
-      assert.ok((await page.locator('.us2-display-source').textContent()).includes(snapshot.source === 'finmind-private-eod' ? 'FinMind' : snapshot.source));
+      assert.ok((await page.locator('.us2-display-source').textContent()).includes(snapshot.source === 'finmind-private-eod' ? 'FinMind' : snapshot.source === 'finance-query-private' ? 'Finance Query / Yahoo' : snapshot.source));
       await page.screenshot({ path: resolve(output, `native-home-${engine}-${width}.png`) });
       const homePriceFont = await page.locator('.us2-price-label strong').evaluate(node => parseFloat(getComputedStyle(node).fontSize));
       assert.ok(homePriceFont <= 10, 'Home chart price badge stays compact');
@@ -195,8 +240,9 @@ const { server, preparePage, selectMarket, selectView, testBase } = require('./e
       await page.locator('.us2-media-content').waitFor();
       assert.equal(await page.locator('[data-market-choice="forex"]').count(), 0);
       assert.deepEqual(audit.pageErrors, []);
-      report.push({ width, engine, crypto, native, collapsed, gestures, homeCandidates, toolCounts, source: snapshot.source,
-        privateValidation: true, intervalsValidated: minuteValidation.length ? ['1D', '1m'] : ['1D'], minuteValidation, symbols: snapshot.analyses.length, errors: audit.pageErrors });
+      report.push({ width, engine, crypto, native, collapsed, gestures, homeCandidates, toolCounts, patternCounts, source: snapshot.source,
+        privateValidation: true, intervalsValidated: ['1D', ...minuteValidation.map(row => row.interval)], minuteValidation,
+        symbols: new Set(snapshot.analyses.map(row => row.symbol)).size, analysisRows: snapshot.analyses.length, errors: audit.pageErrors });
       await context.close();
     }
     writeFileSync(resolve(output, `report-${engine}.json`), JSON.stringify(report, null, 2));

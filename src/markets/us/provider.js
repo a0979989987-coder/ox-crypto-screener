@@ -1,7 +1,7 @@
-import { usProvider, getUSApiBase } from "./api.js?v=20260930-us-native4";
-import { normalizeCandles, normalizeQuote, mergeCandles } from "./model.js?v=20260930-us-native4";
-import { aggregate4H, aggregateMonthly } from "./aggregate.js?v=20260930-us-native4";
-import { FREE_US_DISPLAY } from "./widget-config.js?v=20260930-us-native4";
+import { usProvider, getUSApiBase } from "./api.js?v=20261001-us-native5";
+import { normalizeCandles, normalizeQuote, mergeCandles } from "./model.js?v=20261001-us-native5";
+import { aggregate4H, aggregateMonthly } from "./aggregate.js?v=20261001-us-native5";
+import { FREE_US_DISPLAY } from "./widget-config.js?v=20261001-us-native5";
 const cache = new Map();
 const quoteCache = new Map();
 const temporaryFailure = e => !e.status || e.status === 429 || e.status >= 500;
