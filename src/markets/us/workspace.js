@@ -553,7 +553,9 @@ export class USWorkspace {
     main.classList.toggle('us2-free-display',widget);
     const ticker=main.querySelector('.us2-ticker');
     if(ticker) {
-      const card=ticker.querySelector('.metric-card');
+      const card=ticker.querySelector('.metric-card,.us2-widget-summary');
+      card.classList.toggle('metric-card',!widget);
+      card.classList.toggle('panel',widget);
       card.classList.toggle('market-line-card',!widget);
       card.classList.toggle('us2-widget-summary',widget);
       const identityCell=ticker.querySelector('.market-line-price');
