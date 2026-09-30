@@ -1,6 +1,7 @@
 import { USAdapter } from "./provider.js";
 import { INTERVALS, countdown, sessionAt, nyParts } from "./calendar.js";
 import { mergeCandles, movingAverage, vwap } from "./model.js";
+import { icon, positionTimeframe, openDialog, closeDialog } from "./ui.js";
 const UP = "#00b8d4",
   DOWN = "#ff3078";
 const esc = (s) =>
@@ -38,6 +39,7 @@ export class USChart {
       capabilities = {},
       onState = () => {},
       onInterval = () => {},
+      onCollapse = null,
     } = {},
   ) {
     this.root = root;
@@ -47,6 +49,7 @@ export class USChart {
     this.capabilities = capabilities;
     this.onState = onState;
     this.onInterval = onInterval;
+    this.onCollapse = onCollapse;
     this.bars = [];
     this.request = 0;
     this.extended = false;
@@ -59,13 +62,13 @@ export class USChart {
     this.magnet = true;
     this.ma = false;
     this.vwap = false;
-    root.innerHTML = `<div class="us2-chart-toolbar"><div class="us2-timeframes" role="group" aria-label="圖表時間級別">${INTERVALS.map((tf) => `<button type="button" data-tf="${tf}" aria-pressed="${tf === interval}">${tf.replace("1D", "日").replace("1W", "週").replace("1M", "月")}</button>`).join("")}</div><button type="button" data-expand aria-label="展開圖表" title="展開圖表">⤢</button></div>
-      <div class="us2-chart-options"><button type="button" data-ma aria-pressed="false">MA20／50</button><button type="button" data-vwap aria-pressed="false" title="依 OHLCV 加權估計，非逐筆 VWAP">VWAP 估計</button><select data-session aria-label="交易時段"><option value="regular">正常盤</option><option value="extended" ${capabilities.extendedHours ? "" : "disabled"}>含盤前盤後${capabilities.extendedHours ? "" : " · 權限未確認"}</option></select><button type="button" data-latest title="回到最新行情">↦ 最新</button></div>
-      <div class="us2-ohlc" role="status">載入 ${esc(symbol)} 歷史 K 線…</div>
-      <div class="us2-chart-stage"><div class="us2-chart-canvas"></div><svg class="us2-drawings" aria-label="美股畫線區"></svg><div class="us2-price-label" hidden><b></b><small></small></div><div class="us2-chart-message" role="status">取得歷史 OHLCV…</div></div>
-      <div class="us2-draw-toolbar" role="group" aria-label="圖表畫線工具"><button data-tool="cursor" aria-pressed="true">游標</button><button data-tool="horizontal" aria-pressed="false">水平線</button><button data-tool="trend" aria-pressed="false">趨勢線</button><button data-magnet aria-pressed="true" title="磁吸最近 K 線 OHLC">磁吸</button><input type="color" value="${this.color}" aria-label="畫線顏色" data-color><select aria-label="畫線粗細" data-width><option value="1">1px</option><option value="2" selected>2px</option><option value="3">3px</option><option value="4">4px</option></select><button data-delete title="刪除選中的線" disabled>刪除</button><button data-retry title="重新取得行情">↻</button></div><div class="us2-chart-meta"></div><div class="us2-attribution"><a href="https://www.tradingview.com/" target="_blank" rel="noopener">TradingView Lightweight Charts™</a> · <a href="https://twelvedata.com/" target="_blank" rel="noopener">Twelve Data</a></div>`;
+    this.frames=stored('ox-us-v2-chart-timeframes',['1m','5m','15m','1H','4H','1D','1W']).filter(tf=>INTERVALS.includes(tf));
+    if(!this.frames.length)this.frames=[interval];
+    root.innerHTML = `<div class="chart-controls us2-chart-toolbar"><div class="ctrl-group chart-timeframe-group"><div class="chart-timeframe-strip us2-timeframes" aria-label="圖表時間級別"><span class="tf-glass-indicator" aria-hidden="true"></span>${INTERVALS.map((tf,i)=>`<button class="btn-tf ${tf===interval?"active":""}" type="button" data-tf="${tf}" aria-pressed="${tf===interval}">${tf}${i===INTERVALS.length-1?'<span class="tf-hint">▾</span>':''}</button>`).join("")}</div></div><div class="ctrl-group chart-tool-actions"><button class="chart-tool-icon us2-indicator-open" type="button" data-indicator-open aria-label="指標與時段設定" aria-haspopup="dialog">${icon("settings")}</button>${onCollapse?`<button class="chart-tool-icon us2-list-toggle" type="button" data-collapse aria-label="收起／展開雷達清單">${icon("collapse")}</button>`:""}<button class="chart-tool-icon ox-chart-expand-dot us2-expand-control" type="button" data-expand aria-label="展開圖表">${icon("expand")}</button></div></div><button class="us2-focus-exit chart-tool-icon" data-exit-focus aria-label="收合圖表" hidden>${icon("expand")}</button>
+      <div class="us2-chart-stage chart-container"><div class="us2-chart-canvas"></div><svg class="us2-drawings" aria-label="型態關鍵線"></svg><div class="us2-ohlc" role="status"></div><div class="chart-current-price" hidden><span class="chart-current-price-line"></span><div class="chart-mobile-last-price us2-price-label"><strong></strong><small></small></div></div><div class="us2-chart-message" role="status">取得歷史 OHLCV…</div><button class="chart-tool-icon us2-latest" data-latest title="回到最新行情" aria-label="回到最新行情">${icon("latest")}</button></div>
+      <dialog class="chart-tools-dialog us2-indicators-dialog" aria-label="指標與時段設定"><header><b>指標與交易時段</b><button data-close-indicators aria-label="關閉指標選單">${icon("close")}</button></header><div class="chart-indicator-options"><button class="chart-indicator-option" data-ma aria-pressed="false">MA20／50</button><button class="chart-indicator-option" data-vwap aria-pressed="false" title="依 OHLCV 加權估計，非逐筆 VWAP">VWAP 估計</button><select data-session aria-label="交易時段"><option value="regular">正常盤</option><option value="extended" ${capabilities.extendedHours ? "" : "disabled"}>含盤前盤後${capabilities.extendedHours ? "" : " · 權限未確認"}</option></select><button data-retry>重新取得行情</button></div><details class="us2-chart-source"><summary>來源與資料口徑</summary><div class="us2-chart-meta"></div><div class="us2-attribution"><a href="https://www.tradingview.com/" target="_blank" rel="noopener">TradingView Lightweight Charts™</a> · <a href="https://twelvedata.com/" target="_blank" rel="noopener">Twelve Data</a></div></details></dialog><dialog class="chart-tools-dialog us2-timeframe-dialog" aria-label="時間級別"><header><b>時間級別</b><button data-close-timeframes aria-label="關閉時間級別">${icon("close")}</button></header><div class="chart-timeframe-preferences">${INTERVALS.map(tf=>`<label class="chart-choice"><input type="checkbox" value="${tf}" ${this.frames.includes(tf)?"checked":""}><span>${tf}</span></label>`).join("")}</div><button class="chart-tools-save" data-save-timeframes>儲存時間級別</button></dialog>`;
     this.message = root.querySelector(".us2-chart-message");
-    this.svg = root.querySelector("svg");
+    this.svg = root.querySelector(".us2-drawings");
     const LC = globalThis.LightweightCharts;
     if (!LC) {
       this.message.textContent = "圖表程式尚未載入；請重新載入頁面。";
@@ -131,6 +134,7 @@ export class USChart {
       wickDownColor: DOWN,
       borderVisible: false,
       lastValueVisible: false,
+      priceLineVisible: false,
     });
     this.volume = this.chart.addHistogramSeries({
       priceScaleId: "",
@@ -184,29 +188,43 @@ export class USChart {
       this.chart.resize(container.clientWidth, container.clientHeight);
       this.draw();
       this.priceTimer();
+      positionTimeframe(root);
     });
     this.ro.observe(container);
     this.overlayEvents = new AbortController();
     for (const name of ["pointermove", "pointerdown", "wheel", "touchmove"])
       container.addEventListener(name, () => this.scheduleOverlay(), {passive:true, signal:this.overlayEvents.signal});
-    root
-      .querySelectorAll("[data-tf]")
-      .forEach(
-        (btn) =>
-          (btn.onclick = () => this.change({ interval: btn.dataset.tf })),
-      );
+    const frameDialog=root.querySelector(".us2-timeframe-dialog");
+    root.querySelector('.chart-timeframe-strip').onclick=event=>{
+      const button=event.target.closest('[data-tf]');if(!button)return;
+      if(button.dataset.tf===this.interval&&button.querySelector(".tf-hint")) openDialog(frameDialog,button);
+      else this.change({interval:button.dataset.tf});
+    };
+    root.querySelector('[data-save-timeframes]').onclick=()=>{
+      const chosen=[...frameDialog.querySelectorAll('input:checked')].map(x=>x.value);
+      this.frames=chosen.length?chosen:[this.interval];put('ox-us-v2-chart-timeframes',this.frames);
+      this.renderTimeframes();closeDialog(frameDialog);
+    };
+    this.renderTimeframes();
+    root.querySelector("[data-close-timeframes]").onclick=()=>closeDialog(frameDialog);
+    const indicatorDialog=root.querySelector(".us2-indicators-dialog");
+    root.querySelector("[data-indicator-open]").onclick=event=>openDialog(indicatorDialog,event.currentTarget);
+    root.querySelector("[data-close-indicators]").onclick=()=>closeDialog(indicatorDialog);
+    root.querySelector("[data-collapse]")?.addEventListener("click",()=>{onCollapse?.();this.draw();});
+    const focus=()=>{
+      const expanded=root.classList.toggle("us2-chart-full");
+      document.body.classList.toggle("us2-chart-focus",expanded);
+      root.querySelector("[data-exit-focus]").hidden=!expanded;
+      root.querySelector("[data-expand]").setAttribute("aria-pressed",expanded);
+      this.sharedDrawings?.sync();this.draw();
+    };
+    root.querySelector("[data-expand]").onclick=focus;
+    root.querySelector("[data-exit-focus]").onclick=focus;
+    positionTimeframe(root,true);
     root.querySelector("[data-session]").onchange = (e) =>
       this.change({ extended: e.target.value === "extended" });
     root.querySelector("[data-latest]").onclick = () =>
       this.chart.timeScale().scrollToRealTime();
-    root.querySelector("[data-expand]").onclick = (e) => {
-      root.classList.toggle("us2-chart-full");
-      e.currentTarget.setAttribute(
-        "aria-label",
-        root.classList.contains("us2-chart-full") ? "收合圖表" : "展開圖表",
-      );
-      this.draw();
-    };
     root.querySelector("[data-ma]").onclick = (e) => {
       this.ma = !this.ma;
       e.currentTarget.setAttribute("aria-pressed", this.ma);
@@ -217,53 +235,39 @@ export class USChart {
       e.currentTarget.setAttribute("aria-pressed", this.vwap);
       this.indicators();
     };
-    root.querySelectorAll("[data-tool]").forEach(
-      (btn) =>
-        (btn.onclick = () => {
-          this.tool = btn.dataset.tool;
-          root
-            .querySelectorAll("[data-tool]")
-            .forEach((x) => x.setAttribute("aria-pressed", x === btn));
-          this.svg.classList.toggle("is-drawing", this.tool !== "cursor");
-          this.chart.applyOptions({
-            handleScroll: {
-              pressedMouseMove: this.tool === "cursor",
-              horzTouchDrag: this.tool === "cursor",
-            },
-          });
-        }),
-    );
-    root.querySelector("[data-magnet]").onclick = (e) => {
-      this.magnet = !this.magnet;
-      e.currentTarget.setAttribute("aria-pressed", this.magnet);
-    };
-    root.querySelector("[data-color]").oninput = (e) => {
-      this.color = e.target.value;
-      this.editSelected();
-    };
-    root.querySelector("[data-width]").onchange = (e) => {
-      this.width = +e.target.value;
-      this.editSelected();
-    };
-    root.querySelector("[data-delete]").onclick = () => {
-      if (this.selected >= 0) {
-        this.drawings.splice(this.selected, 1);
-        this.selected = -1;
-        this.persist();
-        this.draw();
-      }
-    };
     root.querySelector("[data-retry]").onclick = () => this.load(true);
-    this.svg.addEventListener("pointerdown", (e) => this.pointerDown(e));
-    this.svg.addEventListener("pointermove", (e) => this.pointerMove(e));
-    this.svg.addEventListener("pointerup", (e) => this.pointerUp(e));
-    this.svg.addEventListener("pointercancel", () => {
-      this.draft = null;
-      this.editing = null;
-      this.draw();
-    });
     this.timer = setInterval(() => this.priceTimer(), 1000);
     this.load();
+  }
+  mountDrawings() {
+    if(!globalThis.OXChartDrawings)return;
+    const market="us-v2-twelve-data";
+    const drawingKey=`ox-${market}-chart-drawings-v1`;
+    // Existing Crypto component; only OHLCV getters and US-specific persistence are supplied.
+    if(!this.sharedDrawings){
+      // Migrate all existing US stocks before the component takes its storage snapshot.
+      const saved=stored(drawingKey,{});
+      try{for(let i=0;i<localStorage.length;i++){
+        const key=localStorage.key(i),match=/^ox-us-v2:drawings:([^:]+):twelve-data:(.+)$/.exec(key);
+        if(!match)continue;
+        const scope=`${match[1]}:${match[2]}`,legacy=stored(key,[]);
+        if(!saved[scope]&&Array.isArray(legacy)&&legacy.length)saved[scope]=legacy;
+      }put(drawingKey,saved);}catch{}
+      const owner=this;
+      this.drawingState={get chart(){return owner.chart},get candleSeries(){return owner.series},get candleData(){return owner.bars},get symbol(){return owner.symbol},get period(){return owner.result?.adjustment||"unknown"}};
+      this.sharedDrawings=globalThis.OXChartDrawings({box:this.root,chartEl:this.root.querySelector(".us2-chart-stage"),state:this.drawingState,market,isExpanded:()=>this.root.classList.contains("us2-chart-full")});
+    }
+    this.drawings=[];this.sharedDrawings.sync();
+  }
+  renderTimeframes() {
+    const visible=this.frames.includes(this.interval)?this.frames:[...this.frames,this.interval];
+    this.root.querySelector('.chart-timeframe-strip').innerHTML=visible.map((tf,i)=>`<button class="btn-tf ${tf===this.interval?'active':''}" type="button" data-tf="${tf}" aria-pressed="${tf===this.interval}" ${i===visible.length-1?'title="再次點擊設定時間級別"':''}>${tf}${i===visible.length-1?'<span class="tf-hint">▾</span>':''}</button>`).join('')+'<span class="tf-glass-indicator" aria-hidden="true"></span>';
+    requestAnimationFrame(()=>{if(!this.disposed)positionTimeframe(this.root,true);});
+  }
+  setCapabilities(capabilities) {
+    this.capabilities=capabilities;
+    const option=this.root.querySelector('[data-session] option[value="extended"]');
+    if(option){option.disabled=!capabilities.extendedHours;option.textContent=capabilities.extendedHours?'含盤前盤後':'含盤前盤後 · 權限未確認';}
   }
   key() {
     return `ox-us-v2:drawings:${this.symbol}:twelve-data:${this.result?.adjustment || "pending"}`;
@@ -295,6 +299,7 @@ export class USChart {
     this.symbol = symbol;
     this.interval = interval;
     this.extended = extended;
+    this.sharedDrawings?.sync();
     this.drawings = [];
     this.selected = -1;
     this.bars = [];
@@ -307,11 +312,13 @@ export class USChart {
     this.chart.applyOptions({
       timeScale: { timeVisible: !["1D", "1W", "1M"].includes(interval) },
     });
+    if(!this.root.querySelector(`[data-tf="${interval}"]`))this.renderTimeframes();
     this.root
       .querySelectorAll("[data-tf]")
       .forEach((b) =>
-        b.setAttribute("aria-pressed", b.dataset.tf === interval),
+        {b.setAttribute("aria-pressed", b.dataset.tf === interval);b.classList.toggle("active",b.dataset.tf === interval);},
       );
+    positionTimeframe(this.root,true);
     this.onInterval(interval);
     await this.load();
   }
@@ -343,10 +350,14 @@ export class USChart {
         ? result.historyExhausted
         : this.historyExhausted;
       this.applyBars(result.bars, first);
+      this.sharedDrawings?.sync();
       this.message.hidden = true;
       this.error = false;
+      this.blocked = false;
+      this.root.classList.remove("is-blocked","is-empty-chart");
+      this.root.querySelector(".us2-chart-stage").classList.remove("us2-empty-stage");
       if (first) {
-        this.drawings = stored(this.key(), []);
+        this.mountDrawings();
         this.draw();
       }
       this.root.querySelector(".us2-chart-meta").textContent =
@@ -356,6 +367,11 @@ export class USChart {
       if (controller.signal.aborted || this.disposed || id !== this.request)
         return;
       this.error = true;
+      this.blocked = e.status === 403;
+      this.root.classList.toggle("is-blocked",this.blocked);
+      this.root.classList.toggle("is-empty-chart",!this.bars.length);
+      this.root.querySelector(".us2-chart-stage").classList.toggle("us2-empty-stage",!this.bars.length);
+      if(!this.bars.length)this.root.querySelector(".us2-ohlc").textContent="";
       this.message.hidden = false;
       this.message.textContent = `${this.bars.length ? "保留前次資料 · " : ""}${e.status === 429 ? "額度用盡，稍後自動重試" : e.message}`;
       this.onState({ error: e.message, bars: this.bars });
@@ -369,7 +385,7 @@ export class USChart {
   }
   schedule() {
     clearTimeout(this.poll);
-    if (this.disposed) return;
+    if (this.disposed || this.blocked) return;
     const s = sessionAt(),
       ms = this.error
         ? 120000
@@ -422,6 +438,7 @@ export class USChart {
       );
     }
     this.indicators();
+    this.sharedDrawings?.sync();
     this.ohlc(this.bars.at(-1));
     this.priceTimer();
     this.draw();
@@ -514,15 +531,17 @@ export class USChart {
   priceTimer() {
     if (!this.chart || !this.bars.length) return;
     const c = this.bars.at(-1),
-      node = this.root.querySelector(".us2-price-label"),
+      node = this.root.querySelector(".chart-current-price"),
       stage = this.root.querySelector(".us2-chart-stage"),
       y = this.series.priceToCoordinate(c.close);
     node.hidden = y === null || y < 0 || y > stage.clientHeight;
     if (node.hidden) return;
-    node.style.transform = `translateY(${Math.max(0, Math.min(stage.clientHeight - 27, y - 13))}px)`;
-    node.style.background = c.close >= c.open ? "#116078" : "#ad2350";
-    node.style.width = `${Math.max(54, this.chart.priceScale("right").width?.() - 4 || 54)}px`;
-    const priceNode = node.querySelector("b"), timerNode = node.querySelector("small");
+    node.style.transform = `translate3d(0,${y}px,0)`;
+    node.classList.toggle("is-up", c.close >= c.open);
+    const badge=node.querySelector(".chart-mobile-last-price");
+    badge.classList.toggle("is-up",c.close >= c.open);
+    badge.style.width = `${Math.max(54, this.chart.priceScale("right").width?.() - 4 || 54)}px`;
+    const priceNode = node.querySelector("strong"), timerNode = node.querySelector("small");
     const priceText = money(c.close);
     const timer = countdown(c, this.interval, this.extended);
     const compactTimer = {"正常盤已收線":"已收線","等待成交／收線校正":"待校正","交易日曆待更新":"日曆未知"}[timer] || timer;
@@ -685,7 +704,7 @@ export class USChart {
         this.svg.append(line);
       }
     }
-    this.root.querySelector("[data-delete]").disabled = this.selected < 0;
+
   }
   setGuide(guide) {
     this.guide = guide;
@@ -716,7 +735,9 @@ export class USChart {
     this.ro?.disconnect();
     this.overlayEvents?.abort();
     cancelAnimationFrame(this.overlayFrame);
+    this.sharedDrawings?.destroy();
     this.chart?.remove();
     this.root.classList.remove("us2-chart-full");
+    document.body.classList.remove("us2-chart-focus");
   }
 }

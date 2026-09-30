@@ -82,6 +82,7 @@ const assert = require("node:assert/strict");
     ma20: 149,
     ma50: 140,
     gapPct: 2 + i,
+    bars: bars.slice(-90),
     path: bars.slice(-40).map((c) => c.close),
     patterns: {
       long: [
@@ -112,7 +113,7 @@ const assert = require("node:assert/strict");
     })),
   };
   const audits = [];
-  for (const width of [360, 390, 430, 768, 1366]) {
+  for (const width of (process.env.US_TEST_WIDTHS||"360,390,430,768,1366").split(",").map(Number)) {
     const context = await b.newContext({
       viewport: { width, height: width < 700 ? 844 : 900 },
       isMobile: width < 700,
@@ -241,12 +242,12 @@ const assert = require("node:assert/strict");
       fullPage: true,
     });
     const search = p.getByRole("textbox", { name: "搜尋美股" }); // type=default input uses textbox role
+    await p.locator("[data-search-open]").click();
     await search.fill("台積電");
     await p.getByRole("option").filter({ hasText: "TSM" }).first().click();
     await p.waitForFunction(
       () =>
-        document.querySelector(".us2-selected-identity b")?.textContent ===
-        "TSM",
+        document.querySelector(".us2-symbol-picker")?.textContent.includes("TSM"),
     );
     await p.waitForFunction(() =>
       document.querySelector(".us2-ohlc")?.textContent.startsWith("TSM "),
@@ -256,19 +257,34 @@ const assert = require("node:assert/strict");
       await p.locator(".us2-ticker [data-watch]").getAttribute("aria-pressed"),
       "true",
     );
-    const stage = p.locator(".us2-chart-stage"),
-      box = await stage.boundingBox();
-    await p.locator('[data-tool="trend"]').click();
+    const lastFrame=p.locator('.us2-timeframes [data-tf]').last();
+    await lastFrame.click();await p.waitForTimeout(150);
+    if(!(await p.locator('.us2-timeframe-dialog[open]').count()))await lastFrame.click();
+    await p.locator('.us2-timeframe-dialog label').filter({hasText:'30m'}).click();
+    await p.locator('[data-save-timeframes]').click();
+    assert.equal(await p.locator('.us2-timeframes [data-tf="30m"]').count(),1);
+    await p.locator('.us2-timeframes [data-tf="1D"]').click();
+    await p.locator("[data-collapse]").click();await p.waitForTimeout(700);
+    await p.screenshot({path:`${out}/fixture-collapsed-${width}.png`});
+    await p.locator("[data-expand]").click();await p.waitForTimeout(350);
+    const stage = p.locator(".us2-chart-stage"), box = await stage.boundingBox();
+    assert.ok(box.height > 600,"expanded chart fills viewport");
+    await p.screenshot({path:`${out}/fixture-expanded-${width}.png`});
+    await p.locator('.us2-chart-root [data-action="menu"]').click();
+    await p.screenshot({path:`${out}/fixture-drawing-menu-${width}.png`});
+    await p.locator('.us2-chart-root [data-draw="trend"]').click();
     await p.mouse.move(box.x + 80, box.y + 140);
     await p.mouse.down();
     await p.mouse.move(box.x + 170, box.y + 100, { steps: 10 });
     await p.mouse.up();
-    const lines = await p.locator("svg.us2-drawings line").count();
-    assert.ok(lines >= 2, "drawing saved");
-    await p.locator('[data-tool="cursor"]').click();
+    const savedDrawings=()=>p.evaluate(()=>Object.values(JSON.parse(localStorage.getItem("ox-us-v2-twelve-data-chart-drawings-v1")||"{}")).flat().length);
+    assert.ok(await savedDrawings() >= 1, "shared drawing saved in US scope");
+    await p.locator('.us2-chart-root [data-action="none"]').click();
+    await p.locator("[data-exit-focus]").click();await p.waitForTimeout(700);
+    await p.locator("[data-collapse]").click();await p.waitForTimeout(700);
     const tier = p.locator(".us2-tier");
     await tier.click();
-    assert.equal(await tier.locator("span").innerText(), "T1");
+    assert.equal(await tier.locator(".radar-tier-current").innerText(), "T1");
     const tierBox = await tier.boundingBox();
     await p.mouse.move(tierBox.x + 20, tierBox.y + 15);
     await p.mouse.down();
@@ -277,11 +293,11 @@ const assert = require("node:assert/strict");
     await p.mouse.up();
     await p.locator('[data-tier="all"]').click();
     await p.locator("[data-side]").click();
-    assert.ok((await p.locator("[data-side]").innerText()).includes("空"));
+    assert.ok((await p.locator("[data-side]").getAttribute("class")).includes("is-short"));
     await p.locator("[data-side]").click();
-    await p.locator("[data-collapse]").click();
+    await p.locator("[data-collapse]").click();await p.waitForTimeout(700);
     assert.equal(await p.locator(".us2-scanner").isVisible(), false);
-    await p.locator(".us2-show-list").click();
+    await p.locator("[data-collapse]").click();await p.waitForTimeout(700);
     assert.equal(await p.locator(".us2-scanner").isVisible(), true);
     if (!live && width === 390) {
       const before = chartCalls;
@@ -290,7 +306,7 @@ const assert = require("node:assert/strict");
       await p.waitForTimeout(200);
       assert.ok(chartCalls > before, "polling fetches without clicking");
       assert.ok(
-        (await p.locator("svg.us2-drawings line").count()) >= 2,
+        (await savedDrawings()) >= 1,
         "polling preserves drawings",
       );
     }
@@ -323,6 +339,13 @@ const assert = require("node:assert/strict");
           }),
         );
       assert.equal(await p.locator(".us2-root").isVisible(), true, view);
+      if(view==='home'){
+        await p.locator('[data-us-home-tf="4H"]').click();
+        assert.equal(await p.locator('[data-us-home-tf="4H"]').evaluate(n=>n.classList.contains('active')),true);
+        await p.locator('[data-home-analyze]').click();
+        await p.waitForFunction(()=>document.body.dataset.view==='radar'&&document.querySelector('.us2-main.ox-scanner-collapsed'));
+        assert.ok((await p.locator('.us2-symbol-picker').innerText()).includes('SPY'));
+      }
     }
     await p.evaluate(() => window.switchAppView("strength"));
     await p.locator('[data-tool-tab="bubbles"]').click();
@@ -335,11 +358,23 @@ const assert = require("node:assert/strict");
       fullPage: true,
     });
     await p.locator('[data-tool-tab="heatmap"]').click();
-    const first = p.locator(".us2-heatmap [data-symbol]").first();
+    await p.waitForTimeout(200);
+    await p.screenshot({path:`${out}/fixture-heatmap-${width}.png`});
+    await p.locator('.us2-heatmap canvas').click({position:{x:15,y:15}});
+    await p.waitForFunction(() => document.body.dataset.view === "radar");
+    await p.evaluate(() => window.switchAppView("strength"));
+    const first = p.locator(".cfx-heat-list [data-symbol]").first();
     await first.click();
     await p.waitForFunction(() => document.body.dataset.view === "radar");
     await p.evaluate(() => window.switchAppView("strength"));
     await p.locator('[data-tool-tab="patterns"]').click();
+    await p.waitForTimeout(200);
+    await p.screenshot({path:`${out}/fixture-patterns-${width}.png`});
+    await p.locator('[data-open-frames]').click();
+    await p.screenshot({path:`${out}/fixture-pattern-menu-${width}.png`});
+    await p.locator('[data-pattern-interval="1H"]').click();
+    assert.ok((await p.locator('.us2-pattern-status').innerText()).includes('尚無分析資料'));
+    await p.locator('[data-open-frames]').click();await p.locator('[data-pattern-interval="1D"]').click();
     await p.waitForTimeout(200);
     const result = p.locator(".us2-pattern-results [data-symbol]").first();
     if (await result.count()) {
@@ -348,7 +383,7 @@ const assert = require("node:assert/strict");
       await p.waitForFunction(() => document.body.dataset.view === "radar");
       assert.equal(await p.locator(".us2-scanner").isVisible(), false);
       assert.equal(
-        await p.locator(".us2-selected-identity b").innerText(),
+        (await p.locator(".us2-symbol-picker").innerText()).replace("▾","").trim(),
         selected,
       );
     }
@@ -394,7 +429,7 @@ const assert = require("node:assert/strict");
   const report = {
     mode: live ? "real-provider" : "isolated-fixture",
     browser: "Chromium",
-    webkit: "not tested (browser download failed)",
+    webkit: "not tested (no installed WebKit engine)",
     audits,
     chartCalls,
     quoteCalls,

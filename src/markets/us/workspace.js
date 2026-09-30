@@ -21,6 +21,7 @@ import { searchDirectory, quoteStatus } from "./model.js";
 import { sessionAt, nyParts } from "./calendar.js";
 
 import { tierResults } from "./analysis.js";
+import { icon, openDialog, closeDialog } from "./ui.js";
 export class USWorkspace {
   constructor() {
     const p = read(prefsKey, {});
@@ -31,6 +32,7 @@ export class USWorkspace {
       homeSymbol: p.homeSymbol || "SPY",
       homeInterval: p.homeInterval || "1D",
       side: "long",
+      collapsed: Boolean(p.collapsed),
       tier: "all",
       mode: p.mode || "classic",
       scanInterval: p.scanInterval || "1D",
@@ -58,6 +60,7 @@ export class USWorkspace {
     this.root = document.getElementById("market-unavailable-card");
     if (!this.root) return;
     this.root.classList.add("us2-root");
+    this.root.classList.remove("market-unavailable-card");
     document.body.dataset.usWorkspace = "1";
     this.controller?.abort();
     clearTimeout(this.refreshTimer);
@@ -66,18 +69,23 @@ export class USWorkspace {
     const signal = this.controller.signal;
     const jobs = [
       USAdapter.directory({ signal }).then((d) => {
+        if(signal.aborted)return;
         this.directory = d.items;
+        this.directoryError=null;
         this.directoryDate = d.receivedAt;
         this.updateCounts();
         this.updateIdentity();
-      }),
+      }).catch(error=>{if(!signal.aborted){this.directoryError=error;this.updateCounts();}}),
       USAdapter.capabilities({ signal }).then((c) => {
+        if(signal.aborted)return;
         this.cap = c;
-        if (this.chart) this.chart.capabilities = c;
+        this.chart?.setCapabilities(c);
         this.updateCounts();
       }),
       USAdapter.snapshot({ signal })
         .then((s) => {
+          if(signal.aborted)return;
+          this.snapshotError=null;
           this.snapshot = s;
           for (const q of s.quotes || []) this.quotes.set(q.symbol, q);
           this.updateCounts();
@@ -101,6 +109,11 @@ export class USWorkspace {
     save(prefsKey, this.state);
   }
   destroyTools() {
+    ++this.workerId;
+    this.heatChart?.destroy();this.heatChart=null;this.toolsLife?.abort();this.toolsSurface=null;
+    this.toolsRail?.destroy();this.toolsRail=null;
+    this.patternCharts?.forEach(chart=>chart.destroy());this.patternCharts=[];
+    this.patternSurface=null;
     this.chart?.destroy();
     this.chart = null;
     this.bubbles?.destroy();
@@ -124,6 +137,7 @@ export class USWorkspace {
     this.destroyTools();
     delete document.body.dataset.usWorkspace;
     this.root?.classList.remove("us2-root");
+    this.root?.classList.add("market-unavailable-card");
   }
   suspend() {
     this.destroyTools();
@@ -141,7 +155,8 @@ export class USWorkspace {
     this.renderedView = view;
     this.root.hidden = false;
     document.body.dataset.usWorkspace = "1";
-    this.root.innerHTML = `<div class="us2-shell"><header class="us2-header"><div class="us2-market-label"><span class="us2-session">${e(sessionAt().label)}</span><span class="us2-data-state">美股 · ${e({ home: "市場總覽", strength: "指標工具", radar: "OX 經典雷達", data: "新聞與事件", media: "研究與教學" }[view])}</span></div><form class="us2-search" role="search"><input aria-label="搜尋美股" placeholder="代號、公司名稱／中文別名" autocomplete="off" spellcheck="false"><button type="submit" aria-label="搜尋股票">⌕</button></form><div class="us2-search-results" hidden role="listbox" aria-label="美股搜尋結果"></div></header><div class="us2-counts" role="status"></div><main class="us2-main"></main></div>`;
+    this.root.innerHTML = `<div class="us2-shell"><main class="us2-main us2-${view}-pane"></main><dialog class="chart-tools-dialog us2-search-dialog" aria-label="搜尋美股"><header><b>搜尋美股</b><button data-close-dialog aria-label="關閉搜尋">${icon("close")}</button></header><form class="us2-search" role="search"><input aria-label="搜尋美股" placeholder="代號、公司名稱／中文別名" autocomplete="off" spellcheck="false"><button type="submit" aria-label="搜尋股票">⌕</button></form><div class="us2-search-results" hidden role="listbox" aria-label="美股搜尋結果"></div></dialog><dialog class="chart-tools-dialog us2-data-dialog" aria-label="美股資料狀態"><header><b>資料與股票詳情</b><button data-close-dialog aria-label="關閉資料狀態">${icon("close")}</button></header><div class="us2-stock-detail"></div><div class="us2-quote-status"></div><div class="us2-counts" role="status"></div><div class="us2-provider-detail"></div></dialog></div>`;
+    this.root.querySelectorAll("[data-close-dialog]").forEach(button => button.onclick = () => closeDialog(button.closest("dialog")));
     this.bindSearch();
     this.renderMain();
     this.updateCounts();
@@ -158,6 +173,7 @@ export class USWorkspace {
     const counts = this.snapshot?.counts;
     node.textContent = `可搜尋 ${this.directory.length.toLocaleString()} · 有效報價 ${counts?.quoted ?? 0} · 實際分析 ${counts?.scanned ?? 0}${this.snapshot?.asOf ? " · 快照 " + fmt(this.snapshot.asOf) : ""}${this.snapshotError ? " · 共用掃描快照未取得" : ""}`;
     node.title = `報價／分析數是上次共用收集實際通過驗證的數量。${this.directoryDate ? "目錄更新 " + fmt(this.directoryDate) : ""}`;
+    this.updateDataBrief();
     const selector = this.root.querySelector("[data-scan-interval]");
     if (selector)
       selector.innerHTML = (this.snapshot?.analysisIntervals || ["1D"])
@@ -179,6 +195,22 @@ export class USWorkspace {
       live.dataset.usText = live.textContent;
     }
   }
+  openSearch(opener) {
+    const dialog=this.root.querySelector(".us2-search-dialog");
+    openDialog(dialog,opener); dialog.querySelector("input").focus();
+  }
+  openData(opener) { this.updateDataBrief(); openDialog(this.root.querySelector(".us2-data-dialog"),opener); }
+  updateDataBrief() {
+    const error=this.chartError || this.quoteError;
+    const label=error?.includes("授權")?"授權未確認":error?"資料異常":sessionAt().label;
+    this.root?.querySelectorAll("[data-data-open]").forEach(node=>{node.textContent=label;node.title=error||"查看行情時間、來源、股票資料與掃描狀態";});
+    const symbol=this.state.view==="home"?this.state.homeSymbol:this.state.symbol;
+    const item=this.directory.find(x=>x.symbol===symbol),q=this.quotes.get(symbol);
+    const detail=this.root?.querySelector(".us2-stock-detail");
+    if(detail)detail.textContent=[symbol,item?.alias||item?.name,item?.type,item?.exchange].filter(Boolean).join(" · ");
+    const provider=this.root?.querySelector(".us2-provider-detail");
+    if(provider)provider.textContent=`來源 ${q?.source||this.cap?.source||"Twelve Data"} · feed ${q?.feed||"未確認"} · ${q?.volumeScope||"成交量口徑未確認"} · ${this.snapshotError||"共用掃描快照狀態可查閱上方統計"}`;
+  }
   bindSearch() {
     const form = this.root.querySelector("form"),
       input = form.querySelector("input"),
@@ -198,7 +230,7 @@ export class USWorkspace {
                 `<button type="button" role="option" data-open-symbol="${e(r.symbol)}"><b>${e(r.symbol)}</b><span>${e(r.alias || r.name)}</span><small>${e(r.type)} · ${e(r.exchange)}${r.complex ? " · 槓桿／反向" : ""}</small></button>`,
             )
             .join("")
-        : `<div class="us2-empty">${this.directory.length ? "找不到支援的股票、ADR 或 ETF；請檢查代號。" : "股票目錄載入中…"}</div>`;
+        : `<div class="us2-empty">${this.directory.length ? "找不到支援的股票、ADR 或 ETF；請檢查代號。" : this.directoryError ? "股票目錄取得失敗，請重新載入。" : "股票目錄載入中…"}</div>`;
     };
     input.oninput = () => {
       clearTimeout(this.searchTimer);
@@ -226,6 +258,7 @@ export class USWorkspace {
     this.state.collapsed = collapse;
     this.persist();
     this.root?.querySelector(".us2-search-results")?.setAttribute("hidden", "");
+    this.root?.querySelector(".us2-search-dialog[open]")?.close();
     if (this.state.view !== "radar") {
       window.switchAppView?.("radar");
       this.show("radar");
@@ -236,10 +269,12 @@ export class USWorkspace {
     }
     this.applyPatternGuide(symbol, interval);
     this.lookupQuote(symbol);
-    if (collapse)
+    if (collapse) {
       this.root
         .querySelector(".us2-radar-layout")
         ?.classList.add("is-collapsed");
+      this.root.querySelector(".us2-radar-pane")?.classList.add("ox-scanner-collapsed");
+    }
   }
   async lookupQuote(symbol) {
     this.quoteController?.abort();
@@ -248,11 +283,14 @@ export class USWorkspace {
     try {
       const q = await USAdapter.quote(symbol, { signal: c.signal });
       if (c.signal.aborted || !this.active) return;
+      this.quoteError = null;
       this.quotes.set(symbol, q);
       this.updateIdentity();
       this.updateLive();
     } catch (error) {
       if (!c.signal.aborted) {
+        this.quoteError = error.message;
+        this.updateDataBrief();
         const node = this.root?.querySelector(".us2-quote-status");
         if (node) node.textContent = error.message;
       }
@@ -264,18 +302,23 @@ export class USWorkspace {
     save(watchKey, [...this.watch]);
     const badge = this.root.querySelector("[data-watch-filter] small");
     if (badge) badge.textContent = this.watch.size;
-    this.root
-      .querySelectorAll(`[data-watch="${CSS.escape(symbol)}"]`)
-      .forEach((b) => {
+    [this.root,this.patternSurface].filter(Boolean).forEach(surface=>surface.querySelectorAll(`[data-watch="${CSS.escape(symbol)}"]`).forEach((b) => {
         b.classList.toggle("is-saved", this.watch.has(symbol));
+        b.classList.toggle("is-starred", this.watch.has(symbol));
         b.textContent = this.watch.has(symbol) ? "★" : "☆";
         b.setAttribute("aria-pressed", this.watch.has(symbol));
-      });
+      }));
   }
   rowHTML(row, { reasons = false, tierStart = false, tierEnd = false } = {}) {
+    if(this.state.view==="radar")return `<article class="coin-card us2-stock-row ${row.symbol===this.state.symbol?"selected":""} ${tierStart?"is-tier-start":""} ${tierEnd?"is-tier-end":""}" data-symbol="${e(row.symbol)}" data-interval="${e(row.interval||this.state.interval)}" tabindex="0" role="button" aria-label="開啟 ${e(row.symbol)} 圖表">${tierStart?`<span class="coin-tier-heading">${e(row.tier)}</span>`:""}<div class="coin-top"><div class="coin-title"><span class="coin-symbol-mobile" title="${e(row.alias||row.name||"")}">${e(row.symbol)}</span></div><div class="coin-top-right"><div class="coin-ox"><span class="coin-ox-label">USD</span><b class="coin-ox-value">${price(row.price)}</b></div></div></div><div class="coin-mid"><span class="mobile-coin-volume">${e(row.setup||row.type||"自選")} · ${e(row.interval||this.state.interval)}</span></div><div class="coin-mobile-bottom"><span class="coin-change ${tone(row.changePct)}">${pct(row.changePct)}</span><button class="watch-star watch-star-mobile us2-star ${this.watch.has(row.symbol)?"is-starred is-saved":""}" data-watch="${e(row.symbol)}" aria-label="收藏 ${e(row.symbol)}" aria-pressed="${this.watch.has(row.symbol)}">${this.watch.has(row.symbol)?"★":"☆"}</button></div></article>`;
+
     return `<article class="us2-stock-row ${row.symbol === this.state.symbol ? "is-current" : ""} ${tierEnd ? "is-tier-end" : ""}"><button type="button" class="us2-stock-open" data-symbol="${e(row.symbol)}" data-interval="${e(row.interval || "1D")}"><span class="us2-stock-identity"><b>${e(row.symbol)}</b><small>${e(row.alias || row.name || "")}</small></span><span class="us2-stock-numbers"><b>${price(row.price)}</b><small class="${tone(row.changePct)}">${pct(row.changePct)}</small></span>${row.setup ? `<span class="us2-stock-setup">${tierStart ? `<strong class="us2-tier-inline">${e(row.tier)}</strong>` : ""}${e(row.setup)} · ${e(row.interval)}${row.forming ? " · 形成中" : ""}</span>` : ""}${reasons ? `<span class="us2-stock-reasons">${(row.reasons || []).map(e).join(" · ")}</span>` : ""}</button><button type="button" class="us2-star ${this.watch.has(row.symbol) ? "is-saved" : ""}" data-watch="${e(row.symbol)}" aria-label="收藏 ${e(row.symbol)}" aria-pressed="${this.watch.has(row.symbol)}">${this.watch.has(row.symbol) ? "★" : "☆"}</button></article>`;
   }
   bindRows(container, { collapse = false } = {}) {
+    container.onkeydown = ev => {
+      const card = ev.target.closest("article[data-symbol]");
+      if(card && ev.target === card && (ev.key === "Enter" || ev.key === " ")) {ev.preventDefault();this.openStock(card.dataset.symbol,{interval:card.dataset.interval,collapse});}
+    };
     container.onclick = (ev) => {
       const star = ev.target.closest("[data-watch]");
       if (star) {
@@ -304,14 +347,17 @@ export class USWorkspace {
       symbol,
       interval,
       capabilities: this.cap,
+      onCollapse: this.state.view === "radar" ? () => this.toggleList?.() : null,
       onInterval: (tf) => {
         this.state[this.state.view === "home" ? "homeInterval" : "interval"] = tf;
+        if(this.state.view==='home')this.root.querySelectorAll('[data-us-home-tf]').forEach(b=>b.classList.toggle('active',b.dataset.usHomeTf===tf));
         this.persist();
       },
       onState: (result) => {
         if (!this.active) return;
         if (!result.error && result.bars?.length)
           this.lookupQuote(result.symbol || this.chart?.symbol || symbol);
+        this.chartError = result.error;
         this.updateIdentity();
         this.updateLive();
       },
@@ -329,29 +375,23 @@ export class USWorkspace {
     else this.renderMedia(main);
   }
   renderRadar(main) {
-    main.innerHTML = `<section class="us2-ticker"><div class="us2-selected-identity"></div><div class="us2-selected-price"></div><button type="button" class="us2-star" data-watch="${e(this.state.symbol)}" aria-label="收藏目前股票">☆</button><div class="us2-quote-status">查詢行情時間…</div></section><div class="us2-radar-layout ${this.state.collapsed ? "is-collapsed" : ""}"><section class="us2-card us2-chart-root"></section><aside class="us2-card us2-scanner"><div class="us2-radar-controls"><button class="us2-tier" type="button" aria-label="雷達分組：全部，短按循環，長按兩秒展開" aria-haspopup="menu" aria-expanded="false">◎<small>▾</small><span>全部</span></button><button type="button" data-watch-filter aria-pressed="${this.state.watchOnly}">自選 <small>${this.watch.size}</small></button><button type="button" data-side aria-label="切換多空" class="${this.state.side === "long" ? "us2-up" : "us2-down"}">${this.state.side === "long" ? "↑ 多" : "↓ 空"}</button><button type="button" data-collapse aria-label="收起雷達清單">⇥</button></div><div class="us2-tier-menu" role="menu" hidden>${["all", "T1", "T2", "T3"].map((t) => `<button role="menuitem" data-tier="${t}">${t === "all" ? "全部" : t}</button>`).join("")}</div><div class="us2-filter-line"><select data-mode aria-label="雷達策略">${Object.entries(
-      {
-        classic: "OX 經典",
-        ma: "均線排列",
-        breakout: "放量突破",
-        gap: "跳空觀察",
-        rs: "相對 SPY 強弱",
-      },
-    )
-      .map(
-        ([v, l]) =>
-          `<option value="${v}" ${this.state.mode === v ? "selected" : ""}>${l}</option>`,
-      )
-      .join(
-        "",
-      )}</select><select data-type aria-label="資產類型"><option value="stock" ${this.state.type === "stock" ? "selected" : ""}>股票／ADR</option><option value="ETF" ${this.state.type === "ETF" ? "selected" : ""}>一般 ETF</option><option value="all" ${this.state.type === "all" ? "selected" : ""}>兩者</option></select><select data-scan-interval aria-label="雷達分析級別">${(this.snapshot?.analysisIntervals || ["1D"]).map((tf) => `<option value="${tf}" ${tf === this.state.scanInterval ? "selected" : ""}>${tf}</option>`).join("")}</select></div><div class="us2-radar-list"></div><div class="us2-list-note"></div></aside><button type="button" class="us2-show-list" aria-label="展開雷達清單">◎ 雷達</button></div>`;
+    const filters = `<label>策略<select data-mode aria-label="雷達策略">${Object.entries({classic:"OX 經典",ma:"均線排列",breakout:"放量突破",gap:"跳空觀察",rs:"相對 SPY 強弱"}).map(([v,l])=>`<option value="${v}" ${this.state.mode===v?"selected":""}>${l}</option>`).join("")}</select></label><label>資產<select data-type aria-label="資產類型"><option value="stock">股票／ADR</option><option value="ETF">一般 ETF</option><option value="all">兩者</option></select></label><label>分析級別<select data-scan-interval aria-label="雷達分析級別"><option value="1D">1D</option></select></label>`;
+    main.innerHTML = `<section class="top-summary compact-summary us2-ticker"><div class="metric-card market-line-card"><div class="market-line-item market-line-price"><button class="us2-symbol-picker" data-search-open aria-label="搜尋並選擇股票">${e(this.state.symbol)} <span>▾</span></button><strong class="us2-quote-value">—</strong></div><div class="market-line-item"><label>當日 · <button class="us2-data-brief" data-data-open>${e(sessionAt().label)}</button></label><strong class="us2-quote-change">—</strong></div><div class="market-line-item us2-volume-cell"><label>成交量</label><strong class="us2-quote-volume">—</strong><button type="button" class="watch-star us2-star" data-watch="${e(this.state.symbol)}" aria-label="收藏目前股票">☆</button></div><div class="market-line-item radar-analysis-cell"><label>雷達策略</label><strong>OX 經典</strong><small>獨立美股引擎</small></div><div class="market-line-item radar-analysis-cell"><label>分析級別</label><strong>${e(this.state.scanInterval)}</strong><small>依已收線 K 線</small></div></div></section><div class="workspace us2-radar-layout ${this.state.collapsed ? "is-collapsed" : ""}"><article class="panel chart-box us2-chart-root"></article><aside class="panel us2-scanner"><div class="scanner-tabs"><button class="tab-btn radar-combined-tab us2-tier active" type="button" aria-label="雷達分組：全部，短按循環，長按兩秒展開" aria-haspopup="menu" aria-expanded="false"><span class="radar-combined-mark"><span class="radar-combined-logo">${icon("radar")}</span><span class="radar-tier-current"></span><small class="radar-combined-chevron">▼</small></span></button><button class="tab-btn" type="button" data-strategy-open aria-label="雷達策略與股票池">${icon("settings")}</button><button class="tab-btn" type="button" data-watch-filter aria-label="自選清單" aria-pressed="${this.state.watchOnly}">${icon("star")}<small hidden>${this.watch.size}</small></button><button class="direction-toggle-btn chart-tool-icon us2-side-control ${this.state.side === "long" ? "is-long" : "is-short"}" type="button" data-side aria-label="切換多空"><span class="direction-toggle-icon">${this.state.side === "long" ? "↑" : "↓"}</span></button></div><div class="us2-tier-menu" role="menu" hidden>${["all","T1","T2","T3"].map(t=>`<button role="menuitem" data-tier="${t}">${t==="all"?"全部":t}</button>`).join("")}</div><div class="us2-radar-list scanner-body"></div><small class="us2-list-note" hidden></small></aside></div><dialog class="chart-tools-dialog us2-strategy-dialog" aria-label="雷達策略"><header><b>策略與股票池</b><button data-close-strategy aria-label="關閉策略">${icon("close")}</button></header><div class="us2-dialog-fields">${filters}</div><p class="us2-muted">OX 經典保留型態與量能；其他策略獨立篩選，不強制疊加。</p></dialog>`;
+    const strategy = main.querySelector(".us2-strategy-dialog");
+    main.querySelector("[data-strategy-open]").onclick = event => openDialog(strategy, event.currentTarget);
+    main.querySelector("[data-close-strategy]").onclick = () => closeDialog(strategy);
+    main.querySelector("[data-type]").value = this.state.type;
+    main.querySelector("[data-search-open]").onclick = event => this.openSearch(event.currentTarget);
+    main.querySelector("[data-data-open]").onclick = event => this.openData(event.currentTarget);
     const layout = main.querySelector(".us2-radar-layout");
     const collapse = () => {
       this.state.collapsed = !this.state.collapsed;
       layout.classList.toggle("is-collapsed", this.state.collapsed);
+      main.classList.toggle("ox-scanner-collapsed", this.state.collapsed);
+      this.persist();
     };
-    main.querySelector("[data-collapse]").onclick = collapse;
-    main.querySelector(".us2-show-list").onclick = collapse;
+    main.classList.toggle("ox-scanner-collapsed", !!this.state.collapsed);
+    this.toggleList = collapse;
     this.chartIn(
       main.querySelector(".us2-chart-root"),
       this.state.symbol,
@@ -413,10 +453,9 @@ export class USWorkspace {
     };
     main.querySelector("[data-side]").onclick = (ev) => {
       this.state.side = this.state.side === "long" ? "short" : "long";
-      ev.currentTarget.textContent =
-        this.state.side === "long" ? "↑ 多" : "↓ 空";
-      ev.currentTarget.className =
-        this.state.side === "long" ? "us2-up" : "us2-down";
+      ev.currentTarget.querySelector(".direction-toggle-icon").textContent = this.state.side === "long" ? "↑" : "↓";
+      ev.currentTarget.classList.toggle("is-long",this.state.side === "long");
+      ev.currentTarget.classList.toggle("is-short",this.state.side === "short");
       this.paintList();
     };
     main.querySelector("[data-scan-interval]").onchange = (ev) => {
@@ -443,6 +482,7 @@ export class USWorkspace {
       item = this.directory.find((x) => x.symbol === symbol),
       q = this.quotes.get(symbol);
     if (this.state.view === "home") {
+      const ticker=main.querySelector(".us2-home-symbol");if(ticker)ticker.textContent=symbol;
       main.querySelectorAll("[data-benchmark]").forEach((button) => {
         const quote = this.quotes.get(button.dataset.benchmark);
         const value = button.querySelector("span"), change = button.querySelector("em");
@@ -453,17 +493,24 @@ export class USWorkspace {
         }
       });
     }
+    this.updateDataBrief();
+    const picker = main.querySelector(".us2-symbol-picker");
+    if (picker) picker.innerHTML = `${e(symbol)} <span>▾</span>`;
+    const value = main.querySelector(".us2-quote-value"), change = main.querySelector(".us2-quote-change"), volume = main.querySelector(".us2-quote-volume");
+    if (value) value.textContent = price(q?.price);
+    if (change) {change.textContent = pct(q?.changePct);change.className = `us2-quote-change ${tone(q?.changePct)}`;}
+    if (volume) {volume.textContent = q?.volume == null ? "—" : compact(q.volume); volume.title = q?.volumeScope || "成交量口徑未確認";}
     const identity = main.querySelector(".us2-selected-identity");
     if (identity)
       identity.innerHTML = `<b>${e(symbol)}</b><small>${e(item?.alias || item?.name || q?.name || "美股")} · ${e(item?.type || "股票")} · ${e(item?.exchange || q?.exchange || "")}</small>`;
     const numbers = main.querySelector(".us2-selected-price");
     if (numbers)
       numbers.innerHTML = `<b>${price(q?.price)}</b><small class="${tone(q?.changePct)}">${pct(q?.changePct)}</small>`;
-    const status = main.querySelector(".us2-quote-status");
+    const status = this.root.querySelector(".us2-quote-status");
     if (status)
-      status.textContent = q
+      status.textContent = this.quoteError || (q
         ? `${quoteStatus(q)} · 行情 ${fmt(q.marketTime * 1000)} · 取得 ${fmt(q.receivedAt)}`
-        : "等待有效行情…";
+        : "尚無有效行情");
     const star = main.querySelector(".us2-ticker [data-watch]");
     if (star) {
       star.dataset.watch = symbol;
@@ -505,7 +552,7 @@ export class USWorkspace {
       : `<div class="us2-empty">${this.state.watchOnly ? "自選尚無標的。搜尋股票並點星星收藏。" : this.snapshot?.analyses?.length ? "目前沒有符合條件的候選，請切換策略或多空。" : "共用掃描資料尚未取得。搜尋股票可查看真實報價與完整 K 線。"}</div>`;
     list.scrollTop = y;
     this.bindRows(list);
-    const control = this.root.querySelector(".us2-tier span");
+    const control = this.root.querySelector(".us2-tier .radar-tier-current");
     if (control)
       control.textContent =
         this.state.tier === "all" ? "全部" : this.state.tier;
@@ -513,12 +560,18 @@ export class USWorkspace {
       `${rows.length} 個結果 · 每組最多10檔 · ${this.state.scanInterval} 已收線分析${this.snapshot?.asOf ? " · " + fmt(this.snapshot.asOf) : ""}`;
   }
   renderHome(main) {
-    main.innerHTML = `<div class="us2-benchmarks" role="group" aria-label="市場基準 ETF">${["SPY", "QQQ", "IWM"].map((s) => `<button type="button" data-benchmark="${s}" aria-pressed="${this.state.homeSymbol === s}"><b>${s}</b><small>ETF</small><span>${price(this.quotes.get(s)?.price)}</span><em class="${tone(this.quotes.get(s)?.changePct)}">${pct(this.quotes.get(s)?.changePct)}</em></button>`).join("")}</div><section class="us2-card us2-chart-root us2-home-chart"></section><div class="us2-home-grid"><section class="us2-card"><header class="us2-section-header"><h3>自選摘要</h3><button type="button" data-home-watch>查看雷達</button></header><div class="us2-home-watch"></div></section><section class="us2-card"><header class="us2-section-header"><h3>類股 ETF</h3><small>ETF 代理，非市場廣度</small></header><div class="us2-home-sectors"></div></section><section class="us2-card"><header class="us2-section-header"><h3>重要事件</h3><button type="button" data-home-events>數據</button></header><div class="us2-home-events"></div></section></div>`;
+    main.innerHTML = `<div class="ox-editorial-home"><section class="ox-home-main" aria-label="美股市場主圖與摘要"><article class="ox-home-chart us2-home-chart"><div class="ox-home-quote"><div class="ox-home-identity"><div><span class="ox-home-ticker us2-home-symbol">${e(this.state.homeSymbol)}</span><small>美股 ETF · Twelve Data <button class="us2-data-brief" data-data-open>${e(sessionAt().label)}</button></small></div></div><div class="ox-home-price"><strong class="us2-quote-value">—</strong><small>USD</small><span class="us2-quote-change">—</span></div></div><div class="ox-chart-heading"><div class="us2-benchmarks" role="group" aria-label="市場基準 ETF">${["SPY","QQQ","IWM"].map(s=>`<button data-benchmark="${s}" aria-pressed="${this.state.homeSymbol===s}"><b>${s}</b></button>`).join("")}</div><div class="v34-home-main-toolbar" aria-label="首頁主圖週期">${["1H","4H","1D","1W"].map(tf=>`<button class="v34-home-mini-tf ${this.state.homeInterval===tf?"active":""}" type="button" data-us-home-tf="${tf}">${tf}</button>`).join("")}</div><button class="ox-text-button" data-home-analyze aria-label="在雷達分析目前 ETF">↗</button></div><div class="btc-premium-chart-wrap"><div class="us2-chart-root"></div></div></article><section class="ox-home-t1" aria-label="自選與類股摘要"><div class="ox-home-t1-side"><header class="ox-home-t1-head"><span>自選摘要</span><button class="ox-text-button" data-home-watch aria-label="查看自選雷達">↗</button></header><div class="us2-home-watch ox-home-t1-list"></div></div><div class="ox-home-t1-side"><header class="ox-home-t1-head"><span>類股 ETF</span><small>代理指標</small></header><div class="us2-home-sectors ox-home-t1-list"></div></div></section><aside class="ox-home-analysis"><header class="ox-analysis-heading"><h2>重要事件</h2><button class="ox-text-button" data-home-events aria-label="查看美股事件">↗</button></header><div class="us2-home-events"></div></aside></section></div>`;
+    main.querySelector("[data-data-open]").onclick = event => this.openData(event.currentTarget);
     this.chartIn(
       main.querySelector(".us2-chart-root"),
       this.state.homeSymbol,
       this.state.homeInterval,
     );
+    main.querySelector('.us2-chart-toolbar').hidden=true;
+    main.querySelectorAll('[data-us-home-tf]').forEach(b=>b.onclick=()=>this.chart.change({interval:b.dataset.usHomeTf}));
+    const analyze=main.querySelector("[data-home-analyze]");
+    analyze.setAttribute("aria-label","在雷達分析目前 ETF");
+    analyze.onclick=()=>this.openStock(this.state.homeSymbol,{interval:this.state.homeInterval,collapse:true});
     main.querySelectorAll("[data-benchmark]").forEach(
       (b) =>
         (b.onclick = () => {
@@ -527,9 +580,10 @@ export class USWorkspace {
           main
             .querySelectorAll("[data-benchmark]")
             .forEach((x) => x.setAttribute("aria-pressed", x === b));
-          this.persist();
+          this.updateIdentity();this.lookupQuote(this.state.homeSymbol);this.persist();
         }),
     );
+    this.updateIdentity();this.lookupQuote(this.state.homeSymbol);
     main.querySelector("[data-home-watch]").onclick = () => {
       this.state.watchOnly = true;
       window.switchAppView?.("radar");
@@ -608,7 +662,8 @@ export class USWorkspace {
       else if (this.bubbles) {
         this.bubbles.rows = this.toolRows();
         this.bubbles.draw();
-      } else if (!this.root.querySelector(".us2-tool-list [data-symbol]"))
+      } else if (this.heatChart) this.updateHeatmap();
+      else if (!this.root.querySelector(".us2-tool-list [data-symbol]"))
         this.renderToolContent();
     }
     if (this.state.view === "home") this.updateHome();
@@ -618,6 +673,7 @@ export class USWorkspace {
     try {
       const s = await USAdapter.snapshot({ signal: this.controller.signal });
       if (this.active) {
+        this.snapshotError=null;
         this.snapshot = s;
         this.updateCounts();
         this.updateSections();

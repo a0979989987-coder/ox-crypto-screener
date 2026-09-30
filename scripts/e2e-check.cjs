@@ -252,10 +252,11 @@ async function desktopRegression(browser) {
   await selectMarket(page, "us");
   await page.waitForSelector(".us2-root");
   await page.click("#ox-control-close");
+  await page.click('[data-search-open]');
   await page.fill('.us2-search input', "NVDA");
   await page.locator('[data-open-symbol="NVDA"]').click();
-  await page.waitForFunction(() => document.querySelector(".us2-selected-identity b")?.textContent === "NVDA");
-  await page.waitForFunction(() => document.querySelector(".us2-selected-price")?.textContent.includes("123.45"));
+  await page.waitForFunction(() => document.querySelector(".us2-symbol-picker")?.textContent.includes("NVDA"));
+  await page.waitForFunction(() => document.querySelector(".us2-quote-value")?.textContent.includes("123.45"));
   await selectView(page, "home");
   await page.waitForSelector(".us2-benchmarks");
   assert(await page.locator(".us2-benchmarks button").count() === 3, "US Home must render three ETF benchmarks");
@@ -415,7 +416,8 @@ async function mobileRegression(browser) {
   return { overflow: layout.overflow, css, intervals: runtime.intervals.length };
 }
 
-(async () => {
+module.exports = { server, preparePage, selectMarket, selectView, testBase };
+if (require.main === module) (async () => {
   await new Promise(resolve => server.listen(testPort, "127.0.0.1", resolve));
   const browser = await chromium.launch({ headless: true, ...(process.env.OX_BROWSER_PATH ? {executablePath:process.env.OX_BROWSER_PATH} : {}) })
     .catch(() => chromium.launch({ channel: "chrome", headless: true }));

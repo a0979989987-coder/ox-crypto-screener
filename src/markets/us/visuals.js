@@ -7,7 +7,7 @@ export class USBubbles {
     this.pan = { x: 0, y: 0, scale: 1 };
     this.pointers = new Map();
     root.innerHTML =
-      '<canvas aria-label="股票泡泡圖：顏色為完整交易日漲跌，大小為平均成交額的對數權重" tabindex="0"></canvas><div class="us2-visual-legend">藍 ＋／紅 −：完整日漲跌 · 大小：20日平均成交額對數權重 <button type="button">重設視野</button></div>';
+      '<canvas class="us2-bubble-plot" aria-label="股票泡泡圖：顏色為完整交易日漲跌，大小為平均成交額的對數權重" tabindex="0"></canvas><div class="us2-visual-legend">藍＋／紅−：完整日漲跌 · 大小：20日平均成交額對數 <button type="button">重設視野</button></div>';
     this.canvas = root.querySelector("canvas");
     this.canvas.style.touchAction = "none";
     this.ro = new ResizeObserver(() => this.draw());
@@ -64,11 +64,10 @@ export class USBubbles {
   draw() {
     const canvas = this.canvas,
       dpr = devicePixelRatio || 1,
-      w = this.root.clientWidth,
-      h = 330;
+      w = canvas.clientWidth,
+      h = canvas.clientHeight || 440;
     canvas.width = w * dpr;
     canvas.height = h * dpr;
-    canvas.style.height = `${h}px`;
     const ctx = canvas.getContext("2d");
     ctx.scale(dpr, dpr);
     ctx.clearRect(0, 0, w, h);
@@ -145,20 +144,8 @@ export function bindPatternBoard(root, onPath) {
     canvas.width = w * d;
     canvas.height = h * d;
     ctx.scale(d, d);
-    ctx.strokeStyle = "#ffffff08";
-    ctx.lineWidth = 1;
-    for (let x = 0; x < w; x += 32) {
-      ctx.beginPath();
-      ctx.moveTo(x, 0);
-      ctx.lineTo(x, h);
-      ctx.stroke();
-    }
-    for (let y = 0; y < h; y += 32) {
-      ctx.beginPath();
-      ctx.moveTo(0, y);
-      ctx.lineTo(w, y);
-      ctx.stroke();
-    }
+    ctx.fillStyle = "#e0e7ef13";
+    for(let x=22;x<w-10;x+=24)for(let y=18;y<h-12;y+=24)ctx.fillRect(x,y,1,1);
     if (points.length > 1) {
       ctx.strokeStyle = "#f4f0e8";
       ctx.lineWidth = 2;
