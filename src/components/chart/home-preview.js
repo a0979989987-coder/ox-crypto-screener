@@ -8,19 +8,23 @@
   dialog.innerHTML=`<header><strong data-title></strong><div><button data-action="radar">前往雷達</button><button data-action="reset" aria-label="重設圖表">↺</button><button data-action="close" aria-label="關閉預覽">×</button></div></header><nav aria-label="預覽 K 線級別">${['15m','1H','4H','1D','1W'].map(f=>`<button data-frame="${f}">${f}</button>`).join('')}</nav><div class="ox-home-preview-chart"></div><p data-status role="status"></p>`;
   document.body.append(dialog);
   const stage=dialog.querySelector('.ox-home-preview-chart'),title=dialog.querySelector('[data-title]'),status=dialog.querySelector('[data-status]');
-  let chart=null,series=null,selected=null,frame='1H',request=0,focusBefore=null;
+  let chart=null,series=null,selected=null,frame='1H',request=0,focusBefore=null,liveFeed=null,candles=[];
   function resize(){if(chart&&dialog.open)chart.resize(stage.clientWidth,stage.clientHeight);}
   new ResizeObserver(resize).observe(stage);
   async function load(){
     const id=++request,symbol=selected.symbol;
+    liveFeed?.stop();candles=[];
+    const feed=liveFeed=CryptoLiveCandles.subscribe(symbol,frame,incoming=>{
+      if(id===request&&dialog.open)candles=updateCryptoLiveSeries(series,null,candles,incoming);
+    });
     title.textContent=`${symbol.replace(/USDT$/,'')} · ${frame} · ${selected.tier.toUpperCase()}`;
     dialog.querySelectorAll('[data-frame]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.frame===frame)));
     series.setData([]);status.textContent='正在載入 K 線…';
     try{
-      const data=await BitgetAPI.fetchCandles(symbol,frame,160);
+      const data=await feed.load(160);
       if(id!==request||!dialog.open)return;
       if(!data.length)throw new Error('沒有可用 K 線');
-      series.setData(data);chart.priceScale('right').applyOptions({autoScale:true});chart.timeScale().fitContent();
+      candles=data;series.setData(data);chart.priceScale('right').applyOptions({autoScale:true});chart.timeScale().fitContent();
       status.textContent=`${selected.tier.toUpperCase()} · OX ${selected.score} · Bitget USDT 永續`;
     }catch(_){if(id===request&&dialog.open)status.textContent='K 線暫時無法取得，請切換級別重試。';}
   }
@@ -46,7 +50,7 @@
       const target=selected;dialog.close();setScannerDirectionFilter(target.side||'long');setScannerTierFilter(target.tier);switchSymbol(target.symbol);
     }else if(e.target===dialog){const r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)dialog.close();}
   });
-  dialog.addEventListener('close',()=>{request++;focusBefore?.isConnected&&focusBefore.focus({preventScroll:true});});
+  dialog.addEventListener('close',()=>{request++;liveFeed?.stop();liveFeed=null;focusBefore?.isConnected&&focusBefore.focus({preventScroll:true});});
   let press=null,holdTimer=null,singleTimer=null,lastTap=null,suppressedUntil=0;
   const rowAt=event=>event.target.closest('#view-home .ox-home-t1-row[data-home-symbol]');
   function cancelPress(){clearTimeout(holdTimer);holdTimer=null;press=null;}

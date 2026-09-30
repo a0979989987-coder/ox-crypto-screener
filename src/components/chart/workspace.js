@@ -23,7 +23,8 @@ function renderCompactChartPriceAxis() {
   }
   const ctx=renderCompactChartPriceAxis.context ||= document.createElement('canvas').getContext('2d');
   ctx.font=`${mobile?9:10}px system-ui`;
-  const width=Math.ceil(Math.max(24,...labels.map(l=>ctx.measureText(l.text).width))+6);
+  const badge=document.querySelector('#chart .chart-mobile-last-price');
+  const width=Math.ceil(Math.max(24,badge?.offsetWidth || 0,...labels.map(l=>ctx.measureText(l.text).width))+6);
   state.chartPriceAxisWidth=width;
   axis.style.width=`${width}px`;axis.style.height=`${height}px`;
   axis.replaceChildren(...labels.map(label=>{const el=document.createElement('span');el.textContent=label.text;el.style.top=`${label.y}px`;return el;}));
@@ -460,11 +461,43 @@ function initChart() {
   enableMobileChartPriceGestures(container);
 }
 
+function startChartLiveCandles(symbol, period, options = {}) {
+  state.chartLiveFeed?.stop();
+  const feed=CryptoLiveCandles.subscribe(symbol,period,incoming=>{
+    if (state.chartLiveFeed!==feed || state.symbol!==symbol || state.period!==period || state.activeMarket!=='crypto') return;
+    if (!state.candleData.length || state.chartPriceScope!==`${symbol}:${period}`) {
+      state.candleData=incoming;
+      state.oldestCandleTime=incoming[0]?.time || 0;
+      state.hasMoreHistory=true;
+      renderChartData(incoming,true);
+      return;
+    }
+    const previous=state.candleData, lastTime=previous.at(-1)?.time;
+    state.candleData=updateCryptoLiveSeries(state.candleSeries,state.volumeSeries,previous,incoming);
+    const last=state.candleData.at(-1);
+    if (!last) return;
+    state.chartLiveQuote={symbol,period,price:last.close,received:Date.now()};
+    for (const id of ['price','chart-focus-price']) {
+      const el=document.getElementById(id);if(el)el.textContent=fmtPrice(last.close);
+    }
+    updatePriceTimer();
+    if (last.time!==lastTime) {
+      const visible=state.chart.timeScale().getVisibleLogicalRange();
+      renderChartData(state.candleData,false,visible);
+    }
+    document.dispatchEvent(new Event('ox:chartdata'));
+  },options);
+  state.chartLiveFeed=feed;
+  state.chartLiveQuote=null;
+  return feed;
+}
+
 async function loadSymbolCandles(isInitial = true) {
   if (state.activeMarket && state.activeMarket !== "crypto") return;
   state.abortCtrl?.abort();
   state.abortCtrl = new AbortController();
   const symbol = state.symbol, period = state.period;
+  const feed=startChartLiveCandles(symbol,period);
   const overlay = document.getElementById("chart-loading");
   if (isInitial) overlay.classList.add("show");
   if (state.chartPriceScope !== `${symbol}:${period}`) {
@@ -484,8 +517,8 @@ async function loadSymbolCandles(isInitial = true) {
   }
 
   try {
-    const raw = await BitgetAPI.fetchCandles(symbol, period, window.matchMedia("(max-width:720px)").matches ? 160 : 100);
-    if (state.symbol !== symbol || state.period !== period) return;
+    const raw = await feed.load(window.matchMedia("(max-width:720px)").matches ? 160 : 100);
+    if (state.symbol !== symbol || state.period !== period || state.chartLiveFeed!==feed) return;
     if (!raw.length) throw new Error("無可用 K 線");
 
     state.candleData = raw;
@@ -694,13 +727,13 @@ function updatePriceTimer() {
   if (!state.candleData.length || !timerEl) return;
   const last = state.candleData[state.candleData.length - 1];
   renderCompactChartPriceAxis();
-  const step = periods[state.period] || 60;
   const now = Math.floor(Date.now() / 1000);
-  const left = step - (now % step);
+  const left = Math.max(0, Math.ceil(CryptoLiveCandles.closeTime(last,state.period) - now));
   const h = Math.floor(left / 3600);
   const m = Math.floor((left % 3600) / 60);
   const s = left % 60;
   const mobile = window.matchMedia("(max-width:720px)").matches;
+  const countdown=`${h>0 ? `${String(h).padStart(2,'0')}:` : ''}${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
 
   // Full last price uses an overlay; native crosshair/last-value labels otherwise
   // reserve width for invisible decimals on every tick and leave a blank column.
@@ -708,17 +741,16 @@ function updatePriceTimer() {
   const lastY = state.candleSeries.priceToCoordinate(last.close);
   if (badge && Number.isFinite(lastY)) {
     badge.removeAttribute("hidden");
-    badge.textContent = formatChartAxisPrice(last.close);
-    badge.style.top = `${Math.max(20, Math.min(document.getElementById('chart').clientHeight - 26, lastY))}px`;
+    badge.innerHTML = `<strong>${formatChartAxisPrice(last.close)}</strong>${mobile ? `<small>${countdown}</small>` : ''}`;
+    badge.setAttribute('aria-label',`價格 ${formatChartAxisPrice(last.close)}，收線倒數 ${countdown}`);
+    badge.style.top = `${Math.max(22, Math.min(document.getElementById('chart').clientHeight - state.chart.timeScale().height() - 22, lastY))}px`;
     badge.classList.toggle('is-up', last.close >= last.open);
   }
   if (mobile) {
-    const shortTime = h > 0 ? `${h}h ${String(m).padStart(2,"0")}m` : `${Math.max(1, m)}m`;
-    if (timerEl.textContent !== shortTime) timerEl.innerHTML = `<small>${shortTime}</small>`;
-    if (timerEl.style.top !== "7px") timerEl.style.top = "7px";
-    if (timerEl.style.transform !== "none") timerEl.style.transform = "none";
+    timerEl.hidden=true;
     return;
   }
+  timerEl.hidden=false;
 
   const timeStr = `${h > 0 ? `${h}h ` : ''}${String(m).padStart(2, "0")}m ${String(s).padStart(2, "0")}s`;
   const y = state.candleSeries.priceToCoordinate(last.close);

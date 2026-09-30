@@ -38,6 +38,7 @@ const MarketController = (() => {
   const setMarket = (market,{toast=true,kick=true}={}) => {
     if(!labels[market]) return;
     if (state.activeMarket === market && document.body.dataset.market === market) return;
+    if(market!=="crypto"){state.chartLiveFeed?.stop();state.chartLiveFeed=null;state.chartLiveQuote=null;}
     state.activeMarket=market; localStorage.setItem("ox-active-market",market); document.body.dataset.market=market;
     document.querySelectorAll("[data-terminal-view]").forEach(el => { el.textContent = {crypto:"Crypto",us:"美股",tw:"台股",forex:"外匯"}[market]; });
     document.dispatchEvent(new CustomEvent("ox:marketchange",{detail:{market}}));
@@ -65,7 +66,7 @@ window.OXMarketController = MarketController;
 function showMarketToast(msg){ let el=document.getElementById("market-switch-toast"); if(!el){ el=document.createElement("div"); el.id="market-switch-toast"; el.className="market-switch-toast"; document.body.appendChild(el); } el.textContent=msg; el.classList.add("show"); clearTimeout(showMarketToast._t); showMarketToast._t=setTimeout(()=>el.classList.remove("show"),1500); }
 
 const HomeChartVariant = (()=>{
-  let chart=null, series=null, volumeSeries=null, period="1H", loading=false, ro=null;
+  let chart=null, series=null, volumeSeries=null, period="1H", liveFeed=null, candles=[], request=0, ro=null;
   const theme=()=>document.body.classList.contains("theme-light");
   const chartColors=()=> theme() ? {
     bg:"rgba(255,255,255,0)", text:"#777d79",
@@ -135,34 +136,29 @@ const HomeChartVariant = (()=>{
   };
 
   const load=async(force=false)=>{
-    if(state.activeMarket!=="crypto"||loading||!ensure()) return;
-    loading=true;
+    if(state.activeMarket!=="crypto"||!ensure()) return;
+    if(liveFeed && !force)return;
+    const id=++request,selectedPeriod=period;
+    liveFeed?.stop();candles=[];
+    const feed=liveFeed=CryptoLiveCandles.subscribe("BTCUSDT",selectedPeriod,incoming=>{
+      if(id!==request || state.activeMarket!=="crypto")return;
+      candles=updateCryptoLiveSeries(series,volumeSeries,candles,incoming);
+    });
     try{
-      const data=await BitgetAPI.fetchCandles("BTCUSDT",period,260);
-      if(data.length){
-        series.setData(data);
-        volumeSeries?.setData(data.map(c=>({
-          time:c.time,
-          value:num(c.quoteVolume || c.volume),
-          color:c.close>=c.open ? "rgba(0,184,212,.29)" : "rgba(255,48,120,.27)"
-        })));
-        const mobile = window.matchMedia("(max-width:720px)").matches;
-        const compact = window.matchMedia("(max-width:430px)").matches;
-        const visibleBars = compact ? 112 : mobile ? 126 : 136;
-        const rightOffset = 1;
-        chart.timeScale().applyOptions({
-          rightOffset,
-          barSpacing: mobile ? 4.15 : 5.8,
-          minBarSpacing: mobile ? 2.0 : 2.6,
-          fixRightEdge:false,
-          lockVisibleTimeRangeOnResize:true
-        });
-        const to = Math.max(0, data.length - 1 + rightOffset);
-        const from = Math.max(0, data.length - visibleBars);
-        try { chart.timeScale().setVisibleLogicalRange({from, to}); } catch(e) { chart.timeScale().fitContent(); }
-      }
-    }catch(e){}finally{loading=false;}
+      const data=await feed.load(200);
+      if(id!==request || !data.length)return;
+      candles=data;series.setData(data);
+      volumeSeries?.setData(data.map(c=>({time:c.time,value:num(c.quoteVolume || c.volume),color:c.close>=c.open ? "rgba(0,184,212,.29)" : "rgba(255,48,120,.27)"})));
+      const mobile=window.matchMedia("(max-width:720px)").matches;
+      const compact=window.matchMedia("(max-width:430px)").matches;
+      const visibleBars=compact?112:mobile?126:136,rightOffset=1;
+      chart.timeScale().applyOptions({rightOffset,barSpacing:mobile?4.15:5.8,minBarSpacing:mobile?2:2.6,fixRightEdge:false,lockVisibleTimeRangeOnResize:true});
+      chart.timeScale().setVisibleLogicalRange({from:Math.max(0,data.length-visibleBars),to:Math.max(0,data.length-1+rightOffset)});
+    }catch(e){}
   };
+  document.addEventListener('ox:marketchange',()=>{
+    if(state.activeMarket!=="crypto"){request++;liveFeed?.stop();liveFeed=null;}
+  });
 
   const setPeriod=p=>{
     if(!["1H","4H","1D","1W"].includes(p)) return;

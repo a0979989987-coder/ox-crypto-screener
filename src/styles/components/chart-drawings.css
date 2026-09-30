@@ -75,6 +75,13 @@ body.ox-terminal.chart-focus #view-radar .chart-timeframe-group {padding-right:4
 
 #view-radar .chart-mobile-last-price[hidden]{display:none!important}
 
+/* Opaque, high-contrast numerals survive the terminal theme's inherited colors. */
+body.ox-terminal #view-radar #chart .chart-mobile-last-price {background:#a80f45!important;color:#fff!important;opacity:1!important;padding:3px 5px;font:700 11px/1.25 system-ui;text-align:right;box-shadow:0 0 0 1px #ffffff38}
+body.ox-terminal #view-radar #chart .chart-mobile-last-price.is-up {background:#00687f!important}
+body.ox-terminal #view-radar #chart .chart-mobile-last-price strong {display:block;color:#fff!important;font:inherit!important;letter-spacing:0!important}
+body.ox-terminal #view-radar #chart .chart-mobile-last-price small {display:block;color:#fff!important;font:600 10px/1.25 system-ui!important;margin-top:2px;letter-spacing:0!important}
+#view-radar #price-timer[hidden] {display:none!important}
+
 #view-radar .chart-price-grid {position:absolute;inset:0;z-index:1;pointer-events:none}
 #view-radar .chart-price-grid i {position:absolute;left:0;right:0;height:1px;background:var(--line,#202725);opacity:.45;pointer-events:none}
 

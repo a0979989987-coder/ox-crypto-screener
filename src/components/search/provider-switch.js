@@ -323,9 +323,13 @@
       if(ProviderController.active==="bitget")return originalLoadSymbolCandles(isInitial);
       if(state.activeMarket&&state.activeMarket!=="crypto")return;
       state.abortCtrl?.abort();state.abortCtrl=new AbortController();
+      const symbol=state.symbol,period=state.period,provider=ProviderController.active;
+      const adapter=ProviderController.adapter();
+      const feed=startChartLiveCandles(symbol,period,{websocket:false,fetchCandles:(...args)=>adapter.candles(...args)});
       const overlay=q("#chart-loading");if(isInitial)overlay?.classList.add("show");
       try{
-        const raw=await ProviderController.adapter().candles(state.symbol,state.period,window.matchMedia("(max-width:720px)").matches?160:100);
+        const raw=await feed.load(window.matchMedia("(max-width:720px)").matches?160:100);
+        if(state.chartLiveFeed!==feed || state.symbol!==symbol || state.period!==period || ProviderController.active!==provider)return;
         if(!raw.length)throw new Error("無可用 K 線");
         state.candleData=raw;state.oldestCandleTime=raw[0].time;state.hasMoreHistory=true;
         renderChartData(raw,isInitial);

@@ -115,9 +115,11 @@ function updateHeaderHUD() {
   if (!ticker) return;
 
   document.getElementById("ticker-pair").textContent = `${ticker.symbol} · Bitget`;
-  document.getElementById("price").textContent = fmtPrice(ticker.lastPr);
+  const live=state.chartLiveQuote;
+  const price=live?.symbol===state.symbol && live.period===state.period && Date.now()-live.received<15000 ? live.price : ticker.lastPr;
+  document.getElementById("price").textContent = fmtPrice(price);
   const focusPrice = document.getElementById("chart-focus-price");
-  if (focusPrice) focusPrice.textContent = fmtPrice(ticker.lastPr);
+  if (focusPrice) focusPrice.textContent = fmtPrice(price);
   
   const chgEl = document.getElementById("change");
   chgEl.textContent = fmtPct(ticker.change24h);
