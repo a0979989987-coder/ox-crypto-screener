@@ -2,6 +2,136 @@
   "schemaVersion": 1,
   "news": [
     {
+      "id": "df6fc888ec5ac29d1794",
+      "title": "證交所攜手AAMA舉辦主題分享會 助新創企業掌握創新板上市契機",
+      "link": "https://www.twse.com.tw/rwd/zh/news/newsDetail/8a8216d6a0bdcc0001a0f21e22bf00b3",
+      "publishedAt": "2026-09-30T11:45:00.000Z",
+      "source": "臺灣證券交易所",
+      "sourceId": "twse",
+      "markets": [
+        "tw"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "impactImportance": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "twse"
+      },
+      "titleZh": "證交所攜手AAMA舉辦主題分享會 助新創企業掌握創新板上市契機",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "c2c338b265e48b0e104a",
+      "title": "115年第4季得為上市認購（售）權證（含牛熊證）之標的證券",
+      "link": "https://www.twse.com.tw/rwd/zh/news/newsDetail/8a8216d6a0bdcc0001a0f210070f00af",
+      "publishedAt": "2026-09-30T11:25:00.000Z",
+      "source": "臺灣證券交易所",
+      "sourceId": "twse",
+      "markets": [
+        "tw"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "impactImportance": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "twse"
+      },
+      "titleZh": "115年第4季得為上市認購（售）權證（含牛熊證）之標的證券",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "5f5b5b57ba4985df4630",
+      "title": "證交所建置上市公司財務報告或年度自結財務資訊之董事會預計召開日期專區，以便利投資人查詢",
+      "link": "https://www.twse.com.tw/rwd/zh/news/newsDetail/8a8216d6a0bdcc0001a0f1de0b3200ab",
+      "publishedAt": "2026-09-30T10:30:00.000Z",
+      "source": "臺灣證券交易所",
+      "sourceId": "twse",
+      "markets": [
+        "tw"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "impactImportance": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "twse"
+      },
+      "titleZh": "證交所建置上市公司財務報告或年度自結財務資訊之董事會預計召開日期專區，以便利投資人查詢",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "991fda74be2aed4ef7a1",
+      "title": "臺灣證券交易所有價證券上市審議委員會審議通過英屬開曼群島商科絡達股份有限公司初次申請股票於臺灣創新板(tib-創)第一上市案",
+      "link": "https://www.twse.com.tw/rwd/zh/news/newsDetail/8a8216d6a0bdcc0001a0f1d94c2500a7",
+      "publishedAt": "2026-09-30T10:24:00.000Z",
+      "source": "臺灣證券交易所",
+      "sourceId": "twse",
+      "markets": [
+        "tw"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "impactImportance": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "twse"
+      },
+      "titleZh": "臺灣證券交易所有價證券上市審議委員會審議通過英屬開曼群島商科絡達股份有限公司初次申請股票於臺灣創新板(tib-創)第一上市案",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "4c3b1fa90bd7a9c0041b",
+      "title": "跳脫配息數字迷思：看懂「收益平準金」，回歸ETF實質收益",
+      "link": "https://www.twse.com.tw/rwd/zh/news/newsDetail/8a8216d6a0bdcc0001a0f1bc052600a1",
+      "publishedAt": "2026-09-30T09:53:00.000Z",
+      "source": "臺灣證券交易所",
+      "sourceId": "twse",
+      "markets": [
+        "tw"
+      ],
+      "kind": "news",
+      "verified": "official-source",
+      "impact": {
+        "stars": null,
+        "impactImportance": null,
+        "reason": "尚未評估；標題不足以判定影響力",
+        "ruleVersion": "unassessed-v1",
+        "evidence": null,
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "twse"
+      },
+      "titleZh": "跳脫配息數字迷思：看懂「收益平準金」，回歸ETF實質收益",
+      "translationStatus": "translated"
+    },
+    {
       "id": "b50e712b0bf61dbde885",
       "title": "TiBOOST創新大步計畫徵件延長至10月5日 重量級產業與創投評審陣容同步揭曉",
       "link": "https://www.twse.com.tw/rwd/zh/news/newsDetail/8a8216d6a0bdcc0001a0ec877a6b009f",
@@ -1670,84 +1800,6 @@
       "translationStatus": "translated"
     },
     {
-      "id": "f2d1df62f4069b5f819d",
-      "title": "臺灣證券交易所有價證券上市審議委員會審議通過貝爾威勒電子股份有限公司初次申請股票上市案",
-      "link": "https://www.twse.com.tw/rwd/zh/news/newsDetail/8a8216d6a066696301a08fc4def40095",
-      "publishedAt": "2026-09-11T09:20:00.000Z",
-      "source": "臺灣證券交易所",
-      "sourceId": "twse",
-      "markets": [
-        "tw"
-      ],
-      "kind": "news",
-      "verified": "official-source",
-      "impact": {
-        "stars": null,
-        "impactImportance": null,
-        "reason": "尚未評估；標題不足以判定影響力",
-        "ruleVersion": "unassessed-v1",
-        "evidence": null,
-        "sourceConfidence": "official-source",
-        "analysisConfidence": null,
-        "direction": null,
-        "sourceId": "twse"
-      },
-      "titleZh": "臺灣證券交易所有價證券上市審議委員會審議通過貝爾威勒電子股份有限公司初次申請股票上市案",
-      "translationStatus": "translated"
-    },
-    {
-      "id": "3dd97faf7b4c6591c782",
-      "title": "全體上市公司(不含金融保險業及三商投資控股股份有限公司)115年8月份當月營收較114年同期成長54.20％，累計營業收入較115年同期成長37.01％",
-      "link": "https://www.twse.com.tw/rwd/zh/news/newsDetail/8a8216d6a066696301a08f972bf10091",
-      "publishedAt": "2026-09-11T08:30:00.000Z",
-      "source": "臺灣證券交易所",
-      "sourceId": "twse",
-      "markets": [
-        "tw"
-      ],
-      "kind": "news",
-      "verified": "official-source",
-      "impact": {
-        "stars": null,
-        "impactImportance": null,
-        "reason": "尚未評估；標題不足以判定影響力",
-        "ruleVersion": "unassessed-v1",
-        "evidence": null,
-        "sourceConfidence": "official-source",
-        "analysisConfidence": null,
-        "direction": null,
-        "sourceId": "twse"
-      },
-      "titleZh": "全體上市公司(不含金融保險業及三商投資控股股份有限公司)115年8月份當月營收較114年同期成長54.20％，累計營業收入較115年同期成長37.01％",
-      "translationStatus": "translated"
-    },
-    {
-      "id": "b9351a5feeb46542ef52",
-      "title": "國際投資人高度關注臺灣 證交所倫敦行深化引資與亞資合作",
-      "link": "https://www.twse.com.tw/rwd/zh/news/newsDetail/8a8216d6a066696301a08a4235bb0087",
-      "publishedAt": "2026-09-11T06:00:00.000Z",
-      "source": "臺灣證券交易所",
-      "sourceId": "twse",
-      "markets": [
-        "tw"
-      ],
-      "kind": "news",
-      "verified": "official-source",
-      "impact": {
-        "stars": null,
-        "impactImportance": null,
-        "reason": "尚未評估；標題不足以判定影響力",
-        "ruleVersion": "unassessed-v1",
-        "evidence": null,
-        "sourceConfidence": "official-source",
-        "analysisConfidence": null,
-        "direction": null,
-        "sourceId": "twse"
-      },
-      "titleZh": "國際投資人高度關注臺灣 證交所倫敦行深化引資與亞資合作",
-      "translationStatus": "translated"
-    },
-    {
       "id": "1e0b05ef8f2261802a89",
       "title": "CFTC Chairman Selig and Kansas State University Announce Agenda for October 22-23 AgCon Conference in Overland Park",
       "link": "https://www.cftc.gov/PressRoom/PressReleases/9295-26",
@@ -1797,58 +1849,6 @@
         "sourceId": "sec"
       },
       "titleZh": "美國證管會指控創辦人及其兩家紐澤西州公司涉嫌 1,600 萬美元龐氏騙局",
-      "translationStatus": "translated"
-    },
-    {
-      "id": "6b4ff881b20ab310334a",
-      "title": "臺灣證券交易所對南寶樹脂化學工廠股份有限公司違反重大訊息規定，處以新臺幣3萬元違約金",
-      "link": "https://www.twse.com.tw/rwd/zh/news/newsDetail/8a8216d6a066696301a0859f757a0083",
-      "publishedAt": "2026-09-09T10:02:00.000Z",
-      "source": "臺灣證券交易所",
-      "sourceId": "twse",
-      "markets": [
-        "tw"
-      ],
-      "kind": "news",
-      "verified": "official-source",
-      "impact": {
-        "stars": null,
-        "impactImportance": null,
-        "reason": "尚未評估；標題不足以判定影響力",
-        "ruleVersion": "unassessed-v1",
-        "evidence": null,
-        "sourceConfidence": "official-source",
-        "analysisConfidence": null,
-        "direction": null,
-        "sourceId": "twse"
-      },
-      "titleZh": "臺灣證券交易所對南寶樹脂化學工廠股份有限公司違反重大訊息規定，處以新臺幣3萬元違約金",
-      "translationStatus": "translated"
-    },
-    {
-      "id": "c9a4381d2fb3aa28f3b9",
-      "title": "Modernity Financial Holdings, Ltd. (英屬開曼群島商現代財富控股有限公司)於115年9月9日送件申請股票創新板第一上市",
-      "link": "https://www.twse.com.tw/rwd/zh/news/newsDetail/8a8216d6a066696301a0856c4c75007f",
-      "publishedAt": "2026-09-09T09:07:00.000Z",
-      "source": "臺灣證券交易所",
-      "sourceId": "twse",
-      "markets": [
-        "tw"
-      ],
-      "kind": "news",
-      "verified": "official-source",
-      "impact": {
-        "stars": null,
-        "impactImportance": null,
-        "reason": "尚未評估；標題不足以判定影響力",
-        "ruleVersion": "unassessed-v1",
-        "evidence": null,
-        "sourceConfidence": "official-source",
-        "analysisConfidence": null,
-        "direction": null,
-        "sourceId": "twse"
-      },
-      "titleZh": "Modernity Financial Holdings, Ltd. (英屬開曼群島商現代財富控股有限公司)於115年9月9日送件申請股票創新板第一上市",
       "translationStatus": "translated"
     },
     {
@@ -4833,7 +4833,7 @@
       }
     }
   ],
-  "generatedAt": "2026-09-30T06:41:51.279Z",
+  "generatedAt": "2026-09-30T12:45:32.148Z",
   "sources": [
     {
       "id": "twse",
