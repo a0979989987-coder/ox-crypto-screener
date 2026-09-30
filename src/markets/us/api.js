@@ -1,4 +1,4 @@
-import { US_MODULE_CONFIG } from "./config.js?v=20260930-us-boot3";
+import { US_MODULE_CONFIG } from "./config.js?v=20260930-us-data4";
 
 /*
  * OX v4.0 Modular

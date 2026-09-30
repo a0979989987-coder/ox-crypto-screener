@@ -1,6 +1,6 @@
 import { marketRouter } from "./marketRouter.js";
 import { cryptoModule } from "../markets/crypto/index.js";
-import { usModule } from "../markets/us/index.js?v=20260930-us-boot3";
+import { usModule } from "../markets/us/index.js?v=20260930-us-data4";
 import { twModule } from "../markets/tw/index.js";
 import { forexModule } from "../markets/forex/index.js";
 
