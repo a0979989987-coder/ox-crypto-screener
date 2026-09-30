@@ -1435,32 +1435,6 @@
       "translationStatus": "translated"
     },
     {
-      "id": "42d5e29366054486d1af",
-      "title": "Piero Cipollone: The future of euro cash: trusted today, designed for tomorrow",
-      "link": "https://www.ecb.europa.eu//press/key/date/2026/html/ecb.sp260914_1~91d3436449.en.html",
-      "publishedAt": "2026-09-14T13:00:00.000Z",
-      "source": "European Central Bank",
-      "sourceId": "ecb",
-      "markets": [
-        "forex"
-      ],
-      "kind": "news",
-      "verified": "official-source",
-      "impact": {
-        "stars": null,
-        "impactImportance": null,
-        "reason": "尚未評估；標題不足以判定影響力",
-        "ruleVersion": "unassessed-v1",
-        "evidence": null,
-        "sourceConfidence": "official-source",
-        "analysisConfidence": null,
-        "direction": null,
-        "sourceId": "ecb"
-      },
-      "titleZh": "皮耶羅・奇波洛內：歐元現金的未來——今日的信任，明日的設計",
-      "translationStatus": "translated"
-    },
-    {
       "id": "20bc3639a3a5a1d0720c",
       "title": "v32.0rc1: Bitcoin Core 32.0 release candidate 1",
       "link": "https://github.com/bitcoin/bitcoin/releases/tag/v32.0rc1",
@@ -4859,7 +4833,7 @@
       }
     }
   ],
-  "generatedAt": "2026-09-29T18:39:48.713Z",
+  "generatedAt": "2026-09-30T06:41:51.279Z",
   "sources": [
     {
       "id": "twse",
@@ -4898,8 +4872,8 @@
     },
     {
       "id": "kraken",
-      "status": "error",
-      "message": "HTTP 403"
+      "status": "ready",
+      "count": 7
     },
     {
       "id": "cftc",
