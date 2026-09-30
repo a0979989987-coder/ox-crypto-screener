@@ -61,6 +61,13 @@ try{
       assert.equal(await frame.getByRole('button',{name:'趨勢線',exact:true}).count(),0);
       const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-innerWidth);
       assert.ok(overflow<=1,`overflow ${overflow}`);
+      const layout=await page.evaluate(()=>{
+        const chart=document.querySelector('.us2-radar-layout>.us2-chart-root').getBoundingClientRect();
+        const list=document.querySelector('.us2-radar-layout>.us2-scanner').getBoundingClientRect();
+        return {chartX:chart.x,chartY:chart.y,chartRight:chart.right,listX:list.x,listY:list.y,listWidth:list.width};
+      });
+      assert.ok(Math.abs(layout.chartY-layout.listY)<2,'list starts beside the chart, not underneath');
+      assert.ok(layout.listX>=layout.chartRight,'list remains on the right');
       await page.screenshot({path:`${output}/radar-${engine}-${width}.png`});
       await page.locator('.us2-widget-chart [data-tf="1H"]').click();
       await page.frameLocator('.us2-widget-stage iframe').locator('canvas').first().waitFor({timeout:45000});
@@ -79,10 +86,16 @@ try{
       assert.equal(JSON.parse(decodeURIComponent(new URL(tsmSrc).hash.slice(1))).symbol,'NYSE:TSM');
       await page.locator('.us2-ticker [data-watch]').click();
       assert.equal(await page.locator('.us2-ticker [data-watch]').getAttribute('aria-pressed'),'true');
+      const frameBeforeCollapse=await page.locator('.us2-widget-stage iframe').getAttribute('src');
+      await page.locator('[data-collapse]').click();
+      await page.waitForTimeout(750);
+      assert.equal(await page.locator('.us2-widget-stage iframe').getAttribute('src'),frameBeforeCollapse);
       await page.locator('.us2-widget-chart [data-expand]').click();
       await page.locator('.us2-chart-full').waitFor();
       await page.locator('[data-exit-focus]').click();
       assert.equal(await page.locator('.us2-chart-full').count(),0);
+      await page.locator('[data-collapse]').click();
+      await page.waitForTimeout(750);
       await page.locator('[data-widget-info]').click();
       await page.locator('[data-widget-tools]').click();
       const analysisConfig=JSON.parse(decodeURIComponent(new URL(await page.locator('.us2-widget-stage iframe').getAttribute('src')).hash.slice(1)));
@@ -90,7 +103,7 @@ try{
       await page.frameLocator('.us2-widget-stage iframe').getByRole('button',{name:'趨勢線',exact:true}).waitFor({timeout:45000});
       const appErrors=errors.filter(x=>!/fetch|network|WebSocket|Script error/.test(x)&&!(/\/api\/v1\/tw\//.test(x)&&/access control/.test(x)));
       assert.deepEqual(appErrors,[]);
-      console.log(JSON.stringify({engine,width,overflow,realProviderQuoteVisible:true,compactToolbar:true,analysisTools:true,searchADR:true,interval:true,pageReturn:true,fullscreen:true,appErrors}));
+      console.log(JSON.stringify({engine,width,overflow,layout,realProviderQuoteVisible:true,compactToolbar:true,analysisTools:true,searchADR:true,interval:true,pageReturn:true,collapsePreservesFrame:true,fullscreen:true,appErrors}));
       await page.close();
     }finally{await browser.close();}
   }

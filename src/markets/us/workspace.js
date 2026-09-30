@@ -17,7 +17,7 @@ import { toolsViews } from "./tools.js?v=20260930-us-compact2";
 import { newsViews } from "./news.js?v=20260930-us-compact2";
 import { USAdapter, fetchJSON } from "./provider.js?v=20260930-us-compact2";
 import { USChart } from "./chart.js?v=20260930-us-compact2";
-import { USWidgetChart } from "./widget-chart.js?v=20260930-us-compact2";
+import { USWidgetChart } from "./widget-chart.js?v=20260930-us-radar3";
 import { FREE_US_DISPLAY } from "./widget-config.js?v=20260930-us-compact2";
 import { searchDirectory, quoteStatus } from "./model.js?v=20260930-us-compact2";
 import { sessionAt, nyParts } from "./calendar.js?v=20260930-us-compact2";
@@ -440,6 +440,7 @@ export class USWorkspace {
       this.state.collapsed = !this.state.collapsed;
       layout.classList.toggle("is-collapsed", this.state.collapsed);
       main.classList.toggle("ox-scanner-collapsed", this.state.collapsed);
+      this.chart?.root.querySelector("[data-collapse]")?.setAttribute("aria-expanded", String(!this.state.collapsed));
       this.persist();
     };
     main.classList.toggle("ox-scanner-collapsed", !!this.state.collapsed);
@@ -451,6 +452,7 @@ export class USWorkspace {
     );
     this.updateIdentity();
     this.lookupQuote(this.state.symbol);
+    this.chart?.root.querySelector("[data-collapse]")?.setAttribute("aria-expanded", String(!this.state.collapsed));
     const menu = main.querySelector(".us2-tier-menu"),
       tier = main.querySelector(".us2-tier");
     let timer,
