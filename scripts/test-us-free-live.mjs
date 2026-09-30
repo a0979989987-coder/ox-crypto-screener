@@ -27,7 +27,8 @@ const base=`http://127.0.0.1:${server.address().port}`;
 const bootSource=await readFile(resolve(root,'scripts/test-market-boot.cjs'),'utf8');
 const cryptoChartStub=bootSource.match(/const chartStub = `([\s\S]*?)`;/)[1];
 try{
-  const matrix=process.env.OX_TEST_WEBKIT==='only'?[['WebKit',webkit,430]]:[['Chromium',chromium,390],['Chromium',chromium,430],['Chromium',chromium,1366],...(process.env.OX_TEST_WEBKIT==='1'?[['WebKit',webkit,430]]:[])];
+  const widths=(process.env.OX_QA_WIDTHS||'390,430,1366').split(',').map(Number);
+  const matrix=process.env.OX_TEST_WEBKIT==='only'?[['WebKit',webkit,430]]:[...widths.map(w=>['Chromium',chromium,w]),...(process.env.OX_TEST_WEBKIT==='1'?[['WebKit',webkit,430]]:[])];
   for(const [engine,kind,width] of matrix){
     const proxyURL=new URL(process.env.HTTPS_PROXY||'http://127.0.0.1:1');
     const browser=await kind.launch({headless:true,proxy:{server:proxyURL.origin,bypass:'127.0.0.1,localhost',...(proxyURL.username?{username:decodeURIComponent(proxyURL.username),password:decodeURIComponent(proxyURL.password)}:{})},...(kind===chromium&&process.env.OX_BROWSER_PATH?{executablePath:process.env.OX_BROWSER_PATH}:{})});
@@ -55,6 +56,9 @@ try{
       assert.doesNotMatch(body,/Invalid symbol|商品無效/);
       const quote=body.match(/\b\d{2,5}[,.]\d{2}\b/);
       assert.ok(quote,'real quote rendered by provider');
+      const compactConfig=JSON.parse(decodeURIComponent(new URL(await page.locator('.us2-widget-stage iframe').getAttribute('src')).hash.slice(1)));
+      assert.equal(compactConfig.hide_top_toolbar,true);assert.equal(compactConfig.hide_side_toolbar,true);
+      assert.equal(await frame.getByRole('button',{name:'趨勢線',exact:true}).count(),0);
       const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-innerWidth);
       assert.ok(overflow<=1,`overflow ${overflow}`);
       await page.screenshot({path:`${output}/radar-${engine}-${width}.png`});
@@ -79,9 +83,14 @@ try{
       await page.locator('.us2-chart-full').waitFor();
       await page.locator('[data-exit-focus]').click();
       assert.equal(await page.locator('.us2-chart-full').count(),0);
+      await page.locator('[data-widget-info]').click();
+      await page.locator('[data-widget-tools]').click();
+      const analysisConfig=JSON.parse(decodeURIComponent(new URL(await page.locator('.us2-widget-stage iframe').getAttribute('src')).hash.slice(1)));
+      assert.equal(analysisConfig.hide_top_toolbar,false);assert.equal(analysisConfig.hide_side_toolbar,false);
+      await page.frameLocator('.us2-widget-stage iframe').getByRole('button',{name:'趨勢線',exact:true}).waitFor({timeout:45000});
       const appErrors=errors.filter(x=>!/fetch|network|WebSocket|Script error/.test(x)&&!(/\/api\/v1\/tw\//.test(x)&&/access control/.test(x)));
       assert.deepEqual(appErrors,[]);
-      console.log(JSON.stringify({engine,width,overflow,realProviderQuoteVisible:true,searchADR:true,interval:true,pageReturn:true,fullscreen:true,appErrors}));
+      console.log(JSON.stringify({engine,width,overflow,realProviderQuoteVisible:true,compactToolbar:true,analysisTools:true,searchADR:true,interval:true,pageReturn:true,fullscreen:true,appErrors}));
       await page.close();
     }finally{await browser.close();}
   }

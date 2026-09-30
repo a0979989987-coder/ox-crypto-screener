@@ -1,4 +1,4 @@
-import { nyEpoch, nyParts, candleEnd } from "./calendar.js?v=20260930-us-free1";
+import { nyEpoch, nyParts, candleEnd } from "./calendar.js?v=20260930-us-compact2";
 export const num = (v) =>
   v === null || v === undefined || v === ""
     ? null

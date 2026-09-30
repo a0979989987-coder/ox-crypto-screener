@@ -1,7 +1,7 @@
-import { usProvider, getUSApiBase } from "./api.js?v=20260930-us-free1";
-import { normalizeCandles, normalizeQuote } from "./model.js?v=20260930-us-free1";
-import { aggregate4H, aggregateMonthly } from "./aggregate.js?v=20260930-us-free1";
-import { FREE_US_DISPLAY } from "./widget-config.js?v=20260930-us-free1";
+import { usProvider, getUSApiBase } from "./api.js?v=20260930-us-compact2";
+import { normalizeCandles, normalizeQuote } from "./model.js?v=20260930-us-compact2";
+import { aggregate4H, aggregateMonthly } from "./aggregate.js?v=20260930-us-compact2";
+import { FREE_US_DISPLAY } from "./widget-config.js?v=20260930-us-compact2";
 const cache = new Map();
 // Old endpoints are used only to validate the existing integration locally.
 // A public preview must never bypass the new redistribution-rights gate.

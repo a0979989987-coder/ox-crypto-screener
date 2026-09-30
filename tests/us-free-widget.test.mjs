@@ -18,14 +18,21 @@ test('free display pins US ADR and ETF exchanges and rejects ambiguous symbols',
   assert.equal(widgetSymbol('BRK.B',{mic:'XNYS'}),'NYSE:BRK.B');
   assert.equal(widgetSymbol('NEW'),null);
 });
-test('all nine intervals use genuine provider timeframes and preserve blue/red candles',()=>{
+test('all nine intervals use genuine provider timeframes and request blue/red preferences',()=>{
   for(const interval of ['1m','5m','15m','30m','1H','4H','1D','1W','1M']){
-    const s=chartWidgetSettings('SPY',interval,{},'ignored');
+    const s=chartWidgetSettings('SPY',interval,{});
     assert.equal(s.symbol,'AMEX:SPY');assert.equal(s.allow_symbol_change,false);
     assert.equal(s.overrides['mainSeriesProperties.candleStyle.upColor'],'#00b8d4');
     assert.equal(s.locale,'zh_TW');assert.equal(s.theme,'dark');
     assert.ok(s.interval);assert.equal(s.customer,undefined);
   }
+});
+test('normal charts have one OX toolbar; provider tools remain explicitly available',()=>{
+  const compact=chartWidgetSettings('SPY','1D',{});
+  assert.equal(compact.hide_top_toolbar,true);assert.equal(compact.hide_side_toolbar,true);
+  assert.equal(compact.hide_legend,false);assert.equal(compact.hide_volume,false);
+  const analysis=chartWidgetSettings('SPY','1D',{}, {tools:true});
+  assert.equal(analysis.hide_top_toolbar,false);assert.equal(analysis.hide_side_toolbar,false);
 });
 test('widget mode never falls through to the previous supplier or its private snapshot',async()=>{
   for(const endpoint of ['quote-v2','chart-v2'])

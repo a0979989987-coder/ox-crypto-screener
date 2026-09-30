@@ -45,7 +45,7 @@ body[data-market="us"] #market-unavailable-card.us2-root[hidden],.us2-root [hidd
 .us2-root .us2-star {border:0;background:none;box-shadow:none;color:var(--muted)}.us2-root .us2-star.is-saved {color:#f4c65b}
 .us2-radar-layout {position:relative;align-items:start}
 .us2-chart-root {position:relative;min-width:0}
-.us2-widget-stage {position:relative;height:clamp(360px,52svh,600px);min-width:0;background:var(--bg)}
+.us2-widget-stage {position:relative;height:clamp(280px,46svh,520px);min-width:0;background:var(--bg)}
 .us2-widget-frame {position:relative;height:100%;width:100%;min-width:0}
 .us2-widget-frame .tradingview-widget-container__widget {height:calc(100% - 24px);width:100%}
 .us2-widget-frame .tradingview-widget-copyright {height:24px;font-size:10px;line-height:24px;padding:0 8px;color:var(--muted)}
@@ -60,7 +60,15 @@ body[data-market="us"] #market-unavailable-card.us2-root[hidden],.us2-root [hidd
 .us2-radar-layout.is-widget .scanner-body {min-height:0;max-height:180px}
 .us2-free-display .us2-quote-value {font-size:12px;color:var(--muted);font-weight:500}
 .us2-free-display .ox-home-price {display:none}
-.us2-home-chart .us2-widget-stage {height:100%;min-height:300px}
+.us2-widget-summary {display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;min-height:52px;padding:6px 8px;overflow:hidden}
+.us2-widget-summary .us2-symbol-picker,.us2-widget-summary .us2-data-brief {min-height:30px}
+.us2-widget-summary .us2-data-brief {font-size:10px}
+.us2-free-display .us2-ticker .market-line-price {position:relative;padding-right:36px}
+.us2-free-display .us2-ticker .market-line-price>.us2-star {position:absolute;right:3px;top:50%;transform:translateY(-50%);width:32px;height:36px;font-size:17px}
+.us2-widget-summary .us2-symbol-picker,.us2-widget-summary .us2-ticker-name {max-width:calc(100% - 38px)}
+.us2-ticker-name {display:block;font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted);margin-top:3px;max-width:100%}
+.us2-home-chart .us2-widget-stage {height:100%;min-height:0}
+.us2-free-display .ox-home-t1-list {min-height:0;max-height:170px;overflow-y:auto}
 .us2-chart-stage {position:relative;min-width:0;overflow:hidden}
 .us2-chart-canvas {position:absolute;inset:0}
 .us2-drawings {position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2}

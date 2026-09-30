@@ -1,4 +1,4 @@
-import { usProvider } from "./api.js?v=20260930-us-free1";
+import { usProvider } from "./api.js?v=20260930-us-compact2";
 
 /*
  * OX v4.0 Modular
