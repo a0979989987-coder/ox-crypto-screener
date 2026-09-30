@@ -1,0 +1,15 @@
+.ox-home-preview {width:min(1080px,94vw);height:min(760px,88dvh);max-width:94vw;max-height:88dvh;margin:auto;padding:0;border:1px solid #ffffff55;border-radius:14px;background:#15191d;color:#eeeae2;box-shadow:0 0 16px #ffffff16,0 25px 90px #000a;overflow:hidden}
+.ox-home-preview[open] {display:flex;flex-direction:column}
+.ox-home-preview::backdrop {background:#07090dc9}
+.ox-home-preview header {display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 12px;border-bottom:1px solid #ffffff18;flex:none}
+.ox-home-preview header strong {font:500 14px/1.3 system-ui}
+.ox-home-preview header div,.ox-home-preview nav {display:flex;align-items:center;gap:6px}
+.ox-home-preview button {padding:7px 10px;border:1px solid transparent;border-radius:6px;background:#ffffff08;color:inherit;font:12px/1.3 system-ui;cursor:pointer}
+.ox-home-preview button:focus-visible {outline:2px solid #fff}
+.ox-home-preview nav {padding:8px 12px;flex:none;border-bottom:1px solid #ffffff12}
+.ox-home-preview [aria-pressed="true"] {border-color:#ffffff80;box-shadow:0 0 7px #ffffff25}
+.ox-home-preview-chart {flex:1;min-height:0;touch-action:none}
+.ox-home-preview p {margin:0;padding:8px 12px;font:11px/1.4 system-ui;color:#aeb3b3;flex:none}
+#view-home .ox-home-t1-row {user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;touch-action:pan-y}
+#view-home .ox-home-t1-list {max-height:620px;overflow-y:auto;overscroll-behavior:contain}
+@media(max-width:720px){.ox-home-preview {height:76dvh}.ox-home-preview button {min-height:36px}.ox-home-preview header strong {font-size:12px}.ox-home-preview header {padding:8px}.ox-home-preview header button {padding:6px}.ox-home-preview nav {overflow-x:auto}#view-home .ox-home-t1-list {max-height:560px}}

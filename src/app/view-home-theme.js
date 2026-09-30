@@ -175,7 +175,7 @@ function renderHomeOverview() {
 
   // The paired T1 board reads the radar's independent long and short rankings.
   for (const [side, label] of [["long", "上漲"], ["short", "下跌"]]) {
-    const rows = (state.tierMapBySide?.[side]?.t1 || []).filter(candidate =>
+    const rows = ["t1","t2","t3"].flatMap(tier => state.tierMapBySide?.[side]?.[tier] || []).filter(candidate =>
       side === "long" ? num(candidate.change24h) > 0 : num(candidate.change24h) < 0
     );
     const box = document.getElementById(`home-t1-${side}-list`);
@@ -184,23 +184,24 @@ function renderHomeOverview() {
     if (!rows.length) {
       const empty = document.createElement("span");
       empty.className = "ox-home-t1-empty";
-      empty.textContent = `等待${label} T1 候選`;
+      empty.textContent = `等待${label}候選`;
       box.append(empty);
       continue;
     }
-    for (const candidate of rows.slice(0, 5)) {
+    for (const candidate of rows.slice(0, 30)) {
       const row = document.createElement("button");
       row.type = "button";
       row.className = "ox-home-t1-row";
       row.dataset.homeSymbol = candidate.symbol;
       row.dataset.homeSide = side;
+      row.dataset.homeTier = candidate.displayTier || candidate.tier;
       const symbol = document.createElement("strong");
       symbol.textContent = String(candidate.symbol || "—").replace(/USDT$/, "");
       const identity = document.createElement("span");
       identity.className = "ox-home-t1-identity";
       identity.append(createCoinLogo(candidate.symbol), symbol);
       const score = document.createElement("small");
-      score.textContent = `OX ${candidate.oxScore ?? "—"}`;
+      score.textContent = `${(candidate.displayTier || candidate.tier).toUpperCase()} · OX ${candidate.oxScore ?? "—"}`;
       const change = document.createElement("em");
       change.className = num(candidate.change24h) > 0 ? "positive" : "negative";
       change.textContent = fmtPct(candidate.change24h);
@@ -293,9 +294,9 @@ function renderOxLive() {
       const symbol = String(c.symbol || "").replace(/USDT$/, "") || "—";
       return `#${idx + 1} ${symbol} OX ${c.oxScore ?? "—"} ${fmtPct(c.change24h)}`;
     }).join("　·　");
-    parts.push(`⚡ T1 精選快訊 · T1/T2/T3 各最多 10 檔、合計最多 30 檔　${t1Text}`);
+    parts.push(`⚡ T1 精選快訊 · T1 最多 10 檔，T2／T3 各最多 15 檔　${t1Text}`);
   } else {
-    parts.push("⚡ T1/T2/T3 各最多 10 檔、合計最多 30 檔 · 輪巡整理中");
+    parts.push("⚡ T1 最多 10 檔，T2／T3 各最多 15 檔 · 輪巡整理中");
   }
 
   const surge = (state.tierMap.surge || [])[0];

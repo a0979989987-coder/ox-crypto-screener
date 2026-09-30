@@ -308,7 +308,7 @@ document.addEventListener("click", e => {
   if (homeSymbol?.dataset.homeSymbol) {
     if (homeSymbol.dataset.homeSide) {
       setScannerDirectionFilter(homeSymbol.dataset.homeSide);
-      setScannerTierFilter('t1');
+      setScannerTierFilter(homeSymbol.dataset.homeTier || 'all');
     }
     switchSymbol(homeSymbol.dataset.homeSymbol);
     return;
@@ -384,7 +384,7 @@ document.addEventListener("keydown", e => {
     e.preventDefault();
     if (e.target.dataset.homeSide) {
       setScannerDirectionFilter(e.target.dataset.homeSide);
-      setScannerTierFilter('t1');
+      setScannerTierFilter(e.target.dataset.homeTier || 'all');
     }
     switchSymbol(e.target.dataset.homeSymbol); return;
   }

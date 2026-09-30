@@ -1,6 +1,31 @@
 function getChartRightOffset() {
-  // Full price ticks require a real scale, but future bars do not need a wide gutter.
-  return window.matchMedia("(max-width: 720px)").matches ? 0 : 1;
+  const spacing = state.chart?.timeScale().options().barSpacing || 6;
+  // Only reserve the text itself plus a small gap to the last candle.
+  return ((state.chartPriceAxisWidth || 44) + 16) / spacing;
+}
+
+function renderCompactChartPriceAxis() {
+  const axis=document.querySelector('#chart .chart-price-axis');
+  if (!axis || !state.candleSeries || !state.candleData.length) return;
+  const height=document.getElementById('chart').clientHeight-(state.chart.timeScale().height()||0);
+  if (height<20) return;
+  const high=state.candleSeries.coordinateToPrice(0),low=state.candleSeries.coordinateToPrice(height);
+  if (!Number.isFinite(high)||!Number.isFinite(low)||high<=low) return;
+  const raw=(high-low)/Math.max(2,Math.floor(height/55)),power=10**Math.floor(Math.log10(raw));
+  const step=[1,2,5,10].find(n=>n*power>=raw)*power;
+  const labels=[];
+  for(let value=Math.ceil(low/step)*step;value<high&&labels.length<40;value+=step){
+    const y=state.candleSeries.priceToCoordinate(value);
+    if (y>8&&y<height-8) labels.push({text:formatChartAxisPrice(value),y});
+  }
+  const ctx=renderCompactChartPriceAxis.context ||= document.createElement('canvas').getContext('2d');
+  ctx.font='11px system-ui';
+  const width=Math.ceil(Math.max(24,...labels.map(l=>ctx.measureText(l.text).width))+6);
+  state.chartPriceAxisWidth=width;
+  axis.style.width=`${width}px`;axis.style.height=`${height}px`;
+  axis.replaceChildren(...labels.map(label=>{const el=document.createElement('span');el.textContent=label.text;el.style.top=`${label.y}px`;return el;}));
+  const grid=document.querySelector('#chart .chart-price-grid');
+  grid?.replaceChildren(...labels.map(label=>{const line=document.createElement('i');line.style.top=`${label.y}px`;return line;}));
 }
 
 function chartAxisPrecision(price) {
@@ -23,7 +48,9 @@ function formatChartVolume(volume) {
 
 function refreshChartPriceViewport() {
   // Reapplying the provider invalidates the library's autoscale cache.
+  state.chart?.priceScale("right").applyOptions({ autoScale: true });
   state.candleSeries?.applyOptions({ autoscaleInfoProvider: chartPriceAutoscale });
+  requestAnimationFrame(renderCompactChartPriceAxis);
   document.dispatchEvent(new Event('ox:chartpriceview'));
 }
 
@@ -36,61 +63,70 @@ function chartPriceAutoscale(original) {
 
 function enableMobileChartPriceGestures(container) {
   let gesture = null;
-  const plot = target => !!target.closest('table > tbody > tr:first-child > td:first-child');
-  const axis = target => !!target.closest('table > tbody > tr:first-child > td:last-child');
-  const midpoint = touches => ({
-    x: [...touches].reduce((sum, touch) => sum + touch.clientX, 0) / touches.length,
-    y: [...touches].reduce((sum, touch) => sum + touch.clientY, 0) / touches.length
-  });
-  const distance = touches => Math.hypot(touches[0].clientX - touches[1].clientX, touches[0].clientY - touches[1].clientY);
-  const start = event => {
-    if (!window.matchMedia('(max-width:720px)').matches || (!plot(event.target) && !axis(event.target)) || event.touches.length > 2) return;
-    if (document.querySelector('#view-radar .chart-drawing-layer.is-editing')) return;
-    const priceHeight = container.clientHeight - (state.chart?.timeScale().height() || 0);
-    const range = state.chartPriceViewport || state.chartAutoPriceRange;
-    if (!range || priceHeight <= 0) return;
-    const rect = container.getBoundingClientRect();
-    const mid = midpoint(event.touches);
-    gesture = { count: event.touches.length, axis: axis(event.target), startX: mid.x, startY: mid.y - rect.top,
-      range: { ...range }, height: priceHeight, distance: event.touches.length === 2 ? distance(event.touches) : 0,
-      direction: null };
-    // The iOS price scale is narrow; handle its touch in the same viewport as the plot.
-    if (gesture.axis) event.stopPropagation();
+  const zone = target => {
+    if (target.closest('.chart-price-axis')) return 'price';
+    const cell = target.closest('td');
+    const table = container.querySelector('.tv-lightweight-charts table');
+    if (!cell || cell.closest('table') !== table) return null;
+    const row = cell.parentElement;
+    // LWC retains a zero-width left scale cell even when it is hidden.
+    if (row === table.rows[0]) return cell.cellIndex === 2 ? 'price' : cell.cellIndex === 1 ? 'plot' : null;
+    return row === table.rows[1] && cell.cellIndex === 1 ? 'time' : null;
   };
-  container.addEventListener('touchstart', start, { passive: true, capture: true });
+  const mid = touches => ({ x: [...touches].reduce((n,t)=>n+t.clientX,0)/touches.length,
+    y: [...touches].reduce((n,t)=>n+t.clientY,0)/touches.length });
+  const distance = touches => Math.hypot(touches[0].clientX-touches[1].clientX,touches[0].clientY-touches[1].clientY);
+  const start = event => {
+    if (!window.matchMedia('(pointer:coarse)').matches || event.touches.length > 2) return;
+    const area = zone(event.target);
+    if (!area || document.querySelector('#view-radar .chart-drawing-layer.is-editing')) return;
+    const range = state.chartPriceViewport || state.chartAutoPriceRange;
+    const logical = state.chart.timeScale().getVisibleLogicalRange();
+    if (!range || !logical) return;
+    const point = mid(event.touches), rect = container.getBoundingClientRect();
+    gesture = { area, count:event.touches.length, x:point.x, y:point.y, top:rect.top,
+      height:container.clientHeight-state.chart.timeScale().height(), range:{...range}, logical:{...logical},
+      distance:event.touches.length===2?distance(event.touches):0, direction:null };
+    if (area !== 'plot' || gesture.count===2) { event.preventDefault(); event.stopPropagation(); }
+  };
+  container.addEventListener('touchstart', start, { passive:false, capture:true });
   container.addEventListener('touchmove', event => {
-    if (!gesture || (!plot(event.target) && !axis(event.target)) || !event.touches.length) return;
-    if (gesture.axis) event.stopPropagation();
-    if (event.touches.length !== gesture.count) { start(event); return; }
-    const rect = container.getBoundingClientRect();
-    const mid = midpoint(event.touches);
-    const y = mid.y - rect.top;
-    const span = gesture.range.maxValue - gesture.range.minValue;
-    if (!Number.isFinite(span) || span <= 0) return;
-    if (gesture.count === 1) {
-      const dx = mid.x - gesture.startX, dy = y - gesture.startY;
-      if (!gesture.direction && Math.max(Math.abs(dx), Math.abs(dy)) > 6) gesture.direction = gesture.axis || Math.abs(dy) > Math.abs(dx) * 1.1 ? 'vertical' : 'horizontal';
-      if (gesture.direction !== 'vertical') return; // Horizontal pan stays with Lightweight Charts.
-      const shift = dy / gesture.height * span;
-      state.chartPriceViewport = { minValue: gesture.range.minValue + shift, maxValue: gesture.range.maxValue + shift };
+    if (!gesture || !event.touches.length) return;
+    if (event.touches.length!==gesture.count) { start(event); return; }
+    const point=mid(event.touches), dx=point.x-gesture.x, dy=point.y-gesture.y;
+    const span=gesture.range.maxValue-gesture.range.minValue;
+    if (!Number.isFinite(span)||span<=0) return;
+    if (gesture.area==='time') {
+      const factor=Math.exp(dx/Math.max(80,container.clientWidth)*2);
+      const bars=Math.max(8,Math.min(3000,(gesture.logical.to-gesture.logical.from)/factor));
+      state.chart.timeScale().setVisibleLogicalRange({from:gesture.logical.to-bars,to:gesture.logical.to});
+    } else if (gesture.area==='price') {
+      const factor=Math.exp(dy/Math.max(80,gesture.height)*3);
+      const center=(gesture.range.maxValue+gesture.range.minValue)/2;
+      state.chartPriceViewport={minValue:center-span/factor/2,maxValue:center+span/factor/2};
+      refreshChartPriceViewport();
+    } else if (gesture.count===2) {
+      const factor=Math.max(.1,Math.min(10,distance(event.touches)/(gesture.distance||1)));
+      const newSpan=span/factor, ratio=(gesture.y-gesture.top)/gesture.height;
+      const anchor=gesture.range.maxValue-ratio*span;
+      const maxValue=anchor+(point.y-gesture.top)/gesture.height*newSpan;
+      state.chartPriceViewport={minValue:maxValue-newSpan,maxValue};
+      const bars=(gesture.logical.to-gesture.logical.from)/factor;
+      state.chart.timeScale().setVisibleLogicalRange({from:gesture.logical.to-bars,to:gesture.logical.to});
+      refreshChartPriceViewport();
     } else {
-      const factor = Math.max(.1, Math.min(10, distance(event.touches) / (gesture.distance || 1)));
-      const newSpan = span / factor;
-      const anchor = gesture.range.maxValue - gesture.startY / gesture.height * span;
-      const maxValue = anchor + y / gesture.height * newSpan;
-      state.chartPriceViewport = { minValue: maxValue - newSpan, maxValue };
-    }
-    event.preventDefault();
-    refreshChartPriceViewport();
-  }, { passive: false, capture: true });
-  container.addEventListener('touchend', event => { if (gesture?.axis) event.stopPropagation(); if (event.touches.length) start(event); else gesture = null; }, { passive: true, capture: true });
-  container.addEventListener('touchcancel', event => { if (gesture?.axis) event.stopPropagation(); gesture = null; }, { passive: true, capture: true });
-  container.addEventListener('dblclick', event => {
-    if (event.target.closest('table > tbody > tr:first-child > td:last-child')) {
-      state.chartPriceViewport = null;
+      if (!gesture.direction&&Math.max(Math.abs(dx),Math.abs(dy))>6) gesture.direction=Math.abs(dy)>Math.abs(dx)*1.1?'vertical':'horizontal';
+      if (gesture.direction!=='vertical') return; // Native horizontal pan.
+      const shift=dy/gesture.height*span;
+      state.chartPriceViewport={minValue:gesture.range.minValue+shift,maxValue:gesture.range.maxValue+shift};
       refreshChartPriceViewport();
     }
-  }, true);
+    event.preventDefault(); event.stopPropagation();
+  }, {passive:false,capture:true});
+  const end=event=>{if(gesture&&(gesture.area!=='plot'||gesture.count===2||gesture.direction==='vertical'))event.stopPropagation();gesture=null;if(event.touches.length)start(event);};
+  container.addEventListener('touchend',end,{passive:false,capture:true});
+  container.addEventListener('touchcancel',()=>{gesture=null;},{passive:true,capture:true});
+  container.addEventListener('dblclick',event=>{if(zone(event.target)==='price'){state.chartPriceViewport=null;refreshChartPriceViewport();}},true);
 }
 
 function applyChartFutureSpace(snapToLatest = false) {
@@ -228,16 +264,18 @@ function initChart() {
     layout: {
       background: { type: "solid", color: "#121417" },
       textColor: "#929995",
+      fontSize: window.matchMedia("(max-width:720px)").matches ? 10 : 11,
       attributionLogo: false
     },
     grid: {
       vertLines: { color: "#202725", visible: false },
-      horzLines: { color: "#202725" }
+      horzLines: { color: "#202725", visible: false }
     },
     rightPriceScale: {
       borderColor: "#343b37",
+      visible: false,
       autoScale: true,
-      scaleMargins: { top: 0.08, bottom: 0.25 }
+      scaleMargins: { top: 0.18, bottom: 0.22 }
     },
     timeScale: {
       borderColor: "#343b37",
@@ -249,7 +287,7 @@ function initChart() {
       fixRightEdge: false,
       lockVisibleTimeRangeOnResize: true
     },
-    crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
+    crosshair: { mode: LightweightCharts.CrosshairMode.Normal, horzLine: { labelVisible: false } },
     handleScale: { mouseWheel: true, pinch: true, axisPressedMouseMove: { price: true, time: true }, axisDoubleClickReset: true },
     // Vertical swipes over the large mobile chart should move the page.
     // Horizontal drags still pan candles and pinch zoom remains available.
@@ -259,8 +297,8 @@ function initChart() {
   // Mobile only: use a smaller scale font while preserving the full price.
   if (window.matchMedia("(max-width: 720px)").matches) {
     state.chart.applyOptions({
-      layout: { fontSize: 9 },
-      rightPriceScale: { borderColor: "#343b37", autoScale: true, scaleMargins: { top: 0.08, bottom: 0.25 } }
+      layout: { fontSize: 10 },
+      rightPriceScale: { borderColor: "#343b37", autoScale: true, scaleMargins: { top: 0.18, bottom: 0.22 } }
     });
   }
 
@@ -273,14 +311,15 @@ function initChart() {
     wickDownColor: "#ff3078",
     // On narrow charts the native last-price badge sets the entire scale width.
     // A badge over the scale below keeps the full number without an empty column.
-    lastValueVisible: !window.matchMedia("(max-width:720px)").matches,
+    lastValueVisible: false,
     priceFormat: { type: "custom", minMove: 0.01, formatter: formatChartAxisPrice },
     autoscaleInfoProvider: chartPriceAutoscale
   });
 
   state.volumeSeries = state.chart.addHistogramSeries({
     priceFormat: { type: "custom", minMove: 1, formatter: formatChartVolume },
-    priceScaleId: "vol"
+    priceScaleId: "vol",
+    lastValueVisible: false
   });
   state.chart.priceScale("vol").applyOptions({
     scaleMargins: { top: 0.8, bottom: 0 }
@@ -289,7 +328,46 @@ function initChart() {
   const mobilePriceLabel = document.createElement('span');
   mobilePriceLabel.className = 'chart-mobile-last-price';
   mobilePriceLabel.setAttribute('aria-hidden', 'true');
+  const priceGrid=document.createElement('div');
+  priceGrid.className='chart-price-grid';
+  container.append(priceGrid);
+  const compactAxis=document.createElement('div');
+  compactAxis.className='chart-price-axis';
+  compactAxis.setAttribute('aria-label','價格軸，拖曳調整比例');
+  container.append(compactAxis);
+  let axisDrag=null;
+  compactAxis.addEventListener('pointerdown',event=>{
+    if(event.pointerType!=='mouse'||event.button!==0)return;
+    const range=state.chartPriceViewport||state.chartAutoPriceRange;
+    if(!range)return;
+    axisDrag={y:event.clientY,range:{...range}};
+    compactAxis.setPointerCapture(event.pointerId);event.preventDefault();
+  });
+  compactAxis.addEventListener('pointermove',event=>{
+    if(!axisDrag)return;
+    const factor=Math.exp((event.clientY-axisDrag.y)/Math.max(80,compactAxis.clientHeight)*3);
+    const center=(axisDrag.range.minValue+axisDrag.range.maxValue)/2;
+    const span=(axisDrag.range.maxValue-axisDrag.range.minValue)/factor;
+    state.chartPriceViewport={minValue:center-span/2,maxValue:center+span/2};
+    refreshChartPriceViewport();
+  });
+  const stopAxisDrag=()=>{axisDrag=null;};
+  compactAxis.addEventListener('pointerup',stopAxisDrag);
+  compactAxis.addEventListener('pointercancel',stopAxisDrag);
+  compactAxis.addEventListener('lostpointercapture',stopAxisDrag);
   container.append(mobilePriceLabel);
+  const cursorPrice = document.createElement('span');
+  cursorPrice.className = 'chart-cursor-price';
+  cursorPrice.hidden = true;
+  container.append(cursorPrice);
+  state.chart.subscribeCrosshairMove(param => {
+    cursorPrice.hidden = !param.point;
+    if (!param.point) return;
+    const price = state.candleSeries.coordinateToPrice(param.point.y);
+    if (!Number.isFinite(price)) { cursorPrice.hidden = true; return; }
+    cursorPrice.textContent = formatChartAxisPrice(price);
+    cursorPrice.style.top = `${param.point.y}px`;
+  });
 
 
   state.chart.timeScale().subscribeVisibleLogicalRangeChange(range => {
@@ -303,7 +381,7 @@ function initChart() {
     const mobileNow = window.matchMedia('(max-width:720px)').matches;
     if (mobileNow !== mobileScale) {
       mobileScale = mobileNow;
-      state.candleSeries.applyOptions({ lastValueVisible: !mobileNow });
+      state.chart.applyOptions({ layout: { fontSize: mobileNow ? 10 : 11 } });
       applyChartFutureSpace();
     }
     resizeChartToContainer();
@@ -319,6 +397,21 @@ async function loadSymbolCandles(isInitial = true) {
   const symbol = state.symbol, period = state.period;
   const overlay = document.getElementById("chart-loading");
   if (isInitial) overlay.classList.add("show");
+  if (state.chartPriceScope !== `${symbol}:${period}`) {
+    state.chartPriceViewport = null;
+    state.chartAutoPriceRange = null;
+    state.candleData = [];
+    clearKeyLevelPriceLines();
+    state.candleSeries.setData([]);
+    state.volumeSeries.setData([]);
+    state.chart.priceScale("right").applyOptions({ autoScale: true });
+    document.querySelector('#chart .chart-price-axis')?.replaceChildren();
+    document.querySelector('#chart .chart-price-grid')?.replaceChildren();
+    const cursor=document.querySelector('#chart .chart-cursor-price');
+    if(cursor)cursor.hidden=true;
+    document.querySelector('#chart .chart-mobile-last-price')?.setAttribute('hidden','');
+    document.dispatchEvent(new Event('ox:chartdata'));
+  }
 
   try {
     const raw = await BitgetAPI.fetchCandles(symbol, period, window.matchMedia("(max-width:720px)").matches ? 160 : 100);
@@ -332,7 +425,7 @@ async function loadSymbolCandles(isInitial = true) {
   } catch (err) {
     if (err.name === "AbortError") return;
   } finally {
-    overlay.classList.remove("show");
+    if (state.symbol === symbol && state.period === period) overlay.classList.remove("show");
   }
 }
 
@@ -372,6 +465,9 @@ function renderChartData(candles, fitContent = false, preservedLogicalRange = nu
   if (state.chartPriceScope !== priceScope) {
     state.chartPriceScope = priceScope;
     state.chartPriceViewport = null;
+    state.chartAutoPriceRange = null;
+    clearKeyLevelPriceLines();
+    state.chart.priceScale("right").applyOptions({ autoScale: true, scaleMargins: { top: .18, bottom: .22 } });
   }
   const digits = chartAxisPrecision(candles.at(-1)?.close);
   if (digits !== state.chartAxisDigits) {
@@ -410,7 +506,9 @@ function renderChartData(candles, fitContent = false, preservedLogicalRange = nu
   }
 
   if (fitContent) {
+    refreshChartPriceViewport();
     state.chart.timeScale().fitContent();
+    renderCompactChartPriceAxis();
     applyChartFutureSpace(true);
   } else if (preservedLogicalRange) {
     state.chart.timeScale().setVisibleLogicalRange(preservedLogicalRange);
@@ -525,6 +623,7 @@ function updatePriceTimer() {
   const timerEl = document.getElementById("price-timer");
   if (!state.candleData.length || !timerEl) return;
   const last = state.candleData[state.candleData.length - 1];
+  renderCompactChartPriceAxis();
   const step = periods[state.period] || 60;
   const now = Math.floor(Date.now() / 1000);
   const left = step - (now % step);
@@ -533,15 +632,17 @@ function updatePriceTimer() {
   const s = left % 60;
   const mobile = window.matchMedia("(max-width:720px)").matches;
 
+  // Full last price uses an overlay; native crosshair/last-value labels otherwise
+  // reserve width for invisible decimals on every tick and leave a blank column.
+  const badge = document.querySelector('#chart .chart-mobile-last-price');
+  const lastY = state.candleSeries.priceToCoordinate(last.close);
+  if (badge && Number.isFinite(lastY)) {
+    badge.removeAttribute("hidden");
+    badge.textContent = formatChartAxisPrice(last.close);
+    badge.style.top = `${Math.max(20, Math.min(document.getElementById('chart').clientHeight - 26, lastY))}px`;
+    badge.classList.toggle('is-up', last.close >= last.open);
+  }
   if (mobile) {
-    // Draw the full last price without letting its badge widen the native scale.
-    const badge = document.querySelector('#chart .chart-mobile-last-price');
-    const y = state.candleSeries.priceToCoordinate(last.close);
-    if (badge && Number.isFinite(y)) {
-      badge.textContent = formatChartAxisPrice(last.close);
-      badge.style.top = `${Math.max(20, Math.min(document.getElementById('chart').clientHeight - 26, y))}px`;
-      badge.classList.toggle('is-up', last.close >= last.open);
-    }
     const shortTime = h > 0 ? `${h}h ${String(m).padStart(2,"0")}m` : `${Math.max(1, m)}m`;
     if (timerEl.textContent !== shortTime) timerEl.innerHTML = `<small>${shortTime}</small>`;
     if (timerEl.style.top !== "7px") timerEl.style.top = "7px";

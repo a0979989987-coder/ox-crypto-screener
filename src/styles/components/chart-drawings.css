@@ -1,12 +1,15 @@
 #view-radar .chart-drawing-layer {position:absolute;top:0;left:0;z-index:5;pointer-events:none}
 .ox-control-changelog a {color:inherit;text-decoration:underline;text-underline-offset:2px}
-.chart-mobile-last-price {display:none}
+#view-radar .chart-mobile-last-price,#view-radar .chart-cursor-price {display:block;position:absolute;right:2px;z-index:7;transform:translateY(-50%);padding:2px 4px;border-radius:2px;background:#ff3078;color:#fff;font:10px/1.2 system-ui;font-variant-numeric:tabular-nums;white-space:nowrap;pointer-events:none}
+#view-radar .chart-mobile-last-price.is-up {background:#00a8bf}
+#view-radar .chart-cursor-price {background:#343b42;z-index:8}
+#view-radar .chart-cursor-price[hidden] {display:none}
 @media(max-width:720px){
  #view-radar .chart-mobile-last-price {display:block;position:absolute;right:2px;z-index:7;transform:translateY(-50%);padding:2px 4px;border-radius:2px;background:#ff3078;color:#fff;font:10px/1.2 system-ui;font-variant-numeric:tabular-nums;white-space:nowrap;pointer-events:none}
  #view-radar .chart-mobile-last-price.is-up {background:#00a8bf}
 }
-#view-radar #chart > div > table > tbody > tr:first-child > td:last-child canvas {touch-action:none}
-@media(max-width:720px){#view-radar #chart > div > table > tbody > tr:first-child > td:first-child canvas {touch-action:none}}
+#view-radar #chart > div > table > tbody > tr:first-child > td:last-child canvas {touch-action:none!important}
+@media(max-width:720px){#view-radar #chart > div > table > tbody > tr:first-child > td:nth-child(2) canvas {touch-action:none!important}}
 #view-radar .chart-drawing-layer.is-editing {pointer-events:auto;touch-action:none;cursor:crosshair}
 #view-radar .chart-drawing-tools {display:none;position:absolute;left:10px;top:48px;z-index:12;flex-direction:column;gap:3px;align-items:center;overflow:visible;padding:3px;border:1px solid #ffffff28;border-radius:9px;background:#15191dd9;box-shadow:0 5px 18px #0008}
 body.ox-terminal.chart-focus #view-radar .chart-drawing-tools,
@@ -50,3 +53,30 @@ body.theme-light #view-radar .drawing-tool-menu,body.theme-light #view-radar .dr
  body.ox-terminal.chart-focus #view-radar .chart-box>#btn-chart-exit-overlay svg {width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.6}
  body.ox-terminal.chart-focus #view-radar .chart-drawing-tools {top:48px}
 }
+
+@media(pointer:coarse){
+ body.ox-terminal #view-radar #chart,body.ox-terminal #view-radar #chart canvas {touch-action:none!important}
+}
+/* One exit control anchored to the chart header, including native fullscreen. */
+body.ox-terminal.chart-focus #view-radar #btn-chart-fullscreen {display:none!important}
+body.ox-terminal.chart-focus #view-radar .chart-box>#btn-chart-exit-overlay,
+body.ox-terminal #view-radar .chart-box:fullscreen>#btn-chart-exit-overlay,
+body.ox-terminal #view-radar .chart-box:-webkit-full-screen>#btn-chart-exit-overlay {
+ display:grid!important;place-items:center!important;position:absolute!important;
+ top:calc(env(safe-area-inset-top) + 6px)!important;right:calc(env(safe-area-inset-right) + 8px)!important;
+ z-index:80!important;width:30px!important;height:30px!important;padding:5px!important;
+ border:1px solid #ffffff69!important;border-radius:7px!important;background:#161b22e8!important;color:#eeeae2;
+}
+body.ox-terminal.chart-focus #view-radar .chart-timeframe-group {padding-right:40px!important}
+
+#view-radar .chart-price-axis {position:absolute;right:0;top:0;z-index:6;touch-action:none!important;cursor:ns-resize;user-select:none;-webkit-user-select:none}
+#view-radar .chart-price-axis span {position:absolute;right:2px;transform:translateY(-50%);color:var(--muted,#929995);background:var(--bg,#121417);padding-left:2px;font:11px/1.2 system-ui;white-space:nowrap;pointer-events:none;font-variant-numeric:tabular-nums}
+
+#view-radar .chart-mobile-last-price[hidden]{display:none!important}
+
+#view-radar .chart-price-grid {position:absolute;inset:0;z-index:1;pointer-events:none}
+#view-radar .chart-price-grid i {position:absolute;left:0;right:0;height:1px;background:var(--line,#202725);opacity:.45;pointer-events:none}
+
+body.ox-terminal #view-radar .chart-box:fullscreen .chart-controls #btn-chart-fullscreen.ox-chart-expand-dot,
+body.ox-terminal #view-radar .chart-box:-webkit-full-screen .chart-controls #btn-chart-fullscreen.ox-chart-expand-dot {display:none!important}
+body.ox-terminal #view-radar .chart-box>#btn-chart-exit-overlay svg {width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.6}

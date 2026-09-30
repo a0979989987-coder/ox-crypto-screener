@@ -1,5 +1,25 @@
 const WATCH_STAR_SVG = '<svg class="watch-star-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 2.78 5.63L21 9.54l-4.5 4.39 1.06 6.2L12 17.2l-5.56 2.93 1.06-6.2L3 9.54l6.22-.91Z"/></svg>';
 
+const RADAR_SNAPSHOT_KEY = 'ox-radar-snapshot-v2';
+function restoreRadarSnapshot() {
+  if (state.radarSnapshotChecked) return;
+  state.radarSnapshotChecked = true;
+  try {
+    const snapshot = JSON.parse(localStorage.getItem(RADAR_SNAPSHOT_KEY));
+    if (!snapshot || Date.now()-snapshot.savedAt > 5*60*1000 || !Array.isArray(snapshot.rows)) return;
+    const tickers = new Map(state.tickers.map(t=>[t.symbol,t]));
+    for (const row of snapshot.rows) {
+      const ticker=tickers.get(row.symbol);
+      if (!ticker || !isCryptoSymbolAllowed(row.symbol)) continue;
+      state.analyzedCache.set(row.symbol,{...row,ticker,change24h:num(ticker.change24h)});
+    }
+    state.radarSnapshotReady = state.analyzedCache.size > 0;
+  } catch (_) {}
+}
+function saveRadarSnapshot() {
+  try { localStorage.setItem(RADAR_SNAPSHOT_KEY,JSON.stringify({savedAt:Date.now(),rows:[...state.analyzedCache.values()]})); } catch (_) {}
+}
+
 async function refreshMarketTickers() {
   if (state.activeMarket && state.activeMarket !== "crypto") return;
   try {
@@ -54,6 +74,7 @@ async function refreshMarketTickers() {
       state.scanIndex = 0;
     }
 
+    restoreRadarSnapshot();
     try { LiquidationService?.NativeExchangeAdapter?.ensureStarted?.(); } catch (e) {}
     rebuildTierLists();
     if (state.activeView === 'radar') {
@@ -88,10 +109,8 @@ async function runScanQueueLoop() {
     }
 
     const batchSymbols = [];
-    for (let i = 0; i < CONFIG.queueBatchSize; i++) {
-      if (state.scanIndex >= state.scanQueue.length) {
-        state.scanIndex = 0;
-      }
+    const remaining = state.scanQueue.length-state.scanIndex;
+    for (let i = 0; i < Math.min(CONFIG.queueBatchSize, remaining); i++) {
       batchSymbols.push(state.scanQueue[state.scanIndex]);
       state.scanIndex++;
     }
@@ -99,6 +118,7 @@ async function runScanQueueLoop() {
     document.getElementById("scan-status").textContent = `輪巡 ${state.scanIndex}/${state.scanQueue.length}`;
     document.getElementById("dot").style.background = "#38c99b";
 
+    const batchStarted=performance.now();
     await Promise.allSettled(batchSymbols.map(async symbol => {
       const ticker = state.tickers.find(t => t.symbol === symbol);
       if (!ticker) return;
@@ -168,34 +188,38 @@ async function runScanQueueLoop() {
           setupProgress: fits.setupProgress,
           signalConfidence: fits.signalConfidence
         });
-
-        if (moneyFlow.isSurge && !state.scanQueue.slice(state.scanIndex, state.scanIndex + 5).includes(symbol)) {
-          state.scanQueue.splice(state.scanIndex, 0, symbol);
-        }
       } catch (e) {}
     }));
 
-    rebuildTierLists();
-    if (state.activeView === 'radar') {
-      const now = performance.now();
-      if (!lastRadarBatchPaint || now - lastRadarBatchPaint >= 8000) {
-        renderCurrentTab();
-        updateHeaderHUD();
-        renderBenchmarkBar();
-        lastRadarBatchPaint = now;
-      }
+    const completed = state.scanIndex >= state.scanQueue.length;
+    // The first visible ranking is a complete pass, never a partial five-coin list.
+    if (completed) {
+      state.scanIndex = 0;
+      state.radarSnapshotReady = true;
+      saveRadarSnapshot();
     }
-
-    await new Promise(r => setTimeout(r, CONFIG.batchIntervalMs));
+    if (state.radarSnapshotReady) {
+      rebuildTierLists();
+      if (state.activeView === 'radar') {
+        const now=performance.now();
+        if (completed || !lastRadarBatchPaint || now-lastRadarBatchPaint >= 8000) {
+          renderCurrentTab(); updateHeaderHUD(); renderBenchmarkBar(); lastRadarBatchPaint=now;
+        }
+      }
+    } else if (state.activeView === 'radar') renderCurrentTab();
+    // Warm-up is rate-limited to at most 20 candle requests per second.
+    await new Promise(r=>setTimeout(r,state.radarSnapshotReady?CONFIG.batchIntervalMs:Math.max(0,500-(performance.now()-batchStarted))));
   }
 }
 
 function rebuildTierLists() {
-  const tierLimit = 10;
+  if (state.isQueueRunning && !state.radarSnapshotReady) return;
+  const tierLimits = { t1: 10, t2: 15, t3: 15 };
   const allAnalyzed = Array.from(state.analyzedCache.values())
     .filter(c => !benchmarkSymbols.has(c.symbol));
 
   const pickRanked = (pool, fitKey, formalTier, taken = new Set()) => {
+    const tierLimit = tierLimits[formalTier];
     const formal = pool
       .filter(c => c.tier === formalTier && !taken.has(c.symbol))
       .sort((a, b) => ((b[fitKey] || 0) - (a[fitKey] || 0)) || (num(b.oxScore) - num(a.oxScore)));
@@ -204,6 +228,7 @@ function rebuildTierLists() {
       if (result.length >= tierLimit) break;
       result.push({ ...c, displayTier: formalTier, rankStatus: formalTier === "t1" ? "CONFIRMED" : formalTier === "t2" ? "READY" : "EARLY" });
     }
+    if (formalTier === "t1") return result; // Never promote non-T1 candidates to fill slots.
     const used = new Set(result.map(x => x.symbol));
     const fallback = pool
       .filter(c => !used.has(c.symbol) && !taken.has(c.symbol))
@@ -259,7 +284,7 @@ function renderCurrentTab() {
     const top = state.tickers
       .filter(t => Number.isFinite(num(t.usdtVolume)) && num(t.usdtVolume) > 0)
       .sort((a, b) => num(b.usdtVolume) - num(a.usdtVolume))
-      .slice(0, 15);
+      .slice(0, 50);
     document.getElementById("pool-count").textContent = `24H 成交額前 ${top.length} 檔`;
     if (!top.length) {
       container.innerHTML = '<div class="turnover-empty">正在取得合約成交額…</div>';
@@ -312,6 +337,11 @@ function renderCurrentTab() {
     return;
   }
 
+  if (!state.radarSnapshotReady && state.isQueueRunning) {
+    document.getElementById("pool-count").textContent = '整理完整榜單中';
+    container.innerHTML = '<div class="turnover-empty" role="status">正在整理全市場榜單… '+state.scanIndex+'/'+state.scanQueue.length+'</div>';
+    return;
+  }
   const isTierTab = ["t1","t2","t3"].includes(tab);
   // The all entry opens the combined radar. Reuse the already
   // ranked directional results; never rebuild, sort or mutate them here.

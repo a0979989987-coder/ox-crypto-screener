@@ -108,7 +108,7 @@
   function draw() {
     raf=0;
     if (!state.chart || !state.candleSeries) return;
-    width=Math.max(0,chartEl.clientWidth-(state.chart.priceScale('right').width?.()||0));
+    width=Math.max(0,chartEl.clientWidth-(state.chartPriceAxisWidth||state.chart.priceScale('right').width?.()||0));
     height=Math.max(0,chartEl.clientHeight-(state.chart.timeScale().height?.()||0));
     layer.style.width=`${width}px`; layer.style.height=`${height}px`;
     const dpr=window.devicePixelRatio||1, pxW=Math.round(width*dpr), pxH=Math.round(height*dpr);

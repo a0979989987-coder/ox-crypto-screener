@@ -31,7 +31,7 @@
     });
   }
   document.addEventListener('click',event => {
-    const tier = event.target.closest('[data-home-tier]');
+    const tier = event.target.closest('[data-home-tier]:not([data-home-symbol])');
     if (tier) {
       window.switchAppView?.('radar');
       document.querySelector(`#view-radar .tab-btn[data-tab="${tier.dataset.homeTier}"]`)?.click();

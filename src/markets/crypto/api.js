@@ -102,7 +102,7 @@ const BitgetAPI = {
     const endpoint = endTime ? "history-candles" : "candles";
     let url = `${CONFIG.apiBase}/${endpoint}?symbol=${encodeURIComponent(symbol)}&productType=${CONFIG.productType}&granularity=${granularity}&limit=${Math.min(200, limit)}`;
     if (endTime) url += `&endTime=${endTime}`;
-    const res = await fetch(url, { cache: "no-store" });
+    const res = await fetch(url, { cache: "no-store", ...(typeof AbortSignal !== "undefined" && AbortSignal.timeout ? { signal: AbortSignal.timeout(10000) } : {}) });
     const json = await res.json();
     if (json.code !== "00000" || !Array.isArray(json.data)) return [];
     

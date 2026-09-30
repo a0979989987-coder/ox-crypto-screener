@@ -77,7 +77,8 @@
   <link rel="stylesheet" href="src/styles/themes/editorial-radar.css?v=20260927-radar-rows9">
   <link rel="stylesheet" href="src/styles/components/radar-detail-neon.css?v=20260927-detail1">
   <link rel="stylesheet" href="src/styles/components/chart-toolbar.css?v=20260928-exchange1">
-  <link rel="stylesheet" href="src/styles/components/chart-drawings.css?v=20260929-chart7">
+  <link rel="stylesheet" href="src/styles/components/chart-drawings.css?v=20260930-viewport1">
+  <link rel="stylesheet" href="src/styles/components/home-preview.css?v=20260930-home1">
   <link rel="stylesheet" href="src/styles/components/radar-turnover.css?v=20260927-turnover1">
   <link rel="stylesheet" href="src/styles/components/radar-combined.css?v=20260927-radar-hold7">
   <link rel="stylesheet" href="src/styles/components/live-visibility.css?v=20260927-oxlive-setting1">
@@ -307,9 +308,9 @@
 
         </article>
 
-        <section class="ox-home-t1" aria-label="T1 上漲與下跌候選">
-          <div class="ox-home-t1-side"><div class="ox-home-t1-head"><span>T1 · 上漲</span></div><div id="home-t1-long-list" class="ox-home-t1-list"><span class="ox-home-t1-empty">等待上漲 T1 候選</span></div></div>
-          <div class="ox-home-t1-side"><div class="ox-home-t1-head"><span>T1 · 下跌</span></div><div id="home-t1-short-list" class="ox-home-t1-list"><span class="ox-home-t1-empty">等待下跌 T1 候選</span></div></div>
+        <section class="ox-home-t1" aria-label="T1 T2 T3 上漲與下跌候選">
+          <div class="ox-home-t1-side"><div class="ox-home-t1-head"><span>上漲 · T1 / T2 / T3</span></div><div id="home-t1-long-list" class="ox-home-t1-list"><span class="ox-home-t1-empty">等待上漲候選</span></div></div>
+          <div class="ox-home-t1-side"><div class="ox-home-t1-head"><span>下跌 · T1 / T2 / T3</span></div><div id="home-t1-short-list" class="ox-home-t1-list"><span class="ox-home-t1-empty">等待下跌候選</span></div></div>
         </section>
 
         <aside class="ox-home-analysis" aria-label="市場強度與 OX 分析">
@@ -320,24 +321,10 @@
           </div>
           <div class="ox-strength-context"><span id="home-btc-strength-note">結構 / 資金 / 動能 / Trigger</span><span id="home-alt-note">等待全市場輪巡</span></div>
           <div class="ox-score-panel"><span class="ox-eyebrow">OX SCORE <span class="ox-score-index">市場環境評分</span></span><div class="ox-score-reading"><strong id="home-market-score">—</strong><span>/ 100</span></div><span id="home-market-state">資料整理中</span><div class="ox-meter"><i id="home-market-meter"></i></div></div>
-          <div class="ox-analysis-benchmark" data-home-symbol="ETHUSDT" role="button" tabindex="0" aria-label="查看 ETH 雷達"><span>ETH <small>主流基準</small></span><strong id="home-eth-price">—</strong><span id="home-eth-change">—</span><span class="ox-analysis-eth-note" id="home-eth-note">等待行情資料</span><span class="ox-meter"><i id="home-eth-meter"></i></span></div>
+
         </aside>
       </section>
 
-      <section class="ox-home-events" aria-label="重要市場動態">
-        <div class="ox-home-events-head"><div><span class="ox-eyebrow">MARKET EVENTS</span><h2>重要市場動態</h2></div><button type="button" data-view-target="data">查看數據 ↗</button></div>
-        <div id="home-events" class="ox-event-list"><div class="v33-list-empty">全市場輪巡進行中</div></div>
-      </section>
-
-      <details class="ox-home-more" open>
-        <summary>市場深度與觀察 <span>收合 / 展開 ↕</span></summary>
-        <div class="ox-home-more-content">
-          <section><h2>市場摘要</h2><div class="ox-summary-inline"><div><small>綜合市場分數</small><strong id="home-side-market-score">—</strong><span id="home-side-market-state">資料整理中</span></div><div><small>BTC 強度</small><strong id="home-btc-hero-strength">—</strong></div><div><small>T1 / T2 / 活躍</small><strong><span id="home-side-t1">0</span> / <span id="home-side-t2">0</span> / <span id="home-side-surge">0</span></strong></div></div></section>
-          <section><h2>雷達摘要</h2><div class="ox-summary-inline"><div><small>T1 即戰力</small><strong id="home-t1-count">0</strong><span id="home-radar-t1">0</span></div><div><small>T2 蹲點</small><strong id="home-t2-count">0</strong><span id="home-radar-t2">0</span></div><div><small>T3 早期</small><strong id="home-radar-t3">0</strong></div><div><small>異常活躍</small><strong id="home-surge-count">0</strong><span id="home-radar-surge">0</span></div></div></section>
-          <section class="ox-home-detail-grid"><div><h2>OX 重點觀察</h2><div id="home-watchlist"><div class="v33-list-empty">等待候選標的</div></div></div><div><h2>今日強勢</h2><div id="home-gainers"><div class="v33-list-empty">等待 Ticker</div></div></div><div><h2>今日弱勢</h2><div id="home-losers"><div class="v33-list-empty">等待 Ticker</div></div></div></section>
-          <section class="ox-home-shortcuts"><h2>快捷入口</h2><div class="v33-actions"><button class="v33-action" type="button" data-view-target="radar"><b>雷達 ↗</b><small>候選與圖表</small></button><button class="v33-action" type="button" data-view-target="strength"><b>指標 ↗</b><small>市場 / 技術 / 籌碼</small></button><button class="v33-action" type="button" data-view-target="settings"><b>提醒 ↗</b><small>通知與主題</small></button><button class="v33-action" type="button" data-view-target="media"><b>媒體 ↗</b><small>YouTube / 社群</small></button></div></section>
-        </div>
-      </details>
     </div>
   </section>
 
@@ -427,7 +414,7 @@
             <span class="radar-combined-chevron" data-radar-tier-cycle aria-hidden="true">▼</span>
           </span>
         </button>
-        <button class="tab-btn" data-tab="surge" aria-label="合約 24H 成交額前 15 名" title="合約 24H 成交額前 15 名"><svg class="radar-tab-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M13 3c1 5-4 6-3 10 2-1 3-3 3-3 4 3 5 5 4 8-1 3-7 4-10 0-3-5 2-8 6-15Z"/></svg> <span class="tab-badge" id="badge-surge">0</span></button>
+        <button class="tab-btn" data-tab="surge" aria-label="合約 24H 成交額前 50 名" title="合約 24H 成交額前 50 名"><svg class="radar-tab-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M13 3c1 5-4 6-3 10 2-1 3-3 3-3 4 3 5 5 4 8-1 3-7 4-10 0-3-5 2-8 6-15Z"/></svg> <span class="tab-badge" id="badge-surge">0</span></button>
         <button class="tab-btn" data-tab="watch" aria-label="自選清單" title="自選清單"><span class="watch-tab-desktop">自選</span><span class="watch-tab-mobile"><svg class="radar-tab-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9Z"/></svg></span> <span class="tab-badge" id="badge-watch">0</span></button>
         <button class="direction-toggle-btn is-long chart-tool-icon" id="direction-toggle" type="button" aria-label="目前多頭，點擊切換空頭" aria-pressed="false" title="目前：多頭模式；點擊切換空頭"><span class="direction-toggle-icon" aria-hidden="true">↑</span></button>
       </div>
@@ -786,11 +773,11 @@
 <script src="src/components/alerts/level-alerts.js?v=20260927-turnover1"></script>
 <script src="src/components/strength/market-strength.js"></script>
 <script src="src/app/token-logos.js"></script>
-<script src="src/app/view-home-theme.js?v=20260927-radar-controls1"></script>
+<script src="src/app/view-home-theme.js?v=20260930-home30"></script>
 <script src="src/markets/crypto/api.js?v=20260926-native-chart5"></script>
 <script src="src/markets/crypto/engine.js"></script>
-<script src="src/markets/crypto/scanner.js?v=20260927-radar-controls1"></script>
-<script src="src/components/chart/workspace.js?v=20260929-axis5"></script>
+<script src="src/markets/crypto/scanner.js?v=20260930-scan1"></script>
+<script src="src/components/chart/workspace.js?v=20260930-viewport1"></script>
 <script src="src/markets/crypto/presentation.js?v=20260927-turnover1"></script>
 <script src="src/components/account/store.js?v=20260927-menu1"></script>
 <script src="src/components/control-panel/feature-pack.js?v=20260927-menu2"></script>
@@ -837,7 +824,8 @@
 
 <!-- CSS moved: ox-v383-fullscreen-lightglass-fix -->
 <script src="src/components/chart/focus-viewport.js?v=20260927-radar-controls1"></script>
-<script src="src/components/chart/drawings.js?v=20260929-chart7"></script>
+<script src="src/components/chart/drawings.js?v=20260930-viewport1"></script>
+<script src="src/components/chart/home-preview.js?v=20260930-home1"></script>
 
 
 <!-- OX v3.8.4 — OX CONTROL 功能搜尋 + 真實交易所 Data Provider 切換 -->
