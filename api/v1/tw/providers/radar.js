@@ -3886,11 +3886,11 @@ export async function getOfficialTWRadar(
 
   let surveillance = null;
   if (surveillanceRequest) {
-    const [feeds, datedAttention] = await Promise.all([
-      surveillanceRequest,
-      loadTWSEAttentionForDate(source.dataDate)
-    ]);
-    surveillance = datedAttention.ok ? { ...feeds, twseAttention: datedAttention } : feeds;
+    const feeds = await surveillanceRequest;
+    // The range report already contains the quote session's complete daily
+    // list. The single-day request is a fallback when the range is unavailable.
+    const datedAttention = feeds.twseAttentionHistory?.ok ? null : await loadTWSEAttentionForDate(source.dataDate);
+    surveillance = datedAttention?.ok ? { ...feeds, twseAttention: datedAttention } : feeds;
   }
 
 

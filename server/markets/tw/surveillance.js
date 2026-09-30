@@ -9,6 +9,8 @@ const SOURCES = {
   tpexRisk: `${TPEX}/tpex_trading_warning_note`,
   twseAttention: `${TWSE}/announcement/notice`,
   tpexAttention: `${TPEX}/tpex_trading_warning_information`,
+  twseAttentionHistory: 'https://www.twse.com.tw/announcement/notice',
+  tpexAttentionHistory: 'https://www.tpex.org.tw/www/zh-tw/bulletin/attention',
   calendar: `${TWSE}/holidaySchedule/holidaySchedule`,
   twseMargin: `${TWSE}/exchangeReport/MI_MARGN`,
   tpexMargin: `${TPEX}/tpex_mainboard_margin_balance`,
@@ -26,7 +28,7 @@ const stockCode = value => /^\d{4}$/.test(clean(value)) ? clean(value) : '';
 
 export function officialDate(value) {
   const s = clean(value);
-  const m = s.match(/^(\d{3,4})[年/\-](\d{1,2})[月/\-](\d{1,2})日?$/) || s.match(/^(\d{3,4})(\d{2})(\d{2})$/);
+  const m = s.match(/^(\d{3,4})[年/.\-](\d{1,2})[月/.\-](\d{1,2})日?$/) || s.match(/^(\d{3,4})(\d{2})(\d{2})$/);
   if (!m) return '';
   const year = Number(m[1]) + (m[1].length === 3 ? 1911 : 0);
   const iso = `${year}-${m[2].padStart(2, '0')}-${m[3].padStart(2, '0')}`;
@@ -66,6 +68,17 @@ function period(value) {
   const dates = clean(value).split(/[~～至]/).map(officialDate);
   return dates.length === 2 && dates.every(Boolean) && dates[0] <= dates[1] ? dates : ['', ''];
 }
+function attentionCutoff(date, calendar) {
+  if (!date) return '';
+  if (!calendar) return daysAgo(date, 20);
+  let sessions = 0;
+  for (let day = date, guard = 0; guard < 32; day = daysAgo(day, 1), guard++) {
+    const open = calendar.isOpen(day);
+    if (open === null) return daysAgo(date, 20);
+    if (open && ++sessions === 10) return day;
+  }
+  return daysAgo(date, 20);
+}
 const chineseNumbers = { 一:1, 二:2, 三:3, 四:4, 五:5, 六:6, 七:7, 八:8, 九:9, 十:10, 十一:11, 十二:12, 二十:20, 三十:30, 四十五:45, 六十:60 };
 function count(value) { return /^\d+$/.test(value) ? Number(value) : chineseNumbers[value] ?? null; }
 export function attentionProgress(value) {
@@ -103,9 +116,39 @@ async function load(name) {
   pending.set(name, request);
   return request;
 }
+const taipeiDate = now => new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Taipei', year: 'numeric', month: '2-digit', day: '2-digit' }).format(now);
+const daysAgo = (date, count) => new Date(Date.parse(`${date}T00:00:00Z`) - count * 86400000).toISOString().slice(0, 10);
+async function loadAttentionHistory(name, start, end) {
+  const key = `${name}:${start}:${end}`;
+  const hit = cache.get(key);
+  if (hit && hit.expires > Date.now()) return { ok: true, rows: hit.rows };
+  try {
+    let url;
+    if (name === 'twseAttentionHistory') {
+      url = `${SOURCES[name]}?response=json&startDate=${start.replaceAll('-', '')}&endDate=${end.replaceAll('-', '')}`;
+    } else {
+      const params = new URLSearchParams({ startDate: start.replaceAll('-', '/'), endDate: end.replaceAll('-', '/'), type: 'all', order: 'date', response: 'json' });
+      url = `${SOURCES[name]}?${params}`;
+    }
+    const response = await fetch(url, { signal: AbortSignal.timeout(20000), headers: { Accept: 'application/json', 'User-Agent': 'Mozilla/5.0 OX-Market-Command-Center' } });
+    if (!response.ok) throw new Error(`${name}: HTTP ${response.status}`);
+    const payload = await response.json();
+    if (String(payload?.stat).toLowerCase() !== 'ok') throw new Error(`${name}: invalid official report`);
+    const report = name === 'twseAttentionHistory' ? payload : payload.tables?.[0];
+    if (!Array.isArray(report?.fields) || !Array.isArray(report?.data)) throw new Error(`${name}: missing official rows`);
+    const rows = report.data.map(values => Object.fromEntries(report.fields.map((field, i) => [clean(field), values[i]])));
+    cache.set(key, { rows, expires: Date.now() + 300000 });
+    return { ok: true, rows };
+  } catch { return { ok: false, rows: [] }; }
+}
 export async function loadTWTradingCalendar() { return tradingCalendar(await load('calendar')); }
-export async function loadTWSurveillance() {
+export async function loadTWSurveillance({ now = new Date() } = {}) {
+  // Fetch the whole official period in parallel with the other feeds. The
+  // quote session is selected later, so pre-market loads still see yesterday.
+  const end = taipeiDate(now);
+  const start = daysAgo(end, 30);
   const entries = await Promise.all(Object.keys(SOURCES).map(async name => {
+    if (name.endsWith('AttentionHistory')) return [name, await loadAttentionHistory(name, start, end)];
     try { return [name, { rows: await load(name), ok: true }]; }
     catch { return [name, { rows: [], ok: false }]; }
   }));
@@ -134,8 +177,9 @@ export async function loadTWSEAttentionForDate(date) {
 }
 
 export function buildTWSurveillance(feeds, quotes = [], { now = new Date(), dataDate = '' } = {}) {
-  const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Taipei', year: 'numeric', month: '2-digit', day: '2-digit' }).format(now);
+  const today = taipeiDate(now);
   const calendar = tradingCalendar(feeds.calendar?.ok ? feeds.calendar.rows : null);
+  const recentAttentionFrom = attentionCutoff(dataDate, calendar);
   const quoteMap = new Map(quotes.map(row => [row.symbol, row]));
   const byCode = (name, key) => new Map((feeds[name]?.rows || []).map(row => [clean(row[key]), row]));
   const margins = { TWSE: byCode('twseMargin', '股票代號'), TPEX: byCode('tpexMargin', 'SecuritiesCompanyCode') };
@@ -241,13 +285,38 @@ export function buildTWSurveillance(feeds, quotes = [], { now = new Date(), data
       modes.risk.push(row);
     }
   }
+  // The current-session lists alone omit stocks announced on earlier trading
+  // days. Keep each stock's latest dated official notice within ten sessions.
+  for (const [source, market] of [['twseAttentionHistory', 'TWSE'], ['tpexAttentionHistory', 'TPEX']]) {
+    const latest = new Map();
+    for (const item of feeds[source]?.rows || []) {
+      const symbol = stockCode(item['證券代號']);
+      if (!symbol || riskSymbols.has(symbol) || active.has(symbol)) continue;
+      const noticeDate = officialDate(item['日期'] || item['公告日期']);
+      if (!noticeDate || noticeDate < recentAttentionFrom || noticeDate > dataDate) continue;
+      const previous = latest.get(symbol);
+      if (previous && previous.disposition.noticeDate >= noticeDate) continue;
+      latest.set(symbol, rowFor(symbol, clean(item['證券名稱']), market, {
+        status: 'risk', riskLabel: `近 10 交易日 · ${noticeDate.slice(5).replace('-', '/')} 注意`,
+        riskLevel: '官方注意紀錄（非當日累計預警）',
+        riskBasis: clean(item['注意交易資訊']), noticeDate,
+        riskProgress: null,
+        riskSourceUrl: market === 'TWSE' ? 'https://www.twse.com.tw/zh/announcement/notice.html'
+          : 'https://www.tpex.org.tw/zh-tw/announce/market/attention.html'
+      }));
+    }
+    for (const row of latest.values()) {
+      riskSymbols.add(row.symbol);
+      modes.risk.push(row);
+    }
+  }
   modes.disposal = [...active.values()].sort((a,b) => a.disposition.endDate.localeCompare(b.disposition.endDate));
   modes.release = modes.disposal.filter(row => row.disposition.releaseDays !== null && row.disposition.releaseDays <= 3)
     .map(row => ({ ...row, disposition: { ...row.disposition, status: 'release' } }));
   const status = names => names.every(name => feeds[name]?.ok) ? 'ready' : names.some(name => feeds[name]?.ok) ? 'partial' : 'error';
   return { modes, modesMeta: {
     checkedAt: now.toISOString(), asOf: dataDate, calendarReady: !!calendar,
-    risk: { status: status(['twseRisk', 'tpexRisk', 'twseDisposal', 'tpexDisposal', 'twseAttention', 'tpexAttention']) },
+    risk: { status: status(['twseRisk', 'tpexRisk', 'twseDisposal', 'tpexDisposal', 'twseAttention', 'tpexAttention', 'twseAttentionHistory', 'tpexAttentionHistory']), recentAttentionFrom },
     disposal: { status: status(['twseDisposal', 'tpexDisposal']) },
     release: { status: calendar ? status(['twseDisposal', 'tpexDisposal']) : 'error' },
     sources: Object.fromEntries(Object.entries(feeds).map(([key,value]) => [key, { ok: value.ok, url: SOURCES[key] }]))

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { officialDate, tradingCalendar, tradingDaysBetween, attentionProgress, batchMinutes, buildTWSurveillance, loadTWSEAttentionForDate } from '../server/markets/tw/surveillance.js';
+import { officialDate, tradingCalendar, tradingDaysBetween, attentionProgress, batchMinutes, buildTWSurveillance, loadTWSEAttentionForDate, loadTWSurveillance } from '../server/markets/tw/surveillance.js';
 
 const ok = rows => ({ ok: true, rows });
 const calendar = [
@@ -24,8 +24,40 @@ test('official dates parse ROC and Gregorian without accepting invalid dates', (
   assert.equal(officialDate('1150924'), '2026-09-24');
   assert.equal(officialDate('20260924'), '2026-09-24');
   assert.equal(officialDate('115年9月24日'), '2026-09-24');
+  assert.equal(officialDate('115.09.24'), '2026-09-24');
   assert.equal(officialDate('115/13/01'), '');
   assert.equal(officialDate('115/02/30'), '');
+});
+test('recent official notices include every distinct listed and OTC stock, with latest date and no invented threshold', () => {
+  const f = feeds();
+  f.twseAttention = ok([]); f.tpexAttention = ok([]);
+  f.twseAttentionHistory = ok(Array.from({length: 70}, (_, i) => ({ '證券代號': String(8000+i), '證券名稱': `上市${i}`, '日期': i === 0 ? '115.09.18' : '115.09.24', '注意交易資訊': '成交異常' })));
+  f.tpexAttentionHistory = ok(Array.from({length: 70}, (_, i) => ({ '證券代號': String(9000+i), '證券名稱': `上櫃${i}`, '公告日期': '115/09/24', '注意交易資訊': '週轉率異常' })));
+  f.tpexAttentionHistory.rows.push({ '證券代號':'9000', '證券名稱':'上櫃0', '公告日期':'115/09/23' });
+  f.tpexAttentionHistory.rows.push({ '證券代號':'22211', '證券名稱':'可轉債', '公告日期':'115/09/24' });
+  f.twseAttentionHistory.rows.push({ '證券代號':'2305', '證券名稱':'處置中', '日期':'115.09.24' });
+  const result = buildTWSurveillance(f, [], options);
+  assert.equal(result.modes.risk.length, 142); // 140 notices + 1 near threshold + 1 scheduled disposition
+  assert.equal(result.modes.disposal.length, 2);
+  assert.equal(result.modes.release.length, 2);
+  assert.equal(result.modes.risk.find(row => row.symbol === '9000').disposition.noticeDate, '2026-09-24');
+  assert.equal(result.modes.risk.find(row => row.symbol === '9000').disposition.riskProgress, null);
+  assert.equal(result.modes.risk.some(row => row.symbol === '2305'), false);
+  assert.equal(result.modesMeta.risk.status, 'ready');
+});
+test('historical attention fetch requests complete official reports in parallel', async t => {
+  const urls = [];
+  t.mock.method(globalThis, 'fetch', async url => {
+    urls.push(String(url));
+    if (String(url).includes('bulletin/attention')) return { ok:true, json:async()=>({ stat:'ok', tables:[{ fields:['證券代號','證券名稱','公告日期'], data:[['2221','大甲','115/09/29']] }] }) };
+    if (String(url).includes('announcement/notice?')) return { ok:true, json:async()=>({ stat:'OK', fields:['證券代號','證券名稱','日期'], data:[['1528','恩德','115.09.29']] }) };
+    return { ok:true, json:async()=>[] };
+  });
+  const loaded = await loadTWSurveillance({now:new Date('2026-09-30T01:30:00Z')});
+  assert.deepEqual(loaded.twseAttentionHistory.rows.map(row=>row['證券代號']),['1528']);
+  assert.deepEqual(loaded.tpexAttentionHistory.rows.map(row=>row['證券代號']),['2221']);
+  assert.ok(urls.some(url=>url.includes('announcement/notice?') && url.includes('startDate=20260831') && url.includes('endDate=20260930')));
+  assert.ok(urls.some(url=>url.includes('bulletin/attention?') && url.includes('type=all') && url.includes('response=json')));
 });
 test('release countdown excludes weekends and official holidays and fails closed across unknown years', () => {
   const c = tradingCalendar(calendar);
