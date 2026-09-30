@@ -1,7 +1,7 @@
-import { USAdapter } from "./provider.js?v=20260930-us-data4";
-import { INTERVALS, countdown, sessionAt, nyParts } from "./calendar.js?v=20260930-us-data4";
-import { mergeCandles, movingAverage, vwap } from "./model.js?v=20260930-us-data4";
-import { icon, positionTimeframe, openDialog, closeDialog } from "./ui.js?v=20260930-us-data4";
+import { USAdapter } from "./provider.js?v=20260930-us-free1";
+import { INTERVALS, countdown, sessionAt, nyParts } from "./calendar.js?v=20260930-us-free1";
+import { mergeCandles, movingAverage, vwap } from "./model.js?v=20260930-us-free1";
+import { icon, positionTimeframe, openDialog, closeDialog } from "./ui.js?v=20260930-us-free1";
 const UP = "#00b8d4",
   DOWN = "#ff3078";
 const esc = (s) =>

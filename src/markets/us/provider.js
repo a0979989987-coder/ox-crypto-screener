@@ -1,6 +1,7 @@
-import { usProvider, getUSApiBase } from "./api.js?v=20260930-us-data4";
-import { normalizeCandles, normalizeQuote } from "./model.js?v=20260930-us-data4";
-import { aggregate4H, aggregateMonthly } from "./aggregate.js?v=20260930-us-data4";
+import { usProvider, getUSApiBase } from "./api.js?v=20260930-us-free1";
+import { normalizeCandles, normalizeQuote } from "./model.js?v=20260930-us-free1";
+import { aggregate4H, aggregateMonthly } from "./aggregate.js?v=20260930-us-free1";
+import { FREE_US_DISPLAY } from "./widget-config.js?v=20260930-us-free1";
 const cache = new Map();
 // Old endpoints are used only to validate the existing integration locally.
 // A public preview must never bypass the new redistribution-rights gate.
@@ -53,15 +54,7 @@ export const USAdapter = {
       return await endpoint("capabilities", {}, options);
     } catch (e) {
       if (options?.signal?.aborted) throw e;
-      return {
-        source: "twelve-data",
-        feed: "未確認 feed",
-        delaySeconds: null,
-        extendedHours: false,
-        pollMs: 60000,
-        legacy: true,
-        externalDisplayConfirmed: false,
-      };
+      return { ...FREE_US_DISPLAY, capabilitiesOffline: true };
     }
   },
   async quote(symbol, options = {}) {

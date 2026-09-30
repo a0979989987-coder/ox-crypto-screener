@@ -10,10 +10,11 @@ concurrency:
   cancel-in-progress: false
 jobs:
   collect:
-    if: vars.US_EXTERNAL_DISPLAY_CONFIRMED == 'true' && vars.US_API_CREDITS_PER_MINUTE != '' && vars.US_COLLECT_CREDIT_BUDGET != ''
+    if: vars.US_DATA_PROVIDER == 'twelve-data' && vars.US_EXTERNAL_DISPLAY_CONFIRMED == 'true' && vars.US_API_CREDITS_PER_MINUTE != '' && vars.US_COLLECT_CREDIT_BUDGET != ''
     runs-on: ubuntu-latest
     timeout-minutes: 110
     env:
+      US_DATA_PROVIDER: twelve-data
       TWELVE_DATA_API_KEY: ${{ secrets.TWELVE_DATA_API_KEY }}
       US_EXTERNAL_DISPLAY_CONFIRMED: ${{ vars.US_EXTERNAL_DISPLAY_CONFIRMED }}
       US_API_CREDITS_PER_MINUTE: ${{ vars.US_API_CREDITS_PER_MINUTE }}

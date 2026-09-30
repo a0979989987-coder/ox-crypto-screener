@@ -1,4 +1,4 @@
-import { handleUS2 } from "../../../server/markets/us/service.js";
+import { handleUS2, capabilities } from "../../../server/markets/us/service.js";
 const TWELVE_DATA_BASE_URL = "https://api.twelvedata.com";
 
 const DEFAULT_TIMEOUT_MS = 10000;
@@ -518,6 +518,11 @@ async function handleMarketPulse(req, res) {
 /* -------------------------------------------------------------------------- */
 
 async function handleHealth(req, res) {
+  if (capabilities().chartMode === "widget") return ok(res, {
+    service: "ox-us-market-data", status: "widget-ready", provider: "tradingview-widget",
+    apiKeyRequired: false, apiKeyConfigured: false, rawDataAvailable: false,
+    timestamp: new Date().toISOString(),
+  });
   const configured = Boolean(getApiKey());
 
   return ok(res, {
@@ -594,8 +599,12 @@ export default async function handler(req, res) {
         res,
         endpoint === "directory" ? 86400 : endpoint === "snapshot" ? 300 : 60,
       );
-      return ok(res, v2, { provider: "twelve-data", contract: 2 });
+      return ok(res, v2, { provider: capabilities().source, contract: 2 });
     }
+    // Old price routes must not continue consuming Twelve Data after switching.
+    if (capabilities().chartMode === "widget" &&
+        ["quote", "quotes", "candles", "market-pulse"].includes(endpoint))
+      return fail(res, 503, "US_RAW_DATA_UNAVAILABLE", "免費行情請使用頁面內圖表；此模式不提供原始行情 API。");
     switch (endpoint) {
       case "health":
         return await handleHealth(req, res);
@@ -633,6 +642,8 @@ export default async function handler(req, res) {
         );
     }
   } catch (error) {
+    if (error?.code === "RAW_DATA_UNAVAILABLE")
+      return fail(res, 503, "US_RAW_DATA_UNAVAILABLE", error.message);
     if (error?.message === "SYMBOL_REQUIRED") {
       return fail(res, 400, "SYMBOL_REQUIRED", "A symbol is required.");
     }

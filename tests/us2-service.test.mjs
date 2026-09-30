@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { cachedRequest, resetCache } from "../server/markets/us/cache.js";
 process.env.NODE_ENV = "test";
+process.env.US_DATA_PROVIDER = "twelve-data";
 import { handleUS2, capabilities } from "../server/markets/us/service.js";
 test("public adapter refuses redistribution when authorization is unconfirmed", async () => {
   const previous = process.env.NODE_ENV;

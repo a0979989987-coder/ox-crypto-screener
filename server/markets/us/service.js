@@ -7,6 +7,7 @@ import {
   normalizeCandles,
 } from "../../../src/markets/us/model.js";
 import { INTERVALS, sessionAt } from "../../../src/markets/us/calendar.js";
+import { FREE_US_DISPLAY } from "../../../src/markets/us/widget-config.js";
 const intervalMap = {
   "1m": "1min",
   "5m": "5min",
@@ -19,6 +20,8 @@ const intervalMap = {
   "1M": "1month",
 };
 export function capabilities() {
+  if (process.env.US_DATA_PROVIDER !== "twelve-data")
+    return { ...FREE_US_DISPLAY, intervals: INTERVALS, calendarYears: [2025, 2028] };
   return {
     source: "twelve-data",
     feed: process.env.US_FEED_NAME || "未確認 feed",
@@ -60,6 +63,9 @@ async function readDirectory() {
 export async function snapshot() {
   const empty = { schemaVersion: 2, asOf: null, quotes: [], analyses: [],
     counts: { searchable: 0, quoted: 0, scanned: 0 } };
+  if (capabilities().chartMode === "widget")
+    return { ...empty, source: "tradingview-widget", errorCode: "RAW_DATA_UNAVAILABLE",
+      error: "免費圖表可看行情；OX 掃描需要另接可供分析的原始 K 線資料。" };
   if (!capabilities().externalDisplayConfirmed)
     return { ...empty, error: "行情展示授權未確認；公開掃描尚未開通。" };
   try {
@@ -78,6 +84,12 @@ export async function handleUS2(endpoint, query, upstream) {
   if (endpoint === "directory") return publicDirectory();
   if (endpoint === "snapshot") return snapshot();
   if (!["chart-v2", "quote-v2"].includes(endpoint)) return null;
+  if (capabilities().chartMode === "widget") {
+    const error = Error("TradingView 免費圖表不提供原始行情 API；請使用頁面內圖表。");
+    error.code = "RAW_DATA_UNAVAILABLE";
+    error.status = 503;
+    throw error;
+  }
   const symbol = String(query.symbol || "").toUpperCase();
   if (!/^[A-Z0-9][A-Z0-9.-]{0,19}$/.test(symbol)) {
     const e = Error("無效美股代號。");
