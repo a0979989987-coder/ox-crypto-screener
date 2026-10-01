@@ -12,18 +12,18 @@ import {
   toolNames,
   patterns,
   sectorETF,
-} from "./view-utils.js?v=20260930-us-compact2";
-import { toolsViews } from "./tools.js?v=20260930-us-compact2";
-import { newsViews } from "./news.js?v=20260930-us-compact2";
-import { USAdapter, fetchJSON } from "./provider.js?v=20260930-us-compact2";
-import { USChart } from "./chart.js?v=20260930-us-compact2";
-import { USWidgetChart } from "./widget-chart.js?v=20260930-us-compact2";
-import { FREE_US_DISPLAY } from "./widget-config.js?v=20260930-us-compact2";
-import { searchDirectory, quoteStatus } from "./model.js?v=20260930-us-compact2";
-import { sessionAt, nyParts } from "./calendar.js?v=20260930-us-compact2";
+} from "./view-utils.js?v=20261001-loading1";
+import { toolsViews } from "./tools.js?v=20261001-loading1";
+import { newsViews } from "./news.js?v=20261001-loading1";
+import { USAdapter, fetchJSON } from "./provider.js?v=20261001-loading1";
+import { USChart } from "./chart.js?v=20261001-loading1";
+import { USWidgetChart } from "./widget-chart.js?v=20261001-loading1";
+import { FREE_US_DISPLAY } from "./widget-config.js?v=20261001-loading1";
+import { searchDirectory, quoteStatus } from "./model.js?v=20261001-loading1";
+import { sessionAt, nyParts } from "./calendar.js?v=20261001-loading1";
 
-import { tierResults } from "./analysis.js?v=20260930-us-compact2";
-import { icon, openDialog, closeDialog } from "./ui.js?v=20260930-us-compact2";
+import { tierResults } from "./analysis.js?v=20261001-loading1";
+import { icon, openDialog, closeDialog } from "./ui.js?v=20261001-loading1";
 export class USWorkspace {
   constructor() {
     const storedPrefs = read(prefsKey, {});
@@ -75,6 +75,7 @@ export class USWorkspace {
     this.controller = new AbortController();
     this.show(view || this.state.view);
     const signal = this.controller.signal;
+    const loading=window.OXLoading?.begin('us','美股資料載入中',{signal});
     const jobs = [
       USAdapter.directory({ signal }).then((d) => {
         if(signal.aborted)return;
@@ -119,6 +120,7 @@ export class USWorkspace {
         }),
     ];
     await Promise.allSettled(jobs);
+    loading?.finish();
     if (!signal.aborted && this.active) {
       this.updateLive();
       this.refreshTimer = setTimeout(() => this.refreshSnapshot(), 300000);
@@ -129,6 +131,7 @@ export class USWorkspace {
   }
   destroyTools() {
     ++this.workerId;
+    this.patternLoading?.finish();
     this.heatChart?.destroy();this.heatChart=null;this.toolsLife?.abort();this.toolsSurface=null;
     this.toolsRail?.destroy();this.toolsRail=null;
     this.patternCharts?.forEach(chart=>chart.destroy());this.patternCharts=[];
@@ -749,6 +752,7 @@ export class USWorkspace {
   }
   async refreshSnapshot() {
     if (!this.active) return;
+    const loading=window.OXLoading?.begin('us','美股資料更新中',{signal:this.controller.signal});
     try {
       const s = await USAdapter.snapshot({ signal: this.controller.signal });
       if (this.active) {
@@ -758,7 +762,7 @@ export class USWorkspace {
         this.updateSections();
         this.updateLive();
       }
-    } catch {}
+    } catch {} finally { loading?.finish(); }
     if (this.active)
       this.refreshTimer = setTimeout(() => this.refreshSnapshot(), 300000);
   }

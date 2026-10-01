@@ -1,7 +1,7 @@
-import { twProvider } from './api.js';
+import { twProvider } from './api.js?v=20261001-loading1';
 import { renderTWCandles } from './radar-card.js';
 import { escape, number, pct, money, direction, stockRows } from './research-ui.js';
-import { readWatchlist, toggleWatch } from './research-data.js';
+import { readWatchlist, toggleWatch } from './research-data.js?v=20261001-loading1';
 export function closeResearchDetails() { document.querySelectorAll('.twx-dialog').forEach(d => { d.close(); d.remove(); }); }
 function dialog(title) {
   closeResearchDetails();

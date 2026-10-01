@@ -1,7 +1,7 @@
-import { mountTWChartRadar } from './chart-radar.js';
+import { mountTWChartRadar } from './chart-radar.js?v=20261001-loading1';
 import { radarAvailability } from './recovery.js';
 import { TW_RADAR_MODES, normalizeTWStockCard, rowsForTWMode, renderTWStockCard } from "./radar-card.js";
-import { observeTWMiniCandles, resetTWMiniCandles, openTWStockDetail } from "./radar-candles.js";
+import { observeTWMiniCandles, resetTWMiniCandles, openTWStockDetail } from "./radar-candles.js?v=20261001-loading1";
 
 /*
  * OX v4.0 Modular
@@ -26,7 +26,7 @@ import { observeTWMiniCandles, resetTWMiniCandles, openTWStockDetail } from "./r
  * - call TPEX directly
  * - call broker APIs directly
  * - generate fake stock data
- * - modify Crypto / US / Forex
+ * - modify Crypto / US
  *
  *
  * Future normalized contract:

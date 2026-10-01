@@ -19,7 +19,7 @@ const sections = [
   ["src/markets/crypto/presentation.js", "function renderBenchmarkBar() {"],
   ["src/components/account/store.js", "const OX_GUEST_PREFS_KEY ="],
   ["src/components/control-panel/feature-pack.js", "const OXFeaturePack = (()=>{"],
-  ["src/services/liquidations.js", "const LiquidationService = (() => {"],
+  ["src/components/navigation/runtime-actions.js", "const LiquidationService = (() => {"],
   ["src/app/runtime-boot.js", "const keyLevelVisibilityToggle ="],
 ];
 

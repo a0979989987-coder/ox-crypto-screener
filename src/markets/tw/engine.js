@@ -1,6 +1,6 @@
 import {
   twProvider
-} from "./api.js";
+} from "./api.js?v=20261001-loading1";
 
 
 /*
@@ -25,7 +25,7 @@ import {
  * - does NOT call TPEX directly
  * - does NOT know the final provider
  * - does NOT render UI
- * - does NOT modify Crypto / US / Forex
+ * - does NOT modify Crypto / US
  *
  *
  * Stable frontend contract:

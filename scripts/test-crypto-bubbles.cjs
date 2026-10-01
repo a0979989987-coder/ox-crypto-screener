@@ -75,7 +75,7 @@ let browser;
  assert.ok(physics.moved);assert.ok(physics.bounds);assert.ok(physics.overlap<2,JSON.stringify(physics));
  await page.emulateMedia({reducedMotion:'reduce'});
  await page.evaluate(()=>{testField.setRows(testField.nodes.map((n,i)=>({...n,value:i===0?100000:1})),'cap');if(!testField.nodes.every(n=>n.r===n.target))throw Error('paused/reduced radii did not update');testField.destroy();if(testField.frame!==0)throw Error('rAF not cleared');});
- for(const market of ['tw','us','forex','crypto']){await page.evaluate(m=>{state.activeMarket=m;document.body.dataset.market=m;document.dispatchEvent(new CustomEvent('ox:marketchange'));},market);assert.equal(await page.locator('#ox-crypto-tools-inline').isVisible(),market==='crypto');}
+ for(const market of ['tw','us','crypto']){await page.evaluate(m=>{state.activeMarket=m;document.body.dataset.market=m;document.dispatchEvent(new CustomEvent('ox:marketchange'));},market);assert.equal(await page.locator('#ox-crypto-tools-inline').isVisible(),market==='crypto');}
  await tab('strength').click();assert.equal(await page.locator('#ox-crypto-tools-inline canvas').count(),0);await tab('bubbles').click();await page.locator('#ox-crypto-tools-inline canvas').waitFor();
  assert.deepEqual(errors,[]);console.log('PASS: radar arrow direction control, compact filter popup with keyboard/outside dismissal, independent default-visible scrolling coin list, no footer/accordion, five metrics/30–100 coins, detail/radar, 320–1440px, touch drag/pinch/reset, differentiated sizes/physics, reduced motion and market teardown.');
 })().catch(e=>{console.error(e);process.exitCode=1;}).finally(async()=>{await browser?.close();server.kill();});

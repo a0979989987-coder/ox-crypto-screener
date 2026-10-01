@@ -39,7 +39,7 @@ const runtimePaths = [
   "src/markets/crypto/presentation.js",
   "src/components/account/store.js",
   "src/components/control-panel/feature-pack.js",
-  "src/services/liquidations.js",
+  "src/components/navigation/runtime-actions.js",
   "src/app/runtime-boot.js",
 ];
 const stylePaths = [
@@ -81,7 +81,6 @@ const stripGateFixes = value => value
   .replace(/\n(?:[ \t]*\n)*[ \t]*\/\* STEP 4\.5 REGRESSION FIX START[\s\S]*?\/\* STEP 4\.5 REGRESSION FIX END \*\/\n?/g, "\n");
 const stripApprovedAuditFixes = value => stripGateFixes(value)
   .replace(/\nfunction escapeHtml\(value\) \{\n  return String\(value \?\? ""\)\.replace\(\/\[&<>"'\]\/g, character => \(\{\n    "&": "&amp;",\n    "<": "&lt;",\n    ">": "&gt;",\n    "\\\"": "&quot;",\n    "'": "&#39;"\n  \}\)\[character\]\);\n\}\n/g, "")
-  .replace(/  const message = String\(error\?\.message \|\| "請稍後再試"\);\n  document\.dispatchEvent\(new CustomEvent\("ox:forex:error", \{ detail: \{ error: message \} \}\)\);\n  ensureRoot\(\)\.innerHTML = `<article class="fx-panel fx-state fx-error"><b>FOREX DATA UNAVAILABLE<\/b><h2>外匯資料目前無法取得<\/h2><p>\$\{escapeHtml\(message\)\}<\/p><button type="button" data-fx-retry>重新載入<\/button><\/article>`;/, '  document.dispatchEvent(new CustomEvent("ox:forex:error", { detail: { error: String(error?.message || error) } }));\n  ensureRoot().innerHTML = `<article class="fx-panel fx-state fx-error"><b>FOREX DATA UNAVAILABLE</b><h2>外匯資料目前無法取得</h2><p>${String(error?.message || "請稍後再試")}</p><button type="button" data-fx-retry>重新載入</button></article>`;')
   .replace(/\n  const escapeHtml = value => String\(value \?\? ""\)\.replace\(\/\[&<>"'\]\/g, character => \(\{ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\\\"": "&quot;", "'": "&#39;" \}\)\[character\]\);/g, "")
   .replace(/\$\{result\.primaryError \? `暫不可用（\$\{escapeHtml\(result\.primaryError\)\}）` : "尚未接通"\}/g, '${result.primaryError ? `暫不可用（${result.primaryError}）` : "尚未接通"}');
 if (stripApprovedAuditFixes(reconstruct(runtimePaths)) !== priorRuntime) throw new Error("Classified runtime differs from the verified pre-classification bundle outside approved Step 4.5 and Step 7 fixes");

@@ -1,4 +1,4 @@
-import { twProvider } from "./api.js";
+import { twProvider } from "./api.js?v=20261001-loading1";
 
 let input = "";
 let status = "idle";

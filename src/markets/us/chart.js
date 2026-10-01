@@ -1,7 +1,7 @@
-import { USAdapter } from "./provider.js?v=20260930-us-compact2";
-import { INTERVALS, countdown, sessionAt, nyParts } from "./calendar.js?v=20260930-us-compact2";
-import { mergeCandles, movingAverage, vwap } from "./model.js?v=20260930-us-compact2";
-import { icon, positionTimeframe, openDialog, closeDialog } from "./ui.js?v=20260930-us-compact2";
+import { USAdapter } from "./provider.js?v=20261001-loading1";
+import { INTERVALS, countdown, sessionAt, nyParts } from "./calendar.js?v=20261001-loading1";
+import { mergeCandles, movingAverage, vwap } from "./model.js?v=20261001-loading1";
+import { icon, positionTimeframe, openDialog, closeDialog } from "./ui.js?v=20261001-loading1";
 const UP = "#00b8d4",
   DOWN = "#ff3078";
 const esc = (s) =>
@@ -357,7 +357,7 @@ export class USChart {
     this.loading = true;
     if (!this.bars.length) {
       this.message.hidden = false;
-      this.message.textContent = `載入 ${this.symbol} · ${this.interval}…`;
+      this.message.innerHTML = window.OXLoading?.markup(`${this.symbol} · ${this.interval} K 線載入中`,0,1) || `載入 ${this.symbol} · ${this.interval}…`;
     }
     try {
       const first = !this.bars.length;

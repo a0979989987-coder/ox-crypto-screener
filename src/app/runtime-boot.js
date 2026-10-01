@@ -19,7 +19,6 @@ window.addEventListener("DOMContentLoaded", () => {
   initSettings();
   OXControlPanel.init();
   OXFeaturePack.init();
-  LiquidationModule.init();
   syncScannerFilterUI();
   const oxMarkerToggle = document.getElementById("chk-ox-markers");
   if (oxMarkerToggle) oxMarkerToggle.checked = false;

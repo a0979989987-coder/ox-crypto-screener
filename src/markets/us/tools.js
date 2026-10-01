@@ -1,3 +1,4 @@
+import { revealStyledShadow } from '../../components/style-ready.js?v=20261001-loading1';
 import {
   e,
   price,
@@ -8,13 +9,13 @@ import {
   toolNames,
   patterns,
   sectorETF,
-} from "./view-utils.js?v=20260930-us-compact2";
-import { USBubbles, bindPatternBoard } from "./visuals.js?v=20260930-us-compact2";
-import { tierResults, matchPath } from "./analysis.js?v=20260930-us-compact2";
-import { createToolsRail } from "../../components/strength/tools-rail.js";
+} from "./view-utils.js?v=20261001-loading1";
+import { USBubbles, bindPatternBoard } from "./visuals.js?v=20261001-loading1";
+import { tierResults, matchPath } from "./analysis.js?v=20261001-loading1";
+import { createToolsRail } from "../../components/strength/tools-rail.js?v=20261001-loading1";
 import { candleChart } from "../crypto/patterns/charts.js";
-import { createToolChart } from "../crypto/analytics/tools-charts.js";
-import { icon, openDialog, closeDialog } from "./ui.js?v=20260930-us-compact2";
+import { createToolChart } from "../crypto/analytics/tools-charts.js?v=20261001-loading1";
+import { icon, openDialog, closeDialog } from "./ui.js?v=20261001-loading1";
 export const toolsViews = {
   renderTools(main) {
     main.innerHTML = '<div class="us2-tools-nav"></div><div class="us2-tool-content"></div>';
@@ -27,6 +28,7 @@ export const toolsViews = {
   },
   renderToolContent() {
     ++this.workerId;
+    this.patternLoading?.finish();
     this.heatChart?.destroy();this.heatChart=null;this.toolsLife?.abort();this.toolsSurface=null;
     this.patternCharts?.forEach(chart=>chart.destroy());this.patternCharts=[];this.patternSurface=null;
     this.bubbles?.destroy();
@@ -44,7 +46,7 @@ export const toolsViews = {
     c.innerHTML = '<div class="us2-analytics-host"></div><div class="us2-tool-list"></div>';
     const surface=c.querySelector('.us2-analytics-host').attachShadow({mode:'open'});
     this.toolsSurface=surface;this.toolsLife=new AbortController();
-    surface.innerHTML = `<link rel="stylesheet" href="${new URL('../crypto/analytics/flow.css',import.meta.url).href}"><style>.cfx{min-height:0;background:transparent}.cfx-heatmap canvas{display:block;width:100%;height:100%}.us2-tool-visual{min-width:0}.us2-visual-legend{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:10px;color:var(--muted);padding:10px 2px}.us2-visual-legend button{min-height:34px;flex:none;padding:0 9px;border:1px solid var(--line);border-radius:8px}.us2-bubble-plot{display:block;width:100%;height:440px;touch-action:none}.us2-up{color:#00b8d4}.us2-down{color:#ff3078}</style><main class="cfx"><div class="cfx-toolbar"><div class="cfx-controls">${[
+    surface.innerHTML = `<link rel="stylesheet" href="${new URL('../crypto/analytics/flow.css?v=20261001-loading1',import.meta.url).href}"><style>.cfx{min-height:0;background:transparent}.cfx-heatmap canvas{display:block;width:100%;height:100%}.us2-tool-visual{min-width:0}.us2-visual-legend{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:10px;color:var(--muted);padding:10px 2px}.us2-visual-legend button{min-height:34px;flex:none;padding:0 9px;border:1px solid var(--line);border-radius:8px}.us2-bubble-plot{display:block;width:100%;height:440px;touch-action:none}.us2-up{color:#00b8d4}.us2-down{color:#ff3078}</style><main class="cfx"><div class="cfx-toolbar"><div class="cfx-controls">${[
       ["sector", "類股 ETF"],
       ["watch", "自選"],
       ["all", "全部"],
@@ -56,6 +58,7 @@ export const toolsViews = {
       .join(
         "",
       )}</div></div><section class="us2-tool-visual"></section></main>`;
+    revealStyledShadow(surface,this.toolsLife.signal);
     surface.querySelectorAll("[data-scope]").forEach(
       (b) =>
         (b.onclick = () => {
@@ -73,8 +76,9 @@ export const toolsViews = {
     if (this.state.tool === "bubbles")
       this.bubbles = new USBubbles(visual, rows, (s) => this.openStock(s));
     else if (this.state.tool === "heatmap") {
-      visual.innerHTML='<div class="cfx-chart-meta"><span>完整日漲跌 · 藍＋／紅−</span><span>面積：20日平均成交額</span></div><div class="cfx-heatmap us2-heatmap"><canvas role="img" aria-label="美股熱力圖，面積為20日平均成交額，顏色為完整日漲跌"></canvas></div><div class="cfx-heat-list"></div>';
+      visual.innerHTML='<div class="cfx-chart-meta"><span>完整日漲跌 · 藍＋／紅−</span><span>面積：20日平均成交額</span></div><div class="cfx-heatmap us2-heatmap"><canvas role="img" aria-label="美股熱力圖，可雙指及滑鼠滾輪縮放，面積為20日平均成交額，顏色為完整日漲跌"></canvas><div class="cfx-zoom"><button data-heat-zoom="out" aria-label="縮小熱力圖">−</button><button data-heat-zoom="reset" aria-label="重設熱力圖">重設</button><button data-heat-zoom="in" aria-label="放大熱力圖">＋</button></div></div><div class="cfx-heat-list"></div>';
       this.heatChart=createToolChart(visual.querySelector('canvas'),{signal:this.toolsLife.signal,heatColors:['0,184,212','255,48,120'],onSelect:s=>this.openStock(s)});
+      visual.querySelectorAll('[data-heat-zoom]').forEach(b=>b.onclick=()=>b.dataset.heatZoom==='reset'?this.heatChart.reset():this.heatChart.zoom(b.dataset.heatZoom==='in'?1.3:1/1.3));
       this.updateHeatmap();
     } else if (this.state.tool === "relative") {
       visual.innerHTML =
@@ -147,8 +151,9 @@ export const toolsViews = {
     this.patternCharts?.forEach(chart=>chart.destroy());
     c.innerHTML='<div class="us2-pattern-host"></div>';
     const host=c.firstElementChild, surface=host.attachShadow({mode:"open"});
-    this.patternSurface=surface;
-    surface.innerHTML=`<link rel="stylesheet" href="${new URL("../crypto/patterns/patterns.css",import.meta.url)}"><style>:host{font-family:inherit}.px-status{max-width:65%;width:65%}.us-pattern-empty{padding:38px 12px 14px;line-height:1.6;font-size:11px;color:#969e9f;text-align:center}.us-pattern-star{border:0;background:none;color:#a6adad;font-size:18px;padding:4px;min-width:30px;min-height:30px;position:absolute;right:7px;bottom:7px}.us-pattern-star.is-saved{color:#f4c65b}.px-card{position:relative}.px-card canvas{pointer-events:none}.px-down{color:#ff3078}.px-up{color:#00b8d4}</style><main class="px"><section class="px-board us2-pattern-board" aria-label="美股型態畫板"><canvas tabindex="0" aria-label="在整個畫板繪製走勢"></canvas><div class="px-controls"><button class="px-control" data-open-frames aria-haspopup="dialog"><span data-pattern-frame-label>${this.state.patternInterval}</span>${icon("down")}</button><button class="px-control" data-open-patterns aria-haspopup="dialog"><span data-pattern-label>${this.state.pattern==="all"?"型態":patterns[this.state.pattern]}</span>${icon("down")}</button></div><span class="px-hint">畫出走勢，或選擇型態</span><div class="px-board-bottom"><button class="px-mode-toggle" data-pattern-mode aria-label="切換型態條件／相似路徑"><span class="px-mode-glyph">⌁</span><span data-mode-label>${this.state.patternMode==="path"?"相似路徑":"型態條件"}</span></button><button class="px-icon" data-clear aria-label="清除畫板">${icon("undo")}</button><div class="px-tier-filters" role="group" aria-label="型態階段">${["all","T1","T2","T3"].map(t=>`<button data-pattern-tier="${t}" aria-pressed="${t==="all"}">${t==="all"?"全部":t}</button>`).join("")}</div></div></section><button class="px-refresh-pill" data-scan aria-label="重新掃描"><span class="px-refresh-glyph">${icon("scan")}</span></button><div class="px-results"><span class="px-status us2-pattern-status" role="status"></span><section class="px-grid us2-pattern-results" aria-label="依 T1 T2 T3 排列的美股"></section></div><dialog class="px-dialog px-settings" aria-label="分析時間級別"><div class="px-dialog-head"><span>時間級別</span><button class="px-icon" data-close-pattern-dialog aria-label="關閉">${icon("close")}</button></div><div class="px-dialog-body"><div class="px-frames">${["1H","4H","1D"].map(tf=>`<button class="px-frame-option" data-pattern-interval="${tf}" aria-pressed="${tf===this.state.patternInterval}">${tf}</button>`).join("")}</div><p class="px-count-status">依共用快照的實際級別分析；未收集的級別不以其他 K 線代替。</p></div></dialog><dialog class="px-dialog px-presets" aria-label="型態條件"><div class="px-dialog-head"><span>型態</span><button class="px-icon" data-close-pattern-dialog aria-label="關閉">${icon("close")}</button></div><div class="px-dialog-body"><div class="px-options">${Object.entries(patterns).map(([v,l])=>`<button class="px-option" data-pattern="${v}" aria-pressed="${v===this.state.pattern}"><span>${l}</span></button>`).join("")}</div></div></dialog></main>`;
+    this.patternSurface=surface;this.toolsLife=new AbortController();
+    surface.innerHTML=`<link rel="stylesheet" href="${new URL("../crypto/patterns/patterns.css?v=20261001-loading1",import.meta.url)}"><style>:host{font-family:inherit}.px-status{max-width:65%;width:65%}.us-pattern-empty{padding:38px 12px 14px;line-height:1.6;font-size:11px;color:#969e9f;text-align:center}.us-pattern-star{border:0;background:none;color:#a6adad;font-size:18px;padding:4px;min-width:30px;min-height:30px;position:absolute;right:7px;bottom:7px}.us-pattern-star.is-saved{color:#f4c65b}.px-card{position:relative}.px-card canvas{pointer-events:none}.px-down{color:#ff3078}.px-up{color:#00b8d4}</style><main class="px"><section class="px-board us2-pattern-board" aria-label="美股型態畫板"><canvas tabindex="0" aria-label="在整個畫板繪製走勢"></canvas><div class="px-controls"><button class="px-control" data-open-frames aria-haspopup="dialog"><span data-pattern-frame-label>${this.state.patternInterval}</span>${icon("down")}</button><button class="px-control" data-open-patterns aria-haspopup="dialog"><span data-pattern-label>${this.state.pattern==="all"?"型態":patterns[this.state.pattern]}</span>${icon("down")}</button></div><span class="px-hint">畫出走勢，或選擇型態</span><div class="px-board-bottom"><button class="px-mode-toggle" data-pattern-mode aria-label="切換型態條件／相似路徑"><span class="px-mode-glyph">⌁</span><span data-mode-label>${this.state.patternMode==="path"?"相似路徑":"型態條件"}</span></button><button class="px-icon" data-clear aria-label="清除畫板">${icon("undo")}</button><div class="px-tier-filters" role="group" aria-label="型態階段">${["all","T1","T2","T3"].map(t=>`<button data-pattern-tier="${t}" aria-pressed="${t==="all"}">${t==="all"?"全部":t}</button>`).join("")}</div></div></section><button class="px-refresh-pill" data-scan aria-label="重新掃描"><span class="px-refresh-glyph">${icon("scan")}</span></button><div class="px-results"><span class="px-status us2-pattern-status" role="status"></span><section class="px-grid us2-pattern-results" aria-label="依 T1 T2 T3 排列的美股"></section></div><dialog class="px-dialog px-settings" aria-label="分析時間級別"><div class="px-dialog-head"><span>時間級別</span><button class="px-icon" data-close-pattern-dialog aria-label="關閉">${icon("close")}</button></div><div class="px-dialog-body"><div class="px-frames">${["1H","4H","1D"].map(tf=>`<button class="px-frame-option" data-pattern-interval="${tf}" aria-pressed="${tf===this.state.patternInterval}">${tf}</button>`).join("")}</div><p class="px-count-status">依共用快照的實際級別分析；未收集的級別不以其他 K 線代替。</p></div></dialog><dialog class="px-dialog px-presets" aria-label="型態條件"><div class="px-dialog-head"><span>型態</span><button class="px-icon" data-close-pattern-dialog aria-label="關閉">${icon("close")}</button></div><div class="px-dialog-body"><div class="px-options">${Object.entries(patterns).map(([v,l])=>`<button class="px-option" data-pattern="${v}" aria-pressed="${v===this.state.pattern}"><span>${l}</span></button>`).join("")}</div></div></dialog></main>`;
+    revealStyledShadow(surface,this.toolsLife.signal);
     this.board=bindPatternBoard(surface.querySelector(".px-board"),points=>{this.points=points;if(points.length>1)this.state.patternMode="path";this.scanPatterns();});
     for(const [attr,selector] of [["frames",".px-settings"],["patterns",".px-presets"]]) surface.querySelector(`[data-open-${attr}]`).onclick=ev=>openDialog(surface.querySelector(selector),ev.currentTarget);
     surface.querySelectorAll("[data-close-pattern-dialog]").forEach(button=>button.onclick=()=>closeDialog(button.closest("dialog")));
@@ -193,6 +198,7 @@ export const toolsViews = {
       status.textContent=this.snapshotError?"共用分析取得失敗":this.snapshot?`${this.state.patternInterval} · 尚無分析資料`:"取得共用分析…";
       pill.classList.remove("is-scanning");this.patternRows=[];this.paintPatternResults([]);return;
     }
+    const loading=this.patternLoading=window.OXLoading?.begin('us','分析美股標的',{done:0,total:rows.length,views:['strength']});
     this.patternPhase="analyzing";
     pill.classList.add("is-scanning");
     status.textContent = `分析 ${rows.length} 個已具備真實 K 線的標的…`;
@@ -204,10 +210,11 @@ export const toolsViews = {
       let result;
       if (typeof Worker === "function") {
         if (!this.worker) {
-          this.worker = new Worker(new URL("./worker.js?v=20260930-us-compact2", import.meta.url), {
+          this.worker = new Worker(new URL("./worker.js?v=20261001-loading1", import.meta.url), {
             type: "module",
           });
           this.worker.onmessage = (ev) => {
+            if(ev.data.progress){if(ev.data.id===this.workerId)this.patternLoading?.update(ev.data.progress.done,ev.data.progress.total);return;}
             const callback = this.workerPending.get(ev.data.id);
             this.workerPending.delete(ev.data.id);
             callback?.(ev.data);
@@ -238,6 +245,7 @@ export const toolsViews = {
       this.patternPhase="error";
       status.textContent = error.message;
     } finally {
+      loading?.finish();
       if (id === this.workerId) pill.classList.remove("is-scanning");
     }
   },

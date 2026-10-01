@@ -1,6 +1,5 @@
 # OX Crypto Tools — compact review build
 
-Review branch only. No production deployment. No OX classic strategy or US/TW/Forex code changes. The only change to the existing entry page is one small ES module that places a Crypto-only launcher under 指標. Heavy modules mount on demand in an isolated ShadowRoot. Leaving the workspace or Crypto closes it.
 
 ## Run and review
 

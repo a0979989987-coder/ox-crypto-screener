@@ -137,6 +137,7 @@ const assert = require("node:assert/strict");
         const u = new URL(r.request().url()),
           end = u.pathname.split("/").at(-1),
           symbol = u.searchParams.get("symbol") || "SPY";
+        if (!live && end === "snapshot") return r.fulfill({json:{ok:true,data:fixtureSnapshot}});
         if (live) {
           if (end === "capabilities")
             return r.fulfill({ status: 404, json: {} });

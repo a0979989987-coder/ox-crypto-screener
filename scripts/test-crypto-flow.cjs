@@ -2,7 +2,7 @@ const {chromium}=require('playwright');
 const {spawn}=require('node:child_process');
 const path=require('node:path');
 const assert=require('node:assert/strict');
-const out='/workspace/scratch/6827c8da6e73/crypto-flow-review';
+const out=process.env.OX_FLOW_SHOTS||'/tmp/ox-flow-review';require('node:fs').mkdirSync(out,{recursive:true});
 const server=spawn(process.execPath,['scripts/dev-server.mjs','--port','4175'],{cwd:path.join(__dirname,'..')});
 process.on('exit',()=>server.kill());
 (async()=>{
@@ -41,7 +41,7 @@ process.on('exit',()=>server.kill());
  await page.keyboard.press('Escape');assert.equal(await page.locator('.focused').count(),0);
  await page.getByRole('button',{name:'資料與計算說明',exact:true}).click();assert.equal(await page.locator('dialog[open]').count(),1);await page.getByRole('button',{name:'關閉說明'}).click();
  await page.screenshot({path:out+'/OX-Crypto-Mobile.png',fullPage:true});
- for(const id of ['overview','heatmap','flow','derivatives','liquidations','zones','order','rotation']){
+ for(const id of ['heatmap','flow','rotation']){
   await tab(id);for(const width of [320,390,768,1440]){await page.setViewportSize({width,height:900});await page.waitForTimeout(40);assert.ok(await page.locator('.cfx').evaluate(e=>e.scrollWidth<=innerWidth+1),id+' overflows '+width);}
   assert.ok(!/NaN|undefined|Invalid Date/.test(await page.locator('.cfx-content').innerText()),id+' has invalid display');
  }
@@ -49,19 +49,12 @@ process.on('exit',()=>server.kill());
  await page.locator('.cfx-rank-row').first().click();await page.screenshot({path:out+'/OX-Crypto-Desktop-Detail.png',fullPage:true});await page.getByRole('button',{name:'關閉板塊詳情'}).click();
  await tab('heatmap');await page.locator('[data-control="weight"]').selectOption('cap');await page.locator('[data-action="group"]').click();await page.waitForTimeout(200);await page.screenshot({path:out+'/OX-Crypto-Heatmap.png',fullPage:true});
  await page.locator('.cfx-heat-list button').first().click();assert.equal(await page.locator('.cfx-asset-dialog[open]').count(),1);await page.getByRole('button',{name:'關閉標的詳情'}).click();
- await tab('derivatives');await page.locator('[data-derivative-mode="oi"]').click();assert.ok(await page.locator('tbody tr').count()>0);await page.setViewportSize({width:320,height:900});assert.ok(await page.locator('.cfx').evaluate(e=>e.scrollWidth<=innerWidth+1));
- await tab('liquidations');assert.equal((await page.locator('.cfx-liq-stats strong').allTextContents()).join(''),'———');assert.equal(await page.locator('.cfx-balance.unavailable').count(),1);
- await tab('order');for(const symbol of ['BTCUSDT','ETHUSDT','SOLUSDT']){await page.locator('[data-control="order-symbol"]').selectOption(symbol);for(const mode of ['cvd','profile','footprint']){await page.locator(`[data-order-mode="${mode}"]`).click();assert.ok((await page.locator('.cfx-chart-meta').innerText()).includes('3,000'));assert.ok(!/NaN|undefined/.test(await page.locator('.cfx-content').innerText()));}}
- await page.locator('[data-control="order-symbol"]').selectOption('BTCUSDT');await page.setViewportSize({width:1440,height:1000});await page.locator('[data-control="bar-count"]').selectOption('6');await page.waitForTimeout(200);await page.screenshot({path:out+'/OX-Crypto-Footprint.png',fullPage:true});
- await page.locator('canvas').click({position:{x:200,y:250}});await page.getByRole('button',{name:'關閉標的詳情'}).click();
- await page.setViewportSize({width:390,height:844});await page.locator('[data-control="bar-count"]').selectOption('3');await page.waitForTimeout(200);await page.screenshot({path:out+'/OX-Crypto-Mobile-Order.png',fullPage:true});
  await tab('flow');await page.route('https://api.bitget.com/**',r=>r.abort());await page.locator('[data-action="refresh-flow"]').click();await page.locator('.cfx-notice').filter({hasText:'更新失敗'}).waitFor();assert.ok(await page.locator('tbody tr').count()>0);
  await page.getByRole('button',{name:'返回指標',exact:true}).click();assert.equal(await page.locator('#crypto-flow').isHidden(),true);await page.getByRole('button',{name:'重新開啟工具'}).click();await page.locator('[data-slot="rotation-coverage"]').waitFor();
  await page.emulateMedia({reducedMotion:'reduce'});assert.equal(await page.locator('.cfx-content').evaluate(e=>getComputedStyle(e).animationName),'none');
  assert.deepEqual(errors,[]);
- const portable=await browser.newPage();const pe=[];portable.on('pageerror',e=>pe.push(e.message));await portable.goto('file://'+out+'/OX-Crypto-Flow.html');await portable.locator('[data-slot="rotation-coverage"]').filter({hasText:'5 板塊'}).waitFor();await portable.locator('nav [data-tab="order"]').click();assert.ok((await portable.locator('.cfx-chart-meta').innerText()).includes('3,000'));assert.deepEqual(pe,[]);
  const boundary=await browser.newPage();await boundary.goto('http://127.0.0.1:4175/previews/crypto-flow.html');await boundary.evaluate(async()=>{document.body.innerHTML='<section id="view-strength"><div class="strength-page"><div class="page-hero"></div></div></section>';document.body.dataset.market='crypto';document.body.dataset.view='strength';await import('/src/markets/crypto/analytics/entry.js');});
  assert.equal(await boundary.locator('#ox-crypto-tools-nav').isVisible(),true);await boundary.locator('[data-crypto-tool="rotation"]').click();await boundary.locator('[data-slot="rotation-coverage"]').waitFor();
- for(const market of ['tw','us','forex','crypto']){await boundary.evaluate(m=>{document.body.dataset.market=m;document.dispatchEvent(new CustomEvent('ox:marketchange'));},market);assert.equal(await boundary.locator('#ox-crypto-tools-inline').isVisible(),market==='crypto');assert.equal(await boundary.locator('body > dialog').count(),0);assert.equal(await boundary.evaluate(()=>document.body.style.overflow),'');}
- await browser.close();server.kill();console.log('PASS: rotation/replay/cohorts, 8 tools, real trade modes, no fake liquidation zeros, 320–1440px, pinch/fullscreen/exit, standalone export and four-market isolation.');
+ for(const market of ['tw','us','crypto']){await boundary.evaluate(m=>{document.body.dataset.market=m;document.dispatchEvent(new CustomEvent('ox:marketchange'));},market);assert.equal(await boundary.locator('#ox-crypto-tools-inline').isVisible(),market==='crypto');assert.equal(await boundary.locator('body > dialog').count(),0);assert.equal(await boundary.evaluate(()=>document.body.style.overflow),'');}
+ await browser.close();server.kill();console.log('PASS: rotation/replay/cohorts, 3 retained tools, heatmap/active trades, 320–1440px, pinch/fullscreen/exit, three-market isolation.');
 })().catch(e=>{console.error(e);process.exit(1)});

@@ -26,7 +26,7 @@ function aggregate(raw,frame){
   });
   await page.route(/https:\/\/(?!api\.bitget\.com)/,r=>r.abort());
   console.log('Opening page');await page.goto(origin,{waitUntil:'domcontentloaded'});await page.getByRole('button',{name:'指標',exact:true}).click();await page.locator('.px-board').waitFor();console.log('Pattern page ready');
-  assert.deepEqual((await page.locator('#ox-crypto-tools-nav [data-crypto-tool]').allTextContents()).slice(0,3),['型態搜尋','總覽','強弱對比']);
+  assert.deepEqual((await page.locator('#ox-crypto-tools-nav [data-crypto-tool]').allTextContents()).slice(0,3),['型態搜尋','泡泡圖','強弱對比']);
   assert.equal(await page.locator('[data-frame-label]').textContent(),'4H + 1H');
   assert.equal(await page.locator('[data-limit]').inputValue(),'0','all eligible coins by default');
   await page.waitForFunction(()=>document.querySelector('#ox-crypto-tools-inline').firstElementChild.shadowRoot.querySelector('.px-status').textContent.includes('預先分類'));
@@ -68,7 +68,7 @@ function aggregate(raw,frame){
   await page.mouse.move(bb.x+20,bb.y+40);await page.mouse.down();assert.ok(await page.locator('.px-board.is-drawing').count());await page.mouse.move(bb.x+bb.width-20,bb.y+40,{steps:20});await page.mouse.up();await page.waitForTimeout(200);assert.equal(await page.locator('[data-pattern-label]').textContent(),'水平阻力');assert.equal(await page.locator('.px-board.is-drawing').count(),0);
   await page.setViewportSize({width:1440,height:1100});await page.waitForTimeout(250);await page.screenshot({path:'/tmp/ox-pattern-review/desktop.png',fullPage:true});
   await page.locator('#ox-crypto-tools-nav [data-crypto-tool="strength"]').click();assert.ok(await page.locator('.strength-compare-panel').isVisible());assert.equal(await page.locator('.px-board').count(),0);
-  await page.locator('#ox-crypto-tools-nav [data-crypto-tool="overview"]').click();await page.locator('.cfx-overview').waitFor();
+  await page.locator('#ox-crypto-tools-nav [data-crypto-tool="heatmap"]').click();await page.locator('.cfx-heatmap').waitFor();
   await page.locator('#ox-crypto-tools-nav [data-crypto-tool="patterns"]').click();await page.locator('.px-board').waitFor();
   // A full reload must recover the classified 15m index, even if candle transport is unavailable.
   blockCandles=true;await page.setViewportSize({width:390,height:844});await page.reload({waitUntil:'domcontentloaded'});await page.getByRole('button',{name:'指標',exact:true}).click();await page.locator('.px-board').waitFor();

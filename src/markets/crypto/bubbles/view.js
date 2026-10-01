@@ -1,8 +1,8 @@
 import { METRICS, bubbleRows, metricText, largeTradeFlow } from './model.js?v=20261001-bubbles3';
 import { fetchCaps, fetchQuotes, fetchLargeTrades, pause } from './source.js?v=20261001-bubbles3';
 import { BubbleField } from './field.js?v=20261001-bubbles3';
-import { revealStyledShadow } from '../../../components/style-ready.js';
-const css=new URL('./bubbles.css?v=20261001-bubbles3',import.meta.url);
+import { revealStyledShadow } from '../../../components/style-ready.js?v=20261001-loading1';
+const css=new URL('./bubbles.css?v=20261001-loading1',import.meta.url);
 const DIRECTIONS=[['both','多空'],['long','看多'],['short','看空']];
 const icon=(name)=>`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${{close:'m6 6 12 12M18 6 6 18',reset:'M3 4v6h6M4 10a8 8 0 1 1 1 8',cycle:'m7 8 3-3 3 3M10 5v9m7 2-3 3-3-3m3 3V10',filter:'M4 5h16l-6 7v6l-4 2v-8Z',chevron:'m7 9 5 5 5-5',check:'m5 12 4 4L19 6'}[name]||''}"/></svg>`;
 const runtime=()=>typeof state!=='undefined'&&state.activeMarket==='crypto'?state:null;
@@ -21,6 +21,7 @@ export function mountCryptoBubbles(host,{quotes=null,caps:initialCaps=null,analy
     q('.oxb-empty').textContent=scope==='watch'&&!watching().size?'先在雷達收藏幣種，這裡會顯示你的自選':metric==='cap'?capError||(caps.length?'目前沒有可確認的新鮮市值資料':'正在讀取市值…'):metric==='flow'?flowRequest?'正在讀取大單成交…':'目前沒有可驗證的大單取樣，稍後自動重試':metric==='score'?'雷達正在分析 OX 評分…':quoteError||'正在讀取即時行情…';
     q('canvas').dataset.direction=direction;
     if(!rows.length&&direction!=='both'&&bubbleRows(tickers,{metric,limit,caps,flows,watch:scope==='watch'?watching():null,analyses:analyses||rt?.analyzedCache||new Map()}).length)q('.oxb-empty').textContent=`目前沒有符合${DIRECTIONS.find(d=>d[0]===direction)[1]}條件的幣種`;
+    if(!rows.length&&(quoteRequest||capPending&&metric==='cap'||flowRequest&&metric==='flow')&&window.OXLoading)q('.oxb-empty').innerHTML=OXLoading.markup(q('.oxb-empty').textContent);
     renderList();if(selected)updateDetail();
   }
   function renderList(){
@@ -40,17 +41,17 @@ export function mountCryptoBubbles(host,{quotes=null,caps:initialCaps=null,analy
   function updateDetail(){const r=rows.find(r=>r.symbol===selected);if(!r)return;q('[data-slot="asset"]').textContent=r.base;
     q('[data-slot="detail"]').innerHTML=`<strong class="oxb-price">${r.price.toLocaleString('en-US',{maximumFractionDigits:r.price<1?8:4})}<small> USDT</small></strong><dl><div><dt>24H 漲幅</dt><dd class="${r.change>=0?'up':'down'}">${metricText(r.change,'change')}</dd></div><div><dt>24H 成交額</dt><dd>${metricText(r.volume,'volume')} USDT</dd></div><div><dt>流通市值</dt><dd>${metricText(r.cap,'cap')}</dd></div><div><dt>OX 評分</dt><dd>${metricText(r.score,'score')}</dd></div>${r.flow?`<div><dt>大單淨主買</dt><dd>${metricText(r.flow.value,'flow')} USDT</dd></div><div><dt>取樣大單</dt><dd>${r.flow.count} 筆／${r.flow.trades} 筆成交</dd></div>`:''}</dl>${r.capTime?`<small class="oxb-note">市值更新 ${new Date(r.capTime).toLocaleString('zh-TW',{hour12:false})}</small>`:''}${r.flow?'<small class="oxb-note">僅最新成交取樣，非完整 5 分鐘或入金統計</small>':''}`;
   }
-  async function loadQuotes(){if(quoteRequest||life.signal.aborted||document.hidden||quotes)return;const latest=Math.max(0,...pool().map(t=>Number(t.ts)||0));if(Date.now()-latest<25000)return;quoteRequest=true;try{localQuotes=await fetchQuotes(life.signal);quoteError='';paint();if(metric==='flow')loadFlows();}catch(e){if(e.name!=='AbortError'){quoteError='行情暫時無法更新，稍後自動重試';paint();}}finally{quoteRequest=false;}}
-  async function loadCaps(){if(capPending||life.signal.aborted||document.hidden||initialCaps)return;if(Date.now()-capAttempt<60000&&capError)return;capPending=true;capAttempt=Date.now();try{caps=await fetchCaps(life.signal);capError='';paint();}catch(e){if(e.name!=='AbortError'){capError='市值來源暫時無法更新，稍後自動重試';paint();}}finally{capPending=false;}}
+  async function loadQuotes(){if(quoteRequest||life.signal.aborted||document.hidden||quotes)return;const latest=Math.max(0,...pool().map(t=>Number(t.ts)||0));if(Date.now()-latest<25000)return;quoteRequest=true;const loading=window.OXLoading?.begin('crypto','加密行情載入中',{signal:life.signal,views:['strength']});paint();try{localQuotes=await fetchQuotes(life.signal);quoteError='';paint();if(metric==='flow')loadFlows();}catch(e){if(e.name!=='AbortError'){quoteError='行情暫時無法更新，稍後自動重試';paint();}}finally{quoteRequest=false;loading?.finish();paint();}}
+  async function loadCaps(){if(capPending||life.signal.aborted||document.hidden||initialCaps)return;if(Date.now()-capAttempt<60000&&capError)return;capPending=true;capAttempt=Date.now();const loading=window.OXLoading?.begin('crypto','市值資料載入中',{signal:life.signal,views:['strength']});paint();try{caps=await fetchCaps(life.signal);capError='';paint();}catch(e){if(e.name!=='AbortError'){capError='市值來源暫時無法更新，稍後自動重試';paint();}}finally{capPending=false;loading?.finish();paint();}}
   async function loadFlows(){if(metric!=='flow'||flowRequest||life.signal.aborted||document.hidden)return;
     const candidates=bubbleRows(pool(),{metric:'volume',limit,watch:scope==='watch'?watching():null});
     const pending=candidates.filter(r=>Date.now()-(flows.get(r.symbol)?.at||0)>30000);if(!pending.length)return;
-    const request=new AbortController();flowRequest=request;const abort=()=>request.abort();life.signal.addEventListener('abort',abort,{once:true});paint();
+    const request=new AbortController();flowRequest=request;let done=0;const loading=window.OXLoading?.begin('crypto','載入大單幣種',{done:0,total:pending.length,signal:request.signal,views:['strength']});const abort=()=>request.abort();life.signal.addEventListener('abort',abort,{once:true});paint();
     let next=0;
-    async function worker(){while(next<pending.length&&!request.signal.aborted){const r=pending[next++];try{const result=await fetchLargeTrades(r.symbol,request.signal),flow=largeTradeFlow(result.records,result.time);if(flow&&!request.signal.aborted)flows.set(r.symbol,{...flow,at:Date.now()});}catch(e){if(e.name==='AbortError')break;}if(request.signal.aborted)break;paint();await pause(300,request.signal);}}
+    async function worker(){while(next<pending.length&&!request.signal.aborted){const r=pending[next++];try{const result=await fetchLargeTrades(r.symbol,request.signal),flow=largeTradeFlow(result.records,result.time);if(flow&&!request.signal.aborted)flows.set(r.symbol,{...flow,at:Date.now()});}catch(e){if(e.name==='AbortError')break;}if(request.signal.aborted)break;loading?.update(++done,pending.length);paint();await pause(300,request.signal);}}
     try{await Promise.all(Array.from({length:Math.min(4,pending.length)},worker));}
     catch(e){if(e.name!=='AbortError')console.warn('[OX Bubbles]',e.message);}
-    finally{life.signal.removeEventListener('abort',abort);if(flowRequest===request){flowRequest=null;paint();}}
+    finally{loading?.finish();life.signal.removeEventListener('abort',abort);if(flowRequest===request){flowRequest=null;paint();}}
   }
   function closeInner(){const dialog=q('.oxb-dialog');if(dialog.open){dialog.close();selected=null;return true;}if(!q('.oxb-menu').hidden){setMenu(false,true);return true;}return false;}
   function refreshSelection(){selected=null;field.selected=null;flowRequest?.abort();flowRequest=null;paint();loadFlows();}

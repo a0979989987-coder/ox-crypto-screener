@@ -1,4 +1,4 @@
-import { usProvider } from "./api.js?v=20260930-us-compact2";
+import { usProvider } from "./api.js?v=20261001-loading1";
 
 /*
  * OX v4.0 Modular
@@ -2459,7 +2459,7 @@ export function renderUSRadar(
 
   /*
    * US renderer must never modify
-   * Crypto / TW / Forex.
+   * Crypto / TW.
    */
   if (!isUSMarket()) {
     return {

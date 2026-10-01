@@ -22,6 +22,7 @@ function saveRadarSnapshot() {
 
 async function refreshMarketTickers() {
   if (state.activeMarket && state.activeMarket !== "crypto") return;
+  const loading=window.OXLoading?.begin('crypto','加密行情載入中',{views:['home','strength','radar']});
   try {
     const rawTickers = await BitgetAPI.fetchTickers();
     if (!state.contracts.size) {
@@ -75,7 +76,6 @@ async function refreshMarketTickers() {
     }
 
     restoreRadarSnapshot();
-    try { LiquidationService?.NativeExchangeAdapter?.ensureStarted?.(); } catch (e) {}
     rebuildTierLists();
     if (state.activeView === 'radar') {
       renderCurrentTab();
@@ -91,10 +91,10 @@ async function refreshMarketTickers() {
   } catch (e) {
     document.getElementById("scan-status").textContent = `行情取得失敗：${e.message}`;
     document.getElementById("dot").style.background = "#ee617c";
-  }
+  } finally { loading?.finish(); }
 }
 
-let lastRadarBatchPaint = 0;
+let lastRadarBatchPaint = 0, initialScanLoading=null;
 async function runScanQueueLoop() {
   while (true) {
     // Keep the ranking data, but do not spend CPU scanning Crypto in the
@@ -108,6 +108,7 @@ async function runScanQueueLoop() {
       continue;
     }
 
+    if(!state.radarSnapshotReady&&!initialScanLoading)initialScanLoading=window.OXLoading?.begin('crypto','掃描幣種',{done:0,total:state.scanQueue.length,views:['home','strength','radar']});
     const batchSymbols = [];
     const remaining = state.scanQueue.length-state.scanIndex;
     for (let i = 0; i < Math.min(CONFIG.queueBatchSize, remaining); i++) {
@@ -188,12 +189,13 @@ async function runScanQueueLoop() {
           setupProgress: fits.setupProgress,
           signalConfidence: fits.signalConfidence
         });
-      } catch (e) {}
+      } catch (e) {} finally { const n=(initialScanLoading?.done||0)+1;if(initialScanLoading){initialScanLoading.done=n;initialScanLoading.update(n,state.scanQueue.length);} }
     }));
 
     const completed = state.scanIndex >= state.scanQueue.length;
     // The first visible ranking is a complete pass, never a partial five-coin list.
     if (completed) {
+      initialScanLoading?.finish();initialScanLoading=null;
       state.scanIndex = 0;
       state.radarSnapshotReady = true;
       saveRadarSnapshot();

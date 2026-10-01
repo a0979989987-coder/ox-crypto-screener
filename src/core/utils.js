@@ -10,11 +10,6 @@ export const formatPercent = (value, digits = 2) => {
   return `${parsed >= 0 ? "+" : ""}${parsed.toFixed(digits)}%`;
 };
 
-export const formatRate = (value, pair = "") => {
-  const digits = pair.endsWith("JPY") ? 3 : 5;
-  return finiteNumber(value).toFixed(digits);
-};
-
 export const safeJsonParse = (value, fallback = null) => {
   try { return JSON.parse(value); } catch { return fallback; }
 };

@@ -6,7 +6,6 @@
 2. 將交付 ZIP 解壓縮。
 3. 把 `index.html`、`src/`、`scripts/`、`tests/`、`package.json`、`README.md`、`ARCHITECTURE.md` 與 `MIGRATION_REPORT.md` 上傳到該 branch。
 4. 原 repository 的 `ox-logo.png` 不需修改或刪除。
-5. 在 branch 預覽中依序測試 Crypto、US、TW、Forex，以及手機／電腦、黑／白主題。
 6. 驗證完成後再建立 Pull Request，不要直接合併。
 
 ## 回滾

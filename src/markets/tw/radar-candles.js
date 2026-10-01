@@ -1,4 +1,4 @@
-import { twProvider } from "./api.js";
+import { twProvider } from "./api.js?v=20261001-loading1";
 import { escapeTW, renderTWCandles, renderTWCurrentCandle } from "./radar-card.js";
 
 const cache = new Map();

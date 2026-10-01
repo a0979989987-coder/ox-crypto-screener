@@ -1,4 +1,4 @@
-import { stopResearch, preloadResearch } from "./research-page.js";
+import { stopResearch, preloadResearch } from "./research-page.js?v=20261001-loading1";
 import {
   TW_MODULE_CONFIG
 } from "./config.js";
@@ -6,23 +6,23 @@ import {
 import {
   createTWMarketState,
   refreshTWMarketState
-} from "./engine.js";
+} from "./engine.js?v=20261001-loading1";
 
 import {
   renderTWHome
-} from "./home.js";
+} from "./home.js?v=20261001-loading1";
 
 import {
   renderTWStrength
-} from "./strength.js";
+} from "./strength.js?v=20261001-loading1";
 
 import {
   renderTWRadar, stopTWRadar
-} from "./radar.js";
-import { cancelTWLookup } from "./lookup.js";
-import { stopTWStrength, preloadTWStrength } from "./strength.js";
+} from "./radar.js?v=20261001-loading1";
+import { cancelTWLookup } from "./lookup.js?v=20261001-loading1";
+import { stopTWStrength, preloadTWStrength } from "./strength.js?v=20261001-loading1";
 import { createPreloader } from "./preload.js";
-import { preloadBundle } from "./patterns/bundle.js";
+import { preloadBundle } from "./patterns/bundle.js?v=20261001-loading1";
 import { radarNeedsRecovery } from './recovery.js';
 
 
@@ -67,7 +67,7 @@ import { radarNeedsRecovery } from './recovery.js';
  * - call TPEX directly
  * - store API secrets
  * - normalize provider data
- * - modify Crypto / US / Forex
+ * - modify Crypto / US
  */
 
 
@@ -388,6 +388,8 @@ function render(
 
 const ensureMarketData = createPreloader(async () => {
   const controller = new AbortController();
+  const loading=window.OXLoading?.begin('tw','台股資料載入中');
+  try {
   const state = await refreshTWMarketState({
     signal: controller.signal,
     force: true,
@@ -399,6 +401,7 @@ const ensureMarketData = createPreloader(async () => {
   cacheRadarState(state);
   if (isActive) render(state);
   return state;
+  } finally { loading?.finish(); }
 }, { usable: state => ["ready", "partial"].includes(state?.status)
   && Array.isArray(state?.data?.radar) && !radarNeedsRecovery(state) });
 
@@ -520,7 +523,7 @@ export const twModule =
      * activation.
      *
      * Restore the DOM immediately so
-     * Crypto / US / Forex can safely
+     * Crypto / US can safely
      * take control.
      */
     deactivate() {

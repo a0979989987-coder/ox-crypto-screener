@@ -1,6 +1,6 @@
-import { icon, openDialog, closeDialog, positionTimeframe } from "./ui.js?v=20260930-us-compact2";
-import { INTERVALS } from "./calendar.js?v=20260930-us-compact2";
-import { chartWidgetSettings, widgetSymbol } from "./widget-config.js?v=20260930-us-compact2";
+import { icon, openDialog, closeDialog, positionTimeframe } from "./ui.js?v=20261001-loading1";
+import { INTERVALS } from "./calendar.js?v=20261001-loading1";
+import { chartWidgetSettings, widgetSymbol } from "./widget-config.js?v=20261001-loading1";
 
 // Keep mounted provider frames across OX page switches. No polling or DOM rebuild
 // occurs when the provider updates prices. Bounded cache is cleared on page unload.
@@ -56,7 +56,7 @@ export class USWidgetChart {
       const credit=document.createElement('div');credit.className='tradingview-widget-copyright';
       const link=document.createElement('a');link.href=`https://www.tradingview.com/chart/?symbol=${encodeURIComponent(settings.symbol)}`;link.target='_blank';link.rel='noopener';link.textContent=`${this.symbol} 圖表由 TradingView 提供`;credit.append(link);
       const status=document.createElement('div');status.className='us2-widget-status';status.setAttribute('role','status');
-      const text=document.createElement('span');text.textContent=`連線 ${this.symbol} 圖表…`;
+      const text=document.createElement('span');text.innerHTML=window.OXLoading?.markup(`${this.symbol} 圖表連線中`,0,1)||`連線 ${this.symbol} 圖表…`;
       const retry=document.createElement('button');retry.type='button';retry.textContent='重新連線';retry.hidden=true;
       const external=document.createElement('a');external.href=link.href;external.target='_blank';external.rel='noopener';external.textContent='開啟圖表 ↗';external.hidden=true;
       status.append(text,retry,external);element.append(host,credit,status);

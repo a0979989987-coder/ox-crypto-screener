@@ -1,6 +1,6 @@
 (() => {
   "use strict";
-  const entry = new URL("./app.js", document.currentScript.src);
+  const entry = new URL("./app.js?v=20261001-loading1", document.currentScript.src);
   entry.search = new URL(document.currentScript.src).search;
   const state = { status: "loading", message: "" };
   window.OXMarketBoot = state;

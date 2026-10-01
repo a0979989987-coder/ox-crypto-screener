@@ -26,7 +26,6 @@
     {id:"watch",title:"收藏 / 觀察列表",keywords:["收藏","觀察","watchlist","watch"],category:"雷達",icon:"☆",target:'.tab-btn[data-tab="watch"]',view:"radar",action:"watch"},
     {id:"us",title:"美股",keywords:["美股","us","stock"],category:"市場",icon:"US",available:false},
     {id:"tw",title:"台股",keywords:["台股","tw"],category:"市場",icon:"TW",available:false},
-    {id:"forex",title:"外匯市場",keywords:["外匯","forex","fx"],category:"市場",icon:"FX",action:"forex"},
     {id:"pro",title:"OX PRO",keywords:["pro","專業版"],category:"版本",icon:"P",available:false},
     {id:"simple",title:"簡單版",keywords:["簡單版","簡易","simple"],category:"版本",icon:"S",available:false},
     {id:"position",title:"倉位計算機",keywords:["倉位","計算機","風控","position"],category:"工具",icon:"⌗",available:false}
@@ -74,7 +73,6 @@
         if(item.view&&typeof switchAppView==="function")switchAppView(item.view);
         await new Promise(r=>setTimeout(r,110));
         if(item.action==="provider"){ProviderController.openPicker();return}
-        if(item.action==="forex"){window.OXMarketController?.setMarket("forex");return}
         if(item.action==="watch")q('.tab-btn[data-tab="watch"]')?.click();
         if(item.action==="feedback"){
           document.getElementById("ox-control-open")?.click();

@@ -161,10 +161,11 @@ export function analyzeStock(
 }
 export function tierResults(
   rows,
-  { side = "long", mode = "classic", type = "stock", pattern = "all" } = {},
+  { side = "long", mode = "classic", type = "stock", pattern = "all", onProgress = () => {} } = {},
 ) {
   const candidates = [];
-  for (const row of rows) {
+  for (let i=0;i<rows.length;i++) {
+    const row=rows[i];onProgress(i,rows.length);
     if (
       (type === "stock" && row.type === "ETF") ||
       (type === "ETF" && row.type !== "ETF") ||
@@ -221,6 +222,7 @@ export function tierResults(
       distance: best?.distance ?? 100,
     });
   }
+  onProgress(rows.length,rows.length);
   return ["T1", "T2", "T3"].flatMap((t) =>
     candidates
       .filter((x) => x.tier === t)
@@ -241,11 +243,12 @@ export function resamplePath(values, count = 32) {
     range = Math.max(...out) - min;
   return out.map((x) => (range ? (x - min) / range : 0.5));
 }
-export function matchPath(rows, points) {
+export function matchPath(rows, points, onProgress = () => {}) {
   const target = resamplePath(points.map((p) => 1 - p.y)),
-    rank = rows
-      .filter((x) => x.path?.length >= 20)
-      .map((row) => ({
+    rank = rows.flatMap((row,i) => {
+      onProgress(i,rows.length);
+      if(!(row.path?.length>=20))return [];
+      return [{
         ...row,
         pathDistance: Math.sqrt(
           resamplePath(row.path).reduce(
@@ -253,7 +256,8 @@ export function matchPath(rows, points) {
             0,
           ) / target.length,
         ),
-      }));
+      }];});
+  onProgress(rows.length,rows.length);
   return rank
     .sort((a, b) => a.pathDistance - b.pathDistance)
     .slice(0, 30)

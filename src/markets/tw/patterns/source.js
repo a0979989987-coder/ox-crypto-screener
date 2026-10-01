@@ -1,9 +1,9 @@
-import { preloadBundle, bundleEntry, bundleEntries, bundleState } from './bundle.js';
-import { twProvider } from '../api.js';
-import { createTWMarketState } from '../engine.js';
-import { savedResearch, loadResearch } from '../research-data.js';
+import { preloadBundle, bundleEntry, bundleEntries, bundleState } from './bundle.js?v=20261001-loading1';
+import { twProvider } from '../api.js?v=20261001-loading1';
+import { createTWMarketState } from '../engine.js?v=20261001-loading1';
+import { savedResearch, loadResearch } from '../research-data.js?v=20261001-loading1';
 import { TIMEFRAMES, selectUniverse, dailyCandles } from './model.js';
-import { aggregateChartCandles } from '../chart-data.js';
+import { aggregateChartCandles } from '../chart-data.js?v=20261001-loading1';
 export { TIMEFRAMES };
 export const detailStamp = row => `${row.frame!=='1D'?'已完成合併 K · 截至':'資料日'} ${row.candles.at(-1).lastDate || row.candles.at(-1).date}`;
 export const id = 'tw', label = '台股 · TWSE／TPEx', asset = '股票', currency = '元', period = '當日', defaultFrames = ['1D'], defaultLimit = 0;

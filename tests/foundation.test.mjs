@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { clamp, formatPercent, formatRate, safeJsonParse } from "../src/core/utils.js";
+import { clamp, formatPercent, safeJsonParse } from "../src/core/utils.js";
 import { createEventBus } from "../src/core/events.js";
 import { createStorageService } from "../src/services/storage.js";
 import { createMarketRouter } from "../src/app/marketRouter.js";
@@ -8,7 +8,6 @@ import { createMarketRouter } from "../src/app/marketRouter.js";
 test("core utilities are deterministic", () => {
   assert.equal(clamp(120), 100);
   assert.equal(formatPercent(1.234), "+1.23%");
-  assert.equal(formatRate(156.12345, "USDJPY"), "156.123");
   assert.deepEqual(safeJsonParse('{"ok":true}'), { ok: true });
 });
 
@@ -31,30 +30,30 @@ test("storage service supports JSON", () => {
     removeItem: key => values.delete(key)
   };
   const service = createStorageService(storage);
-  assert.equal(service.setJson("prefs", { market: "forex" }), true);
-  assert.deepEqual(service.getJson("prefs"), { market: "forex" });
+  assert.equal(service.setJson("prefs", { market: "tw" }), true);
+  assert.deepEqual(service.getJson("prefs"), { market: "tw" });
 });
 
 test("market router activates one registered module", async () => {
   const calls = [];
   const router = createMarketRouter();
   router.register({ id: "crypto", activate: () => calls.push("crypto:on"), deactivate: () => calls.push("crypto:off") });
-  router.register({ id: "forex", activate: () => calls.push("forex:on") });
+  router.register({ id: "tw", activate: () => calls.push("tw:on") });
   assert.equal(await router.activate("crypto"), true);
-  assert.equal(await router.activate("forex"), true);
-  assert.deepEqual(calls, ["crypto:on", "crypto:off", "forex:on"]);
+  assert.equal(await router.activate("tw"), true);
+  assert.deepEqual(calls, ["crypto:on", "crypto:off", "tw:on"]);
 });
 
 test("late market activation cannot leave the prior market visible", async () => {
-  let finishForex;
+  let finishTaiwan;
   const calls = [];
   const router = createMarketRouter();
-  router.register({ id: "forex", activate: () => new Promise(resolve => { finishForex = resolve; }), deactivate: () => calls.push("forex:hidden") });
+  router.register({ id: "tw", activate: () => new Promise(resolve => { finishTaiwan = resolve; }), deactivate: () => calls.push("tw:hidden") });
   router.register({ id: "crypto", activate: () => calls.push("crypto:visible") });
-  const first = router.activate("forex");
+  const first = router.activate("tw");
   await router.activate("crypto");
-  finishForex();
+  finishTaiwan();
   await first;
   assert.equal(router.current(), "crypto");
-  assert.ok(calls.includes("forex:hidden"));
+  assert.ok(calls.includes("tw:hidden"));
 });

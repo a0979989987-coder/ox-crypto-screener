@@ -8,10 +8,9 @@ import { XMLParser } from 'fast-xml-parser';
 // article bodies and third-party summaries are never copied into the site.
 export const FEEDS = [
   { id: 'twse', name: '臺灣證券交易所', url: 'https://www.twse.com.tw/rwd/zh/news/feed?type=rss', markets: ['tw'] },
-  { id: 'fed', name: 'Federal Reserve', url: 'https://www.federalreserve.gov/feeds/press_monetary.xml', markets: ['us','forex'] },
-  { id: 'bls-cpi', name: 'U.S. BLS · CPI', url: 'https://www.bls.gov/feed/cpi.rss', markets: ['us','forex'] },
-  { id: 'bls-jobs', name: 'U.S. BLS · Employment', url: 'https://www.bls.gov/feed/empsit.rss', markets: ['us','forex'] },
-  { id: 'ecb', name: 'European Central Bank', url: 'https://www.ecb.europa.eu/rss/press.html', markets: ['forex'] },
+  { id: 'fed', name: 'Federal Reserve', url: 'https://www.federalreserve.gov/feeds/press_monetary.xml', markets: ['us'] },
+  { id: 'bls-cpi', name: 'U.S. BLS · CPI', url: 'https://www.bls.gov/feed/cpi.rss', markets: ['us'] },
+  { id: 'bls-jobs', name: 'U.S. BLS · Employment', url: 'https://www.bls.gov/feed/empsit.rss', markets: ['us'] },
   { id: 'sec', name: 'U.S. SEC', url: 'https://www.sec.gov/news/pressreleases.rss', markets: ['us','crypto'] },
   { id: 'ethereum', name: 'Ethereum Foundation', url: 'https://blog.ethereum.org/feed.xml', markets: ['crypto'] },
   { id: 'kraken', name: 'Kraken', url: 'https://blog.kraken.com/feed', markets: ['crypto'] },
@@ -89,7 +88,7 @@ export function parseBlsCalendar(html, now = Date.now()) {
     const occursAt = iso(`${date} ${time} ${eastern === 'EDT' ? 'EDT' : 'EST'}`);
     if (!occursAt || Date.parse(occursAt) < now) continue;
     events.push({ id: hash(`bls:${date}:${title}`), title, link: 'https://www.bls.gov/schedule/news_release/current_year.asp', sourceUrl: 'https://www.bls.gov/schedule/news_release/current_year.asp', occursAt,
-      source: 'U.S. BLS', sourceId: 'bls-calendar', markets: ['us','forex','crypto','tw'], symbols: [], kind: 'event', status: 'confirmed', originalTimezone: 'America/New_York', previous: null, consensus: null, actual: null, revised: null, updatedAt: null, impact: impact(title, 'bls-calendar', 'https://www.bls.gov/schedule/news_release/current_year.asp') });
+      source: 'U.S. BLS', sourceId: 'bls-calendar', markets: ['us','crypto','tw'], symbols: [], kind: 'event', status: 'confirmed', originalTimezone: 'America/New_York', previous: null, consensus: null, actual: null, revised: null, updatedAt: null, impact: impact(title, 'bls-calendar', 'https://www.bls.gov/schedule/news_release/current_year.asp') });
   }
   return events.sort((a,b) => a.occursAt.localeCompare(b.occursAt));
 }
@@ -163,7 +162,7 @@ export async function collect() {
   catch (error) { sources.push({ id: 'bls-calendar', status: 'error', message: String(error.message).slice(0,100) }); events = (old?.events ?? []).filter(item => safeUrl(item.link) && Date.parse(item.occursAt) >= Date.now()).map(retainEvent); }
   if (!news.length && !events.length) throw new Error('No verified source data; snapshot not replaced');
   const priorUnlocks = (old?.events || []).filter(item => item.kind === 'token-unlock' && item.sourceId === 'aptos' && item.date && item.sourceUrl && item.status === 'date-only');
-  const reviewed = news.map(item => localize({ ...item, markets: ['fed','bls-cpi','bls-jobs'].includes(item.sourceId) ? ['us','forex'] : item.sourceId === 'ecb' ? ['forex'] : item.markets, impact: impact(item.title, item.sourceId, item.link) }, old?.news));
+  const reviewed = news.map(item => localize({ ...item, markets: ['fed','bls-cpi','bls-jobs'].includes(item.sourceId) ? ['us'] : item.markets, impact: impact(item.title, item.sourceId, item.link) }, old?.news));
   const comparable = { schemaVersion: 1, news: reviewed.filter(item => item.translationStatus === 'translated'), events: [...events.map(item => localize(item, old?.events)), ...priorUnlocks] };
   const oldComparable = old && { schemaVersion: old.schemaVersion, news: old.news, events: old.events };
   if (JSON.stringify(comparable) === JSON.stringify(oldComparable)) return { changed: false, sources };

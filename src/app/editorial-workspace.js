@@ -1,7 +1,7 @@
 /* Shared editorial UI. Market data and radar workspace remain owned by their modules. */
 (() => {
   'use strict';
-  const marketNames = {crypto:'Crypto',us:'美股',tw:'台股',forex:'外匯'};
+  const marketNames = {crypto:'Crypto',us:'美股',tw:'台股'};
   const modeKey = 'ox-ui-mode';
   function setMode(mode) {
     document.body.dataset.uiMode = mode === 'plus' ? 'plus' : 'pro';

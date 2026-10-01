@@ -534,7 +534,7 @@ async function loadSymbolCandles(isInitial = true) {
   const symbol = state.symbol, period = state.period;
   const feed=startChartLiveCandles(symbol,period);
   const overlay = document.getElementById("chart-loading");
-  if (isInitial) overlay.classList.add("show");
+  if (isInitial) { overlay.innerHTML=window.OXLoading?.markup(`${symbol} K 線載入中`,0,1)||"K 線載入中…";overlay.classList.add("show"); }
   if (state.chartPriceScope !== `${symbol}:${period}`) {
     state.chartPriceViewport = null;
     state.chartAutoPriceRange = null;

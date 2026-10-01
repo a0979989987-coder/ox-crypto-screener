@@ -8,7 +8,7 @@ const testPort = Number(process.env.OX_E2E_PORT || 4173);
 const testBase = `http://127.0.0.1:${testPort}`;
 const html = readFileSync(join(root, "index.html"), "utf8");
 const expectedCss = [...html.matchAll(/<link rel="stylesheet" href="([^"]+)">/g)].map(match => match[1].split("?")[0]);
-const classifiedCss = expectedCss.filter(path => !["src/styles/markets/forex.css", "src/styles/markets/us.css"].includes(path));
+const classifiedCss = expectedCss.filter(path => !["src/styles/markets/us.css"].includes(path));
 const mime = { ".html": "text/html", ".js": "text/javascript", ".css": "text/css", ".png": "image/png" };
 
 function assert(condition, message) {
@@ -64,16 +64,6 @@ const candles = Array.from({ length: 180 }, (_, index) => {
   const price = 60000 + index * 14 + Math.sin(index / 4) * 180;
   return [String(now - (180 - index) * 3600000), String(price), String(price + 120), String(price - 100), String(price + 45), String(900 + index), String((900 + index) * price)];
 });
-const rates = {
-  amount: 1, base: "USD", start_date: "2026-09-17", end_date: "2026-09-22",
-  rates: {
-    "2026-09-17": { EUR:.850, GBP:.740, JPY:146.0, CHF:.790, CAD:1.370, AUD:1.510, NZD:1.650 },
-    "2026-09-18": { EUR:.849, GBP:.739, JPY:146.4, CHF:.791, CAD:1.369, AUD:1.508, NZD:1.648 },
-    "2026-09-21": { EUR:.848, GBP:.738, JPY:146.7, CHF:.792, CAD:1.368, AUD:1.505, NZD:1.645 },
-    "2026-09-22": { EUR:.846, GBP:.735, JPY:147.0, CHF:.794, CAD:1.365, AUD:1.500, NZD:1.640 }
-  }
-};
-const forexV2Rows = Object.entries(rates.rates).flatMap(([date, values]) => Object.entries(values).map(([quote, rate]) => ({ date, base: "USD", quote, rate })));
 
 function bitgetBody(url) {
   if (url.pathname.includes("/api/v3/market/instruments")) return { code: "00000", data: instruments };
@@ -148,8 +138,6 @@ async function preparePage(context, viewport) {
     status: 200, contentType: "application/json",
     body: JSON.stringify({ configured: false, providerConnectionVerified: false, databaseConnected: false })
   }));
-  await page.route("https://api.frankfurter.app/**", route => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(rates) }));
-  await page.route("https://api.frankfurter.dev/**", route => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(forexV2Rows) }));
   await page.route("https://api.bitget.com/**", route => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(bitgetBody(new URL(route.request().url()))) }));
   await page.route("https://fapi.binance.com/**", route => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ symbol: "BTCUSDT", lastPrice: "63250", priceChangePercent: "1.2", quoteVolume: "900000000", volume: "12000" }) }));
   await page.route("https://api.bybit.com/**", route => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ retCode: 0, result: { list: [{ lastPrice: "63250", price24hPcnt: ".012", turnover24h: "900000000", volume24h: "12000" }] } }) }));
@@ -280,12 +268,6 @@ async function desktopRegression(browser) {
   await page.locator('.twcr-search-dialog [data-action="search-close"]').click();
   await selectMarket(page, "crypto");
   assert(await page.locator("#view-radar").isVisible(), "Crypto market did not restore");
-  await selectMarket(page, "forex");
-  await page.waitForSelector("#ox-forex-module:not([hidden]) .fx-radar-grid");
-  assert(await page.locator("#ox-forex-module .fx-session-state").isVisible(), "Forex session status did not render");
-  assert(await page.locator("#ox-forex-module .fx-pair-card").count() === 11, "Forex radar did not render primary and reserved pairs");
-  await selectMarket(page, "crypto");
-  assert(await page.locator("#view-radar").isVisible(), "Crypto did not restore after Forex");
 
   await openControl(page);
   assert(await page.locator("#ox-control-panel").isVisible(), "Control Panel did not open");
@@ -399,11 +381,6 @@ async function mobileRegression(browser) {
   await page.locator('.twcr-search-dialog [data-action="search-close"]').click();
   await selectMarket(page, "crypto");
   assert(await page.locator("#view-radar").isVisible(), "Mobile market switch back to Crypto failed");
-  await selectMarket(page, "forex");
-  await page.waitForSelector("#ox-forex-module:not([hidden]) .fx-radar-grid");
-  assert(await page.locator("#ox-forex-module .fx-pulse-row").isVisible(), "Mobile Forex pulse did not render");
-  await selectMarket(page, "crypto");
-  assert(await page.locator("#view-radar").isVisible(), "Mobile Crypto did not restore after Forex");
   await page.click("#ox-control-close");
   await page.waitForSelector("#ox-control-overlay:not(.is-open)");
 

@@ -9,17 +9,23 @@ export function partition(items,rect,value) {
 const volumeLabel=v=>Math.abs(v)>=1000?compact(v):Number(v.toPrecision(3)).toString();
 const timeLabel=t=>new Date(t).toLocaleTimeString('zh-TW',{timeZone:'Asia/Taipei',hour:'2-digit',minute:'2-digit',hour12:false});
 export function createToolChart(canvas,{onSelect=()=>{},signal,heatColors=['116,174,147','188,114,123']}={}) {
- const ctx=canvas.getContext('2d');let current={type:'empty'},hits=[],raf=0,w=0,h=0;
+ const ctx=canvas.getContext('2d'),life=new AbortController();let current={type:'empty'},hits=[],raf=0,w=0,h=0,scale=1,panX=0,panY=0,suppressClickUntil=0;
+ const pointers=new Map();let gesture=null,movement=0;
+ const clampPan=()=>{panX=Math.max(w*(1-scale),Math.min(0,panX));panY=Math.max(h*(1-scale),Math.min(0,panY));};
+ const position=e=>{const r=canvas.getBoundingClientRect();return {x:e.clientX-r.left,y:e.clientY-r.top};};
+ function zoomAt(next,x=w/2,y=h/2){next=Math.max(1,Math.min(20,next));const ratio=next/scale;panX=x-(x-panX)*ratio;panY=y-(y-panY)*ratio;scale=next;canvas.dataset.zoom=String(scale);clampPan();schedule();}
+ function seedGesture(){const ps=[...pointers.values()];gesture=ps.length>=2?{x:(ps[0].x+ps[1].x)/2,y:(ps[0].y+ps[1].y)/2,d:Math.hypot(ps[0].x-ps[1].x,ps[0].y-ps[1].y)}:ps.length?{...ps[0]}:null;}
  const text=(s,x,y,{align='left',size=11,color='#a4b0b4'}={})=>{ctx.font=`${size}px Inter,-apple-system,"Noto Sans CJK TC",sans-serif`;ctx.fillStyle=color;ctx.textAlign=align;ctx.fillText(String(s),x,y);};
  const line=(x1,y1,x2,y2,color='#2a373e')=>{ctx.strokeStyle=color;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();};
  function draw(){raf=0;if(!w||!h)return;const d=Math.min(devicePixelRatio||1,2);canvas.width=Math.round(w*d);canvas.height=Math.round(h*d);ctx.setTransform(d,0,0,d,0,0);ctx.clearRect(0,0,w,h);hits=[];
   const {type}=current;
   if(type==='heatmap'){
+   ctx.translate(panX,panY);
    const value=r=>current.weight==='cap'?r.cap:current.weight==='equal'?1:r.volume;
    const valid=current.rows.filter(r=>value(r)>0).sort((a,b)=>value(b)-value(a));
    let tiles=[];
-   if(current.grouped){const groups=[...new Set(valid.map(r=>r.sector))].map(sector=>({sector,rows:valid.filter(r=>r.sector===sector)}));for(const g of partition(groups,[0,0,w,h],g=>g.rows.reduce((s,r)=>s+value(r),0))){const [x,y,ww,hh]=g.rect;ctx.fillStyle='#202c31';ctx.fillRect(x+1,y+1,ww-2,hh-2);if(ww>70&&hh>45)text(g.sector,x+9,y+18,{size:11,color:'#cdd2ce'});tiles.push(...partition(g.rows,[x+2,y+25,Math.max(0,ww-4),Math.max(0,hh-27)],value));}}
-   else tiles=partition(valid,[0,0,w,h],value);
+   if(current.grouped){const groups=[...new Set(valid.map(r=>r.sector))].map(sector=>({sector,rows:valid.filter(r=>r.sector===sector)}));for(const g of partition(groups,[0,0,w*scale,h*scale],g=>g.rows.reduce((s,r)=>s+value(r),0))){const [x,y,ww,hh]=g.rect;ctx.fillStyle='#202c31';ctx.fillRect(x+1,y+1,ww-2,hh-2);if(ww>70&&hh>45)text(g.sector,x+9,y+18,{size:11,color:'#cdd2ce'});tiles.push(...partition(g.rows,[x+2,y+25,Math.max(0,ww-4),Math.max(0,hh-27)],value));}}
+   else tiles=partition(valid,[0,0,w*scale,h*scale],value);
    for(const r of tiles){const [x,y,ww,hh]=r.rect;if(ww<2||hh<2)continue;const intensity=Math.min(.68,.18+Math.abs(r.returnPct)/10);ctx.fillStyle=`rgba(${heatColors[r.returnPct>=0?0:1]},${intensity})`;ctx.fillRect(x+1,y+1,ww-2,hh-2);if(current.selected===r.symbol){ctx.strokeStyle='#eeeadd';ctx.strokeRect(x+2,y+2,ww-4,hh-4);}const cx=x+ww/2,cy=y+hh/2;
     if(ww>48&&hh>25){text(r.base,cx,cy-(hh>65?12:0),{align:'center',size:Math.min(27,Math.max(12,ww/10)),color:'#eee'});if(hh>45)text(signed(r.returnPct,2)+'%',cx,cy+(hh>65?9:16),{align:'center',size:12,color:'#eee'});if(hh>95&&ww>85)text(r.price.toLocaleString('en-US',{maximumFractionDigits:r.price<1?5:2}),cx,cy+30,{align:'center',size:11});}
     hits.push({x,y,w:ww,h:hh,value:r.symbol});
@@ -38,7 +44,14 @@ export function createToolChart(canvas,{onSelect=()=>{},signal,heatColors=['116,
     text('Δ '+signed(b.delta,2),x+cw/2,bottom+21,{align:'center',size:11,color:b.delta>=0?'#91c7b1':'#cd9399'});text('V '+volumeLabel(b.total),x+cw/2,bottom+40,{align:'center',size:10});hits.push({x,y:top,w:cw,h:bottom-top,value:b.time});});
   }
  }
- const schedule=()=>{if(!raf)raf=requestAnimationFrame(draw);};const observer=new ResizeObserver(e=>{w=e[0].contentRect.width;h=e[0].contentRect.height;schedule();});observer.observe(canvas);
- canvas.addEventListener('click',e=>{const r=canvas.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top;const hit=hits.find(p=>x>=p.x&&x<=p.x+p.w&&y>=p.y&&y<=p.y+p.h);if(hit)onSelect(hit.value);},{signal});
- return {update(options){current=options;schedule();},destroy(){observer.disconnect();cancelAnimationFrame(raf);}};
+ const schedule=()=>{if(!raf)raf=requestAnimationFrame(draw);};const observer=new ResizeObserver(e=>{const nw=e[0].contentRect.width,nh=e[0].contentRect.height;panX=w?panX*nw/w:0;panY=h?panY*nh/h:0;w=nw;h=nh;clampPan();schedule();});observer.observe(canvas);
+ canvas.addEventListener('wheel',e=>{if(current.type!=='heatmap')return;e.preventDefault();const p=position(e);zoomAt(scale*Math.exp(-e.deltaY*.002),p.x,p.y);},{signal:life.signal,passive:false});
+ canvas.addEventListener('pointerdown',e=>{if(current.type!=='heatmap'||e.button>0)return;if(!pointers.size)movement=0;pointers.set(e.pointerId,position(e));canvas.setPointerCapture(e.pointerId);if(pointers.size>1)suppressClickUntil=Date.now()+600;seedGesture();},{signal:life.signal});
+ canvas.addEventListener('pointermove',e=>{if(!pointers.has(e.pointerId))return;const p=position(e),prev=pointers.get(e.pointerId);pointers.set(e.pointerId,p);movement+=Math.hypot(p.x-prev.x,p.y-prev.y);if(movement>4)suppressClickUntil=Date.now()+600;if(Math.hypot(p.x-prev.x,p.y-prev.y)<.1)return;const ps=[...pointers.values()];if(ps.length>=2){const x=(ps[0].x+ps[1].x)/2,y=(ps[0].y+ps[1].y)/2,d=Math.hypot(ps[0].x-ps[1].x,ps[0].y-ps[1].y);if(gesture?.d>0){zoomAt(scale*d/gesture.d,gesture.x,gesture.y);panX+=x-gesture.x;panY+=y-gesture.y;clampPan();schedule();}suppressClickUntil=Date.now()+600;}else if(scale>1){panX+=p.x-prev.x;panY+=p.y-prev.y;clampPan();schedule();if(Math.hypot(p.x-gesture.x,p.y-gesture.y)>4)suppressClickUntil=Date.now()+600;}seedGesture();},{signal:life.signal});
+ const end=e=>{if(!pointers.delete(e.pointerId))return;if(canvas.hasPointerCapture(e.pointerId))canvas.releasePointerCapture(e.pointerId);seedGesture();};
+ for(const type of ['pointerup','pointercancel','lostpointercapture'])canvas.addEventListener(type,end,{signal:life.signal});
+ canvas.addEventListener('click',e=>{if(Date.now()<suppressClickUntil)return;const r=canvas.getBoundingClientRect(),x=e.clientX-r.left-(current.type==='heatmap'?panX:0),y=e.clientY-r.top-(current.type==='heatmap'?panY:0);const hit=hits.find(p=>x>=p.x&&x<=p.x+p.w&&y>=p.y&&y<=p.y+p.h);if(hit)onSelect(hit.value);},{signal:life.signal});
+ const destroy=()=>{life.abort();observer.disconnect();cancelAnimationFrame(raf);pointers.clear();};
+ signal?.addEventListener('abort',destroy,{once:true});
+ return {update(options){if(options.type!==current.type){scale=1;panX=panY=0;}current=options;canvas.style.touchAction=options.type==='heatmap'?'none':'';canvas.dataset.zoom=String(scale);schedule();},zoom(factor){zoomAt(scale*factor);},reset(){scale=1;panX=panY=0;canvas.dataset.zoom='1';schedule();},viewport(){return {scale,x:panX,y:panY};},destroy};
 }

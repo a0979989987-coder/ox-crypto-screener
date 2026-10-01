@@ -160,13 +160,3 @@ const OXControlPanel = (() => {
 
   return { init, open, close, syncTheme, syncDataStatus };
 })();
-
-
-/* ===== OX secure API config =====
-   After deploying the included Cloudflare Worker, paste ONLY its public endpoint here.
-   Never put COINGLASS_API_KEY in this file. */
-window.OX_CONFIG = Object.assign({
-  liquidationEndpoint: ""
-}, window.OX_CONFIG || {});
-
-/* ===== Exchange Liquidation module: safe proxy adapter, no third-party secret in frontend ===== */

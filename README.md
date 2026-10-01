@@ -7,7 +7,6 @@ OX v4.0 modular-classified RC2, migrated incrementally from the verified OX v3.8
 - Crypto: existing v3.8.4 behavior preserved and classified into ordered runtime modules
 - US: isolated five-page workspace, official catalog, OHLCV chart and shared analysis pipeline; [implementation / launch requirements](docs/US_2_0.md)
 - TW: existing market switch and isolated placeholder adapter preserved
-- Forex: independent standard module using Frankfurter / ECB reference rates
 
 The complete file map and load-order rules are documented in [`ARCHITECTURE.md`](ARCHITECTURE.md).
 

@@ -1,8 +1,8 @@
-import { createToolsRail } from "../../../components/strength/tools-rail.js";
+import { createToolsRail } from "../../../components/strength/tools-rail.js?v=20261001-loading1";
 // Crypto-only inline tools. Preserve the existing strength calculations and DOM.
 const section = document.querySelector('#view-strength .strength-page');
 if (section) {
-  const tabs = [['patterns','型態搜尋'],['bubbles','泡泡圖'],['overview','總覽'],['strength','強弱對比'],['heatmap','熱力圖'],['rotation','板塊輪動'],['flow','主動買賣'],['liquidations','爆倉'],['zones','清算'],['derivatives','合約'],['order','訂單流']];
+  const tabs = [['patterns','型態搜尋'],['bubbles','泡泡圖'],['strength','強弱對比'],['heatmap','熱力圖'],['rotation','板塊輪動'],['flow','主動買賣']];
   let selected = 'patterns';
   const rail = createToolsRail({ tabs, selected, label:'Crypto 指標分類', attribute:'data-crypto-tool', onSelect(id){selected=id;unmount();sync();} });
   const nav = rail.element; nav.id='ox-crypto-tools-nav'; nav.hidden=true;
@@ -20,7 +20,7 @@ if (section) {
   slot.hidden = true;
   const anchor = section.querySelector('.strength-compare-panel');
   if (anchor) anchor.after(slot); else section.prepend(slot);
-  const host = document.createElement('div'); slot.append(host);
+  const host = document.createElement('div'),loading = document.createElement('div');loading.className='ox-tool-loading';loading.hidden=true;slot.append(host,loading);
   let instance = null, pending = false, generation = 0, observer = null, dialog = null;
   let previousOverflow = '';
   const active = () => (document.body.dataset.market || 'crypto') === 'crypto' && document.body.dataset.view === 'strength';
@@ -43,7 +43,7 @@ if (section) {
   }
   function unmount() {
     generation++; pending = false; observer?.disconnect(); observer = null;
-    exitFocus(); instance?.destroy(); instance = null; slot.hidden = true;
+    exitFocus(); instance?.destroy(); instance = null; loading.hidden=true;slot.hidden = true;
   }
   async function sync() {
     nav.hidden = !active();
@@ -52,21 +52,21 @@ if (section) {
     if(selected==='strength'){unmount();return;}
     slot.hidden = false;
     if (instance || pending) return;
-    pending = true; const token = ++generation;
+    pending = true;loading.hidden=false;loading.innerHTML=window.OXLoading?.markup('工具載入中')||'工具載入中…';const token = ++generation;
     try {
       if(selected==='bubbles'){
-        const { mountCryptoBubbles } = await import('../bubbles/view.js?v=20261001-bubbles3');
+        const { mountCryptoBubbles } = await import('../bubbles/view.js?v=20261001-loading1');
         if(token!==generation||!active())return;
         instance=mountCryptoBubbles(host);
         return;
       }
       if(selected==='patterns'){
-        const { mountPatternSearch } = await import('../patterns/view.js?v=tw-all-20260930');
+        const { mountPatternSearch } = await import('../patterns/view.js?v=20261001-loading1');
         if(token!==generation||!active())return;
         instance=mountPatternSearch(host);
         return;
       }
-      const { mountCryptoFlow } = await import('./flow-view.js?v=crypto-live2-20260928');
+      const { mountCryptoFlow } = await import('./flow-view.js?v=20261001-loading1');
       if (token !== generation || !active()) return;
       instance = mountCryptoFlow(host, { initialTab:selected, autoRefresh:true, onExit() { ns.querySelector('[data-crypto-tool="strength"]').click(); } });
       const style = document.createElement('style');
@@ -76,8 +76,8 @@ if (section) {
       observer.observe(host.shadowRoot.querySelector('.cfx'), {attributes:true,attributeFilter:['class']});
     } catch (error) {
       console.warn('[OX Crypto tool]',error);
-      if (token === generation) { host.textContent = '工具載入失敗'; const retry = document.createElement('button'); retry.textContent='重新載入'; retry.onclick=()=>{host.textContent='';sync();}; host.append(retry); }
-    } finally { if (token === generation) pending = false; }
+      if (token === generation) { loading.textContent = '工具載入失敗'; const retry = document.createElement('button'); retry.textContent='重新載入'; retry.onclick=()=>{loading.textContent='';sync();};loading.append(retry); }
+    } finally { if (token === generation) { pending = false;if(instance)loading.hidden=true; } }
   }
   document.addEventListener('ox:marketchange', sync);
   document.addEventListener('ox:viewchange', sync);

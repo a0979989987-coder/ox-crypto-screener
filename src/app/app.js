@@ -1,15 +1,14 @@
-import { marketRouter } from "./marketRouter.js";
+import { marketRouter } from "./marketRouter.js?v=20261001-loading1";
 import { cryptoModule } from "../markets/crypto/index.js";
-import { usModule } from "../markets/us/index.js?v=20260930-us-compact2";
-import { twModule } from "../markets/tw/index.js";
-import { forexModule } from "../markets/forex/index.js";
+import { usModule } from "../markets/us/index.js?v=20261001-loading1";
+import { twModule } from "../markets/tw/index.js?v=20261001-loading1";
 
 export function bootOXModules(modules = []) {
   modules.forEach(module => marketRouter.register(module));
   return marketRouter;
 }
 
-const router = bootOXModules([cryptoModule, usModule, twModule, forexModule]);
+const router = bootOXModules([cryptoModule, usModule, twModule]);
 let currentView = document.body.dataset.view || "home";
 let renderToken = 0;
 const isMarketView = () => ["home", "strength", "radar"].includes(currentView) || (document.body.dataset.market === "us" && ["data", "media"].includes(currentView));
@@ -28,8 +27,6 @@ function scheduleMarketView() {
       if (!isMarketView()) {
         const host = document.getElementById("market-unavailable-card");
         if (host) host.hidden = true;
-        const forex = document.getElementById("ox-forex-module");
-        if (forex) forex.hidden = true;
         return;
       }
       if (document.body.dataset.market !== market) scheduleMarketView();
@@ -53,7 +50,7 @@ document.addEventListener("ox:viewchange", event => {
   // Data, News, Media or Settings page opens, even if activation is pending.
   if (!isMarketView()) {
     ++renderToken;
-    for (const id of ["ox-forex-module", "market-unavailable-card"]) {
+    for (const id of ["market-unavailable-card"]) {
       const root = document.getElementById(id);
       if (root) root.hidden = true;
     }
@@ -65,7 +62,7 @@ document.addEventListener("ox:marketchange", event => {
   scheduleMarketView();
 });
 
-window.OXModules = Object.freeze({ router, forex: forexModule });
+window.OXModules = Object.freeze({ router });
 
 // A slow module graph may finish after the user already selected a market.
 // Restore the actual DOM context instead of requiring another market gesture.

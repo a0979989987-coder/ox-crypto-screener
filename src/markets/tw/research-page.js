@@ -1,7 +1,7 @@
-import { savedResearch, loadResearch, selectSectors, readWatchlist, quadrant } from './research-data.js';
+import { savedResearch, loadResearch, selectSectors, readWatchlist, quadrant } from './research-data.js?v=20261001-loading1';
 import { escape, number, pct, money, direction, segments, mountResearch, stockRows } from './research-ui.js';
-import { bubbleChart, bubblePoints } from './research-bubbles.js';
-import { closeResearchDetails, showSector, showStock, watchClick } from './research-detail.js';
+import { bubbleChart, bubblePoints } from './research-bubbles.js?v=20261001-loading1';
+import { closeResearchDetails, showSector, showStock, watchClick } from './research-detail.js?v=20261001-loading1';
 const prefs = { tab: 'bubble', scope: 'all', market: 'ALL', mode: 'auto', density: 'top', zoom: 1, panX: 0, panY: 0, sort: 'buy', query: '', quadrant: null, help: false, replayIndex: null };
 let session, data = savedResearch(), loading = false, error = null, lastFetch = 0;
 let outlook = { day: null, up: 0, down: 0, mine: null, status: '載入多空看法中', ready: false, checkedAt: 0, pending: false };
@@ -103,7 +103,9 @@ function paint(s) {
 async function refresh(s, force) {
   if (loading) return;
   loading = true; error = null; paint(s);
+  const loadingTask=window.OXLoading?.begin('tw','台股產業資料載入中');
   const result = await loadResearch({ force, onCached(snapshot) { data = snapshot; if (current(s)) paint(s); } });
+  loadingTask?.finish();
   loading = false; lastFetch = Date.now(); data = result.data; error = result.error;
   if (session && current(session)) paint(session);
 }
