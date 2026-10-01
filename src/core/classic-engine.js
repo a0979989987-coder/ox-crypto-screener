@@ -4,7 +4,7 @@
  */
 (function (root) {
   'use strict';
-  const CLASSIC_VERSION = 8;
+  const CLASSIC_VERSION = 9;
   const CLASSIC_TIER_LIMITS = Object.freeze({ T1: 10, T2: 15, T3: 15 });
   // Initial, centralized defaults in ATR/bar units. These are implementation
   // thresholds, not claims of calibration or performance from trade screenshots.
@@ -120,12 +120,13 @@
       if (body > a * 0.2 && ratio > impulseRatio) { impulseRatio = ratio; impulseAt = c.time; }
     }
     const upwardShare = up + down > 0 ? up / (up + down) : 0;
+    const sustainedBars=recent.slice(-4).filter(c=>c.close>c.open+a*.1&&c.volume>=baseline*1.15).length;
     const last = bars.at(-1), ratio = last.volume / baseline;
     const distribution = last.close < last.open - a * 0.45 && ratio >= 1.4 ||
       upwardShare < 0.38 && last.close < bars.at(-3).close;
     return { complete: true, supported: !distribution && impulseRatio >= rules.impulseVolume && upwardShare >= rules.upwardShare,
       baseline, ratio, impulseRatio, impulseAt, upwardShare, distribution,
-      recentRatio: mean(recent.slice(-4).map(c => c.volume)) / baseline };
+      recentRatio: mean(recent.slice(-4).map(c => c.volume)) / baseline, sustainedBars };
   }
   function directionEvidence(bars, features, a) {
     const n = bars.length, last = bars.at(-1), recent = bars.slice(-12);
@@ -234,6 +235,9 @@
     const target=ahead.find(p=>p!==trigger&&p.level+p.slope*(observed.provisional?1:0)>observedPrice+a*.15)||null;
     const space = target ? (target.level+target.slope*(observed.provisional?1:0)-observedPrice) / a : null;
     const spaceOK = space === null || space >= 0.65;
+    // A nearby historical objective cannot justify a near-perfect score when
+    // the same structure needs substantially more room to its invalidation.
+    const roomRisk = space === null ? null : space / Math.max(risk, .01);
     const structureReady = phase !== 'watch' && direction.confirmed && !failed && !liveFailure && !exhausted && !chase &&
       risk > 0 && spaceOK;
     // T2/T3 are directional observations, not miniature copies of the strict
@@ -246,7 +250,9 @@
         volume.impulseRatio >= 1.05 && direction.advance >= 0.5,
       priceStructure:direction.higherLows && direction.higherHighs || direction.reclaim || reversal.candidate,
       reversal:reversal.candidate };
-    const observationEligible = observationDirection && (observationEvidence.liquidity || observationEvidence.directionalVolume || observationEvidence.priceStructure) &&
+    const actionableLevel=(near && trigger?.touches.length>=2 || broken && n-1-broken.breakIndex<=rules.recentBreakBars);
+    const activeFlow=observationEvidence.directionalVolume && volume.recentRatio>=1.1 && direction.advance>=1;
+    const observationEligible = observationDirection && (actionableLevel || activeFlow || reversal.candidate) &&
       volume.complete && !volume.distribution &&
       !failed && !liveFailure && (!exhausted||wickRecovered&&risk<=rules.maximumRiskATR) && (!chase||reversal.candidate) && risk > 0;
     // Score distinct completed evidence rather than stacking a high base with
@@ -255,7 +261,8 @@
     const testedLevel = trigger ? Math.min(4, trigger.touches.length) * 3 : 0;
     const trendQuality = (direction.higherLows ? 6 : 0) + (direction.higherHighs ? 4 : 0) +
       (direction.position >= .72 ? 3 : 0);
-    const volumeQuality = volume.supported ? Math.min(9, 5 + 2 * Math.log2(Math.max(1, volume.impulseRatio))) : 0;
+    const volumeQuality = volume.supported ? Math.min(9, 5 + 2 * Math.log2(Math.max(1, volume.impulseRatio))) -
+      (volume.sustainedBars<2?3:0) : 0;
     const activationQuality = near ? Math.max(0, 8 * (1 - Math.max(0, gap) / rules.nearATR)) : broken ? 4 : 0;
     const confirmedBreakoutQuality = phase === 'breakout' && volume.supported && volume.impulseRatio >= 4 &&
       volume.upwardShare >= .7 ? Math.min(12, 5 + 3 * Math.log2(volume.impulseRatio / 3)) : 0;
@@ -264,6 +271,9 @@
     let qualityScore = Math.round(clamp(40 + testedLevel + trendQuality + volumeQuality + activationQuality +
       (broken && phase === 'breakout' ? 5 : 0) + confirmedBreakoutQuality + pressureReadyQuality +
       (target && spaceOK ? 4 : 0), 0, 100));
+    if(roomRisk!==null&&roomRisk<1)qualityScore=Math.max(0,qualityScore-7-Math.round((1-roomRisk)*10));
+    if(!target)qualityScore=Math.min(84,qualityScore);
+    if(volume.sustainedBars<2)qualityScore=Math.min(84,qualityScore);
     // An unfinished crossing has not held at a close and cannot enter T1.
     if (phase === 'probe') qualityScore = Math.min(79, qualityScore - 6 - Math.min(10,
       Math.round(Math.max(0, (observedPrice - pressure.level) / a - 0.45) * 4)));
@@ -293,6 +303,7 @@
     if (volume.complete) reasons.push((side === 'LONG' ? '上攻' : '下攻') + '量比 ' + volume.impulseRatio.toFixed(2) +
       'x · 同向量 ' + (volume.upwardShare * 100).toFixed(0) + '%');
     if (!target) reasons.push('下一個歷史目標尚未辨識');
+    else if(roomRisk<1)reasons.push('目標空間僅為結構失效距離 '+roomRisk.toFixed(2)+' 倍 · 分數折減');
     // Observations display the features that actually earned their place,
     // alongside missing confirmations. A distant valid level is still evidence,
     // but it must not be described as an imminent, volume-confirmed breakout.
@@ -316,7 +327,7 @@
     const strictEligible=structureReady && volume.supported && phase !== 'probe';
     let completenessScore=strictEligible?qualityScore:qualityScore-(volume.supported?0:12)-(direction.confirmed?0:8)-(near?0:8);
     if(useReversal)completenessScore=Math.round(Math.max(completenessScore,55+Math.min(12,reversal.impulseRatio*3)+(reversal.confirmed?8:4)+(reversal.upwardShare>=.7?6:0)));
-    const signal = { ...base, riskATR:risk, wickRecovered, qualityScore:completenessScore, atr: a, direction, volume, reversal, structureReady, observationEligible, observationEvidence, distanceATR: gap,
+    const signal = { ...base, riskATR:risk, roomRisk, wickRecovered, qualityScore:completenessScore, atr: a, direction, volume, reversal, structureReady, observationEligible, observationEvidence, distanceATR: gap,
       invalidation: { level: dir * stop.price, time: stop.time }, target: publicLevel(target, bars, dir),
       levels: levels.map(p => publicLevel(p, bars, dir)), matchedReasons, rejectionReasons,
       priority: phase === 'prebreakout' || phase === 'probe' ? 0 : 1 };

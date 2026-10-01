@@ -2,7 +2,7 @@ import { getUSApiBase } from "./api.js?v=20261001-us-eod1";
 import { mergeCandles } from "./model.js?v=20261001-us-eod1";
 import { aggregate4H, aggregateMonthly } from "./aggregate.js?v=20261001-us-eod1";
 import { EOD_CAPABILITIES } from "./eod.js";
-import { DeviceEOD } from "./device-eod.js?v=20261001-rank4";
+import { DeviceEOD } from "./device-eod.js?v=20261002-rank5";
 import { deviceRecord } from "./device-storage.js?v=20261001-us-device1";
 const cache = new Map();
 const quoteCache = new Map();

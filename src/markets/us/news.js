@@ -10,7 +10,7 @@ import {
   patterns,
   sectorETF,
 } from "./view-utils.js?v=20261001-us-eod1";
-import { fetchJSON } from "./provider.js?v=20261001-rank4";
+import { fetchJSON } from "./provider.js?v=20261002-rank5";
 export const newsViews = {
   async loadNewsData() {
     if (this.newsData) return this.newsData;
