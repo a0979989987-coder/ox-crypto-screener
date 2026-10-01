@@ -1,5 +1,5 @@
-import { evaluateClassic, compareClassic } from '../../core/classic.js?v=20261001-audit1';
-import { USAdapter } from "./provider.js?v=20261001-audit1";
+import { evaluateClassic, compareClassic } from '../../core/classic.js?v=20261001-rank2';
+import { USAdapter } from "./provider.js?v=20261001-rank2";
 import { INTERVALS, countdown, sessionAt, nyParts } from "./calendar.js?v=20261001-us-eod1";
 import { mergeCandles, movingAverage, vwap } from "./model.js?v=20261001-us-eod1";
 import { icon, positionTimeframe, openDialog, closeDialog } from "./ui.js?v=20261001-us-eod1";

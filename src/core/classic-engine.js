@@ -341,11 +341,15 @@
     // Score partial observations from current evidence. Capping a 100-point
     // daily setup at 79 made very different, often weak candidates all tie at
     // 79 and pushed fresh recoveries below them by scan order.
-    const observationScore=Math.round(clamp(42+Math.min(12,(setup.pressure?.touches||0)*3)+
-      (setup.direction?.confirmed?6:0)+(setup.volume?.supported?6:0)+
-      (trigger.direction?.confirmed?8:0)+(trigger.volume?.supported?8:0)+
-      (trigger.direction?.position>=0.75?4:0)+(setup.reversal?.candidate?16:0)+
-      (setup.phase==='probe'?3:0)-(triggerSpaceBlocked?5:0)-(confirmationBlocked?8:0),0,79));
+    // Keep partial-condition scores below T1, but leave enough headroom to
+    // distinguish an ordinary probe from a fresh, volume-backed reversal.
+    // Previously most otherwise different observations saturated at 79.
+    const observationScore=Math.round(clamp(44+Math.min(8,(setup.pressure?.touches||0)*2)+
+      (setup.direction?.confirmed?4:0)+(setup.volume?.supported?4:0)+
+      (trigger.direction?.confirmed?7:0)+(trigger.volume?.supported?6:0)+
+      (trigger.direction?.position>=0.75?3:0)+(setup.reversal?.candidate?16:0)+
+      (setup.phase==='probe'?2:0)+Math.min(3,Math.log2(Math.max(1,trigger.volume?.impulseRatio||1)))-
+      (triggerSpaceBlocked?5:0)-(confirmationBlocked?8:0),0,79));
     const signal = { ...setup, observationEligible:!!observationEligible,
       qualityScore:eligible?setup.qualityScore:observationScore,
       triggerFrame, triggerClosedAt: trigger.closedAt, triggerVolume: trigger.volume,
