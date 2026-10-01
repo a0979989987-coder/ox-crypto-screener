@@ -1,4 +1,4 @@
-import { evaluateClassic, compareClassic, compactClassic, rankClassicTiers } from '../../../core/classic.js?v=20261002-rank5';
+import { evaluateClassic, compareClassic, compactClassic, rankClassicTiers } from '../../../core/classic.js?v=20261002-rank6';
 import { PATTERNS, patternById } from './catalog.js?v=patterns5d-20260929';
 const clamp = (x, a=0, b=1) => Math.max(a, Math.min(b, x));
 const mean = a => a.reduce((s,x)=>s+x,0)/a.length;
@@ -143,12 +143,12 @@ export function prepareCandles(candles) {
 const targets=new Map(PATTERNS.map(p=>[p.id,resample(p.points)]));
 function levelMatch(context,pattern) {
  const c=context.candles,trend=pattern.rule.startsWith('trend');
- const sides=trend?['long','short']:pattern.rule.endsWith('support')?['short']:['long'];
+ const sides=pattern.rule.endsWith('support')?['short']:['long'];
  const price=c.at(-1)?.close;
  const candidates=sides.flatMap(side=>{
   const signal=context.classic[side];if(!signal)return [];
   const levels=[signal.pressure,...(signal.levels||[])].filter(p=>p&&p.state!=='consumed'&&
-   (p.state==='valid'||signal.eligible&&p.state==='broken')&&p.kind===(trend?'diagonal':'horizontal')&&
+   (p.state==='valid'||!trend&&signal.eligible&&p.state==='broken')&&p.kind===(trend?'diagonal':'horizontal')&&
    (!trend||Math.sign(p.slope)===(pattern.id==='trend-up'?1:-1))&&
    (p.state==='broken'||(signal.side==='LONG'?p.level-price:price-p.level)>=-.15*(signal.atr||context.volatility)));
   levels.sort((a,b)=>Math.abs(a.level-price)-Math.abs(b.level-price)||b.touches-a.touches);

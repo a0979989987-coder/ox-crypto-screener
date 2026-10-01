@@ -1,7 +1,7 @@
 const WATCH_STAR_SVG = '<svg class="watch-star-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 2.78 5.63L21 9.54l-4.5 4.39 1.06 6.2L12 17.2l-5.56 2.93 1.06-6.2L3 9.54l6.22-.91Z"/></svg>';
 
 const RADAR_RETAIN_MS=2*60*60*1000;
-const RADAR_SNAPSHOT_KEY = 'ox-radar-snapshot-v7-classic10';
+const RADAR_SNAPSHOT_KEY = 'ox-radar-snapshot-v7-classic11';
 function restoreRadarSnapshot() {
   if (state.radarSnapshotChecked) return;
   state.radarSnapshotChecked = true;
@@ -49,7 +49,7 @@ function classifyTierFrame(candles,frame) {
 // completed. It needs a same-direction 4H trend and real 1H volume, and can
 // only enter the observation tiers, never the fully confirmed T1 tier.
 function intradayClassicObservation(frames,side) {
- const fast=OXClassic.evaluateClassic(frames['1H'],{side,frame:'1H'});
+ const fast=OXClassic.evaluateClassic(frames['1H'],{side,frame:'1H',contextFrame:'1D',contextBars:frames['1D']});
  const anchor=OXClassic.evaluateClassic(frames['4H'],{side,frame:'4H'});
  const active4H=anchor.direction?.advance>=1.5 && anchor.direction?.position>=.7;
  const forming4H=anchor.pressure?.state==='valid'&&anchor.pressure.touches>=2&&
@@ -57,8 +57,10 @@ function intradayClassicObservation(frames,side) {
  if(!(fast.eligible||fast.observationEligible)||!fast.volume?.supported||
     !anchor.direction?.confirmed||!anchor.volume?.complete||anchor.volume.distribution||
     !active4H&&!forming4H||fast.direction?.falling||fast.direction?.position<.6)return null;
- return {...fast,eligible:false,tier:null,observationEligible:true,
-   qualityScore:Math.min(74,fast.qualityScore),triggerFrame:'4H',
+ const sharedHorizontal=fast.horizontalReady&&anchor.pressure?.kind==='horizontal'&&
+   anchor.pressure.state==='valid'&&Math.abs(anchor.pressure.level-fast.pressure.level)<=anchor.atr*.35;
+ return {...fast,eligible:false,tier:null,observationEligible:true,horizontalFrame:sharedHorizontal?'4H':fast.frame,
+   qualityScore:Math.min(fast.horizontalReady?79:74,fast.qualityScore),triggerFrame:'4H',
    stage:'短線帶量觀察 · 4H '+(active4H?'資金推進':'新型態確認'),
    matchedReasons:['1H 有效壓力／支撐與同向放量',active4H?'4H 近期明顯推進':'4H 新壓力／支撐形成',...(fast.matchedReasons||[])]};
 }

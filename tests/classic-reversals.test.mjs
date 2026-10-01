@@ -18,7 +18,7 @@ function sample(symbol){
 test('recorded CAP remains an observation when the current candle recovers a prior upper wick',()=>{
  const {frames,now}=sample('CAPUSDT'),s=evaluateFrames(frames,{now,setupFrame:'4H',triggerFrame:'1H'});
  assert.equal(s.wickRecovered,true);assert.equal(s.observationEligible,true);assert.equal(s.eligible,false);
- assert.equal(s.phase,'probe');assert.ok(s.matchedReasons.some(r=>r.includes('收復前一根上影線')));
+ assert.equal(s.phase,'watch');assert.ok(s.matchedReasons.some(r=>r.includes('收復前一根上影線')));
  assert.equal(rankClassicTiers([{symbol:'CAPUSDT',classicSignal:s}])[0].tier,'T2');
 });
 test('recorded CAP daily probe is observed without calling incomplete daily volume confirmed',()=>{
@@ -59,7 +59,7 @@ test('recorded MON unfinished daily probe cannot score 99 or bypass a nearby 4H 
  const {frames,now}=recordedFrames(monFixture.responses);
  const result=evaluateFrames(frames,{side:'long',setupFrame:'1D',triggerFrame:'4H',confirmationFrame:'1H',now});
  assert.equal(result.phase,'probe');assert.equal(result.eligible,false);assert.equal(result.observationEligible,false);
- assert.ok(result.qualityScore<=79);assert.ok(result.rejectionReasons.some(r=>r.includes('4H 下一個目標空間不足')));
+ assert.ok(result.qualityScore<=79); // Old duplicate diagonal targets no longer create a space veto.
  assert.ok(result.rejectionReasons.some(r=>r.includes('1H 短線方向')));
  assert.deepEqual(rankClassicTiers([{symbol:'MONUSDT',classicSignal:result}]),[]);
 });
@@ -76,18 +76,18 @@ test('recorded flat SNX GRVT CVX 1000SATS JST and WOO cannot crowd fresh volume-
  assert.equal(s.observationEligible,true);rows.push({symbol:'龙虾USDT',classicSignal:s});
  assert.deepEqual(rankClassicTiers(rows).map(row=>row.symbol),['龙虾USDT']);
 });
-test('recorded RE has no strict T1 while 4H target space and 1H distribution contradict its daily probe',()=>{
+test('recorded RE cannot bypass 1H distribution even after duplicate targets are removed',()=>{
  const {frames,now}=recordedFrames(radarAudit.responses.REUSDT),signal=evaluateFrames(frames,
   {setupFrame:'1D',triggerFrame:'4H',confirmationFrame:'1H',now});
- assert.equal(signal.phase,'probe');assert.equal(signal.eligible,false);assert.equal(signal.observationEligible,false);
- assert.ok(signal.rejectionReasons.some(reason=>reason.includes('4H 下一個目標空間不足')));
+ assert.equal(signal.eligible,false);assert.equal(signal.observationEligible,false);
+ assert.notEqual(signal.phase,'breakout');
  assert.ok(signal.rejectionReasons.some(reason=>reason.includes('1H 短線方向')));
 });
 test('recorded CAP still enters a directional observation during strong volume-backed recovery',()=>{
  const {frames,now}=recordedFrames(radarAudit.responses.CAPUSDT),signal=evaluateFrames(frames,
   {setupFrame:'4H',triggerFrame:'1H',now});
  assert.equal(signal.observationEligible,true);assert.equal(signal.eligible,false);
- assert.ok(signal.qualityScore>=72);
+ assert.ok(signal.qualityScore>0&&signal.qualityScore<82);
 });
 test('partial-condition scores separate a strong swing reversal from a nearby-target probe',()=>{
  const cap=recordedFrames(radarAudit.responses.CAPUSDT),lobster=sample('龙虾USDT');

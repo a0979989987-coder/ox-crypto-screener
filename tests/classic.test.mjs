@@ -22,7 +22,7 @@ test('same nearby pressure rewards directional volume without granting a weak te
  assert.ok(stronger.qualityScore>=weak.qualityScore+6);
  assert.ok(weak.qualityScore<82);
 });
-test('a single oversized volume bar does not outscore sustained buying or erase poor target room',()=>{
+test('a single oversized volume bar does not outscore sustained buying or invent unknown target room',()=>{
  const spike=preparation(),steady=preparation();
  for(let i=64;i<72;i++){spike[i].volume=1000;steady[i].volume=4000;}
  spike.at(-1).volume=15000;
@@ -30,8 +30,8 @@ test('a single oversized volume bar does not outscore sustained buying or erase 
  assert.equal(one.volume.sustainedBars,1);assert.equal(many.volume.sustainedBars,4);
  assert.ok(one.volume.impulseRatio>many.volume.impulseRatio);
  assert.ok(one.qualityScore<many.qualityScore);
- assert.ok(one.roomRisk<1&&many.roomRisk<1);
- assert.ok(one.reasons.some(r=>r.includes('目標空間僅為結構失效距離')));
+ assert.equal(one.roomRisk,null);assert.equal(many.roomRisk,null);
+ assert.ok(one.reasons.some(r=>r.includes('下一個歷史目標尚未辨識')));
 });
 test('price scale and market labels do not change qualification or quality tier', () => {
   const a = evaluateClassic(preparation(), { market: 'crypto' });
@@ -89,11 +89,13 @@ test('a higher-frame setup cannot bypass a weak trigger frame', () => {
   assert.ok(s.rejectionReasons.some(r => r.includes('1H')));
 });
 
-test('both rising and falling diagonal overhead pressures qualify from repeated rejected tests',()=>{
- for(const slope of [-.04,.04]){
-  const bars=preparation().map((c,i)=>({...c,open:c.open+slope*i,high:c.high+slope*i,low:c.low+slope*i,close:c.close+slope*i}));
-  const s=evaluateClassic(bars);assert.equal(s.eligible,true);assert.equal(s.pressure.kind,'diagonal');assert.equal(s.pressure.touches,3);assert.ok(Math.abs(s.pressure.slope-slope)<1e-8);
- }
+test('descending resistance uses highs; mirrored rising support uses lows',()=>{
+ const bars=preparation().map((c,i)=>({...c,open:c.open-.04*i,high:c.high-.04*i,low:c.low-.04*i,close:c.close-.04*i}));
+ const down=evaluateClassic(bars),up=evaluateClassic(shortBars(bars),{side:'short'});
+ assert.equal(down.pressure.kind,'diagonal');assert.ok(down.pressure.slope<0);
+ assert.equal(up.pressure.kind,'diagonal');assert.ok(up.pressure.slope>0);
+ assert.ok(down.levels.filter(p=>p.kind==='diagonal').every(p=>p.slope<0));
+ assert.ok(up.levels.filter(p=>p.kind==='diagonal').every(p=>p.slope>0));
 });
 test('an upper wick test keeps pressure valid until a close actually confirms crossing',()=>{
  const bars=preparation();bars.at(-1).high=100.2;
