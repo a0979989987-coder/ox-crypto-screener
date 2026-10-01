@@ -45,4 +45,4 @@ UI 測試使用獨立無頭瀏覽器及合成資料，不寄信、不建立帳�
 - Production 唯讀檢查：`/api/v1/account/config` 仍是 HTTP 404，公開 `auth.js` 仍含 stub、沒有新 initialize，證實新帳號程式尚未發布。
 - Supabase provider、真實 Google／Email 登入及既有會員表線上狀態尚未實測；没有重新執行 schema。
 
-此分支基於 `85c8d8c` 的既有完整程式；核對時最新遠端 `0fcac7b` 只多一筆 news.json 更新，未將附件中較舊的市場程式或資料帶入。發布前需保留遠端最新新聞更新。
+使用者核准發布後，帳號提交已接合至最新遠端 `9465695`，保留最新新聞、台股修復／搜尋詳情及 Crypto 泡泡圖。接合後完整單元測試 203/203 通過，Build check 通過（92 個資產、179 個唯一 ID、12 個 API function）；沒有帶入附件中較舊的市場程式或資料。
