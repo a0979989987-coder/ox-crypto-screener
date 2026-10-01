@@ -1,6 +1,6 @@
 import { aggregateCandles } from './model.js';
-import { classifyTWSeries } from '../classic.js?v=20261001-resume1';
-import { qualifyPatternMatches } from '../../crypto/patterns/matcher.js?v=20261001-resume1';
+import { classifyTWSeries } from '../classic.js?v=20261001-reversal1';
+import { qualifyPatternMatches } from '../../crypto/patterns/matcher.js?v=20261001-reversal1';
 // Official candles and named-pattern classifications are built once on the server.
 const manifestURL=new URL('../../../../data/tw-patterns/manifest.json',import.meta.url);
 const entries=new Map(),listeners=new Set();let manifest=null,pending=null,checkedAt=0,failed=0;

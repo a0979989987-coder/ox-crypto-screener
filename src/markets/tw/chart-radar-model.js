@@ -1,4 +1,4 @@
-import { qualifyClassicRow, compareClassic, rankClassicTiers } from '../../core/classic.js?v=20261001-resume1';
+import { qualifyClassicRow, compareClassic, rankClassicTiers } from '../../core/classic.js?v=20261001-reversal1';
 export function rankChartRows(rows,{tab='all',tier='all',side='long',watchlist=new Set(),query='',strictTier=false}={}){
  const seen=new Set(),pool=rows.filter(r=>/^\d{4}$/.test(r.symbol)&&Number.isFinite(r.price)&&r.price>0&&!seen.has(r.symbol)&&seen.add(r.symbol));
  const q=query.trim().toLowerCase(),search=r=>!q||`${r.symbol} ${r.name}`.toLowerCase().includes(q);
