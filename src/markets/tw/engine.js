@@ -1,5 +1,5 @@
-import { classicTWRow } from './classic.js?v=20261001-rank3';
-import { bundleClassification, subscribeBundle } from './patterns/bundle.js?v=20261001-rank3';
+import { classicTWRow } from './classic.js?v=20261001-rank4';
+import { bundleClassification, subscribeBundle } from './patterns/bundle.js?v=20261001-rank4';
 import {
   twProvider
 } from "./api.js?v=20261001-tiercomb1";

@@ -4,7 +4,7 @@
  */
 (function (root) {
   'use strict';
-  const CLASSIC_VERSION = 7;
+  const CLASSIC_VERSION = 8;
   const CLASSIC_TIER_LIMITS = Object.freeze({ T1: 10, T2: 15, T3: 15 });
   // Initial, centralized defaults in ATR/bar units. These are implementation
   // thresholds, not claims of calibration or performance from trade screenshots.
@@ -257,8 +257,13 @@
       (direction.position >= .72 ? 3 : 0);
     const volumeQuality = volume.supported ? Math.min(9, 5 + 2 * Math.log2(Math.max(1, volume.impulseRatio))) : 0;
     const activationQuality = near ? Math.max(0, 8 * (1 - Math.max(0, gap) / rules.nearATR)) : broken ? 4 : 0;
+    const confirmedBreakoutQuality = phase === 'breakout' && volume.supported && volume.impulseRatio >= 4 &&
+      volume.upwardShare >= .7 ? Math.min(12, 5 + 3 * Math.log2(volume.impulseRatio / 3)) : 0;
+    const pressureReadyQuality = phase === 'prebreakout' && trigger?.touches.length >= 3 && near && gap <= .6 &&
+      volume.impulseRatio >= 2 && volume.upwardShare >= .75 ? 6 : 0;
     let qualityScore = Math.round(clamp(40 + testedLevel + trendQuality + volumeQuality + activationQuality +
-      (broken && phase === 'breakout' ? 5 : 0) + (target && spaceOK ? 4 : 0), 0, 100));
+      (broken && phase === 'breakout' ? 5 : 0) + confirmedBreakoutQuality + pressureReadyQuality +
+      (target && spaceOK ? 4 : 0), 0, 100));
     // An unfinished crossing has not held at a close and cannot enter T1.
     if (phase === 'probe') qualityScore = Math.min(79, qualityScore - 6 - Math.min(10,
       Math.round(Math.max(0, (observedPrice - pressure.level) / a - 0.45) * 4)));
@@ -349,10 +354,12 @@
     // Keep partial-condition scores below T1, but leave enough headroom to
     // distinguish an ordinary probe from a fresh, volume-backed reversal.
     // Previously most otherwise different observations saturated at 79.
+    const reversalBonus=['reversal','reversal-probe'].includes(setup.phase) ?
+      Math.min(14,4+6*Math.log2(Math.max(1,(setup.reversal?.impulseRatio||1)/1.35))) : 0;
     const observationScore=Math.round(clamp(41+Math.min(8,(setup.pressure?.touches||0)*2)+
       (setup.direction?.confirmed?4:0)+(setup.volume?.supported?4:0)+
       (trigger.direction?.confirmed?7:0)+(trigger.volume?.supported?6:0)+
-      (trigger.direction?.position>=0.75?3:0)+(['reversal','reversal-probe'].includes(setup.phase)?14:0)+
+      (trigger.direction?.position>=0.75?3:0)+reversalBonus+
       Math.min(4,Math.log2(Math.max(1,trigger.volume?.impulseRatio||1)))-
       (triggerSpaceBlocked?8:0)-(confirmationBlocked?8:0),0,79));
     const signal = { ...setup, observationEligible:!!observationEligible,
