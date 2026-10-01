@@ -1017,32 +1017,6 @@
       "translationStatus": "translated"
     },
     {
-      "id": "8b2947785709a1051e3e",
-      "title": "USDC on Arc deposits and withdrawals now available!",
-      "link": "https://blog.kraken.com/product/new-features/usdc-on-arc-deposits-and-withdrawals-now-available",
-      "publishedAt": "2026-09-16T18:32:46.000Z",
-      "source": "Kraken",
-      "sourceId": "kraken",
-      "markets": [
-        "crypto"
-      ],
-      "kind": "news",
-      "verified": "official-source",
-      "impact": {
-        "stars": null,
-        "impactImportance": null,
-        "reason": "尚未評估；標題不足以判定影響力",
-        "ruleVersion": "unassessed-v1",
-        "evidence": null,
-        "sourceConfidence": "official-source",
-        "analysisConfidence": null,
-        "direction": null,
-        "sourceId": "kraken"
-      },
-      "titleZh": "Kraken 開放 Arc 網路 USDC 充值與提領",
-      "translationStatus": "translated"
-    },
-    {
       "id": "da3bcbb85f4595d6b859",
       "title": "Federal Reserve issues FOMC statement",
       "link": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260916a.htm",
@@ -1823,32 +1797,6 @@
       "translationStatus": "translated"
     },
     {
-      "id": "69b25a261f180882509d",
-      "title": "CFTC Further Extends Compliance Date for Amendments to Form PF",
-      "link": "https://www.cftc.gov/PressRoom/PressReleases/9290-26",
-      "publishedAt": "2026-08-31T18:54:03.000Z",
-      "source": "U.S. CFTC",
-      "sourceId": "cftc",
-      "markets": [
-        "us"
-      ],
-      "kind": "news",
-      "verified": "official-source",
-      "impact": {
-        "stars": null,
-        "impactImportance": null,
-        "reason": "尚未評估；標題不足以判定影響力",
-        "ruleVersion": "unassessed-v1",
-        "evidence": null,
-        "sourceConfidence": "official-source",
-        "analysisConfidence": null,
-        "direction": null,
-        "sourceId": "cftc"
-      },
-      "titleZh": "美國 CFTC 再延長 Form PF 修正規定的遵循期限",
-      "translationStatus": "translated"
-    },
-    {
       "id": "78fa58be510538a8b13c",
       "title": "SEC and FDA Announce MOU to Bolster Cooperation and Ensure Market Integrity",
       "link": "https://www.sec.gov/newsroom/press-releases/2026-80-sec-fda-announce-mou-bolster-cooperation-ensure-market-integrity",
@@ -2159,32 +2107,6 @@
         "sourceId": "sec"
       },
       "titleZh": "美國證管會指控高壓推銷業者及三家機構，以 7,400 萬美元上市前投資騙局詐騙散戶",
-      "translationStatus": "translated"
-    },
-    {
-      "id": "fa4e9cecec3e8d7dcc82",
-      "title": "SEC Charges Toms River Trio in Connection with Alleged $47 Million Fraud Targeting Orthodox Jewish Communities",
-      "link": "https://www.sec.gov/newsroom/press-releases/2026-74-sec-charges-toms-river-trio-connection-alleged-47-million-fraud-targeting-orthodox-jewish",
-      "publishedAt": "2026-08-13T20:32:19.000Z",
-      "source": "U.S. SEC",
-      "sourceId": "sec",
-      "markets": [
-        "us"
-      ],
-      "kind": "news",
-      "verified": "official-source",
-      "impact": {
-        "stars": null,
-        "impactImportance": null,
-        "reason": "尚未評估；標題不足以判定影響力",
-        "ruleVersion": "unassessed-v1",
-        "evidence": null,
-        "sourceConfidence": "official-source",
-        "analysisConfidence": null,
-        "direction": null,
-        "sourceId": "sec"
-      },
-      "titleZh": "美國證管會指控湯姆斯河三人涉嫌以 4,700 萬美元騙局鎖定正統猶太社群",
       "translationStatus": "translated"
     },
     {
@@ -3098,32 +3020,6 @@
       "translationStatus": "translated"
     },
     {
-      "id": "27ededef1aaf1e5376c7",
-      "title": "v26-final: Bitcoin Core 25.x Final",
-      "link": "https://github.com/bitcoin/bitcoin/releases/tag/v26-final",
-      "publishedAt": "2026-04-22T01:04:57.000Z",
-      "source": "Bitcoin Core",
-      "sourceId": "bitcoin-core",
-      "markets": [
-        "crypto"
-      ],
-      "kind": "news",
-      "verified": "official-source",
-      "impact": {
-        "stars": null,
-        "impactImportance": null,
-        "reason": "尚未評估；標題不足以判定影響力",
-        "ruleVersion": "unassessed-v1",
-        "evidence": null,
-        "sourceConfidence": "official-source",
-        "analysisConfidence": null,
-        "direction": null,
-        "sourceId": "bitcoin-core"
-      },
-      "titleZh": "比特幣核心 25.x 最終版本發布",
-      "translationStatus": "translated"
-    },
-    {
       "id": "cadc4cebd433e5d3c896",
       "title": "ETH Rangers Program Recap",
       "link": "https://blog.ethereum.org/en/2026/04/16/eth-rangers-recap",
@@ -3958,6 +3854,402 @@
   ],
   "events": [
     {
+      "id": "f4964d40632c6e2651b9",
+      "title": "Employment Situation for September 2026",
+      "link": "https://www.bls.gov/schedule/news_release/current_year.asp",
+      "sourceUrl": "https://www.bls.gov/schedule/news_release/current_year.asp",
+      "occursAt": "2026-10-02T12:30:00.000Z",
+      "source": "U.S. BLS",
+      "sourceId": "bls-calendar",
+      "markets": [
+        "us",
+        "crypto",
+        "tw"
+      ],
+      "symbols": [],
+      "kind": "event",
+      "status": "confirmed",
+      "originalTimezone": "America/New_York",
+      "previous": null,
+      "consensus": null,
+      "actual": null,
+      "revised": null,
+      "updatedAt": null,
+      "impact": {
+        "stars": 5,
+        "impactImportance": 5,
+        "reason": "美國官方經濟數據預定公布；星級只表示事件類別的重要性，不表示多空或結果",
+        "ruleVersion": "official-release-category-v1",
+        "evidence": "https://www.bls.gov/schedule/news_release/current_year.asp",
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "bls-calendar"
+      },
+      "titleZh": "美國 2026 年 9 月就業情勢報告",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "211937e0d413ab7fce6d",
+      "title": "Consumer Price Index for September 2026",
+      "link": "https://www.bls.gov/schedule/news_release/current_year.asp",
+      "sourceUrl": "https://www.bls.gov/schedule/news_release/current_year.asp",
+      "occursAt": "2026-10-14T12:30:00.000Z",
+      "source": "U.S. BLS",
+      "sourceId": "bls-calendar",
+      "markets": [
+        "us",
+        "crypto",
+        "tw"
+      ],
+      "symbols": [],
+      "kind": "event",
+      "status": "confirmed",
+      "originalTimezone": "America/New_York",
+      "previous": null,
+      "consensus": null,
+      "actual": null,
+      "revised": null,
+      "updatedAt": null,
+      "impact": {
+        "stars": 5,
+        "impactImportance": 5,
+        "reason": "美國官方經濟數據預定公布；星級只表示事件類別的重要性，不表示多空或結果",
+        "ruleVersion": "official-release-category-v1",
+        "evidence": "https://www.bls.gov/schedule/news_release/current_year.asp",
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "bls-calendar"
+      },
+      "titleZh": "美國 2026 年 9 月消費者物價指數",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "08ab71336eeed30d0665",
+      "title": "Producer Price Index for September 2026",
+      "link": "https://www.bls.gov/schedule/news_release/current_year.asp",
+      "sourceUrl": "https://www.bls.gov/schedule/news_release/current_year.asp",
+      "occursAt": "2026-10-15T12:30:00.000Z",
+      "source": "U.S. BLS",
+      "sourceId": "bls-calendar",
+      "markets": [
+        "us",
+        "crypto",
+        "tw"
+      ],
+      "symbols": [],
+      "kind": "event",
+      "status": "confirmed",
+      "originalTimezone": "America/New_York",
+      "previous": null,
+      "consensus": null,
+      "actual": null,
+      "revised": null,
+      "updatedAt": null,
+      "impact": {
+        "stars": 4,
+        "impactImportance": 4,
+        "reason": "美國官方經濟數據預定公布；星級只表示事件類別的重要性，不表示多空或結果",
+        "ruleVersion": "official-release-category-v1",
+        "evidence": "https://www.bls.gov/schedule/news_release/current_year.asp",
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "bls-calendar"
+      },
+      "titleZh": "美國 2026 年 9 月生產者物價指數",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "b61279d32bd79bc7c389",
+      "title": "Job Openings and Labor Turnover Survey for September 2026",
+      "link": "https://www.bls.gov/schedule/news_release/current_year.asp",
+      "sourceUrl": "https://www.bls.gov/schedule/news_release/current_year.asp",
+      "occursAt": "2026-11-03T15:00:00.000Z",
+      "source": "U.S. BLS",
+      "sourceId": "bls-calendar",
+      "markets": [
+        "us",
+        "crypto",
+        "tw"
+      ],
+      "symbols": [],
+      "kind": "event",
+      "status": "confirmed",
+      "originalTimezone": "America/New_York",
+      "previous": null,
+      "consensus": null,
+      "actual": null,
+      "revised": null,
+      "updatedAt": null,
+      "impact": {
+        "stars": 3,
+        "impactImportance": 3,
+        "reason": "美國官方經濟數據預定公布；星級只表示事件類別的重要性，不表示多空或結果",
+        "ruleVersion": "official-release-category-v1",
+        "evidence": "https://www.bls.gov/schedule/news_release/current_year.asp",
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "bls-calendar"
+      },
+      "titleZh": "美國 2026 年 9 月職缺與勞動流動調查",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "cd9614c27b79aa3233bd",
+      "title": "Employment Situation for October 2026",
+      "link": "https://www.bls.gov/schedule/news_release/current_year.asp",
+      "sourceUrl": "https://www.bls.gov/schedule/news_release/current_year.asp",
+      "occursAt": "2026-11-06T13:30:00.000Z",
+      "source": "U.S. BLS",
+      "sourceId": "bls-calendar",
+      "markets": [
+        "us",
+        "crypto",
+        "tw"
+      ],
+      "symbols": [],
+      "kind": "event",
+      "status": "confirmed",
+      "originalTimezone": "America/New_York",
+      "previous": null,
+      "consensus": null,
+      "actual": null,
+      "revised": null,
+      "updatedAt": null,
+      "impact": {
+        "stars": 5,
+        "impactImportance": 5,
+        "reason": "美國官方經濟數據預定公布；星級只表示事件類別的重要性，不表示多空或結果",
+        "ruleVersion": "official-release-category-v1",
+        "evidence": "https://www.bls.gov/schedule/news_release/current_year.asp",
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "bls-calendar"
+      },
+      "titleZh": "美國 2026 年 10 月就業情勢報告",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "3cf523deb974172eb429",
+      "title": "Consumer Price Index for October 2026",
+      "link": "https://www.bls.gov/schedule/news_release/current_year.asp",
+      "sourceUrl": "https://www.bls.gov/schedule/news_release/current_year.asp",
+      "occursAt": "2026-11-10T13:30:00.000Z",
+      "source": "U.S. BLS",
+      "sourceId": "bls-calendar",
+      "markets": [
+        "us",
+        "crypto",
+        "tw"
+      ],
+      "symbols": [],
+      "kind": "event",
+      "status": "confirmed",
+      "originalTimezone": "America/New_York",
+      "previous": null,
+      "consensus": null,
+      "actual": null,
+      "revised": null,
+      "updatedAt": null,
+      "impact": {
+        "stars": 5,
+        "impactImportance": 5,
+        "reason": "美國官方經濟數據預定公布；星級只表示事件類別的重要性，不表示多空或結果",
+        "ruleVersion": "official-release-category-v1",
+        "evidence": "https://www.bls.gov/schedule/news_release/current_year.asp",
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "bls-calendar"
+      },
+      "titleZh": "美國 2026 年 10 月消費者物價指數",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "45e0a704aba0f76cdac9",
+      "title": "Producer Price Index for October 2026",
+      "link": "https://www.bls.gov/schedule/news_release/current_year.asp",
+      "sourceUrl": "https://www.bls.gov/schedule/news_release/current_year.asp",
+      "occursAt": "2026-11-13T13:30:00.000Z",
+      "source": "U.S. BLS",
+      "sourceId": "bls-calendar",
+      "markets": [
+        "us",
+        "crypto",
+        "tw"
+      ],
+      "symbols": [],
+      "kind": "event",
+      "status": "confirmed",
+      "originalTimezone": "America/New_York",
+      "previous": null,
+      "consensus": null,
+      "actual": null,
+      "revised": null,
+      "updatedAt": null,
+      "impact": {
+        "stars": 4,
+        "impactImportance": 4,
+        "reason": "美國官方經濟數據預定公布；星級只表示事件類別的重要性，不表示多空或結果",
+        "ruleVersion": "official-release-category-v1",
+        "evidence": "https://www.bls.gov/schedule/news_release/current_year.asp",
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "bls-calendar"
+      },
+      "titleZh": "美國 2026 年 10 月生產者物價指數",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "1d517c1107f23ac03fd6",
+      "title": "Job Openings and Labor Turnover Survey for October 2026",
+      "link": "https://www.bls.gov/schedule/news_release/current_year.asp",
+      "sourceUrl": "https://www.bls.gov/schedule/news_release/current_year.asp",
+      "occursAt": "2026-12-01T15:00:00.000Z",
+      "source": "U.S. BLS",
+      "sourceId": "bls-calendar",
+      "markets": [
+        "us",
+        "crypto",
+        "tw"
+      ],
+      "symbols": [],
+      "kind": "event",
+      "status": "confirmed",
+      "originalTimezone": "America/New_York",
+      "previous": null,
+      "consensus": null,
+      "actual": null,
+      "revised": null,
+      "updatedAt": null,
+      "impact": {
+        "stars": 3,
+        "impactImportance": 3,
+        "reason": "美國官方經濟數據預定公布；星級只表示事件類別的重要性，不表示多空或結果",
+        "ruleVersion": "official-release-category-v1",
+        "evidence": "https://www.bls.gov/schedule/news_release/current_year.asp",
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "bls-calendar"
+      },
+      "titleZh": "美國 2026 年 10 月職缺與勞動流動調查",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "07f91fd2ebccea7906a1",
+      "title": "Employment Situation for November 2026",
+      "link": "https://www.bls.gov/schedule/news_release/current_year.asp",
+      "sourceUrl": "https://www.bls.gov/schedule/news_release/current_year.asp",
+      "occursAt": "2026-12-04T13:30:00.000Z",
+      "source": "U.S. BLS",
+      "sourceId": "bls-calendar",
+      "markets": [
+        "us",
+        "crypto",
+        "tw"
+      ],
+      "symbols": [],
+      "kind": "event",
+      "status": "confirmed",
+      "originalTimezone": "America/New_York",
+      "previous": null,
+      "consensus": null,
+      "actual": null,
+      "revised": null,
+      "updatedAt": null,
+      "impact": {
+        "stars": 5,
+        "impactImportance": 5,
+        "reason": "美國官方經濟數據預定公布；星級只表示事件類別的重要性，不表示多空或結果",
+        "ruleVersion": "official-release-category-v1",
+        "evidence": "https://www.bls.gov/schedule/news_release/current_year.asp",
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "bls-calendar"
+      },
+      "titleZh": "美國 2026 年 11 月就業情勢報告",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "484ad69acea89f05194e",
+      "title": "Consumer Price Index for November 2026",
+      "link": "https://www.bls.gov/schedule/news_release/current_year.asp",
+      "sourceUrl": "https://www.bls.gov/schedule/news_release/current_year.asp",
+      "occursAt": "2026-12-10T13:30:00.000Z",
+      "source": "U.S. BLS",
+      "sourceId": "bls-calendar",
+      "markets": [
+        "us",
+        "crypto",
+        "tw"
+      ],
+      "symbols": [],
+      "kind": "event",
+      "status": "confirmed",
+      "originalTimezone": "America/New_York",
+      "previous": null,
+      "consensus": null,
+      "actual": null,
+      "revised": null,
+      "updatedAt": null,
+      "impact": {
+        "stars": 5,
+        "impactImportance": 5,
+        "reason": "美國官方經濟數據預定公布；星級只表示事件類別的重要性，不表示多空或結果",
+        "ruleVersion": "official-release-category-v1",
+        "evidence": "https://www.bls.gov/schedule/news_release/current_year.asp",
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "bls-calendar"
+      },
+      "titleZh": "美國 2026 年 11 月消費者物價指數",
+      "translationStatus": "translated"
+    },
+    {
+      "id": "28ff383939bac29f9a5b",
+      "title": "Producer Price Index for November 2026",
+      "link": "https://www.bls.gov/schedule/news_release/current_year.asp",
+      "sourceUrl": "https://www.bls.gov/schedule/news_release/current_year.asp",
+      "occursAt": "2026-12-15T13:30:00.000Z",
+      "source": "U.S. BLS",
+      "sourceId": "bls-calendar",
+      "markets": [
+        "us",
+        "crypto",
+        "tw"
+      ],
+      "symbols": [],
+      "kind": "event",
+      "status": "confirmed",
+      "originalTimezone": "America/New_York",
+      "previous": null,
+      "consensus": null,
+      "actual": null,
+      "revised": null,
+      "updatedAt": null,
+      "impact": {
+        "stars": 4,
+        "impactImportance": 4,
+        "reason": "美國官方經濟數據預定公布；星級只表示事件類別的重要性，不表示多空或結果",
+        "ruleVersion": "official-release-category-v1",
+        "evidence": "https://www.bls.gov/schedule/news_release/current_year.asp",
+        "sourceConfidence": "official-source",
+        "analysisConfidence": null,
+        "direction": null,
+        "sourceId": "bls-calendar"
+      },
+      "titleZh": "美國 2026 年 11 月生產者物價指數",
+      "translationStatus": "translated"
+    },
+    {
       "id": "aptos-investor-core-final-schedule-2026",
       "title": "Aptos planned investor and core contributor vesting ends at the four-year anniversary",
       "titleZh": "APT 投資人與核心貢獻者解鎖計畫預估到期",
@@ -3997,7 +4289,7 @@
       }
     }
   ],
-  "generatedAt": "2026-10-01T12:43:39.439Z",
+  "generatedAt": "2026-10-01T18:41:03.520Z",
   "sources": [
     {
       "id": "twse",
