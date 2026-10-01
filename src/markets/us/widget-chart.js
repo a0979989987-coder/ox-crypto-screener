@@ -1,6 +1,6 @@
 import { icon, openDialog, closeDialog, positionTimeframe } from "./ui.js?v=20261001-us-eod1";
-import { INTERVALS } from "./calendar.js?v=20261001-us-eod1";
-import { chartWidgetSettings, widgetSymbol } from "./widget-config.js?v=20261001-us-eod1";
+import { EOD_INTERVALS } from "./eod.js";
+import { chartWidgetSettings, widgetSymbol } from "./widget-config.js?v=20261001-us-tv1";
 
 // Keep mounted provider frames across OX page switches. No polling or DOM rebuild
 // occurs when the provider updates prices. Bounded cache is cleared on page unload.
@@ -9,7 +9,8 @@ export class USWidgetChart {
   constructor(root, {symbol="SPY", interval="1D", capabilities={}, asset={}, onState=()=>{}, onInterval=()=>{}, onCollapse=null}={}) {
     Object.assign(this, {root,symbol,interval,capabilities,asset,onState,onInterval,onCollapse,bars:[],disposed:false});
     root.classList.add("us2-widget-chart");
-    root.innerHTML = `<div class="chart-controls us2-chart-toolbar"><div class="ctrl-group chart-timeframe-group"><div class="chart-timeframe-strip us2-timeframes" aria-label="圖表時間級別"><span class="tf-glass-indicator" aria-hidden="true"></span>${INTERVALS.map(tf=>`<button class="btn-tf ${tf===interval?'active':''}" data-tf="${tf}" aria-pressed="${tf===interval}">${tf}</button>`).join('')}</div></div><div class="ctrl-group chart-tool-actions"><button class="chart-tool-icon us2-indicator-open" data-widget-info aria-label="圖表工具與資料來源">${icon('settings')}</button>${onCollapse?`<button class="chart-tool-icon us2-list-toggle" data-collapse aria-label="收起／展開雷達清單">${icon('collapse')}</button>`:''}<button class="chart-tool-icon ox-chart-expand-dot us2-expand-control" data-expand aria-label="展開圖表">${icon('expand')}</button></div></div><button class="us2-focus-exit chart-tool-icon" data-exit-focus aria-label="收合圖表" hidden>${icon('expand')}</button><div class="us2-widget-stage chart-container"></div><dialog class="chart-tools-dialog us2-widget-info" aria-label="圖表工具與資料來源"><header><b>圖表工具與資料來源</b><button data-close-widget-info aria-label="關閉">${icon('close')}</button></header><p>指標、繪圖、成交量與時段，使用圖表內工具。美股為 Cboe One 延遲來源；行情時間以圖表標示為準，成交量不保證全市場口徑。</p><p>免費圖表不提供原始 OHLCV 給 OX；OX 經典與型態畫板不會讀取或假造它的資料。</p><p>畫線由 TradingView 管理；免費圖表不保證切頁或重新整理後保留畫線。</p><a href="https://www.tradingview.com/widget-docs/" target="_blank" rel="noopener">TradingView 官方圖表說明 ↗</a></dialog>`;
+    root.classList.remove('is-empty-chart', 'is-blocked');
+    root.innerHTML = `<div class="chart-controls us2-chart-toolbar"><div class="ctrl-group chart-timeframe-group"><div class="chart-timeframe-strip us2-timeframes" aria-label="圖表時間級別"><span class="tf-glass-indicator" aria-hidden="true"></span>${EOD_INTERVALS.map(tf=>`<button class="btn-tf ${tf===interval?'active':''}" data-tf="${tf}" aria-pressed="${tf===interval}">${tf}</button>`).join('')}</div></div><div class="ctrl-group chart-tool-actions"><button class="chart-tool-icon us2-indicator-open" data-widget-info aria-label="圖表工具與資料來源">${icon('settings')}</button>${onCollapse?`<button class="chart-tool-icon us2-list-toggle" data-collapse aria-label="收起／展開雷達清單">${icon('collapse')}</button>`:''}<button class="chart-tool-icon us2-expand-control" data-expand aria-label="展開圖表">${icon('expand')}</button></div></div><button class="us2-focus-exit chart-tool-icon" data-exit-focus aria-label="收合圖表" hidden>${icon('expand')}</button><div class="us2-widget-stage chart-container"></div><dialog class="chart-tools-dialog us2-widget-info" aria-label="圖表工具與資料來源"><header><b>圖表工具與資料來源</b><button data-close-widget-info aria-label="關閉">${icon('close')}</button></header><p>指標、繪圖、成交量與時段，使用圖表內工具。行情由 TradingView 自行更新，當日 K 線可能尚未收盤；來源、延遲與成交量口徑以圖表標示為準。</p><p>免費圖表不提供原始 OHLCV 給 OX；OX 經典與型態畫板不會讀取或假造它的資料。</p><p>畫線由 TradingView 管理；免費圖表不保證切頁或重新整理後保留畫線。</p><a href="https://www.tradingview.com/widget-docs/" target="_blank" rel="noopener">TradingView 官方圖表說明 ↗</a></dialog>`;
     this.stage=root.querySelector('.us2-widget-stage');
     this.tools=false;
     const toolsButton=document.createElement('button');
@@ -46,7 +47,7 @@ export class USWidgetChart {
     if(!settings){
       this.stage.replaceChildren();
       const note=document.createElement('p');note.className='us2-empty';note.textContent='無法確認此股票的美股交易所，請選擇另一檔股票。';
-      this.stage.append(note);return;
+      this.stage.append(note);this.report();return;
     }
     if(force){const old=frames.get(key);if(old){clearTimeout(old.timer);old.element.remove();frames.delete(key);}}
     let entry=frames.get(key);
@@ -95,6 +96,7 @@ export class USWidgetChart {
     positionTimeframe(this.root,true);this.onInterval(interval);this.mount();
   }
   setCapabilities(cap){this.capabilities=cap;}
+  load(force=false){this.mount(force);}
   setGuide(){} // OX pattern guides require raw candles; never overlay guessed lines.
   expand() {
     const expanded=this.root.classList.toggle('us2-chart-full');

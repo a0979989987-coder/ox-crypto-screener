@@ -29,6 +29,14 @@ const server=spawn(process.execPath,['scripts/dev-server.mjs','--port',String(po
    assert.ok((await page.locator('.us2-scanner').boundingBox()).height>=360);
    assert.match(await page.locator('.us2-ticker-name').innerText(),/標普500.*State Street/);
    assert.match(await page.locator('.us2-directory-row[data-symbol="NVDA"] .us2-row-name').innerText(),/輝達.*NVIDIA/);
+   const rowParts=await page.locator('.us2-directory-row[data-symbol="NVDA"]').evaluate(row=>{
+    const top=row.querySelector('.us2-directory-top').getBoundingClientRect();
+    const name=row.querySelector('.us2-row-name').getBoundingClientRect();
+    const meta=row.querySelector('.us2-directory-meta').getBoundingClientRect();
+    return {display:getComputedStyle(row).display,topBottom:top.bottom,nameTop:name.top,nameBottom:name.bottom,metaTop:meta.top};
+   });
+   assert.equal(rowParts.display,'block');
+   assert.ok(rowParts.nameTop>=rowParts.topBottom-1 && rowParts.metaTop>=rowParts.nameBottom-1,'Stock symbol, name and exchange must not overlap');
    assert.equal(await page.locator('.us2-tier').isDisabled(),true);
    assert.match(await page.locator('.us2-catalogue-note').innerText(),/未掃描/);
    await page.locator('[data-directory-page="next"]').click();
@@ -47,7 +55,19 @@ const server=spawn(process.execPath,['scripts/dev-server.mjs','--port',String(po
    await page.waitForSelector('[data-open-symbol="AAPL"]');await page.locator('[data-open-symbol="AAPL"]').click();
    assert.match(await page.locator('.us2-ticker-name').innerText(),/蘋果.*Apple/);
    assert.equal(marketDataCalls,0,'No unauthorized chart/quote fetches');
-   assert.equal(await page.locator('iframe[src*="tradingview"]').count(),0);
+   assert.equal(await page.locator('iframe[src*="tradingview"]').count(),1);
+   for(const [tf,providerTf] of [['1W','W'],['1M','M'],['1D','D']]) {
+    await page.locator(`.us2-timeframes [data-tf="${tf}"]`).click();
+    const src=await page.locator('.us2-widget-stage iframe').getAttribute('src');
+    assert.equal(JSON.parse(decodeURIComponent(new URL(src).hash.slice(1))).interval,providerTf);
+   }
+   assert.equal(await page.locator('.us2-timeframes [data-tf="1m"]').count(),0);
+   await page.locator('[data-expand]').click();
+   assert.equal(await page.locator('.us2-chart-full').count(),1);
+   await page.locator('[data-exit-focus]').click();
+   assert.equal(await page.locator('.us2-chart-full').count(),0);
+   await page.locator('[data-eod-refresh]').click();
+   assert.equal(await page.locator('.us2-widget-stage iframe').count(),1);
    assert.equal(await page.locator('.us2-stock-row .coin-tier-heading').count(),0,'Directory is not T1/T2/T3 results');
    assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'No horizontal overflow');
    await selectView(page,'home');
