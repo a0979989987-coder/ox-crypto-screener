@@ -14,13 +14,14 @@ import {
   sectorETF,
   sourceInfo,
   nativeAllowed,
-} from "./view-utils.js?v=20261001-us-eod1";
-import { toolsViews } from "./tools.js?v=20261001-tiercomb1";
+} from "./view-utils.js?v=20261001-us-device1";
+import { toolsViews } from "./tools.js?v=20261001-us-device1";
 import { newsViews } from "./news.js?v=20261001-us-eod1";
-import { USAdapter, fetchJSON } from "./provider.js?v=20261001-us-eod1";
-import { USChart } from "./chart.js?v=20261001-tiercomb1";
+import { USAdapter, fetchJSON } from "./provider.js?v=20261001-us-device1";
+import { DeviceEOD } from "./device-eod.js?v=20261001-us-device1";
+import { USChart } from "./chart.js?v=20261001-us-device1";
 import { USWidgetChart } from "./widget-chart.js?v=20261001-tiercomb1";
-import { usDisplayCapabilities } from "./widget-config.js?v=20261001-us-tv1";
+import { usDisplayCapabilities } from "./widget-config.js?v=20261001-us-device1";
 import { EOD_CAPABILITIES, EOD_INTERVALS } from "./eod.js";
 import { searchDirectory, quoteStatus } from "./model.js?v=20261001-us-eod1";
 import { sessionAt, nyParts } from "./calendar.js?v=20261001-us-eod1";
@@ -78,20 +79,15 @@ export class USWorkspace {
     this.controller?.abort();
     clearTimeout(this.refreshTimer);
     this.controller = new AbortController();
-    this.show(view || this.state.view);
     const signal = this.controller.signal;
+    await USAdapter.deviceReady();
+    if (signal.aborted || !this.active) return;
+    const initialCap = usDisplayCapabilities(DeviceEOD.active?.capabilities || EOD_CAPABILITIES);
+    if (initialCap.chartMode !== this.cap.chartMode) this.renderedView = null;
+    this.cap = initialCap;
+    this.show(view || this.state.view);
     const jobs = [
-      USAdapter.directory({ signal }).then((d) => {
-        if(signal.aborted)return;
-        this.directory = d.items;
-        this.directoryError=null;
-        this.directoryDate = d.receivedAt;
-        if (this.chart instanceof USWidgetChart && !this.chart.entry)
-          {this.chart.asset=this.directory.find(x=>x.symbol===this.chart.symbol)||{};this.chart.mount();}
-        this.updateCounts();
-        this.updateIdentity();
-        this.paintList();
-      }).catch(error=>{if(!signal.aborted){this.directoryError=error;this.updateCounts();this.paintList();}}),
+      this.loadDirectory(signal),
       USAdapter.capabilities({ signal }).then((c) => {
         if(signal.aborted)return;
         const displayCap = usDisplayCapabilities(c);
@@ -137,6 +133,55 @@ export class USWorkspace {
       this.updateLive();
       // Closing snapshots refresh on entry or explicit user action, never intraday polling.
     }
+  }
+  async loadDirectory(signal = this.controller?.signal) {
+    this.directoryError = null;
+    try {
+      const d = await USAdapter.directory({ signal });
+      if (signal?.aborted || !this.active) return;
+      this.directory = d.items; this.directoryDate = d.receivedAt;
+      if (this.chart instanceof USWidgetChart && !this.chart.entry) {
+        this.chart.asset = this.directory.find(x => x.symbol === this.chart.symbol) || {}; this.chart.mount();
+      }
+      this.updateCounts(); this.updateIdentity(); this.paintList();
+    } catch (error) {
+      if (!signal?.aborted && this.active) { this.directoryError = error; this.updateCounts(); this.paintList(); }
+    }
+  }
+  bindDeviceData() {
+    const dialog = this.root.querySelector('.us2-device-dialog');
+    const input = dialog.querySelector('input');
+    const status = dialog.querySelector('[data-device-status]');
+    const remove = dialog.querySelector('[data-device-remove]');
+    remove.hidden = !DeviceEOD.active;
+    status.textContent = DeviceEOD.active
+      ? `${DeviceEOD.active.snapshot.sessionDate} · ${DeviceEOD.active.snapshot.counts.quoted} 檔 · 已保存在這個瀏覽器`
+      : '匯入後，OX 原生 K 線、雷達、泡泡、型態畫板與首頁共用這份收盤資料。';
+    this.root.querySelector('[data-device-open]').onclick = event => openDialog(dialog, event.currentTarget);
+    input.onchange = async () => {
+      const file = input.files?.[0]; if (!file) return;
+      input.disabled = true; remove.disabled = true;
+      status.textContent = '讀取盤後資料…';
+      try {
+        await DeviceEOD.importFile(file, percent => { status.textContent = `驗證收盤資料與計算 OX 掃描 ${percent}%`; });
+        closeDialog(dialog); await this.restartDataSource();
+      } catch (error) { status.textContent = error.message; }
+      finally { input.disabled = false; remove.disabled = false; input.value = ''; }
+    };
+    remove.onclick = async () => {
+      remove.disabled = true;
+      try { await DeviceEOD.clear(); closeDialog(dialog); await this.restartDataSource(); }
+      catch (error) { status.textContent = error.message; remove.disabled = false; }
+    };
+  }
+  async restartDataSource() {
+    if (!this.active || document.body.dataset.market !== 'us') return;
+    this.snapshot = null; this.snapshotError = null; this.quotes.clear();
+    this.directory = []; this.directoryError = null; this.chartError = null; this.chartErrorCode = null;
+    if (DeviceEOD.active) for (const key of ['symbol', 'homeSymbol'])
+      if (!DeviceEOD.active.series.has(this.state[key])) this.state[key] = 'SPY';
+    this.renderedView = null;
+    await this.activate(this.state.view);
   }
   persist() {
     save(prefsKey, this.state);
@@ -192,6 +237,13 @@ export class USWorkspace {
     this.root.innerHTML = `<div class="us2-shell"><div class="us2-eod-summary" role="status"><strong>美股盤後</strong><span data-eod-date>取得收盤快照…</span><button class="ox-text-button" data-eod-refresh aria-label="更新收盤快照">↻</button></div><main class="us2-main us2-${view}-pane"></main><dialog class="chart-tools-dialog us2-search-dialog" aria-label="搜尋美股"><header><b>搜尋美股</b><button data-close-dialog aria-label="關閉搜尋">${icon("close")}</button></header><form class="us2-search" role="search"><input aria-label="搜尋美股" placeholder="代號、公司名稱／中文別名" autocomplete="off" spellcheck="false"><button type="submit" aria-label="搜尋股票">⌕</button></form><div class="us2-search-results" hidden role="listbox" aria-label="美股搜尋結果"></div></dialog><dialog class="chart-tools-dialog us2-data-dialog" aria-label="美股資料狀態"><header><b>資料與股票詳情</b><button data-close-dialog aria-label="關閉資料狀態">${icon("close")}</button></header><div class="us2-stock-detail"></div><div class="us2-quote-status"></div><div class="us2-counts" role="status"></div><div class="us2-provider-detail"></div></dialog></div>`;
     this.root.querySelectorAll("[data-close-dialog]").forEach(button => button.onclick = () => closeDialog(button.closest("dialog")));
     this.root.querySelector("[data-eod-refresh]").onclick=()=>this.refreshSnapshot();
+    const dataButton = document.createElement('button');
+    dataButton.type = 'button'; dataButton.className = 'ox-text-button'; dataButton.dataset.deviceOpen = '';
+    dataButton.textContent = '盤後檔'; dataButton.setAttribute('aria-label', '匯入本機盤後資料');
+    this.root.querySelector('.us2-eod-summary').insertBefore(dataButton, this.root.querySelector('[data-eod-refresh]'));
+    this.root.querySelector('.us2-shell').insertAdjacentHTML('beforeend', `<dialog class="chart-tools-dialog us2-device-dialog" aria-label="本機盤後資料"><header><b>OX 本機盤後資料</b><button data-close-device aria-label="關閉本機盤後資料">${icon('close')}</button></header><p>資料保存在這個瀏覽器，只供個人使用，不會上傳。匯入新檔可更新收盤行情。</p><label class="us2-device-picker">選擇 OX 盤後 JSON 檔<input type="file" accept=".json,application/json" aria-label="選擇 OX 盤後資料檔"></label><p data-device-status role="status"></p><button class="chart-tools-save" data-device-remove hidden>移除本機資料，改用公開圖表</button></dialog>`);
+    this.root.querySelector('[data-close-device]').onclick = () => closeDialog(this.root.querySelector('.us2-device-dialog'));
+    this.bindDeviceData();
     this.bindSearch();
     this.renderMain();
     this.updateCounts();
@@ -212,6 +264,8 @@ export class USWorkspace {
     const dateNode=this.root.querySelector('[data-eod-date]');
     if(dateNode)dateNode.textContent=this.snapshot?.sessionDate ? `交易日 ${this.snapshot.sessionDate} · 已收盤` : this.directory.length ? `股票名錄 ${this.directory.length.toLocaleString()} 檔 · 收盤行情待開通` : this.snapshotError || '收盤快照尚未建立';
     if(dateNode)dateNode.title=this.snapshotError || '';
+    if (dateNode && this.cap.dataScope === 'device' && this.snapshot?.sessionDate)
+      dateNode.textContent = `${this.snapshot.sessionDate} 已收盤 · 本機 ${this.snapshot.counts.quoted} 檔`;
     const widget=this.cap.chartMode === 'widget';
     const heading=this.root.querySelector('.us2-eod-summary strong');
     if(heading)heading.textContent=widget?'美股圖表':'美股盤後';
@@ -273,6 +327,7 @@ export class USWorkspace {
     this.root?.querySelectorAll(".us2-display-source").forEach(n=>n.textContent=sourceInfo(this.cap.displaySource || this.cap.source).label);
     const provider=this.root?.querySelector(".us2-provider-detail");
     if(provider)provider.textContent=this.cap.chartMode === "widget" ? "TradingView 官方免費圖表。價格、行情時間與延遲狀態由圖表標示；不將單一交易所資料稱為全市場。搜尋目錄沿用既有公司資料，實際涵蓋以圖表為準。免費圖表不提供原始 K 線給 OX 掃描。" : `來源 ${q?.source||this.cap?.source||"盤後資料源"} · feed ${q?.feed||"未確認"} · ${q?.volumeScope||"成交量口徑未確認"} · ${this.snapshotError||"共用掃描快照狀態可查閱上方統計"}`;
+    if (provider && this.cap.dataScope === 'device') provider.textContent = `本機盤後檔 · ${this.cap.feed} · 交易日 ${this.snapshot?.sessionDate || this.cap.sessionDate} · 只供個人使用 · 日／週／月線依完整收盤資料計算。資料不會上傳；匯入新檔可更新。`;
   }
   bindSearch() {
     const form = this.root.querySelector("form"),
@@ -664,8 +719,9 @@ export class USWorkspace {
       this.catalogueOffset=page.offset;
       const typeLabel={stock:'股票',ADR:'ADR',ETF:'ETF'};
       const pager=page.total>50?`<nav class="us2-directory-pages" aria-label="股票名錄分頁"><span>${page.offset+1}–${page.offset+page.items.length} / ${page.total.toLocaleString()}</span><button type="button" data-directory-page="prev" ${page.offset===0?'disabled':''}>上一批</button><button type="button" data-directory-page="next" ${page.offset+page.items.length>=page.total?'disabled':''}>下一批</button></nav>`:'';
-      list.innerHTML=page.items.length ? `<div class="us2-catalogue-note">股票名錄 · 未掃描<span>${this.cap.chartMode==="widget"?"點選股票查看 K 線；OX 掃描待開通":"股名可瀏覽；價格及 K 線待開通"}</span></div>`+page.items.map(item=>`<article class="coin-card us2-stock-row us2-directory-row ${item.symbol===this.state.symbol?'selected':''}" data-symbol="${e(item.symbol)}" data-interval="1D" role="button" tabindex="0" aria-label="選擇 ${e(item.symbol)} ${e(stockName(item))}"><div class="us2-directory-top"><b class="us2-directory-symbol">${e(item.symbol)}</b><button class="watch-star us2-star ${this.watch.has(item.symbol)?'is-saved':''}" data-watch="${e(item.symbol)}" aria-label="收藏 ${e(item.symbol)}" aria-pressed="${this.watch.has(item.symbol)}">${this.watch.has(item.symbol)?'★':'☆'}</button></div><small class="us2-row-name" title="${e(stockName(item))}">${e(stockName(item))}</small><small class="us2-directory-meta">${e(item.exchange)} · ${typeLabel[item.type] || e(item.type)}</small></article>`).join('')+pager : `<div class="us2-empty">${this.directoryError?'股票名錄載入失敗，請重新整理。':this.directory.length?'自選尚無標的，可從搜尋或名錄收藏。':'股票名錄載入中…'}</div>`;
+      list.innerHTML=page.items.length ? `<div class="us2-catalogue-note">股票名錄 · 未掃描<span>${this.cap.chartMode==="widget"?"點選股票查看 K 線；OX 掃描待開通":"股名可瀏覽；價格及 K 線待開通"}</span></div>`+page.items.map(item=>`<article class="coin-card us2-stock-row us2-directory-row ${item.symbol===this.state.symbol?'selected':''}" data-symbol="${e(item.symbol)}" data-interval="1D" role="button" tabindex="0" aria-label="選擇 ${e(item.symbol)} ${e(stockName(item))}"><div class="us2-directory-top"><b class="us2-directory-symbol">${e(item.symbol)}</b><button class="watch-star us2-star ${this.watch.has(item.symbol)?'is-saved':''}" data-watch="${e(item.symbol)}" aria-label="收藏 ${e(item.symbol)}" aria-pressed="${this.watch.has(item.symbol)}">${this.watch.has(item.symbol)?'★':'☆'}</button></div><small class="us2-row-name" title="${e(stockName(item))}">${e(stockName(item))}</small><small class="us2-directory-meta">${e(item.exchange)} · ${typeLabel[item.type] || e(item.type)}</small></article>`).join('')+pager : `<div class="us2-empty">${this.directoryError?'股票名錄暫時無法載入。<button type="button" class="us2-directory-retry" data-directory-retry>重試載入股票名錄</button>':this.directory.length?'自選尚無標的，可從搜尋或名錄收藏。':'股票名錄載入中…'}</div>`;
       list.scrollTop=y;
+      list.querySelector('[data-directory-retry]')?.addEventListener('click', () => { this.loadDirectory(); this.paintList(); });
       this.bindRows(list);
       const label=tierButton?.querySelector('.radar-tier-current');if(label)label.textContent='股名';
       const note=this.root.querySelector('.us2-list-note');if(note)note.textContent=`名錄 ${page.total.toLocaleString()} 檔 · 非雷達分析結果`;
@@ -875,6 +931,7 @@ export class USWorkspace {
   }
   async refreshSnapshot() {
     if (!this.active) return;
+    if (this.directoryError || !this.directory.length) this.loadDirectory();
     try {
       const s = await USAdapter.snapshot({ signal: this.controller.signal });
       if (this.active) {

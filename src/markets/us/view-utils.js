@@ -18,9 +18,11 @@ export const pct = (n) =>
 export const tone = (n) => (n >= 0 ? "us2-up" : "us2-down");
 // Private validation never marks public redistribution rights as confirmed.
 export const nativeAllowed = cap => cap.externalDisplayConfirmed !== false || cap.legacy ||
+  (cap.dataScope === 'device' && cap.localDataAvailable === true) ||
   (cap.privateValidation === true && typeof location !== 'undefined' &&
     ['127.0.0.1', 'localhost', '[::1]'].includes(location.hostname));
 export const sourceInfo = source => ({
+  'device-eod': { label: '本機盤後資料 · 個人使用', url: null },
   'finance-query-eod': { label: 'Finance Query / Yahoo · 盤後', url: 'https://verdenroz.github.io/finance-query/' },
   'finance-query-eod-private': { label: 'Finance Query / Yahoo · 私人盤後驗證', url: 'https://verdenroz.github.io/finance-query/' },
   'twelve-data': { label: 'Twelve Data', url: 'https://twelvedata.com/' },
