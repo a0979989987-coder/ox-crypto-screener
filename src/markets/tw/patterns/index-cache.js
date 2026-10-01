@@ -1,4 +1,4 @@
-import { dataDate, TIMEFRAMES } from './source.js?v=20261001-classic3';
+import { dataDate, TIMEFRAMES } from './source.js?v=20261001-classic4';
 export const INDEX_VERSION = 3;
 const memory = new Map(); let opening;
 export function entryCurrent(entry) {

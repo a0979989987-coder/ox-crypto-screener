@@ -22,7 +22,10 @@ test('US real OHLCV qualifies by the same signal, while missing volume cannot bo
  const bars=preparation(),row={symbol:'GOOD',type:'stock',interval:'1D',bars,patterns:{long:[]}};
  const s=evaluateClassic(bars);
  assert.equal(tierResults([row])[0].tier,s.tier);
- assert.equal(tierResults([{...row,bars:preparation({volume:false})}]).length,0);
+ const observing=tierResults([{...row,bars:preparation({volume:false})}]);
+ assert.equal(observing[0].tier,'T2');assert.equal(observing[0].classicSignal.eligible,false);
+ const missing=preparation();missing[50].volume=null;
+ assert.equal(tierResults([{...row,bars:missing}]).length,0);
 });
 test('old classic versions cannot grant US membership without actual bars to recompute',()=>{
  const bars=preparation(),old={...evaluateClassic(bars),version:0};
@@ -92,5 +95,13 @@ test('US, TW and pattern search share strict T1 plus 15/15 remainder ranking',()
   assert.deepEqual(us.map(r=>r.symbol),tw.map(r=>r.symbol));
   assert.deepEqual(us.map(r=>r.symbol),patterns.map(r=>r.entry.data.symbol));
   assert.ok(patterns.every(r=>r.match.radarTier===r.match.tier));
+ }
+});
+test('US and TW radar retain 30 same-direction observations without promoting any to T1',()=>{
+ const observation=evaluateClassic(preparation({volume:false}));
+ const rows=Array.from({length:40},(_,i)=>({symbol:String(1000+i),type:'stock',interval:'1D',price:100,classic:{long:observation}}));
+ for(const output of [tierResults(rows),rankChartRows(rows)]){
+  assert.deepEqual(['T1','T2','T3'].map(t=>output.filter(r=>r.tier===t).length),[0,15,15]);
+  assert.ok(output.every(r=>r.observationOnly&&!r.classicSignal.eligible));
  }
 });

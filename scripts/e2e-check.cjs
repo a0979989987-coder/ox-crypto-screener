@@ -214,10 +214,12 @@ async function tierCapacityRegression(page) {
     const templates=['long','short'].map(side=>Object.values(state.tierMapBySide[side]).flat()[0]);
     const reports=[];
     try {
-      for(const quality of ['T1','T3']) {
+      for(const quality of ['T1','T3','OBSERVATION']) {
         const input=templates.flatMap((base,sideIndex)=>Array.from({length:55},(_,i)=>{
           const symbol='QACAP'+sideIndex+'X'+i+'USDT',side=base.side.toLowerCase();
-          const signal={...base.classicSignal,tier:quality,qualityScore:(quality==='T1'?95:70)-i/100};
+          const signal={...base.classicSignal,tier:quality==='OBSERVATION'?null:quality,
+            ...(quality==='OBSERVATION'?{eligible:false,observationEligible:true}:{}),
+            qualityScore:(quality==='T1'?95:70)-i/100};
           return {...base,symbol,at:Date.now(),tier:quality.toLowerCase(),classic:{...base.classic,[side]:signal},classicSignal:signal};
         }));
         state.analyzedCache=new Map(input.map(row=>[row.symbol,row]));

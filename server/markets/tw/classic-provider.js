@@ -38,9 +38,9 @@ export async function loadClassicHistory(date) {
 export async function applyClassicToRows(rows, date) {
   const history = await loadClassicHistory(date).catch(() => new Map());
   const radarSignal = s => {
-    const summary={version:s.version,eligible:s.eligible,side:s.side,tier:s.tier,
+    const summary={version:s.version,eligible:s.eligible,observationEligible:s.observationEligible,side:s.side,tier:s.tier,
       phase:s.phase,stage:s.stage,qualityScore:s.qualityScore,frame:s.frame,closedAt:s.closedAt};
-    if(!s.eligible)return summary;
+    if(!s.eligible&&!s.observationEligible)return summary;
     const level=p=>p?{kind:p.kind,state:p.state,level:p.level,slope:p.slope,touches:p.touches}:null;
     return {...summary,priority:s.priority,atr:s.atr,pressure:level(s.pressure),target:level(s.target),
       invalidation:s.invalidation,volume:{supported:s.volume.supported,ratio:s.volume.ratio,

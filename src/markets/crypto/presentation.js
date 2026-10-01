@@ -57,7 +57,8 @@ function renderOxDetail() {
     return;
   }
 
-  const ranked = [...(state.tierMap.t1||[]), ...(state.tierMap.t2||[]), ...(state.tierMap.t3||[])].find(x => x.symbol === symbol);
+  const shownMap=state.tierMapBySide?.[state.directionFilter]||state.tierMap;
+  const ranked = [...(shownMap.t1||[]), ...(shownMap.t2||[]), ...(shownMap.t3||[])].find(x => x.symbol === symbol);
   const shownTier = ranked?.displayTier || scored.tier;
   const status = ranked?.rankStatus || scored.classicSignal?.stage || '待確認';
   const classic=scored.classicSignal;
