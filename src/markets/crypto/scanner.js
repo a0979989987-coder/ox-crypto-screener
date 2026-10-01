@@ -1,7 +1,7 @@
 const WATCH_STAR_SVG = '<svg class="watch-star-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 2.78 5.63L21 9.54l-4.5 4.39 1.06 6.2L12 17.2l-5.56 2.93 1.06-6.2L3 9.54l6.22-.91Z"/></svg>';
 
 const RADAR_RETAIN_MS=2*60*60*1000;
-const RADAR_SNAPSHOT_KEY = 'ox-radar-snapshot-v7-classic12';
+const RADAR_SNAPSHOT_KEY = 'ox-radar-snapshot-v8-liquidity';
 function restoreRadarSnapshot() {
   if (state.radarSnapshotChecked) return;
   state.radarSnapshotChecked = true;
@@ -13,7 +13,7 @@ function restoreRadarSnapshot() {
       const ticker=tickers.get(row.symbol);
       if (!ticker || !isCryptoSymbolAllowed(row.symbol) || !['long','short'].some(side=>
         OXClassic.qualifyClassicRow(row,side,{observations:true}))) continue;
-      state.analyzedCache.set(row.symbol,{...row,ticker,change24h:num(ticker.change24h)});
+      state.analyzedCache.set(row.symbol,OXEngine.withTurnover({...row,ticker,change24h:num(ticker.change24h)},ticker.usdtVolume));
     }
     state.radarSnapshotReady = state.analyzedCache.size > 0;
   } catch (_) {}
@@ -215,14 +215,14 @@ async function runScanQueueLoop() {
           try {timeframeTiers[rule.frame]=classifyTierFrame(await BitgetAPI.fetchCandles(symbol,rule.frame,180),rule.frame);}
           catch {timeframeTiers[rule.frame]=null;}
         }));
-        state.analyzedCache.set(symbol, {
+        state.analyzedCache.set(symbol, OXEngine.withTurnover({
           ...row,timeframeTiers,symbol,ticker,at:Date.now(),lastPrice:candles.at(-1)?.close,
           signalFrame:signal.frame||'4H',triggerFrame:signal.triggerFrame||'1H',sparkline:candles.slice(-24).map(c=>c.close),
           liqScore:liq.score,rsScore:rs.score,quoteVol:liq.quoteVol,liqPercentile:liq.percentileStr,
           reasons:row.reasons,
           change24h:num(ticker.change24h),ret1h:candleReturn(candles,1),ret4h:candleReturn(candles,4),
           ret24h:candleReturn(candles,24),
-        });
+        },ticker.usdtVolume));
         publishRadarProgress();
       } catch (e) {} finally { const n=(initialScanLoading?.done||0)+1;if(initialScanLoading){initialScanLoading.done=n;initialScanLoading.update(n,state.scanQueue.length);} }
     }));
@@ -259,6 +259,8 @@ function radarSideRows(row) {
 function rebuildTierLists() {
   const tierConfig=globalThis.OXTierFilters?.get('crypto');
   const rankedPool=Array.from(state.analyzedCache.values())
+    .filter(c=>isCryptoSymbolAllowed(c.symbol))
+    .map(c=>OXEngine.withTurnover(c,state.tickers.find(t=>t.symbol===c.symbol)?.usdtVolume??c.quoteVol))
     .flatMap(c=>tierConfig?.enabled?[c]:radarSideRows(c)).filter(c=>{
     if(benchmarkSymbols.has(c.symbol)||(!tierConfig?.enabled&&!OXClassic.qualifyClassicRow(c,c.side,{observations:true})))return false;
     const signal=c.classicSignal,price=num(state.tickers.find(t=>t.symbol===c.symbol)?.lastPr)||c.lastPrice;
@@ -272,7 +274,7 @@ function rebuildTierLists() {
     // All requested frames must agree with the selected setup's direction.
     const directional=globalThis.OXTierFilters.resolve(c,tierConfig,cryptoFrameTier,match.value.side);
     if(!directional)return [];
-    const selected={...c,...directional.value,reasons:[`${directional.frame} 時間組合`,...(directional.value.reasons||[])]};
+    const selected=OXEngine.withTurnover({...c,...directional.value,reasons:[`${directional.frame} 時間組合`,...(directional.value.reasons||[])]},c.quoteVol);
     const price=num(state.tickers.find(t=>t.symbol===c.symbol)?.lastPr)||c.lastPrice,signal=selected.classicSignal,dir=selected.side==='SHORT'?-1:1;
     if(price&&signal?.invalidation?.level&&dir*(price-signal.invalidation.level)<-.2*signal.atr)return [];
     return [selected];

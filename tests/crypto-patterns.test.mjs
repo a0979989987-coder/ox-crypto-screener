@@ -8,6 +8,17 @@ import { PATTERNS,patternById,TIMEFRAMES,candleBoundary } from '../src/markets/c
 import { normalize,resample,similarity,matchCandles,validateHarmonic,structureValid,queryFromStrokes,sortMatches,prepareCandles,classifyPrepared,matchPrepared,patternCounts,rankPatternMatches,browsePatternEntries } from '../src/markets/crypto/patterns/matcher.js';
 import { parseCandles,selectUniverse,classicScore,fetchSeries,radarSymbols,radarCandidates } from '../src/markets/crypto/patterns/source.js';
 
+test('crypto drawing grades respect turnover without deleting shapes or applying USDT caps to Taiwan',()=>{
+ const signal={...rankingSignal('T1'),qualityScore:97};
+ const value=source=>({entry:{key:'COIN:4H',data:{symbol:'COIN',frame:'4H',source,turnover:114000}},
+  match:{tier:1,similarity:95,classicSignal:signal}});
+ const crypto=rankPatternMatches([value('Bitget')]);
+ assert.equal(crypto.length,1);assert.equal(crypto[0].match.tier,3);
+ assert.equal(crypto[0].match.classicSignal.qualityScore,54);
+ const tw=rankPatternMatches([value('TWSE')]);
+ assert.equal(tw[0].match.tier,1);assert.equal(tw[0].match.classicSignal.qualityScore,97);
+});
+
 // Explicit synthetic fixtures, only for checking positive/negative geometric invariants.
 function fixture(points){
   const values=[points[0].y+(points[1].y>points[0].y?.16:-.16)];

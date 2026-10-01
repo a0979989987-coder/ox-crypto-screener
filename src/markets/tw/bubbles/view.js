@@ -1,6 +1,6 @@
 import { mountBubbles } from '../../crypto/bubbles/view.js?v=20261001-twbubbles1';
 import { savedResearch, loadResearch, readWatchlist, subscribeResearch } from '../research-data.js?v=20261001-twhome1';
-import { bundleEntry, bundleState, subscribeBundle, preloadBundle } from '../patterns/bundle.js?v=20261002-rank7';
+import { bundleEntry, bundleState, subscribeBundle, preloadBundle } from '../patterns/bundle.js?v=20261002-rank8';
 import { TW_BUBBLE_METRICS, twBubbleRows, twBubbleText } from './model.js?v=20261001-twbubbles1';
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const shares=n=>Number.isFinite(n)?`${(n/1000).toLocaleString('zh-TW',{maximumFractionDigits:1})} 張`:'—';

@@ -10,7 +10,7 @@ const ASSET_CLASS = Object.freeze({
 // Centralized fallback only. Official Bitget instrument metadata is preferred whenever available.
 const NON_CRYPTO_UNDERLYINGS = Object.freeze({
   stock: new Set([
-    "AAPL","TSLA","NVDA","META","MSFT","INTC","COIN","PLTR","NFLX","BABA","AMZN","GOOG","GOOGL","AMD","MSTR","HOOD","MARA","RIOT","SMCI","AVGO","ORCL","CRM","MU","TSM","QCOM","ARM","RDDT","UBER","NIO","JD","PDD","SHOP","PYPL","DIS","BA","JPM","GS","BAC","WMT","COST","KO","MCD","SBUX","XOM","CVX","LLY","UNH","JNJ"
+    "AAPL","TSLA","NVDA","META","MSFT","INTC","COIN","PLTR","NFLX","BABA","AMZN","GOOG","GOOGL","AMD","MSTR","HOOD","MARA","RIOT","SMCI","AVGO","ORCL","CRM","MU","TSM","QCOM","ARM","RDDT","UBER","NIO","JD","PDD","SHOP","PYPL","DIS","BA","JPM","GS","BAC","WMT","COST","KO","MCD","SBUX","XOM","CVX","LLY","UNH","JNJ","HPQ"
   ]),
   etf: new Set([
     "SPY","QQQ","IWM","DIA","SOXL","SOXS","TQQQ","SQQQ","ARKK","GLD","SLV","USO","BITO","IBIT","ETHA"
@@ -25,6 +25,7 @@ const NON_CRYPTO_UNDERLYINGS = Object.freeze({
 
 // Asset-backed crypto tokens remain crypto contracts even if their economics reference metals.
 const CRYPTO_TOKEN_EXCEPTIONS = new Set(["PAXG","XAUT","DGX"]);
+const CRYPTO_TICKER_COLLISIONS = new Set(["CVX","SPX"]);
 
 function normalizeUnderlyingSymbol(contract = {}) {
   const raw = String(contract.baseCoin || contract.baseAsset || contract.underlying || contract.symbol || "").toUpperCase().trim();
@@ -55,12 +56,18 @@ function classifyInstrument(contract = {}) {
   // A v2 perpetual explicitly marked non-RWA is a crypto contract even when
   // its token ticker also names an equity (for example CVX). The official v3
   // asset type above still wins when the same ticker really is a stock.
-  if (String(contract.isRwa || '').toUpperCase() === 'NO' &&
-      contract.symbolType === 'perpetual' && contract.quoteCoin === 'USDT') return ASSET_CLASS.CRYPTO;
+  const nonRwa=String(contract.isRwa || '').toUpperCase() === 'NO' &&
+      contract.symbolType === 'perpetual' && contract.quoteCoin === 'USDT';
+  if (nonRwa && CRYPTO_TICKER_COLLISIONS.has(base)) return ASSET_CLASS.CRYPTO;
 
   for (const cls of [ASSET_CLASS.STOCK, ASSET_CLASS.ETF, ASSET_CLASS.COMMODITY, ASSET_CLASS.INDEX]) {
     if (NON_CRYPTO_UNDERLYINGS[cls]?.has(base)) return cls;
   }
+
+  // New RWA listings must never fall through into crypto just because they
+  // are absent from the fallback list or the v3 metadata request failed.
+  if (String(contract.isRwa || '').toUpperCase() === 'YES') return ASSET_CLASS.OTHER;
+  if (nonRwa) return ASSET_CLASS.CRYPTO;
 
   // v2 contract endpoint is crypto-heavy and does not expose a reliable asset class for every listing.
   // If v3 metadata is unavailable, default to crypto after centralized non-crypto fallbacks above.
