@@ -2251,7 +2251,8 @@ async function loadTPEXForDate(
 
 async function loadLatestCommonDailyMarket(
   twseIndustryMap,
-  tpexIndustryMap
+  tpexIndustryMap,
+  minimumDate = null
 ) {
 
   if (
@@ -2287,6 +2288,8 @@ async function loadLatestCommonDailyMarket(
       isoDate(
         date
       );
+
+    if (minimumDate && dateISO < minimumDate) break;
 
 
     const [
@@ -2930,7 +2933,7 @@ async function loadTPEXSnapshot(
 }
 
 
-async function loadFallbackMarket(industryMaps, snapshots = {}) {
+async function loadFallbackMarket(industryMaps, snapshots = {}, requireBoth = false) {
   const [twseResult, tpexResult] = await Promise.allSettled([
     loadTWSESnapshot(industryMaps.twse, snapshots.twse),
     loadTPEXSnapshot(industryMaps.tpex, snapshots.tpex)
@@ -2951,12 +2954,12 @@ async function loadFallbackMarket(industryMaps, snapshots = {}) {
 
 
   if (
-    !twse &&
-    !tpex
+    (!twse && !tpex) ||
+    (requireBoth && (!twse || !tpex))
   ) {
 
     throw new TWRadarProviderError(
-      "All Taiwan Radar fallback sources failed.",
+      "A Taiwan Radar exchange source is unavailable; require both markets.",
       {
         code:
           "TW_RADAR_ALL_FAILED",
@@ -3451,12 +3454,15 @@ function errorSummary(
 /* ========================================================================== */
 
 let universeRequest = null;
-async function buildUniverse() {
-  if (universeRequest) return universeRequest;
-  universeRequest = buildUniverseSnapshot().finally(() => { universeRequest = null; });
+async function buildUniverse(minimumDate = null) {
+  if (universeRequest) {
+    const shared = await universeRequest;
+    if (!minimumDate || (shared.dataDate >= minimumDate && !shared.meta.partial)) return shared;
+  }
+  universeRequest = buildUniverseSnapshot(minimumDate).finally(() => { universeRequest = null; });
   return universeRequest;
 }
-async function buildUniverseSnapshot() {
+async function buildUniverseSnapshot(minimumDate = null) {
 
   const now =
     Date.now();
@@ -3464,6 +3470,7 @@ async function buildUniverseSnapshot() {
 
   if (
     universeCache.value &&
+    (!minimumDate || (universeCache.value.dataDate >= minimumDate && !universeCache.value.meta.partial)) &&
     universeCache.expiresAt >
       now
   ) {
@@ -3494,10 +3501,13 @@ async function buildUniverseSnapshot() {
   // The daily snapshots already carry the latest completed trading date.
   // Use them first; avoid serial holiday lookbacks before showing the Radar.
   try {
-    marketData = await loadFallbackMarket(industryMaps, { twse: twseSnapshot, tpex: tpexSnapshot });
+    marketData = await loadFallbackMarket(industryMaps, { twse: twseSnapshot, tpex: tpexSnapshot }, !!minimumDate);
+    if (minimumDate && marketData.dataDate < minimumDate) {
+      throw new TWRadarProviderError('Quote source is older than the verified close.', { code: 'TW_RADAR_OLDER_CLOSE' });
+    }
   } catch (error) {
     primaryError = error;
-    marketData = await loadLatestCommonDailyMarket(industryMaps.twse, industryMaps.tpex);
+    marketData = await loadLatestCommonDailyMarket(industryMaps.twse, industryMaps.tpex, minimumDate);
   }
 
 
@@ -3847,6 +3857,7 @@ function sortRadar(
 export async function getOfficialTWRadar(
   {
     includeSurveillance = false,
+    minimumDate = null,
     market =
       "ALL",
 
@@ -3882,7 +3893,7 @@ export async function getOfficialTWRadar(
 
   const surveillanceRequest = includeSurveillance ? loadTWSurveillance() : null;
   const source =
-    await buildUniverse();
+    await buildUniverse(minimumDate);
 
   let surveillance = null;
   if (surveillanceRequest) {
