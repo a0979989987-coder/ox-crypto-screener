@@ -1,6 +1,6 @@
 const WATCH_STAR_SVG = '<svg class="watch-star-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 2.78 5.63L21 9.54l-4.5 4.39 1.06 6.2L12 17.2l-5.56 2.93 1.06-6.2L3 9.54l6.22-.91Z"/></svg>';
 
-const RADAR_SNAPSHOT_KEY = 'ox-radar-snapshot-v3-classic3';
+const RADAR_SNAPSHOT_KEY = 'ox-radar-snapshot-v3-classic4';
 function restoreRadarSnapshot() {
   if (state.radarSnapshotChecked) return;
   state.radarSnapshotChecked = true;
@@ -10,7 +10,7 @@ function restoreRadarSnapshot() {
     const tickers = new Map(state.tickers.map(t=>[t.symbol,t]));
     for (const row of snapshot.rows) {
       const ticker=tickers.get(row.symbol);
-      if (!ticker || !isCryptoSymbolAllowed(row.symbol) || !OXClassic.qualifyClassicRow(row, row.side)) continue;
+      if (!ticker || !isCryptoSymbolAllowed(row.symbol) || !OXClassic.qualifyClassicRow(row, row.side,{observations:true})) continue;
       state.analyzedCache.set(row.symbol,{...row,ticker,change24h:num(ticker.change24h)});
     }
     state.radarSnapshotReady = state.analyzedCache.size > 0;
@@ -157,7 +157,7 @@ async function runScanQueueLoop() {
         ]);
         const frames={'1H':cryptoClassicBars(candles,'1H'),'4H':cryptoClassicBars(contextBars,'4H')};
         const classic=Object.fromEntries(['long','short'].map(side=>[side,OXClassic.evaluateFrames(frames,{side,setupFrame:'4H',triggerFrame:'1H'})]));
-        const candidates=Object.values(classic).filter(s=>s.eligible).sort(OXClassic.compareClassic);
+        const candidates=Object.values(classic).filter(s=>s.eligible||s.observationEligible).sort(OXClassic.compareClassic);
         const signal=candidates[0]||classic.long;
         const row=OXEngine.describe(signal,classic),liq=OXEngine.computeLiquidity(ticker,state.tickers),rs=OXEngine.computeRelativeStrength(ticker,state.btcTicker);
         const timeframeTiers=Object.fromEntries(Object.entries(frames).map(([frame,bars])=>[frame,classifyTierFrame(bars,frame)]));
@@ -203,7 +203,7 @@ function rebuildTierLists() {
   if (state.isQueueRunning && !state.radarSnapshotReady && !globalThis.OXTierFilters?.get('crypto').enabled) return;
   const tierConfig=globalThis.OXTierFilters?.get('crypto');
   const rankedPool=Array.from(state.analyzedCache.values()).filter(c=>{
-    if(benchmarkSymbols.has(c.symbol)||(!tierConfig?.enabled&&!OXClassic.qualifyClassicRow(c,c.side)))return false;
+    if(benchmarkSymbols.has(c.symbol)||(!tierConfig?.enabled&&!OXClassic.qualifyClassicRow(c,c.side,{observations:true})))return false;
     const signal=c.classicSignal,price=num(state.tickers.find(t=>t.symbol===c.symbol)?.lastPr)||c.lastPrice;
     if(!tierConfig?.enabled&&price&&signal?.invalidation?.level){const dir=c.side==='SHORT'?-1:1;
       if(dir*(price-signal.invalidation.level)<-.2*signal.atr||c.lastPrice&&dir*(price-c.lastPrice)<-.9*signal.atr)return false;}

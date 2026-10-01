@@ -124,3 +124,26 @@ test('a previous decline does not ban a recovered, strong rebound attacking vali
  const s=evaluateClassic(bars);assert.equal(s.eligible,true,JSON.stringify(s.rejectionReasons));
  assert.equal(s.pressure.state,'valid');assert.equal(s.volume.supported,true);
 });
+test('directional observations fill 15/15 without masquerading as strict T1 signals',()=>{
+ const signal=evaluateClassic(preparation({volume:false}));
+ assert.equal(signal.eligible,false);assert.equal(signal.observationEligible,true);
+ const input=Array.from({length:40},(_,i)=>({symbol:'OBS'+i,classicSignal:signal}));
+ const ranked=rankClassicTiers(input,{side:'long'});
+ assert.deepEqual(['T1','T2','T3'].map(t=>ranked.filter(r=>r.tier===t).length),[0,15,15]);
+ assert.ok(ranked.every(r=>r.observationOnly&&r.rankStatus.includes('觀察')));
+});
+test('weak countertrend bounces and distribution cannot fill observation quotas',()=>{
+ const declining=preparation().map((c,i)=>{const offset=i<56?(56-i)*.7:0;return {...c,open:c.open+offset,close:c.close+offset,high:c.high+offset,low:c.low+offset};});
+ const falling=preparation(),last=falling.at(-1);Object.assign(last,{close:last.open-2,low:last.open-2.2,volume:12000});
+ for(const bars of [declining,falling]){const s=evaluateClassic(bars);assert.equal(s.observationEligible,false);assert.deepEqual(rankClassicTiers([{symbol:'BAD',classicSignal:s}]),[]);}
+});
+test('a directional observation requires complete actual volume history',()=>{
+ const bars=preparation({volume:false});bars[50].volume=null;
+ assert.equal(evaluateClassic(bars).observationEligible,false);
+});
+test('direction alone without tested liquidity or a supported strong impulse is not an observation',()=>{
+ const bars=Array.from({length:72},(_,i)=>({time:1700000000+i*3600,open:90+i*.4,close:90+i*.4+.3,high:90+i*.4+.4,low:90+i*.4-.1,volume:1000}));
+ const s=evaluateClassic(bars);assert.equal(s.direction.confirmed,true);
+ assert.equal(s.volume.supported,false);assert.equal(s.observationEvidence.liquidity,false);
+ assert.equal(s.observationEligible,false);assert.deepEqual(rankClassicTiers([{symbol:'BARE',classicSignal:s}]),[]);
+});

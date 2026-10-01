@@ -1,4 +1,4 @@
-import { evaluateClassic, qualifyClassicRow, compareClassic, compactClassic, CLASSIC_VERSION, CLASSIC_TIER_LIMITS, rankClassicTiers } from '../../core/classic.js?v=20261001-classic3';
+import { evaluateClassic, qualifyClassicRow, compareClassic, compactClassic, CLASSIC_VERSION, CLASSIC_TIER_LIMITS, rankClassicTiers } from '../../core/classic.js?v=20261001-classic4';
 import { closedCandles, relativeStrength } from "./model.js?v=20261001-us-eod1";
 const mean = (a) => a.reduce((s, x) => s + x, 0) / a.length;
 export function pivots(bars, radius = 3) {
@@ -188,14 +188,14 @@ export function tierResults(rows,{side='long',mode='classic',type='stock',patter
   let setups=row.patterns?.[side]||[];
   if(pattern!=='all')setups=setups.filter(p=>p.id===pattern);
   const best=[...setups].sort((a,b)=>a.distance-b.distance)[0],sign=side==='long'?1:-1;
-  if(mode==='classic'&&(!signal?.eligible||pattern!=='all'&&!best))continue;
+  if(mode==='classic'&&(!(signal?.eligible||signal?.observationEligible)||pattern!=='all'&&!best))continue;
   if(mode==='ma'&&!(sign*(row.ma20-row.ma50)>0&&sign*(row.price-row.ma20)>0))continue;
   if(mode==='breakout'&&!(signal?.eligible&&signal.phase==='breakout'))continue;
   if(mode==='gap'&&sign*row.gapPct<2)continue;
   if(mode==='rs'&&sign*row.rs<3)continue;
   const tier=signal?.eligible?signal.tier:'T3';
   candidates.push({...row,classicSignal:signal,side:side.toUpperCase(),tier,
-    setup:mode==='classic'?'OX 經典 · '+signal.stage:({ma:'均線排列',gap:'跳空觀察',rs:'相對 SPY 強勢',breakout:'放量突破'})[mode],
+    setup:mode==='classic'?'OX 經典 · '+(signal.eligible?signal.stage:'同向觀察'):({ma:'均線排列',gap:'跳空觀察',rs:'相對 SPY 強勢',breakout:'放量突破'})[mode],
     forming:signal?.phase==='prebreakout'||signal?.phase==='probe',stage:signal?.stage,
     reasons:[...(signal?.eligible?signal.reasons:[]),...(row.rs!==null&&Number.isFinite(row.rs)?['同日期20期相對 SPY '+row.rs.toFixed(2)+'%']:[])],
     distance:signal?.distanceATR??Infinity});seen.add(row.symbol);

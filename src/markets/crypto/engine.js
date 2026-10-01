@@ -6,17 +6,17 @@ const OXEngine = {
       long: OXClassic.evaluateClassic(candles, { ...options, side: 'long' }),
       short: OXClassic.evaluateClassic(candles, { ...options, side: 'short' })
     };
-    const eligible = Object.values(classic).filter(s => s.eligible).sort(OXClassic.compareClassic);
+    const eligible = Object.values(classic).filter(s => s.eligible || s.observationEligible).sort(OXClassic.compareClassic);
     const signal = eligible[0] || Object.values(classic).find(s => s.direction?.confirmed) || classic.long;
     return this.describe(signal, classic);
   },
   describe(signal, classic = { [signal.side.toLowerCase()]: signal }) {
     const volume = signal.volume || {}, direction = signal.direction || {}, score = signal.qualityScore;
-    const side = signal.eligible ? signal.side : direction.confirmed ? signal.side : 'NEUTRAL';
+    const side = signal.eligible || signal.observationEligible ? signal.side : direction.confirmed ? signal.side : 'NEUTRAL';
     return {
       classic:Object.fromEntries(Object.entries(classic).map(([key,s])=>[key,OXClassic.compactClassic(s)])),
       classicSignal: OXClassic.compactClassic(signal), eligible: signal.eligible, side, oxScore: score,
-      setupName: 'OX 經典 · ' + signal.stage, statusText: signal.stage,
+      setupName: 'OX 經典 · ' + (signal.eligible ? signal.stage : '同向觀察'), statusText: signal.eligible ? signal.stage : '同向觀察 · 尚未通過完整條件',
       tier: signal.tier?.toLowerCase() || 'none',
       triggerActive: signal.eligible && ['breakout', 'continuation'].includes(signal.phase),
       triggerType: signal.phase === 'breakout' ? '有效突破' : signal.phase === 'continuation' ? '強勢延續' : '',

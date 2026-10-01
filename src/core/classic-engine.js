@@ -4,7 +4,7 @@
  */
 (function (root) {
   'use strict';
-  const CLASSIC_VERSION = 2;
+  const CLASSIC_VERSION = 3;
   const CLASSIC_TIER_LIMITS = Object.freeze({ T1: 10, T2: 15, T3: 15 });
   // Initial, centralized defaults in ATR/bar units. These are implementation
   // thresholds, not claims of calibration or performance from trade screenshots.
@@ -216,6 +216,16 @@
     const spaceOK = space === null || space >= 0.65;
     const structureReady = phase !== 'watch' && direction.confirmed && !failed && !liveFailure && !exhausted && !chase &&
       risk > 0 && spaceOK;
+    // T2/T3 are directional observations, not miniature copies of the strict
+    // entry gate. Missing activation/impulse alone must not empty those lists.
+    const observationDirection = !direction.falling && !direction.opposingContext &&
+      direction.advance >= 0.15 && direction.position >= 0.45 &&
+      (!direction.lowerLows || direction.reclaim || direction.contextReclaimed);
+    const observationEvidence = { liquidity:!!pressure || !!broken,
+      directionalVolume:volume.supported && direction.confirmed && direction.advance >= 1 };
+    const observationEligible = observationDirection && (observationEvidence.liquidity || observationEvidence.directionalVolume) &&
+      volume.complete && !volume.distribution &&
+      !failed && !liveFailure && !exhausted && !chase && risk > 0 && spaceOK;
     const qualityScore = Math.round(clamp(55 + (trigger ? Math.min(4, trigger.touches.length) * 4 : 0) +
       (direction.higherLows ? 7 : 0) + (direction.higherHighs ? 4 : 0) +
       (volume.supported ? 10 : 0) + Math.min(8, Math.max(0, volume.impulseRatio || 0) * 3) +
@@ -240,7 +250,7 @@
     if (volume.complete) reasons.push((side === 'LONG' ? '上攻' : '下攻') + '量比 ' + volume.impulseRatio.toFixed(2) +
       'x · 同向量 ' + (volume.upwardShare * 100).toFixed(0) + '%');
     if (!target) reasons.push('下一個歷史目標尚未辨識');
-    const signal = { ...base, qualityScore, atr: a, direction, volume, structureReady, distanceATR: gap,
+    const signal = { ...base, qualityScore, atr: a, direction, volume, structureReady, observationEligible, observationEvidence, distanceATR: gap,
       invalidation: { level: dir * stop.price, time: stop.time }, target: publicLevel(target, bars, dir),
       levels: levels.map(p => publicLevel(p, bars, dir)), rejectionReasons,
       priority: phase === 'prebreakout' || phase === 'probe' ? 0 : 1 };
@@ -256,23 +266,27 @@
     const triggerOK = trigger.direction?.confirmed && trigger.volume?.supported &&
       !trigger.volume.distribution && !triggerVeto.some(reason => trigger.rejectionReasons.includes(reason));
     const eligible = setup.eligible && triggerOK;
+    const observationEligible = setup.observationEligible && trigger.volume?.complete &&
+      !trigger.direction?.falling && !trigger.direction?.opposingContext && !trigger.volume?.distribution &&
+      !triggerVeto.some(reason => trigger.rejectionReasons.includes(reason));
     const reasons = [setupFrame + ' 結構＋' + triggerFrame + (setup.side === 'LONG' ? ' 上攻確認' : ' 下攻確認'), ...setup.reasons.filter(r => !r.includes('量比')),
       ...trigger.reasons.filter(r => r.includes('量比'))];
-    const signal = { ...setup,
+    const signal = { ...setup, observationEligible:!!observationEligible,
       triggerFrame, triggerClosedAt: trigger.closedAt, triggerVolume: trigger.volume,
       rejectionReasons: eligible ? [] : [...setup.rejectionReasons, ...(triggerOK ? [] : [triggerFrame + ' 當下方向或上攻量能未確認'])] };
     return finish(signal, !!eligible, setup.phase, setup.pressure, reasons);
   }
-  function qualifyClassicRow(row, side = 'long') {
+  function qualifyClassicRow(row, side = 'long', { observations = false } = {}) {
     const key = sideName(side).toLowerCase(), signal = row?.classic?.[key] || row?.classic;
-    return signal?.version === CLASSIC_VERSION && signal.eligible && signal.side === sideName(side) && signal.tier ? signal : null;
+    return signal?.version === CLASSIC_VERSION && (signal.eligible && signal.tier || observations && signal.observationEligible) &&
+      signal.side === sideName(side) ? signal : null;
   }
   function compareClassic(a, b) {
     const x = a.classicSignal || a, y = b.classicSignal || b;
     return (x.priority ?? 1) - (y.priority ?? 1) || (y.qualityScore || 0) - (x.qualityScore || 0);
   }
   function compactClassic(signal) {
-    if (!signal.eligible) return {version:signal.version,eligible:false,side:signal.side,
+    if (!signal.eligible && !signal.observationEligible) return {version:signal.version,eligible:false,side:signal.side,
       frame:signal.frame,tier:null,phase:signal.phase,stage:signal.stage,qualityScore:null,
       closedAt:signal.closedAt,rejectionReasons:signal.rejectionReasons};
     const {levels,...decision}=signal;
@@ -282,20 +296,22 @@
     const seen = new Set();
     const pool = rows.filter(row => {
       const signal = row.classicSignal;
-      return signal?.version === CLASSIC_VERSION && signal.eligible &&
+      return signal?.version === CLASSIC_VERSION && (signal.eligible || signal.observationEligible) &&
         (!side || signal.side === sideName(side));
     }).sort(compare).filter(row => !seen.has(row.symbol) && seen.add(row.symbol));
     // Only full T1 quality can occupy T1. Its unused slots stay empty.
     // T2/T3 are the next two ranked groups, not isolated score buckets: a T1
     // overflow or a T3-quality candidate may fill the remaining ranked slots.
-    const t1 = pool.filter(row => row.classicSignal.tier === 'T1').slice(0, limits.T1);
+    const t1 = pool.filter(row => row.classicSignal.eligible && row.classicSignal.tier === 'T1').slice(0, limits.T1);
     const selected = new Set(t1.map(row => row.symbol));
     const rest = pool.filter(row => !selected.has(row.symbol));
     const t2 = rest.slice(0, limits.T2);
     const t3 = rest.slice(t2.length, t2.length + limits.T3);
     return [t1, t2, t3].flatMap((group, i) => group.map(row => ({ ...row,
       qualityTier: row.classicSignal.tier, tier: 'T' + (i + 1), displayTier: 'T' + (i + 1),
-      rankStatus: row.classicSignal.stage })));
+      observationOnly:!row.classicSignal.eligible,
+      stage:row.classicSignal.eligible ? row.classicSignal.stage : '同向觀察 · 尚未確認',
+      rankStatus: row.classicSignal.eligible ? row.classicSignal.stage : '同向觀察 · 尚未通過完整入選條件' })));
   }
   root.OXClassic = Object.freeze({ CLASSIC_VERSION, CLASSIC_TIER_LIMITS, CLASSIC_RULES, evaluateClassic, evaluateFrames, qualifyClassicRow, compareClassic, compactClassic, rankClassicTiers });
 })(globalThis);

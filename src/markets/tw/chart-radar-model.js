@@ -1,12 +1,12 @@
-import { qualifyClassicRow, compareClassic, rankClassicTiers } from '../../core/classic.js?v=20261001-classic3';
+import { qualifyClassicRow, compareClassic, rankClassicTiers } from '../../core/classic.js?v=20261001-classic4';
 export function rankChartRows(rows,{tab='all',tier='all',side='long',watchlist=new Set(),query='',strictTier=false}={}){
  const seen=new Set(),pool=rows.filter(r=>/^\d{4}$/.test(r.symbol)&&Number.isFinite(r.price)&&r.price>0&&!seen.has(r.symbol)&&seen.add(r.symbol));
  const q=query.trim().toLowerCase(),search=r=>!q||`${r.symbol} ${r.name}`.toLowerCase().includes(q);
  if(tab==='watch')return pool.filter(r=>watchlist.has(r.symbol)).filter(search);
  if(tab==='surge')return [...pool].filter(search).sort((a,b)=>(b.turnoverTwd||0)-(a.turnoverTwd||0)).slice(0,50);
  const direction=pool.flatMap(r=>{
-  const signal=qualifyClassicRow(r,side);if(!signal)return [];
-  return [{...r,classicSignal:signal,tier:signal.tier,setup:'OX 經典 · '+signal.stage,stage:signal.stage,
+  const signal=qualifyClassicRow(r,side,{observations:true});if(!signal)return [];
+  return [{...r,classicSignal:signal,tier:signal.tier,setup:'OX 經典 · '+(signal.eligible?signal.stage:'同向觀察'),stage:signal.eligible?signal.stage:'同向觀察',
     oxScore:signal.qualityScore}];
  });
  return rankClassicTiers(direction,{side,compare:(a,b)=>compareClassic(a,b)||(b.turnoverTwd||0)-(a.turnoverTwd||0)})
