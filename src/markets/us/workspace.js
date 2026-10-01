@@ -15,11 +15,11 @@ import {
   sourceInfo,
   nativeAllowed,
 } from "./view-utils.js?v=20261001-us-device1";
-import { toolsViews } from "./tools.js?v=20261001-us-device1";
-import { newsViews } from "./news.js?v=20261001-us-eod1";
-import { USAdapter, fetchJSON } from "./provider.js?v=20261001-us-device1";
-import { DeviceEOD } from "./device-eod.js?v=20261001-us-device1";
-import { USChart } from "./chart.js?v=20261001-us-device1";
+import { toolsViews } from "./tools.js?v=20261001-classic1";
+import { newsViews } from "./news.js?v=20261001-classic1";
+import { USAdapter, fetchJSON } from "./provider.js?v=20261001-classic1";
+import { DeviceEOD } from "./device-eod.js?v=20261001-classic1";
+import { USChart } from "./chart.js?v=20261001-classic1";
 import { USWidgetChart } from "./widget-chart.js?v=20261001-tiercomb1";
 import { usDisplayCapabilities } from "./widget-config.js?v=20261001-us-device1";
 import { EOD_CAPABILITIES, EOD_INTERVALS } from "./eod.js";
@@ -27,7 +27,7 @@ import { searchDirectory, quoteStatus } from "./model.js?v=20261001-us-eod1";
 import { sessionAt, nyParts } from "./calendar.js?v=20261001-us-eod1";
 import { catalogueMode, cataloguePage, stockName } from "./directory-view.js?v=20261001-us-names1";
 
-import { tierResults, timeframeTierResults } from "./analysis.js?v=20261001-tiercomb1";
+import { tierResults, timeframeTierResults, stockClassic } from "./analysis.js?v=20261001-classic1";
 import { icon, openDialog, closeDialog } from "./ui.js?v=20261001-us-eod1";
 export class USWorkspace {
   constructor() {
@@ -470,9 +470,12 @@ export class USWorkspace {
     const row = this.snapshot?.analyses?.find(
       (x) => x.symbol === symbol && x.interval === interval,
     );
-    const guide = [...(row?.patterns?.[this.state.side] || [])].sort(
+    // Current pressure comes from the shared engine in USChart. Geometry must
+    // not redraw an obsolete horizontal/diagonal line over that decision.
+    const guide = stockClassic(row || {}, this.state.side)?.eligible ? [...(row?.patterns?.[this.state.side] || [])]
+      .filter(pattern => !["horizontal", "trend"].includes(pattern.id)).sort(
       (a, b) => a.distance - b.distance,
-    )[0];
+    )[0] : null;
     this.chart?.setGuide(guide);
   }
   chartIn(container, symbol, interval) {
@@ -525,7 +528,7 @@ export class USWorkspace {
   }
   renderRadar(main) {
     const filters = `<label>策略<select data-mode aria-label="雷達策略">${Object.entries({classic:"OX 經典",ma:"均線排列",breakout:"放量突破",gap:"跳空觀察",rs:"相對 SPY 強弱"}).map(([v,l])=>`<option value="${v}" ${this.state.mode===v?"selected":""}>${l}</option>`).join("")}</select></label><label>資產<select data-type aria-label="資產類型"><option value="stock">股票／ADR</option><option value="ETF">一般 ETF</option><option value="all">兩者</option></select></label><label>分析級別<select data-scan-interval aria-label="雷達分析級別"><option value="1D">1D</option></select></label>`;
-    main.innerHTML = `<section class="top-summary compact-summary us2-ticker"><div class="metric-card market-line-card"><div class="market-line-item market-line-price"><button class="us2-symbol-picker" data-search-open aria-label="搜尋並選擇股票">${e(this.state.symbol)} <span>▾</span></button><strong class="us2-quote-value">—</strong></div><div class="market-line-item"><label>當日 · <button class="us2-data-brief" data-data-open>盤後</button></label><strong class="us2-quote-change">—</strong></div><div class="market-line-item us2-volume-cell"><label>成交量</label><strong class="us2-quote-volume">—</strong><button type="button" class="watch-star us2-star" data-watch="${e(this.state.symbol)}" aria-label="收藏目前股票">☆</button></div><div class="market-line-item radar-analysis-cell"><label>雷達策略</label><strong>OX 經典</strong><small>獨立美股引擎</small></div><div class="market-line-item radar-analysis-cell"><label>分析級別</label><strong>${e(this.state.scanInterval)}</strong><small>依已收線 K 線</small></div></div></section><div class="workspace us2-radar-layout ${this.state.collapsed ? "is-collapsed" : ""}"><article class="panel chart-box us2-chart-root"></article><aside class="panel us2-scanner"><div class="scanner-tabs"><button class="tab-btn radar-combined-tab us2-tier active" type="button" aria-label="雷達分組：全部，短按循環，長按兩秒展開" aria-haspopup="menu" aria-expanded="false"><span class="radar-combined-mark"><span class="radar-combined-logo">${icon("radar")}</span><span class="radar-tier-current"></span><small class="radar-combined-chevron">▼</small></span></button><button class="tab-btn" type="button" data-strategy-open aria-label="雷達策略與股票池">${icon("settings")}</button><button class="tab-btn" type="button" data-watch-filter aria-label="自選清單" aria-pressed="${this.state.watchOnly}">${icon("star")}<small hidden>${this.watch.size}</small></button><button class="direction-toggle-btn chart-tool-icon us2-side-control ${this.state.side === "long" ? "is-long" : "is-short"}" type="button" data-side aria-label="切換多空"><span class="direction-toggle-icon">${this.state.side === "long" ? "↑" : "↓"}</span></button></div><div class="us2-tier-menu" role="menu" hidden>${["all","T1","T2","T3"].map(t=>`<button role="menuitem" data-tier="${t}">${t==="all"?"全部":t}</button>`).join("")}</div><div class="us2-radar-list scanner-body"></div><small class="us2-list-note" hidden></small></aside></div><dialog class="chart-tools-dialog us2-strategy-dialog" aria-label="雷達策略"><header><b>策略與股票池</b><button data-close-strategy aria-label="關閉策略">${icon("close")}</button></header><div class="us2-dialog-fields">${filters}</div><p class="us2-muted">OX 經典保留型態與量能；其他策略獨立篩選，不強制疊加。</p></dialog>`;
+    main.innerHTML = `<section class="top-summary compact-summary us2-ticker"><div class="metric-card market-line-card"><div class="market-line-item market-line-price"><button class="us2-symbol-picker" data-search-open aria-label="搜尋並選擇股票">${e(this.state.symbol)} <span>▾</span></button><strong class="us2-quote-value">—</strong></div><div class="market-line-item"><label>當日 · <button class="us2-data-brief" data-data-open>盤後</button></label><strong class="us2-quote-change">—</strong></div><div class="market-line-item us2-volume-cell"><label>成交量</label><strong class="us2-quote-volume">—</strong><button type="button" class="watch-star us2-star" data-watch="${e(this.state.symbol)}" aria-label="收藏目前股票">☆</button></div><div class="market-line-item radar-analysis-cell"><label>雷達策略</label><strong>OX 經典</strong><small>共用結構與量能判斷</small></div><div class="market-line-item radar-analysis-cell"><label>分析級別</label><strong>${e(this.state.scanInterval)}</strong><small>依已收線 K 線</small></div></div></section><div class="workspace us2-radar-layout ${this.state.collapsed ? "is-collapsed" : ""}"><article class="panel chart-box us2-chart-root"></article><aside class="panel us2-scanner"><div class="scanner-tabs"><button class="tab-btn radar-combined-tab us2-tier active" type="button" aria-label="雷達分組：全部，短按循環，長按兩秒展開" aria-haspopup="menu" aria-expanded="false"><span class="radar-combined-mark"><span class="radar-combined-logo">${icon("radar")}</span><span class="radar-tier-current"></span><small class="radar-combined-chevron">▼</small></span></button><button class="tab-btn" type="button" data-strategy-open aria-label="雷達策略與股票池">${icon("settings")}</button><button class="tab-btn" type="button" data-watch-filter aria-label="自選清單" aria-pressed="${this.state.watchOnly}">${icon("star")}<small hidden>${this.watch.size}</small></button><button class="direction-toggle-btn chart-tool-icon us2-side-control ${this.state.side === "long" ? "is-long" : "is-short"}" type="button" data-side aria-label="切換多空"><span class="direction-toggle-icon">${this.state.side === "long" ? "↑" : "↓"}</span></button></div><div class="us2-tier-menu" role="menu" hidden>${["all","T1","T2","T3"].map(t=>`<button role="menuitem" data-tier="${t}">${t==="all"?"全部":t}</button>`).join("")}</div><div class="us2-radar-list scanner-body"></div><small class="us2-list-note" hidden></small></aside></div><dialog class="chart-tools-dialog us2-strategy-dialog" aria-label="雷達策略"><header><b>策略與股票池</b><button data-close-strategy aria-label="關閉策略">${icon("close")}</button></header><div class="us2-dialog-fields">${filters}</div><p class="us2-muted">OX 經典先確認有效壓力、當下方向與同向量能；T123 為品質分級，突破階段另列。其他策略各自篩選。</p></dialog>`;
     const strategy = main.querySelector(".us2-strategy-dialog");
     main.querySelector("[data-strategy-open]").onclick = event => openDialog(strategy, event.currentTarget);
     main.querySelector("[data-close-strategy]").onclick = () => closeDialog(strategy);
@@ -884,7 +887,7 @@ export class USWorkspace {
       row.dataset.symbol = candidate.symbol; row.dataset.interval = '1D';
       row.dataset.homeTier = candidate.tier;
       row.title = `${candidate.symbol} · ${candidate.setup} · 距關鍵位 ${candidate.distance.toFixed(2)}%`;
-      const markup = `<small class="ox-home-row-tier" ${starts ? '' : 'hidden'}>${e(candidate.tier)}</small><span class="ox-home-t1-identity"><strong>${e(candidate.symbol)}</strong></span><small>距 ${candidate.distance.toFixed(1)}%</small><em class="${tone(candidate.changePct)}">${pct(candidate.changePct)}</em>`;
+      const markup = `<small class="ox-home-row-tier" ${starts ? '' : 'hidden'}>${e(candidate.tier)}</small><span class="ox-home-t1-identity"><strong>${e(candidate.symbol)}</strong></span><small>距 ${Number.isFinite(candidate.distance)?candidate.distance.toFixed(2)+" ATR":"—"}</small><em class="${tone(candidate.changePct)}">${pct(candidate.changePct)}</em>`;
       if (row._markup !== markup) { row.innerHTML = markup; row._markup = markup; }
       displayed.push(row);
     }

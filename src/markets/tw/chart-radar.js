@@ -1,10 +1,12 @@
-import {patternFrameTier} from './timeframe-tiers.js?v=20261001-tiercomb1';
+import { evaluateClassic, compareClassic } from '../../core/classic.js?v=20261001-classic1';
+import { classicTWRow } from './classic.js?v=20261001-classic1';
+import {patternFrameTier} from './timeframe-tiers.js?v=20261001-classic1';
 import {FRAME_LABELS} from './patterns/model.js';
-import { rankChartRows, chartUniverse } from './chart-radar-model.js?v=20261001-tiercomb1';
+import { rankChartRows, chartUniverse } from './chart-radar-model.js?v=20261001-classic1';
 import { escapeTW as esc } from './radar-card.js';
 import { savedResearch } from './research-data.js?v=20261001-twhome1';
-import { bundleState, bundleEntry, bundleClassification, subscribeBundle, preloadBundle } from './patterns/bundle.js?v=20261001-twhome1';
-import { fetchSeries } from './patterns/source.js?v=20261001-twhome1';
+import { bundleState, bundleEntry, bundleClassification, subscribeBundle, preloadBundle } from './patterns/bundle.js?v=20261001-classic1';
+import { fetchSeries } from './patterns/source.js?v=20261001-classic1';
 import { CHART_FRAMES, aggregateChartCandles, stockDetails, chartTickFormatter } from './chart-data.js?v=20261001-loading1';
 import { cryptoRadarPart, attachCryptoRadarStyles } from '../../components/radar/market-workspace.js';
 import { chartHistory, loadHistoryPage, preserveHistoryViewport, mergeDailyHistory } from './chart-history.js?v=20261001-tiercomb1';
@@ -16,7 +18,7 @@ const viewports=new Map();
 const glyph=type=>`<svg viewBox="0 0 24 24" aria-hidden="true">${({search:'<circle cx="10" cy="10" r="6"/><path d="m15 15 5 5"/>',radar:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><path d="m12 12 7-7M12 3v9"/>',fire:'<path d="M13 3c1 5-4 6-3 10 2-1 3-3 3-3 4 3 5 5 4 8-1 3-7 4-10 0-3-5 2-8 6-15Z"/>',star:'<path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9Z"/>',expand:'<path d="M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5"/>',close:'<path d="m6 6 12 12M6 18 18 6"/>',fold:'<path d="m15 6-6 6 6 6M3 3v18"/>'})[type]}</svg>`;
 export function mountTWChartRadar(host,{state:marketState,watchlist=new Set()}={}) {
  const life=new AbortController(),$=s=>host.querySelector(s),listen=(el,type,fn,options={})=>el?.addEventListener(type,fn,{...options,signal:life.signal});
- let tab='all',tier='all',side='long',query='',symbol='',frame='1D',focus=false,folded=false,serial=0,controller=null,drawings,gestures,holdTimer,held=false,levelLines=[];
+ let tab='all',tier='all',side='long',query='',symbol='',frame='1D',focus=false,folded=false,serial=0,controller=null,drawings,gestures,holdTimer,held=false,levelLines=[],classicSeries=[];
  const state={symbol:'',period:frame,candleData:[],chart:null,candleSeries:null,chartPriceViewport:null};
  let historyRecord=null,historyJob=null,fitAll=true;
  host.innerHTML='<div class="tw-chart-radar"></div>';
@@ -77,7 +79,7 @@ export function mountTWChartRadar(host,{state:marketState,watchlist=new Set()}={
  surface.append(summary,workspace);
  surface.insertAdjacentHTML('beforeend',`<div class="twcr-tier-menu" role="menu" hidden>${['all','T1','T2','T3'].map(t=>`<button type="button" role="menuitemradio" data-twcr-tier="${t}" aria-checked="${t===tier}">${t==='all'?'全部':t}</button>`).join('')}</div>
  <dialog class="chart-tools-overlay twcr-tools" aria-label="台股圖表設定" aria-hidden="true"><section class="chart-tools-dialog" role="dialog" aria-modal="true" aria-label="台股圖表設定" tabindex="-1">
- <div class="chart-tools-panel" data-tw-panel="indicators"><h3>指標</h3><div class="chart-indicator-options"><label class="chart-indicator-option"><input type="checkbox" data-volume checked><span>成交量</span></label><label class="chart-indicator-option"><input type="checkbox" data-levels><span>前高前低</span></label></div><div class="chart-tier-filter" data-tw-tier-filter></div><button class="chart-tools-save" data-action="reset">重設圖表縮放</button><button class="chart-tools-save" data-action="native-fullscreen">全螢幕圖表</button></div>
+ <div class="chart-tools-panel" data-tw-panel="indicators"><h3>指標</h3><div class="chart-indicator-options"><label class="chart-indicator-option"><input type="checkbox" data-volume checked><span>成交量</span></label><label class="chart-indicator-option"><input type="checkbox" data-levels><span>觸發／目標／結構失效</span></label></div><div class="chart-tier-filter" data-tw-tier-filter></div><button class="chart-tools-save" data-action="reset">重設圖表縮放</button><button class="chart-tools-save" data-action="native-fullscreen">全螢幕圖表</button></div>
  <div class="chart-tools-panel" data-tw-panel="timeframes" hidden><div class="chart-timeframe-preferences">${Object.keys(CHART_FRAMES).map(f=>`<label><input type="checkbox" value="${f}" checked><span>${CHART_FRAMES[f]}</span></label>`).join('')}</div><button class="chart-tools-save" data-action="frames-save">儲存時間級別</button></div><button class="chart-tools-close" data-action="tools-close" aria-label="關閉圖表設定">${glyph('close')}</button></section></dialog>
  <dialog class="twcr-search-dialog" aria-label="搜尋台股股票"><header><strong>搜尋股票</strong><button type="button" data-action="search-close" aria-label="關閉股票搜尋">${glyph('close')}</button></header><input type="search" placeholder="股票名稱或代號" aria-label="搜尋台股圖表標的" autocomplete="off"><div class="twcr-search-results" aria-label="股票搜尋結果"></div><small data-search-count role="status"></small></dialog>`);
  const releaseStyles=attachCryptoRadarStyles(surface,{summaryColumns:3});
@@ -117,8 +119,8 @@ export function mountTWChartRadar(host,{state:marketState,watchlist=new Set()}={
  }
  function renderList(){
   if(life.signal.aborted)return;
-  const config=window.OXTierFilters?.get('tw'),stocks=universe();
-  const pool=config?.enabled?stocks.flatMap(row=>{const match=window.OXTierFilters.resolve(row,config,(r,f)=>patternFrameTier(bundleClassification(r.symbol,f,snapshot()?.date),side));return match?[{...row,sourceTier:row.tier,tier:match.tier,filterFrame:match.frame}]:[];}):stocks;
+  const config=window.OXTierFilters?.get('tw'),stocks=universe().map(r=>classicTWRow(r,bundleClassification(r.symbol,'1D',snapshot()?.date),snapshot()?.date));
+  const pool=config?.enabled?stocks.flatMap(row=>{const match=window.OXTierFilters.resolve(row,config,(r,f)=>patternFrameTier(bundleClassification(r.symbol,f,snapshot()?.date),side));return match?[{...row,...match.value,sourceTier:row.tier,tier:match.tier,filterFrame:match.frame}]:[];}):stocks;
   const rows=rankChartRows(pool,{tab,tier,side,watchlist,query,strictTier:config?.enabled});
   $('[data-tier-label]').textContent=tier==='all'?'':tier;
   host.querySelectorAll('[data-twcr-tab]').forEach(b=>{const selected=b.dataset.twcrTab===tab;b.classList.toggle('active',selected);b.setAttribute('aria-selected',String(selected));});
@@ -130,8 +132,8 @@ export function mountTWChartRadar(host,{state:marketState,watchlist=new Set()}={
   direction.querySelector('.direction-toggle-icon').textContent=side==='long'?'↑':'↓';
   direction.setAttribute('aria-pressed',String(side==='short'));
   direction.setAttribute('aria-checked',String(side==='short'));
-  direction.title=side==='long'?'當日上漲股票池':'當日下跌股票池';
-  $('.twcr-pool-info').textContent=tab==='all'?`${side==='long'?'當日上漲':'當日下跌'} · ${rows.length} 檔 · 含觀察候選`:tab==='surge'?`當日成交額前 ${rows.length} 檔`:`自選 ${rows.length} 檔`;
+  direction.title=side==='long'?'OX 經典多頭候選':'OX 經典空頭候選';
+  $('.twcr-pool-info').textContent=tab==='all'?`OX 經典${side==='long'?'多頭':'空頭'} · ${rows.length} 檔`:tab==='surge'?`當日成交額前 ${rows.length} 檔`:`自選 ${rows.length} 檔`;
   $('.twcr-date').textContent=snapshot()?.date?`資料日 ${snapshot().date}`:'官方資料載入中';
   if(symbol)renderQuote();if($('.twcr-search-dialog').open)renderSearch();
   const list=$('.twcr-results'),top=list.scrollTop,wanted=new Set(rows.map(r=>r.symbol));
@@ -148,7 +150,7 @@ export function mountTWChartRadar(host,{state:marketState,watchlist=new Set()}={
     <div class="coin-top"><span class="coin-title"><span class="coin-symbol-full">${esc(r.symbol)} ${esc(r.name)}</span><span class="coin-symbol-mobile" title="${esc(r.symbol+' '+r.name)}">${esc(r.symbol)} <span class="twcr-name">${esc(r.name)}</span></span></span><span class="coin-top-right"><span class="twcr-card-price">${num(r.price)}</span>${starButton('watch-star-desktop')}</span></div>
     <div class="coin-mid"><span class="coin-status twcr-card-turnover"><span>成交額</span> <span>${money(r.turnoverTwd)}</span></span><span class="coin-change desktop-coin-change twcr-desktop-change" style="color:${r.changePct>=0?UP:DOWN}">${change(r.changePct)}</span></div>
     <div class="coin-mobile-bottom">${starButton('watch-star-mobile')}<span class="coin-change" style="color:${r.changePct>=0?UP:DOWN}">${change(r.changePct)}</span></div>
-    ${r.rankStatus==='WATCH'?'<small class="twcr-card-rank">觀察候選 · 分級待確認</small>':''}`;
+    ${tab==='all'?'<small class="twcr-card-rank">'+esc(r.filterFrame||'1D')+' · '+esc(r.stage)+'</small>':''}`;
    if(card._markup!==html){card.innerHTML=html;card._markup=html;}
    if(list.children[i]!==card)list.insertBefore(card,list.children[i]||null);
   });
@@ -168,7 +170,21 @@ export function mountTWChartRadar(host,{state:marketState,watchlist=new Set()}={
   gestures=window.OXChartGestures?.({container:el,state,formatPrice:num,getRange,setRange,refreshRange,isDrawing:()=>el.querySelector('.chart-drawing-layer.is-editing')});
   drawings=window.OXChartDrawings?.({box,chartEl:el,state,market:'tw',isExpanded:()=>focus});return true;
  }
- function levels(){for(const line of levelLines)state.candleSeries?.removePriceLine(line);levelLines=[];if(!$('[data-levels]').checked||!state.candleData.length)return;const prior=state.candleData.slice(-61,-1);if(!prior.length)return;for(const [title,price,color]of [['前高',Math.max(...prior.map(c=>c.high)),'#f7bd52'],['前低',Math.min(...prior.map(c=>c.low)),'#5ca5ff']])levelLines.push(state.candleSeries.createPriceLine({title,price,color,lineStyle:2,lineWidth:1,axisLabelVisible:true}));}
+ function levels(){
+  for(const line of levelLines)state.candleSeries?.removePriceLine(line);levelLines=[];
+  for(const line of classicSeries)state.chart?.removeSeries(line);classicSeries=[];
+  if(!$('[data-levels]').checked||!state.candleData.length)return;
+  const signals=['long','short'].map(side=>evaluateClassic(state.candleData,{side,frame}));
+  const signal=signals.filter(s=>s.eligible).sort(compareClassic)[0]||signals[side==='short'?1:0];
+  for(const [title,level,color]of [['觸發',signal.pressure,'#eee7df'],['下一目標',signal.target,'#f7bd52'],['結構失效',signal.invalidation,'#5ca5ff']]){
+   if(!level)continue;
+   if(level.kind==='diagonal'){
+    const line=state.chart.addLineSeries({color,lineWidth:1,lineStyle:2,priceLineVisible:false,lastValueVisible:false,autoscaleInfoProvider:()=>null});
+    line.setData(level.points.map(p=>({time:p.time,value:p.price})));classicSeries.push(line);
+   }else levelLines.push(state.candleSeries.createPriceLine({title,price:level.level,color,lineStyle:2,lineWidth:1,axisLabelVisible:true}));
+  }
+ }
+
  function renderHistory(initial=false){
   const record=historyRecord;if(!record)return;
   const previous=state.candleData,range=state.chart.timeScale().getVisibleLogicalRange(),candles=aggregateChartCandles(record.daily,frame,record.asOf,{coverageStart:record.coverageStart});

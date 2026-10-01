@@ -1,5 +1,5 @@
-import { dataDate, TIMEFRAMES } from './source.js?v=20261001-twhome1';
-export const INDEX_VERSION = 2;
+import { dataDate, TIMEFRAMES } from './source.js?v=20261001-classic1';
+export const INDEX_VERSION = 3;
 const memory = new Map(); let opening;
 export function entryCurrent(entry) {
   const d = entry?.data, date = dataDate();

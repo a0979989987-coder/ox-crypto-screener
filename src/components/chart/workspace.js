@@ -236,6 +236,8 @@ function applyChartFutureSpace(snapToLatest = false) {
 }
 
 function clearKeyLevelPriceLines() {
+  for(const line of state.classicLevelSeries||[]){try{state.chart.removeSeries(line);}catch{}}
+  state.classicLevelSeries=[];
   if (!state.candleSeries) return;
   for (const key of ["keyHighLine","keyLowLine","secondaryKeyHighLine","secondaryKeyLowLine"]) {
     if (state[key]) {
@@ -250,34 +252,44 @@ function renderKeyLevelPriceLinesFromState() {
   if (!state.keyLevelsVisible || !state.candleSeries || document.body.classList.contains("chart-focus")) return;
 
   const primary = state.currentLevels;
-  if (primary?.high) {
+  for(const levels of [primary,state.secondaryLevels]){
+    for(const pressure of [levels?.highPressure,levels?.lowPressure]){
+      if(pressure?.kind!=='diagonal')continue;
+      const line=state.chart.addLineSeries({color:'#eee7df',lineWidth:1,lineStyle:2,priceLineVisible:false,lastValueVisible:false,autoscaleInfoProvider:()=>null});
+      const times=state.candleData?.filter(c=>c.time>=pressure.points[0].time&&c.time<=pressure.points[1].time)||[];
+      const duration=(pressure.points[1].time-pressure.points[0].time)/(pressure.points[1].index-pressure.points[0].index);
+      if(duration>0)line.setData(times.map(c=>({time:c.time,value:pressure.points[1].price+pressure.slope*(c.time-pressure.points[1].time)/duration})));
+      state.classicLevelSeries.push(line);
+    }
+  }
+  if (primary?.high && primary.highPressure?.kind!=="diagonal") {
     state.keyHighLine = state.candleSeries.createPriceLine({
       price: primary.high, color: "#f7bd52", lineWidth: 1,
       lineStyle: LightweightCharts.LineStyle.Dashed, axisLabelVisible: false,
-      title: `前高 ${primary.sourcePeriod || getKeyLevelPeriod()}`
+      title: `有效壓力 ${primary.sourcePeriod || getKeyLevelPeriod()}`
     });
   }
-  if (primary?.low) {
+  if (primary?.low && primary.lowPressure?.kind!=="diagonal") {
     state.keyLowLine = state.candleSeries.createPriceLine({
       price: primary.low, color: "#5ca5ff", lineWidth: 1,
       lineStyle: LightweightCharts.LineStyle.Dashed, axisLabelVisible: false,
-      title: `前低 ${primary.sourcePeriod || getKeyLevelPeriod()}`
+      title: `有效支撐 ${primary.sourcePeriod || getKeyLevelPeriod()}`
     });
   }
 
   const secondary = state.secondaryLevels;
-  if (secondary?.high) {
+  if (secondary?.high && secondary.highPressure?.kind!=="diagonal") {
     state.secondaryKeyHighLine = state.candleSeries.createPriceLine({
       price: secondary.high, color: "rgba(247,189,82,.58)", lineWidth: 1,
       lineStyle: LightweightCharts.LineStyle.Dotted, axisLabelVisible: false,
-      title: `前高 ${secondary.sourcePeriod}`
+      title: `有效壓力 ${secondary.sourcePeriod}`
     });
   }
-  if (secondary?.low) {
+  if (secondary?.low && secondary.lowPressure?.kind!=="diagonal") {
     state.secondaryKeyLowLine = state.candleSeries.createPriceLine({
       price: secondary.low, color: "rgba(92,165,255,.58)", lineWidth: 1,
       lineStyle: LightweightCharts.LineStyle.Dotted, axisLabelVisible: false,
-      title: `前低 ${secondary.sourcePeriod}`
+      title: `有效支撐 ${secondary.sourcePeriod}`
     });
   }
 }
@@ -286,7 +298,7 @@ function syncKeyLevelVisibilityUI() {
   const checkbox = document.getElementById("chk-key-levels");
   const textEl = document.getElementById("key-level-toggle-text");
   if (checkbox) checkbox.checked = !!state.keyLevelsVisible;
-  if (textEl) textEl.textContent = "前高前低";
+  if (textEl) textEl.textContent = "有效壓力有效支撐";
 }
 
 function setKeyLevelsVisible(visible, { persist = true } = {}) {
@@ -348,7 +360,7 @@ function updateKeyLevelVisualLabels() {
 
   layer.innerHTML = levels.map(item => {
     const cls = `chart-key-label ${item.type}${item.secondary ? " secondary" : ""}`;
-    const label = `${item.type === "high" ? "前高" : "前低"} ${item.period} ${fmtPrice(item.price)}`;
+    const label = `${item.type === "high" ? "有效壓力" : "有效支撐"} ${item.period} ${fmtPrice(item.price)}`;
     return `<span class="${cls}" style="top:${item.displayY}px">${label}</span>`;
   }).join("");
 }
@@ -670,50 +682,15 @@ function averageTrueRange(candles, period = 14) {
 }
 
 function findStructuralPivotLevels(candles, sourcePeriod) {
-  if (!candles || candles.length < 12) return { high:0, low:0, highTime:0, lowTime:0 };
-
-  // 不使用「最近 N 根的最高/最低」；改用已確認的局部 Swing High / Swing Low。
-  // 這樣週線不會直接抓到很久以前的絕對高點，而是抓近期結構真正要突破的前高。
-  const completed = candles.slice(0, -1); // 排除尚未收盤的當前 K
-  const span = sourcePeriod === "1W" ? 2 : sourcePeriod === "1D" ? 2 : 3;
-  const atr = averageTrueRange(completed, 14) || 0;
-  const highs = [];
-  const lows = [];
-
-  for (let i = span; i < completed.length - span; i++) {
-    const c = completed[i];
-    const left = completed.slice(i - span, i);
-    const right = completed.slice(i + 1, i + span + 1);
-
-    const isHigh = left.every(x => c.high > x.high) && right.every(x => c.high >= x.high);
-    const isLow = left.every(x => c.low < x.low) && right.every(x => c.low <= x.low);
-
-    if (isHigh) {
-      const wingLow = Math.max(Math.min(...left.map(x => x.low)), Math.min(...right.map(x => x.low)));
-      const prominence = c.high - wingLow;
-      if (!atr || prominence >= atr * 0.55) highs.push({ price:c.high, time:c.time, index:i });
-    }
-    if (isLow) {
-      const wingHigh = Math.min(Math.max(...left.map(x => x.high)), Math.max(...right.map(x => x.high)));
-      const prominence = wingHigh - c.low;
-      if (!atr || prominence >= atr * 0.55) lows.push({ price:c.low, time:c.time, index:i });
-    }
-  }
-
-  const current = candles[candles.length - 1].close;
-  // 前高：優先找「目前價格上方、最近形成」的已確認 pivot high；若沒有，再用最近一個已確認前高。
-  const overheadHighs = highs.filter(p => p.price > current * 1.0005);
-  const highPick = (overheadHighs.length ? overheadHighs : highs).at(-1) || null;
-  // 前低：優先找目前價格下方、最近形成的已確認 pivot low。
-  const supportLows = lows.filter(p => p.price < current * 0.9995);
-  const lowPick = (supportLows.length ? supportLows : lows).at(-1) || null;
-
-  return {
-    high: highPick?.price || 0,
-    low: lowPick?.price || 0,
-    highTime: highPick?.time || 0,
-    lowTime: lowPick?.time || 0
-  };
+  const bars=cryptoClassicBars(candles,sourcePeriod);
+  const long=OXClassic.evaluateClassic(bars,{side:'long',frame:sourcePeriod});
+  const short=OXClassic.evaluateClassic(bars,{side:'short',frame:sourcePeriod});
+  // A live crossing remains a test until the closed bars confirm it. Keep the
+  // engine's valid pressure visible even when the provisional price is across.
+  const close=bars.filter(c=>!c.provisional).at(-1)?.close;
+  const high=long.pressure?.state==='valid'?long.pressure:long.levels?.filter(p=>p.state==='valid'&&p.level>=close).sort((a,b)=>a.level-b.level)[0];
+  const low=short.pressure?.state==='valid'?short.pressure:short.levels?.filter(p=>p.state==='valid'&&p.level<=close).sort((a,b)=>b.level-a.level)[0];
+  return {high:high?.level||0,low:low?.level||0,highTime:high?.points[0].time||0,lowTime:low?.points[0].time||0,highPressure:high,lowPressure:low};
 }
 
 async function refreshKeyLevels(chartCandles) {
@@ -732,7 +709,7 @@ async function refreshKeyLevels(chartCandles) {
     for (const sourcePeriod of sourcePeriods) {
       const sourceCandles = state.period === sourcePeriod
         ? chartCandles
-        : await BitgetAPI.fetchCandles(symbolAtRequest, sourcePeriod, 100);
+        : await BitgetAPI.fetchCandles(symbolAtRequest, sourcePeriod, 180);
 
       if (state.symbol !== symbolAtRequest || !getKeyLevelPeriods().includes(sourcePeriod)) return;
       results.push({ sourcePeriod, levels: findStructuralPivotLevels(sourceCandles, sourcePeriod) });
@@ -753,7 +730,7 @@ async function refreshKeyLevels(chartCandles) {
     renderOxDetail();
     requestAnimationFrame(updateKeyLevelVisualLabels);
   } catch (e) {
-    console.warn("關鍵前高/前低取得失敗", symbolAtRequest, sourcePeriods, e);
+    console.warn("關鍵有效壓力/有效支撐取得失敗", symbolAtRequest, sourcePeriods, e);
   }
 }
 

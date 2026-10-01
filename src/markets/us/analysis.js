@@ -1,3 +1,4 @@
+import { evaluateClassic, qualifyClassicRow, compareClassic, compactClassic, CLASSIC_VERSION } from '../../core/classic.js?v=20261001-classic1';
 import { closedCandles, relativeStrength } from "./model.js?v=20261001-us-eod1";
 const mean = (a) => a.reduce((s, x) => s + x, 0) / a.length;
 export function pivots(bars, radius = 3) {
@@ -122,16 +123,16 @@ export function analyzeStock(
 ) {
   const data = closedCandles(bars, interval, now);
   if (data.length < 60) return null;
-  return preparedAnalysis(item, data, closedCandles(benchmark, interval, now), interval);
+  return preparedAnalysis(item, data, closedCandles(benchmark, interval, now), interval, now);
 }
 export function analyzeStockPool(items, histories, benchmark, interval = "1D", now = Date.now()) {
   const lookup = new Map(items.map(item => [item.symbol, item]));
   const closedBenchmark = closedCandles(benchmark, interval, now);
   return Object.entries(histories).map(([symbol, bars]) => preparedAnalysis(
-    lookup.get(symbol), closedCandles(bars, interval, now), closedBenchmark, interval,
+    lookup.get(symbol), closedCandles(bars, interval, now), closedBenchmark, interval, now,
   )).filter(Boolean);
 }
-function preparedAnalysis(item, data, benchmark, interval) {
+function preparedAnalysis(item, data, benchmark, interval, now) {
   const last = data.at(-1);
   if (data.length < 60 || !last) return null;
   const volumes = data
@@ -149,6 +150,7 @@ function preparedAnalysis(item, data, benchmark, interval) {
     : null;
   return {
     ...item,
+    classic: Object.fromEntries(['long','short'].map(side=>[side,compactClassic(evaluateClassic(data,{side,frame:interval,now}))])),
     price: last.close,
     changePct,
     marketTime: last.time,
@@ -170,74 +172,35 @@ function preparedAnalysis(item, data, benchmark, interval) {
     bars: data.length,
   };
 }
-export function tierResults(
-  rows,
-  { side = "long", mode = "classic", type = "stock", pattern = "all", limit = 10 } = {},
-) {
-  const candidates = [];
-  for (const row of rows) {
-    if (
-      (type === "stock" && row.type === "ETF") ||
-      (type === "ETF" && row.type !== "ETF") ||
-      row.complex
-    )
-      continue;
-    let setups = row.patterns?.[side] || [];
-    if (pattern !== "all") setups = setups.filter((p) => p.id === pattern);
-    const best = [...setups].sort((a, b) => a.distance - b.distance)[0];
-    const sign = side === "long" ? 1 : -1;
-    if (
-      mode === "ma" &&
-      !(sign * (row.ma20 - row.ma50) > 0 && sign * (row.price - row.ma20) > 0)
-    )
-      continue;
-    if (mode === "breakout" && !(row.rvol >= 1.5 && best && !best.forming))
-      continue;
-    if (mode === "gap" && sign * row.gapPct < 2) continue;
-    if (mode === "rs" && sign * row.rs < 3) continue;
-    if (mode === "classic" && !best) continue;
-    const tier =
-      best?.forming && best.distance <= 3
-        ? "T1"
-        : best?.forming && best.distance <= 7
-          ? "T2"
-          : "T3";
-    candidates.push({
-      ...row,
-      tier,
-      setup:
-        best?.label ||
-        {
-          ma: "均線排列",
-          gap: "跳空觀察",
-          rs: "相對 SPY 強勢",
-          breakout: "放量突破",
-        }[mode] ||
-        "結構觀察",
-      forming: best?.forming ?? false,
-      reasons: [
-        ...(best
-          ? [
-              `${best.label} · ${best.forming ? "形成中，未確認突破" : "已收線越過關鍵位"}`,
-              `距關鍵位 ${best.distance.toFixed(2)}%`,
-            ]
-          : []),
-        ...(row.rvol !== null ? [`已收線量比 ${row.rvol.toFixed(2)}x`] : []),
-        ...(row.rs !== null
-          ? [
-              `同日期20期相對 SPY ${row.rs >= 0 ? "+" : ""}${row.rs.toFixed(2)}%`,
-            ]
-          : []),
-      ],
-      distance: best?.distance ?? 100,
-    });
-  }
-  return ["T1", "T2", "T3"].flatMap((t) =>
-    candidates
-      .filter((x) => x.tier === t)
-      .sort((a, b) => a.distance - b.distance || b.liquidity - a.liquidity)
-      .slice(0, limit),
-  );
+export function stockClassic(row,side='long') {
+ const saved=qualifyClassicRow(row,side);if(saved)return saved;
+ if(row.classic?.[side]?.version===CLASSIC_VERSION)return row.classic[side];
+ // Old stored analyses may carry genuine bars, but their old grades are never
+ // trusted. Recompute from OHLCV; an analysis without bars cannot qualify.
+ if(Array.isArray(row.bars))return evaluateClassic(row.bars,{side,frame:row.interval});
+ return null;
+}
+export function tierResults(rows,{side='long',mode='classic',type='stock',pattern='all',limit=10}={}) {
+ const candidates=[],seen=new Set();
+ for(const row of rows){
+  if((type==='stock'&&row.type==='ETF')||(type==='ETF'&&row.type!=='ETF')||row.complex||seen.has(row.symbol))continue;
+  const signal=stockClassic(row,side);
+  let setups=row.patterns?.[side]||[];
+  if(pattern!=='all')setups=setups.filter(p=>p.id===pattern);
+  const best=[...setups].sort((a,b)=>a.distance-b.distance)[0],sign=side==='long'?1:-1;
+  if(mode==='classic'&&(!signal?.eligible||pattern!=='all'&&!best))continue;
+  if(mode==='ma'&&!(sign*(row.ma20-row.ma50)>0&&sign*(row.price-row.ma20)>0))continue;
+  if(mode==='breakout'&&!(signal?.eligible&&signal.phase==='breakout'))continue;
+  if(mode==='gap'&&sign*row.gapPct<2)continue;
+  if(mode==='rs'&&sign*row.rs<3)continue;
+  const tier=signal?.eligible?signal.tier:'T3';
+  candidates.push({...row,classicSignal:signal,side:side.toUpperCase(),tier,
+    setup:mode==='classic'?'OX 經典 · '+signal.stage:({ma:'均線排列',gap:'跳空觀察',rs:'相對 SPY 強勢',breakout:'放量突破'})[mode],
+    forming:signal?.phase==='prebreakout'||signal?.phase==='probe',stage:signal?.stage,
+    reasons:[...(signal?.eligible?signal.reasons:[]),...(row.rs!==null&&Number.isFinite(row.rs)?['同日期20期相對 SPY '+row.rs.toFixed(2)+'%']:[])],
+    distance:signal?.distanceATR??Infinity});seen.add(row.symbol);
+ }
+ return ['T1','T2','T3'].flatMap(t=>candidates.filter(x=>x.tier===t).sort((a,b)=>compareClassic(a,b)||(b.liquidity||0)-(a.liquidity||0)).slice(0,limit));
 }
 
 export function timeframeTierResults(analyses,options,config) {
@@ -249,7 +212,7 @@ export function timeframeTierResults(analyses,options,config) {
   const row=config.match==='any'?rows.find(Boolean):rows.every(Boolean)?rows[0]:null;
   if(row)matched.push({...row,combination:true});
  }
- return ['T1','T2','T3'].flatMap(tier=>matched.filter(r=>r.tier===tier).sort((a,b)=>a.distance-b.distance||b.liquidity-a.liquidity).slice(0,10));
+ return ['T1','T2','T3'].flatMap(tier=>matched.filter(r=>r.tier===tier).sort((a,b)=>compareClassic(a,b)||(b.liquidity||0)-(a.liquidity||0)).slice(0,10));
 }
 export function resamplePath(values, count = 32) {
   if (values.length < 2) return [];
@@ -264,26 +227,17 @@ export function resamplePath(values, count = 32) {
     range = Math.max(...out) - min;
   return out.map((x) => (range ? (x - min) / range : 0.5));
 }
-export function matchPath(rows, points) {
-  const target = resamplePath(points.map((p) => 1 - p.y)),
-    rank = rows
-      .filter((x) => x.path?.length >= 20)
-      .map((row) => ({
-        ...row,
-        pathDistance: Math.sqrt(
-          resamplePath(row.path).reduce(
-            (s, x, i) => s + (x - target[i]) ** 2,
-            0,
-          ) / target.length,
-        ),
-      }));
-  return rank
-    .sort((a, b) => a.pathDistance - b.pathDistance)
-    .slice(0, 30)
-    .map((x, i) => ({
-      ...x,
-      tier: i < 10 ? "T1" : i < 20 ? "T2" : "T3",
-      setup: "相似路徑",
-      reasons: [`標準化路徑 RMSE ${x.pathDistance.toFixed(3)}（非勝率）`],
-    }));
+export function matchPath(rows,points,options={}) {
+ const target=resamplePath(points.map(p=>1-p.y));if(!target.length)return [];
+ const side=options.side|| (target.at(-1)>=target[0]?'long':'short');
+ const ranked=rows.flatMap(row=>{
+  if(row.path?.length<20)return [];
+  const signal=stockClassic(row,side);if(!signal?.eligible)return [];
+  const path=resamplePath(row.path);
+  const pathDistance=Math.sqrt(path.reduce((s,x,i)=>s+(x-target[i])**2,0)/target.length);
+  if(pathDistance>.28)return [];
+  return [{...row,side:signal.side,tier:signal.tier,classicSignal:signal,pathDistance,
+    setup:'相似路徑 · '+signal.stage,reasons:[...signal.reasons,'路徑 RMSE '+pathDistance.toFixed(3)]}];
+ }).sort((a,b)=>compareClassic(a,b)||a.pathDistance-b.pathDistance);
+ const seen=new Set();return ['T1','T2','T3'].flatMap(t=>ranked.filter(r=>r.tier===t&&!seen.has(r.symbol)&&seen.add(r.symbol)).slice(0,10));
 }

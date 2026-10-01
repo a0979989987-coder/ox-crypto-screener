@@ -59,7 +59,9 @@ function renderOxDetail() {
 
   const ranked = [...(state.tierMap.t1||[]), ...(state.tierMap.t2||[]), ...(state.tierMap.t3||[])].find(x => x.symbol === symbol);
   const shownTier = ranked?.displayTier || scored.tier;
-  const status = ranked?.rankStatus || (scored.tier === "t1" ? "CONFIRMED" : scored.tier === "t2" ? "READY" : scored.tier === "t3" ? "EARLY" : "WATCH");
+  const status = ranked?.rankStatus || scored.classicSignal?.stage || '待確認';
+  const classic=scored.classicSignal;
+  document.getElementById('detail-levels').textContent=`觸發 ${classic?.pressure?fmtPrice(classic.pressure.level):'—'} · 下一目標 ${classic?.target?fmtPrice(classic.target.level):'尚未辨識'} · 結構失效 ${classic?.invalidation?fmtPrice(classic.invalidation.level):'—'}`;
   document.getElementById("detail-tier").textContent = isBenchmark ? "Benchmark" : `${shownTier.toUpperCase()} ${status}`;
   document.getElementById("detail-ox").textContent = scored.oxScore;
   document.getElementById("detail-liq").textContent = `${scored.liqScore} / 100`;
@@ -72,15 +74,9 @@ function renderOxDetail() {
   document.getElementById("detail-progress-bar").style.width = `${scored.setupProgress ?? 0}%`;
   document.getElementById("detail-progress-bar").style.setProperty("--meter-color", (scored.setupProgress ?? 0) < 40 ? "var(--meter-weak)" : (scored.setupProgress ?? 0) < 70 ? "var(--meter-mid)" : "var(--meter-strong)");
   document.getElementById("detail-confidence").textContent = `${scored.signalConfidence ?? 0}%`;
-  document.getElementById("detail-trigger").textContent = scored.triggerActive ? scored.triggerType : "等待確認";
+  document.getElementById("detail-trigger").textContent = classic?.stage || "等待確認";
 
-  const reasons = [
-    { ok: scored.liqScore >= 55, text: `24H USDT 成交量 ${fmtCryptoVolume(scored.quoteVol)}，市場前 ${scored.liqPercentile}%` },
-    { ok: scored.volRatio1h >= 1.25, text: `1H Volume Ratio ${scored.volRatio1h ?? '—'}x` },
-    { ok: scored.structScore >= 60, text: `結構 ${scored.structureLabel || scored.side}` },
-    { ok: scored.rsScore >= 55, text: `Relative Strength ${scored.rsScore}` },
-    { ok: scored.triggerActive, text: scored.triggerActive ? `Trigger：${scored.triggerType}` : "Trigger 尚待確認" }
-  ];
+  const reasons = (classic?.eligible?classic.reasons:classic?.rejectionReasons||[]).map(text=>({ok:classic?.eligible,text}));
   document.getElementById("detail-reasons-list").innerHTML = reasons.map(r => `<div class="detail-reason ${r.ok ? 'ok' : 'wait'}">${r.ok ? '✓' : '△'} ${r.text}</div>`).join('');
   updateAlertButtons();
 }

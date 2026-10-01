@@ -1,3 +1,5 @@
+import { rankingSignal } from './classic-fixtures.mjs';
+import { OXClassicForTests } from './classic-test-runtime.mjs';
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
@@ -7,11 +9,11 @@ const scanner = readFileSync(new URL("../src/markets/crypto/scanner.js", import.
 
 function rank(rows) {
   const state = {
-    analyzedCache: new Map(rows.map(row => [row.symbol, row])),
+    analyzedCache: new Map(rows.map(row => [row.symbol, {...row,classic:{long:rankingSignal(row.tier.toUpperCase())},classicSignal:rankingSignal(row.tier.toUpperCase())}])),
     tickers: [], directionFilter: "long"
   };
   const context = {
-    state, benchmarkSymbols: new Set(["BTCUSDT", "ETHUSDT"]), num: Number,
+    OXClassic:OXClassicForTests, state, benchmarkSymbols: new Set(["BTCUSDT", "ETHUSDT"]), num: Number,
     syncDirectionalBadges() {}, syncWatchBadge() {}, renderMarketStrength() {},
     renderHomeOverview() {}, renderOxLive() {}
   };
@@ -19,7 +21,7 @@ function rank(rows) {
   return state.tierMapBySide.long;
 }
 
-test("Crypto radar keeps 10 T1 and 15 T2/T3 real symbols, 40 total, without repeats", () => {
+test("Crypto radar keeps up to 10 qualified symbols per tier, 30 total, without repeats", () => {
   const rows = ["t1", "t2", "t3"].flatMap((tier, tierIndex) =>
     Array.from({ length: 35 }, (_, index) => ({
       symbol: `COIN${tierIndex}${String(index).padStart(2, "0")}USDT`,
@@ -31,11 +33,11 @@ test("Crypto radar keeps 10 T1 and 15 T2/T3 real symbols, 40 total, without repe
   );
   const result = rank(rows);
   for (const tier of ["t1", "t2", "t3"]) {
-    assert.equal(result[tier].length, tier === "t1" ? 10 : 15);
+    assert.equal(result[tier].length, 10);
     assert.ok(result[tier].every(row => row.tier === tier));
   }
   const symbols = ["t1", "t2", "t3"].flatMap(tier => result[tier].map(row => row.symbol));
-  assert.equal(new Set(symbols).size, 40);
+  assert.equal(new Set(symbols).size, 30);
   assert.ok(result.t1[0].t1Fit > result.t1.at(-1).t1Fit);
 });
 
@@ -62,9 +64,9 @@ test('radar snapshot uses current tickers and excludes expired or unavailable co
   function restore(savedAt){
     const state={tickers:[{symbol:'SOLUSDT',change24h:.02}]};
     runInNewContext(`${scanner}\nrestoreRadarSnapshot();`,{
-      state:Object.assign(state,{analyzedCache:new Map()}),num:Number,Date,
+      state:Object.assign(state,{analyzedCache:new Map()}),OXClassic:OXClassicForTests,num:Number,Date,
       isCryptoSymbolAllowed:()=>true,
-      localStorage:{getItem:()=>JSON.stringify({savedAt,rows:[{symbol:'SOLUSDT',change24h:.5},{symbol:'REMOVEDUSDT'}]})}
+      localStorage:{getItem:()=>JSON.stringify({savedAt,rows:[{symbol:'SOLUSDT',side:'LONG',tier:'t1',classic:{long:rankingSignal()},change24h:.5},{symbol:'REMOVEDUSDT'}]})}
     });
     return state;
   }

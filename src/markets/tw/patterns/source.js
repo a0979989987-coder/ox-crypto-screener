@@ -1,6 +1,7 @@
-import { preloadBundle, bundleEntry, bundleEntries, bundleState } from './bundle.js?v=20261001-twhome1';
+import { classifyTWSeries } from '../classic.js?v=20261001-classic1';
+import { preloadBundle, bundleEntry, bundleEntries, bundleState } from './bundle.js?v=20261001-classic1';
 import { twProvider } from '../api.js?v=20261001-tiercomb1';
-import { createTWMarketState } from '../engine.js?v=20261001-tiercomb1';
+import { createTWMarketState } from '../engine.js?v=20261001-classic1';
 import { savedResearch, loadResearch } from '../research-data.js?v=20261001-twhome1';
 import { TIMEFRAMES, selectUniverse, dailyCandles } from './model.js';
 import { aggregateChartCandles } from '../chart-data.js?v=20261001-loading1';
@@ -8,7 +9,7 @@ export { TIMEFRAMES };
 export const detailStamp = row => `${row.frame!=='1D'?'已完成合併 K · 截至':'資料日'} ${row.candles.at(-1).lastDate || row.candles.at(-1).date}`;
 export const id = 'tw', label = '台股 · TWSE／TPEx', asset = '股票', currency = '元', period = '當日', defaultFrames = ['1D'], defaultLimit = 0;
 export const displayName = row => `${row.symbol} ${row.name || row.ticker?.name || ''}`.trim();
-export const help = '<p>以官方上市、上櫃普通股的成交額選取觀察池，日線使用官方 OHLC；週線由實際日線合併，只比對已完成的週。休市與缺漏不補造 K 線。預設全部普通股；全市場日線先在後端分類，開站即背景載入。首次下載逐步顯示進度，同一交易日直接沿用分類結果。</p><p>型態 T1／T2／T3 代表觀察階段，與原雷達分級分開；相似度不是勝率。日、2／3／5 日、週、2 週、月都使用真實日 K 合併；全市場預分類只比對歷史至少 35 根的級別，不足會列入缺漏。未畫圖先顯示雷達候選，畫圖或選型態後搜尋已分類股票。OX 沿用台股雷達官方資料評分，未知顯示 —，不使用加密合約公式。成交額與漲跌為資料日行情，非即時。</p><p>白線標示比對區段，W／M 可切換型態條件與相似路徑。點選股票卡片可拖曳與雙指縮放 K 線；資料缺漏會跳過並顯示缺漏數。</p>';
+export const help = '<p>以官方上市、上櫃普通股的真實日 K 與成交量判斷 OX 經典；其他級別由已完成的日 K 合併。休市與缺漏不補造 K 線。先確認有效水平或斜線壓力、右側方向和同向量能，才做 T123 品質分級，突破階段另列。已明顯上下貫穿的線失效，下跌放量和弱反彈不得進入多頭榜。</p><p>舊快照只保留真實 OHLCV，分級重算。各級最多 10 檔，不補滿名額。資料日行情非即時；相似度不代表勝率。未畫圖顯示符合 OX 經典的雷達候選，手繪與型態搜尋沿用同一條件。</p>';
 const cache = new Map();
 export function dataDate() { return bundleState().date || savedResearch()?.date || null; }
 export function radarCandidates() {
@@ -33,7 +34,7 @@ export function primeCandleCache(data) {
 }
 export async function fetchSeries(symbol, frame, signal, asOf = dataDate(), {minimum=35}={}) {
   if ((!TIMEFRAMES[frame] && frame!=='1Q') || !asOf) throw Error('台股時間級別或資料日期尚未取得');
-  const indexed=bundleEntry(symbol,frame,asOf);if(indexed)return {...indexed.data,oxScore:createTWMarketState()?.data?.radar?.find(r=>r.symbol===symbol)?.oxScore??null,preclassified:indexed.matches};
+  const indexed=bundleEntry(symbol,frame,asOf);if(indexed)return {...indexed.data,classic:indexed.classic,oxScore:indexed.classic.long.eligible?indexed.classic.long.qualityScore:null,preclassified:indexed.matches};
   if(minimum===1){const base=bundleEntry(symbol,'1D',asOf);if(base){const candles=aggregateChartCandles(base.data.candles,frame,asOf);if(candles.length)return {...base.data,frame,candles};}}
   const key = symbol + ':' + frame, cached = cache.get(key);
   if (cached?.dataDate === asOf && cached.candles.length>=minimum) return cached;
@@ -44,7 +45,7 @@ export async function fetchSeries(symbol, frame, signal, asOf = dataDate(), {min
   if (candles.length < minimum) throw Error(`${symbol} ${frame} 官方 K 線不足`);
   const quote = savedResearch()?.stocks?.find(row => row.symbol === symbol);
   const radar = createTWMarketState()?.data?.radar?.find(row => row.symbol === symbol);
-  const value = { candles, symbol, name: quote?.name || payload.name, market: 'tw', frame, dataDate: asOf, source: 'TWSE／TPEx', serverTime: Date.now(), turnover: quote?.turnoverTwd ?? null, change: quote?.changePct ?? null, oxScore: radar?.oxScore ?? null };
+  const value = { classic:classifyTWSeries(candles,frame), candles, symbol, name: quote?.name || payload.name, market: 'tw', frame, dataDate: asOf, source: 'TWSE／TPEx', serverTime: Date.now(), turnover: quote?.turnoverTwd ?? null, change: quote?.changePct ?? null, oxScore: radar?.oxScore ?? null };
   primeCandleCache(value); return value;
 }
 export async function scanUniverse(universe, frames, { signal, onSeries, onProgress }) {

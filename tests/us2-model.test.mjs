@@ -1,3 +1,4 @@
+import { rankingSignal } from './classic-fixtures.mjs';
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
@@ -253,11 +254,12 @@ test("pool analysis reuses the closed benchmark without including future daily c
   assert.equal(result[1].marketTime, bars.at(-3).time);
   assert.equal(analyzeStock(items[0], [], undefined, "1D", now), null);
 });
-test("T1 rewards a nearby untriggered pattern, results cannot be filled to 30 artificially", () => {
+test("classic tiers use qualified quality independently of breakthrough phase, without filling quotas", () => {
   const base = {
     symbol: "X",
     type: "stock",
     liquidity: 20000000,
+    classic:{long:rankingSignal()},
     patterns: {
       long: [{ id: "W", label: "W 底", forming: true, distance: 2 }],
     },
@@ -269,6 +271,7 @@ test("T1 rewards a nearby untriggered pattern, results cannot be filled to 30 ar
     {
       ...base,
       symbol: "Y",
+      classic:{long:rankingSignal("T3")},
       patterns: {
         long: [{ id: "W", label: "W 底", forming: false, distance: 1 }],
       },

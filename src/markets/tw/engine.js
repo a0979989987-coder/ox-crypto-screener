@@ -1,3 +1,5 @@
+import { classicTWRow } from './classic.js?v=20261001-classic1';
+import { bundleClassification, subscribeBundle } from './patterns/bundle.js?v=20261001-classic1';
 import {
   twProvider
 } from "./api.js?v=20261001-tiercomb1";
@@ -1055,6 +1057,9 @@ function normalizeRadarItem(
         item.tier
       ),
 
+    dataDate:item.dataDate||item.updatedAt||null,
+    currentCandle:item.currentCandle||null,
+    classic:item.classic||null,
     updatedAt:
       item.updatedAt ??
       item.timestamp ??
@@ -1084,7 +1089,7 @@ export function normalizeTWRadar(
   return Object.freeze(
     source
       .map(
-        normalizeRadarItem
+        item=>{const row=normalizeRadarItem(item),date=payload?.dataDate||row.dataDate;return classicTWRow(row,bundleClassification(row.symbol,'1D',date),date);}
       )
       .filter(
         item =>
@@ -2116,3 +2121,11 @@ export async function refreshTWMarketState(
  */
 export const loadTWMarketState =
   refreshTWMarketState;
+
+// All Taiwan pages receive the same newly qualified rows as history chunks arrive.
+subscribeBundle(()=>{
+ if(!currentState.data?.radar)return;
+ const date=currentState.data.radarDataDate;
+ const radar=currentState.data.radar.map(row=>classicTWRow(row,bundleClassification(row.symbol,'1D',date),date));
+ const next=setState({...currentState,data:Object.freeze({...currentState.data,radar})});emitState(next);
+});

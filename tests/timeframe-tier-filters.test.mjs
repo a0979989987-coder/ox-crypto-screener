@@ -1,3 +1,4 @@
+import { rankingSignal } from './classic-fixtures.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
@@ -32,18 +33,18 @@ test('combination direction rejects opposite setups, and Crypto excludes unfinis
  assert.equal(runInNewContext("closedTierCandles(bars,'1M',now).length",context),0,'Bitget UTC+8 October candle is still forming after UTC midnight');
 });
 test('TW frame grades use validated pattern direction and retain exact groups without WATCH promotion',()=>{
- const entry={data:{candles:[{}]},matches:{w:{tier:2,similarity:90,label:'W'},hs:{tier:1,similarity:99,label:'HS'}}};
+ const entry={data:{candles:[{}]},classic:{long:rankingSignal('T2'),short:rankingSignal('T1','short')},matches:{w:{tier:2,similarity:90,label:'W'},hs:{tier:1,similarity:99,label:'HS'}}};
  assert.equal(patternFrameTier(entry,'long').tier,'T2');assert.equal(patternFrameTier(entry,'short').tier,'T1');assert.equal(patternFrameTier(null),null);
- const rows=[{symbol:'1234',price:10,changePct:1,tier:'T3'}];
+ const rows=[{symbol:'1234',price:10,changePct:1,tier:'T3',classic:{long:rankingSignal('T3')}}];
  assert.equal(rankChartRows(rows,{strictTier:true})[0].displayTier,'T3');assert.equal(rankChartRows(rows,{strictTier:true,tier:'T2'}).length,0);
 });
-const analysis=(symbol,interval,distance,side='long')=>({symbol,interval,type:'stock',price:100,rvol:null,rs:null,liquidity:1e8,patterns:{[side]:[{id:'W',label:'W',forming:true,distance}]}});
+const analysis=(symbol,interval,distance,side='long')=>({symbol,interval,type:'stock',price:100,rvol:null,rs:null,liquidity:1e8,classic:{[side]:rankingSignal('T1',side)},patterns:{[side]:[{id:'W',label:'W',forming:true,distance}]}});
 test('US combines the full per-frame classification pool before display limits, without substituting daily or opposite-side grades',()=>{
  const daily=Array.from({length:12},(_,i)=>analysis('S'+i,'1D',1+i/100));
  const rows=[...daily,analysis('S11','1W',1),analysis('ONLYW','1W',1),analysis('SHORT','1W',1,'short')];
  const config={enabled:true,match:'all',rules:[{frame:'1D',tier:'T1'},{frame:'1W',tier:'T1'}]};
  assert.deepEqual(timeframeTierResults(rows,{side:'long'},config).map(r=>r.symbol),['S11']);
- config.match='any';assert(timeframeTierResults(rows,{side:'long'},config).some(r=>r.symbol==='ONLYW'));
+ config.match='any';const high=rows.find(r=>r.symbol==='ONLYW');high.classic.long.qualityScore=100;assert(timeframeTierResults(rows,{side:'long'},config).some(r=>r.symbol==='ONLYW'));
  config.rules=[{frame:'1M',tier:'T1'}];assert.equal(timeframeTierResults(rows,{side:'long'},config).length,0);
  config.rules=[{frame:'1W',tier:'T1'}];assert.deepEqual(timeframeTierResults(rows,{side:'short'},config).map(r=>r.symbol),['SHORT']);
 });

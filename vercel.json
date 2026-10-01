@@ -1,5 +1,8 @@
 {
   "functions": {
-    "api/v1/tw/*.js": { "maxDuration": 120 }
+    "api/v1/tw/*.js": {
+      "maxDuration": 120,
+      "includeFiles": "data/tw-patterns/**"
+    }
   }
 }

@@ -1,6 +1,6 @@
 // Local observations only; no generated candles or inferred market values are stored.
 import { TIMEFRAMES, candleBoundary } from './catalog.js?v=patterns5d-20260929';
-export const INDEX_VERSION=5;
+export const INDEX_VERSION=6;
 const memory=new Map();let opening;
 export const entryKey=data=>`${data.symbol}:${data.frame}`;
 export function entryCurrent(entry,now=Date.now()){
