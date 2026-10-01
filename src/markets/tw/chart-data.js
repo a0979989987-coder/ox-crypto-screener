@@ -4,6 +4,13 @@ import { TIMEFRAMES, FRAME_LABELS, aggregateCandles } from './patterns/model.js'
 export const CHART_FRAMES = {'1m':'1 分','5m':'5 分','15m':'15 分','30m':'30 分','1H':'1 小時','4H':'4 小時',...FRAME_LABELS,'1Q':'季'};
 export const INTRADAY_MESSAGE = '分鐘／小時 K 尚未接入盤中行情資料，請先使用日、週、月或季線。';
 export const isIntraday = frame => !TIMEFRAMES[frame] && frame !== '1Q';
+export const chartTickFormatter = frame => time => {
+  // The library requires a callback. Returning null from it enables the
+  // default formatter; assigning null to the option causes a render error.
+  if (frame !== '1Q') return null;
+  const d = new Date(time * 1000 + 8 * 3600000);
+  return `${d.getUTCFullYear()} Q${Math.floor(d.getUTCMonth()/3)+1}`;
+};
 
 export function quarterlyCandles(daily, asOf) {
   const quarter = date => `${date.slice(0,4)}-${String(Math.floor((Number(date.slice(5,7))-1)/3)*3+1).padStart(2,'0')}-01`;
