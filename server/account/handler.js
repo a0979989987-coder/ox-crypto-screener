@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { seal, unseal, cookie, readCookie, safeReturn } from './cookies.js';
+import { handleBitgetLink, parseLinkMutation } from './bitget-link.js';
 const bursts = new Map();
 // Only fixed public API categories may cross the callback boundary.
 const providerCodes = new Set(['unexpected_failure', 'bad_oauth_callback', 'bad_oauth_state', 'flow_state_expired', 'flow_state_not_found', 'provider_disabled', 'oauth_provider_not_supported', 'provider_email_needs_verification', 'signup_disabled', 'identity_already_exists', 'email_exists', 'user_already_exists', 'user_banned', 'over_request_rate_limit', 'request_timeout', 'validation_failed']);
@@ -28,16 +29,20 @@ export function createAccountHandler({ env = process.env, clientFactory = create
     if (endpoint === 'config' && req.method === 'GET') return json(200, { configured, providerConnectionVerified: false, databaseConnected: false });
     if (!configured) return json(503, { ok: false, code: 'AUTH_PROVIDER_NOT_CONFIGURED', message: '正式登入服務尚未設定。' });
     const origin = env.OX_ACCOUNT_ORIGIN;
-    if (!['config', 'google', 'callback', 'email', 'verify', 'session', 'logout'].includes(endpoint)) return json(404, { ok: false });
+    if (!['config', 'google', 'callback', 'email', 'verify', 'session', 'logout', 'bitget-link'].includes(endpoint)) return json(404, { ok: false });
     if (!['GET', 'POST'].includes(req.method)) return json(405, { ok: false });
     if (req.method === 'POST' && (req.headers.origin !== origin || req.headers['content-type']?.split(';')[0] !== 'application/json')) return json(403, { ok: false, message: '請從 OX 網站操作。' });
     const getOnly = ['session', 'callback'];
-    if ((getOnly.includes(endpoint) && req.method !== 'GET') || (!getOnly.includes(endpoint) && req.method !== 'POST')) return json(405, { ok: false });
+    if (endpoint !== 'bitget-link' && ((getOnly.includes(endpoint) && req.method !== 'GET') || (!getOnly.includes(endpoint) && req.method !== 'POST'))) return json(405, { ok: false });
     let body = req.body || {};
     if (req.method === 'POST') {
       if (typeof body === 'string') { try { body = JSON.parse(body); } catch { return json(400, { ok: false }); } }
       if (!body || typeof body !== 'object' || Array.isArray(body) || Buffer.byteLength(JSON.stringify(body)) > 4096) return json(400, { ok: false });
       if (!limiter(String(req.headers['x-vercel-forwarded-for'] || req.socket?.remoteAddress || 'unknown') + ':' + endpoint)) return json(429, { ok: false, message: '操作太頻繁，請稍後再試。' });
+    }
+    if (endpoint === 'bitget-link' && req.method === 'POST') {
+      if (!parseLinkMutation(body)) return json(400, { ok: false, code: 'INVALID_LINK_REQUEST' });
+      req.body = body;
     }
     const rawFlow = readCookie(req, 'flow');
     const flow = unseal(rawFlow, secret, 'flow');
@@ -107,18 +112,24 @@ export function createAccountHandler({ env = process.env, clientFactory = create
         } catch { /* Always finish local logout if the provider is unavailable. */ }
         clear(); return json(200, { ok: true });
       }
-      if (endpoint === 'session') {
-        if (!access || !refresh) return json(200, { ok: true, user: null });
+      if (endpoint === 'session' || endpoint === 'bitget-link') {
+        const anonymous = () => endpoint === 'bitget-link' ? json(401, { ok: false, code: 'SIGN_IN_REQUIRED', message: '請先登入 OX 帳號。' }) : json(200, { ok: true, user: null });
+        if (!access || !refresh) return anonymous();
         let validatedAccess = access;
         let { data, error } = await client.auth.getUser(access);
         if (error) {
           const refreshed = await client.auth.refreshSession({ refresh_token: refresh });
-          if (refreshed.error || !refreshed.data.user) { clear(); return json(200, { ok: true, user: null }); }
+          if (refreshed.error || !refreshed.data.user) { clear(); return anonymous(); }
           // Validate with the provider; never authorize from decoded client claims.
           const validated = await client.auth.getUser(refreshed.data.session.access_token);
-          if (validated.error || !validated.data.user) { clear(); return json(200, { ok: true, user: null }); }
+          if (validated.error || !validated.data.user) { clear(); return anonymous(); }
           saveSession(refreshed.data.session); data = validated.data;
           validatedAccess = refreshed.data.session.access_token;
+        }
+        if (endpoint === 'bitget-link') {
+          if (!data?.user?.id) return anonymous();
+          const reader = clientFactory(url, key, { global: { headers: { Authorization: `Bearer ${validatedAccess}` } }, auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } });
+          return handleBitgetLink({ req, res, reader, memberId: data.user.id });
         }
         let accountStorage = 'unverified';
         if (data.user) {

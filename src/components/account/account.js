@@ -6,6 +6,55 @@
   const status = $('#ox-account-auth-status');
   let priorFocus = null, busy = false;
   const form = $('#ox-account-email-form');
+  let linkEpoch = 0, linkRevision = null;
+  function ensureLinkForm() {
+    if ($('#ox-bitget-link-form')) return;
+    const section = document.createElement('section'); section.id = 'ox-bitget-link-section';
+    section.innerHTML = '<h3>Bitget UID 待驗證連結</h3><p>填寫 UID 不代表已證明帳號持有權，也不會取得會員資格。所有公開功能維持開放。</p><form id="ox-bitget-link-form"><label for="ox-bitget-uid">Bitget UID</label><input id="ox-bitget-uid" inputmode="numeric" pattern="[1-9][0-9]{0,19}" maxlength="20" autocomplete="off" required><button class="ox-account-submit" id="ox-bitget-link-save" type="submit">儲存待驗證 UID</button><button class="ox-account-skip" id="ox-bitget-link-remove" type="button" hidden>移除待驗證連結</button></form><p id="ox-bitget-link-status" role="status" aria-live="polite"></p>';
+    $('#ox-account-bitget-info')?.after(section);
+    $('#ox-bitget-link-form').addEventListener('submit', async event => {
+      event.preventDefault(); if (!event.currentTarget.reportValidity() || event.currentTarget.getAttribute('aria-busy') === 'true') return;
+      await mutateLink(() => window.OXAuth.saveBitgetLink($('#ox-bitget-uid').value.trim(), linkRevision));
+    });
+    $('#ox-bitget-link-remove').addEventListener('click', () => mutateLink(() => window.OXAuth.removeBitgetLink(linkRevision)));
+  }
+  function linkBusy(value) {
+    $('#ox-bitget-link-form')?.setAttribute('aria-busy', String(value));
+    for (const id of ['#ox-bitget-link-save', '#ox-bitget-link-remove', '#ox-bitget-uid']) if ($(id)) $(id).disabled = value;
+  }
+  function showLink(link) {
+    linkRevision = link?.revision ?? null;
+    $('#ox-bitget-uid').value = link?.uid ?? '';
+    $('#ox-bitget-link-remove').hidden = !link;
+    $('#ox-bitget-link-status').textContent = link ? 'UID 已儲存，持有權待驗證。代理關係、KYC 與子代理狀態尚未確認；未授予資格。' : '尚未填寫 UID。';
+    if ($('#ox-bitget-link-summary')) $('#ox-bitget-link-summary').textContent = link ? '持有權待驗證' : '尚未連結';
+  }
+  async function loadLink(user) {
+    const epoch = ++linkEpoch; linkRevision = null;
+    if (!user) {
+      if ($('#ox-bitget-link-section')) $('#ox-bitget-link-section').hidden = true;
+      if ($('#ox-bitget-uid')) $('#ox-bitget-uid').value = '';
+      if ($('#ox-bitget-link-status')) $('#ox-bitget-link-status').textContent = '';
+      if ($('#ox-bitget-link-summary')) $('#ox-bitget-link-summary').textContent = '尚未連結';
+      return;
+    }
+    ensureLinkForm(); $('#ox-bitget-link-section').hidden = false; $('#ox-bitget-uid').value = ''; linkBusy(true);
+    $('#ox-bitget-link-status').textContent = '正在讀取 UID 連結…';
+    const result = await window.OXAuth.getBitgetLink();
+    if (epoch !== linkEpoch || window.OXAuth.user?.id !== user.id) return;
+    if (result.ok) { showLink(result.link); linkBusy(false); }
+    else { $('#ox-bitget-link-status').textContent = result.message; if ($('#ox-bitget-link-summary')) $('#ox-bitget-link-summary').textContent = '狀態尚未確認'; }
+  }
+  async function mutateLink(action) {
+    if ($('#ox-bitget-link-form')?.getAttribute('aria-busy') === 'true') return;
+    const epoch = linkEpoch; linkBusy(true);
+    const result = await action(); if (epoch !== linkEpoch || !window.OXAuth.user) return;
+    if (result.ok) { showLink(result.link); linkBusy(false); }
+    else {
+      await loadLink(window.OXAuth.user);
+      if (window.OXAuth.user) $('#ox-bitget-link-status').textContent = result.message;
+    }
+  }
   $('#ox-account-password')?.removeAttribute('required');
   async function perform(action) {
     if (busy) return;
@@ -16,6 +65,7 @@
   }
   const renderUser = user => {
     if (!center) return;
+    loadLink(user);
     let profile = $('#ox-account-profile');
     if (!profile) {
       center.querySelector('h2 + p')?.remove();
