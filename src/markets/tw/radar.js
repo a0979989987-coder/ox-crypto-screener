@@ -1,4 +1,5 @@
 import { mountTWChartRadar } from './chart-radar.js';
+import { radarAvailability } from './recovery.js';
 import { TW_RADAR_MODES, normalizeTWStockCard, rowsForTWMode, renderTWStockCard } from "./radar-card.js";
 import { observeTWMiniCandles, resetTWMiniCandles, openTWStockDetail } from "./radar-candles.js";
 
@@ -2870,6 +2871,8 @@ function refreshRadarDataUI(
       : modeRows.filter(row => activeBoard === "ALL" || row.market === activeBoard)
           .filter(row => !searchQuery || `${row.symbol} ${row.name} ${row.industry}`.toLowerCase().includes(searchQuery.toLowerCase()));
 
+  const availability = radarAvailability(state, activeMode, filtered.length);
+
 
   const totalEl =
     root.querySelector(
@@ -2968,9 +2971,7 @@ function refreshRadarDataUI(
   ) {
 
     resultCount.textContent =
-      String(
-        filtered.length
-      );
+      availability.count;
   }
 
   const modeRail = root.querySelector(".twr-mode-rail");
@@ -3062,10 +3063,15 @@ function refreshRadarDataUI(
   if (marketScanList) marketScanList.innerHTML = "";
   if (resultsPanel) resultsPanel.hidden = false;
   const sourceNotice = root.querySelector("#twr-source-notice");
-  const modeMeta = state?.data?.radarModesMeta?.[activeMode];
   if (sourceNotice) {
-    sourceNotice.hidden = modeMeta?.status !== "partial";
-    sourceNotice.textContent = modeMeta?.status === "partial" ? "部分官方名單更新中，目前顯示已確認資料。" : "";
+    sourceNotice.hidden = !availability.notice;
+    sourceNotice.textContent = availability.notice;
+  }
+  const retryButton = root.querySelector('[data-twr-retry]');
+  if (retryButton) {
+    retryButton.hidden = !(availability.retry || availability.cached);
+    retryButton.disabled = availability.loading;
+    retryButton.textContent = availability.loading ? '更新中…' : '重新載入';
   }
 
 
@@ -3097,12 +3103,12 @@ function refreshRadarDataUI(
 
     if (activeMode !== "classic") {
       const meta = state?.data?.radarModesMeta?.[activeMode];
-      const loading = activeMode !== "watchlist" && state?.status === "loading" && !meta;
+      const loading = activeMode !== "watchlist" && availability.loading && !meta;
       if (loading) {
         list.innerHTML = Array.from({ length: 4 }, () => '<div class="twr-loading-card" aria-label="官方名單載入中"><i></i><i></i><i></i></div>').join("");
       } else {
         const message = activeMode === "watchlist" ? "尚未收藏股票。點選股票卡片右上角的星星即可加入自選。"
-          : meta?.status === "error" || !meta ? "官方資料暫時無法載入，請稍後再試。"
+          : availability.unavailable || meta?.status === "error" ? "台股資料暫時無法取得，請確認網路後重新載入。"
           : meta?.status === "partial" ? "目前尚無可確認的股票，部分官方名單仍在更新。"
           : activeMode === "risk" ? "目前官方名單沒有公布注意或接近處置門檻的股票。"
           : activeMode === "release" ? "目前沒有 3 個交易日內處置結束的股票。"
@@ -3248,11 +3254,6 @@ export function renderTWRadar(
 
   const watchlist =
     loadWatchlist();
-
-
-  const hasError =
-    state?.status ===
-    "error";
 
 
   root.hidden =
@@ -3881,6 +3882,7 @@ export function renderTWRadar(
         </div>
 
         <p id="twr-source-notice" class="twr-source-notice" role="status" hidden></p>
+        <button type="button" class="twr-retry" data-twr-retry hidden>重新載入</button>
 
 
         <div
@@ -3927,26 +3929,6 @@ export function renderTWRadar(
         </div>
 
 
-        ${
-          hasError
-            ? `
-
-              <div
-                class="twr-error"
-              >
-                ${
-                  escapeHTML(
-                    state
-                      ?.error
-                      ?.message ||
-                    "TW Market Provider 暫時無法取得資料。"
-                  )
-                }
-              </div>
-
-            `
-            : ""
-        }
 
 
         <footer
@@ -4089,6 +4071,10 @@ export function renderTWRadar(
         state,
         watchlist
       );
+
+  root.querySelector('[data-twr-retry]')?.addEventListener('click', () => {
+    document.dispatchEvent(new CustomEvent('ox:tw-retry'));
+  });
 
 
   /* ======================================================================== */

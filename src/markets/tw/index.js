@@ -23,6 +23,7 @@ import { cancelTWLookup } from "./lookup.js";
 import { stopTWStrength, preloadTWStrength } from "./strength.js";
 import { createPreloader } from "./preload.js";
 import { preloadBundle } from "./patterns/bundle.js";
+import { radarNeedsRecovery } from './recovery.js';
 
 
 /*
@@ -89,16 +90,19 @@ function readRadarCache() {
   if (typeof sessionStorage === "undefined") return null;
   try {
     const saved = JSON.parse(sessionStorage.getItem(TW_RADAR_CACHE_KEY) || "null");
-    return saved && Date.now() - saved.savedAt < TW_RADAR_CACHE_MS && Array.isArray(saved.rows)
+    return saved && Number.isFinite(saved.savedAt) && saved.savedAt <= Date.now()
+      && Date.now() - saved.savedAt < TW_RADAR_CACHE_MS && Array.isArray(saved.rows)
       ? saved : null;
   } catch { return null; }
 }
 
 function cacheRadarState(state) {
-  if (typeof sessionStorage === "undefined" || !state?.data?.radar?.length) return;
+  if (typeof sessionStorage === "undefined" || !Array.isArray(state?.data?.radar)
+    || state.status === 'error' || state.data.usingCachedRadar || state.data.meta?.sourceErrors?.radar) return;
   try {
     sessionStorage.setItem(TW_RADAR_CACHE_KEY, JSON.stringify({
-      savedAt: Date.now(), rows: state.data.radar,
+      savedAt: Date.parse(state.data.radarUpdatedAt) || Date.now(), rows: state.data.radar,
+      radarUpdatedAt: state.data.radarUpdatedAt,
       radarModes: state.data.radarModes, radarModesMeta: state.data.radarModesMeta
     }));
   } catch { /* Storage limits never block market rendering. */ }
@@ -366,12 +370,14 @@ function render(
 
 
   const previousRows = activeView === "radar" && !state?.data?.radar?.length
+    && (!Array.isArray(state?.data?.radar) || state?.data?.meta?.sourceErrors?.radar)
     ? readRadarCache() : null;
 
   return renderer(previousRows ? {
     ...state,
     data: { ...(state.data || {}), radar: previousRows.rows, radarModes: previousRows.radarModes,
-      radarModesMeta: previousRows.radarModesMeta, usingCachedRadar: true }
+      radarModesMeta: previousRows.radarModesMeta, usingCachedRadar: true,
+      radarUpdatedAt: previousRows.radarUpdatedAt || new Date(previousRows.savedAt).toISOString() }
   } : state);
 }
 
@@ -393,12 +399,28 @@ const ensureMarketData = createPreloader(async () => {
   cacheRadarState(state);
   if (isActive) render(state);
   return state;
-}, { usable: state => ["ready", "partial"].includes(state?.status) && !!state?.data?.radar?.length });
+}, { usable: state => ["ready", "partial"].includes(state?.status)
+  && Array.isArray(state?.data?.radar) && !radarNeedsRecovery(state) });
 
 function loadMarketData(options = {}) {
   const pending = ensureMarketData(options);
   if (isActive) render(createTWMarketState());
   return pending;
+}
+
+let lastRecoveryAt = -Infinity;
+function recoverMarketData(force = false) {
+  if (!isActive || typeof document === 'undefined' || document.hidden
+    || typeof navigator !== 'undefined' && navigator.onLine === false) return;
+  if (!force && (!radarNeedsRecovery(createTWMarketState()) || Date.now() - lastRecoveryAt < 15000)) return;
+  lastRecoveryAt = Date.now();
+  return loadMarketData({ force: true });
+}
+if (typeof window !== 'undefined') {
+  window.addEventListener('online', () => recoverMarketData());
+  window.addEventListener('focus', () => recoverMarketData());
+  document.addEventListener('visibilitychange', () => recoverMarketData());
+  document.addEventListener('ox:tw-retry', () => recoverMarketData(true));
 }
 
 function preload() {

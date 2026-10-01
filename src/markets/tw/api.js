@@ -1,6 +1,7 @@
 import {
   TW_MODULE_CONFIG
 } from "./config.js";
+import { retryTWRequest } from './recovery.js';
 
 
 /*
@@ -813,7 +814,11 @@ function unwrapPayload(
 /* Request                                                                    */
 /* ========================================================================== */
 
-async function request(
+function request(endpoint, options = {}) {
+  return retryTWRequest(() => requestOnce(endpoint, options), { signal: options.signal });
+}
+
+async function requestOnce(
   endpoint,
   {
     params =

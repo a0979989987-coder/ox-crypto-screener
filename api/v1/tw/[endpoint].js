@@ -84,6 +84,7 @@ import {
 const DEFAULT_ALLOWED_ORIGINS =
   Object.freeze([
     "https://a0979989987-coder.github.io",
+    "https://ox-crypto-screener.vercel.app",
 
     "http://localhost:3000",
     "http://localhost:5173",
