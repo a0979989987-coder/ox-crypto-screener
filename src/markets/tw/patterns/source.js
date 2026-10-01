@@ -1,8 +1,8 @@
-import { classifyTWSeries } from '../classic.js?v=20261002-rank6';
-import { qualifyClassicRow, compareClassic, rankClassicTiers } from '../../../core/classic.js?v=20261002-rank6';
-import { preloadBundle, awaitBundleManifest, subscribeBundle, bundleEntry, bundleEntries, bundleState } from './bundle.js?v=20261002-rank6';
+import { classifyTWSeries } from '../classic.js?v=20261002-rank7';
+import { qualifyClassicRow, compareClassic, rankClassicTiers } from '../../../core/classic.js?v=20261002-rank7';
+import { preloadBundle, awaitBundleManifest, subscribeBundle, bundleEntry, bundleEntries, bundleState } from './bundle.js?v=20261002-rank7';
 import { twProvider } from '../api.js?v=20261001-tiercomb1';
-import { createTWMarketState } from '../engine.js?v=20261002-rank6';
+import { createTWMarketState } from '../engine.js?v=20261002-rank7';
 import { savedResearch, loadResearch } from '../research-data.js?v=20261001-twhome1';
 import { TIMEFRAMES, selectUniverse, dailyCandles } from './model.js';
 import { aggregateChartCandles } from '../chart-data.js?v=20261001-loading1';

@@ -1,4 +1,4 @@
-import { evaluateClassic, compareClassic, compactClassic, rankClassicTiers } from '../../../core/classic.js?v=20261002-rank6';
+import { CLASSIC_VERSION, evaluateClassic, compareClassic, compactClassic, rankClassicTiers } from '../../../core/classic.js?v=20261002-rank7';
 import { PATTERNS, patternById } from './catalog.js?v=patterns5d-20260929';
 const clamp = (x, a=0, b=1) => Math.max(a, Math.min(b, x));
 const mean = a => a.reduce((s,x)=>s+x,0)/a.length;
@@ -141,6 +141,27 @@ export function prepareCandles(candles) {
   return {candles,volatility,swings,windows,visuals:new Map(),classic:{long:evaluateClassic(candles),short:evaluateClassic(candles,{side:'short'})}};
 }
 const targets=new Map(PATTERNS.map(p=>[p.id,resample(p.points)]));
+// Cached geometry and grades must be requalified together, including preclassified feeds.
+export function classificationCurrent(entry,indexVersion){
+ return entry?.version===indexVersion && ['long','short'].every(side=>entry.data?.classic?.[side]?.version===CLASSIC_VERSION) &&
+  Object.values(entry.matches||{}).every(match=>match.classicSignal?.version===CLASSIC_VERSION);
+}
+export function validLevelGeometry(candles,level,side,volatility){
+ const points=level?.points;if(!points||points.length!==2||!(volatility>0))return false;
+ const start=candles.findIndex(c=>c.time===points[0].time),end=candles.findIndex(c=>c.time===points[1].time);
+ if(start<0||end<=start||!points.every(p=>Number.isFinite(p.price)))return false;
+ const slope=(points[1].price-points[0].price)/(end-start),dir=side==='LONG'?1:-1;
+ if(level.kind==='diagonal'&&slope*dir>=0)return false;
+ // An active boundary must stay outside candle bodies throughout its lifetime.
+ // A small wick test is allowed; a line slicing through the formation is not.
+ for(let i=start;i<candles.length;i++){
+  const c=candles[i],line=points[0].price+slope*(i-start);
+  const body=dir===1?Math.max(c.open,c.close):Math.min(c.open,c.close);
+  if(level.state==='valid'&&(body-line)*dir>volatility*.25)return false;
+  if(level.kind==='diagonal'&&level.state!=='valid')return false;
+ }
+ return true;
+}
 function levelMatch(context,pattern) {
  const c=context.candles,trend=pattern.rule.startsWith('trend');
  const sides=pattern.rule.endsWith('support')?['short']:['long'];
@@ -150,9 +171,14 @@ function levelMatch(context,pattern) {
   const levels=[signal.pressure,...(signal.levels||[])].filter(p=>p&&p.state!=='consumed'&&
    (p.state==='valid'||!trend&&signal.eligible&&p.state==='broken')&&p.kind===(trend?'diagonal':'horizontal')&&
    (!trend||Math.sign(p.slope)===(pattern.id==='trend-up'?1:-1))&&
+   validLevelGeometry(c,p,signal.side,signal.atr||context.volatility)&&
    (p.state==='broken'||(signal.side==='LONG'?p.level-price:price-p.level)>=-.15*(signal.atr||context.volatility)));
   levels.sort((a,b)=>Math.abs(a.level-price)-Math.abs(b.level-price)||b.touches-a.touches);
-  return levels.length?[{...signal,pressure:levels[0]}]:[];
+  if(!levels.length)return [];
+  const pressure=levels[0],same=signal.pressure?.kind===pressure.kind &&
+   signal.pressure?.formedAt===pressure.formedAt && Math.abs(signal.pressure.level-pressure.level)<(signal.atr||context.volatility)*.05;
+  // A valid but different line cannot borrow another setup's eligibility/score.
+  return [{...signal,pressure,...(!same?{eligible:false,tier:null,observationEligible:false,qualityScore:null,stage:'有效邊界 · 尚待量價確認'}:{})}];
  });
  const signal=candidates.sort((a,b)=>Number(b.eligible)-Number(a.eligible)||compareClassic(a,b))[0];
  if(!signal)return null;
