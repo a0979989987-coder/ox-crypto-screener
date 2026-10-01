@@ -1,7 +1,7 @@
 const WATCH_STAR_SVG = '<svg class="watch-star-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 2.78 5.63L21 9.54l-4.5 4.39 1.06 6.2L12 17.2l-5.56 2.93 1.06-6.2L3 9.54l6.22-.91Z"/></svg>';
 
 const RADAR_RETAIN_MS=2*60*60*1000;
-const RADAR_SNAPSHOT_KEY = 'ox-radar-snapshot-v4-classic7';
+const RADAR_SNAPSHOT_KEY = 'ox-radar-snapshot-v5-classic8';
 function restoreRadarSnapshot() {
   if (state.radarSnapshotChecked) return;
   state.radarSnapshotChecked = true;
@@ -44,6 +44,20 @@ function cryptoClassicBars(candles,frame,now=Date.now()) {
 function classifyTierFrame(candles,frame) {
  const row=OXEngine.analyzeCandles(cryptoClassicBars(candles,frame),{frame});
  return {...row,at:Date.now(),closedAt:row.classicSignal.closedAt};
+}
+// An emerging 1H level can be relevant before the 4H / daily setup has
+// completed. It needs a same-direction 4H trend and real 1H volume, and can
+// only enter the observation tiers, never the fully confirmed T1 tier.
+function intradayClassicObservation(frames,side) {
+ const fast=OXClassic.evaluateClassic(frames['1H'],{side,frame:'1H'});
+ const anchor=OXClassic.evaluateClassic(frames['4H'],{side,frame:'4H'});
+ if(!(fast.eligible||fast.observationEligible)||!fast.volume?.supported||
+    !anchor.direction?.confirmed||!anchor.volume?.complete||anchor.volume.distribution||
+    fast.direction?.falling||fast.direction?.position<.6)return null;
+ return {...fast,eligible:false,tier:null,observationEligible:true,
+   qualityScore:Math.min(74,fast.qualityScore),triggerFrame:'4H',
+   stage:'短線帶量觀察 · 4H 同向確認',
+   matchedReasons:['1H 有效壓力／支撐與同向放量','4H 同向結構已確認',...(fast.matchedReasons||[])]};
 }
 function cryptoFrameTier(row,frame,side) {
  const data=row.timeframeTiers?.[frame];
@@ -182,6 +196,8 @@ async function runScanQueueLoop() {
         const classic=Object.fromEntries(['long','short'].map(side=>{
           const signals=[['4H','1H'],['1D','4H']].map(([setupFrame,triggerFrame])=>OXClassic.evaluateFrames(frames,{side,setupFrame,triggerFrame,
             ...(setupFrame==='1D'?{confirmationFrame:'1H'}:{})}));
+          const fast=intradayClassicObservation(frames,side);
+          if(fast)signals.push(fast);
           const qualified=signals.filter(s=>s.eligible||s.observationEligible).sort(OXClassic.compareClassic);
           return [side,qualified[0]||signals[0]];
         }));
@@ -257,8 +273,21 @@ function rebuildTierLists() {
     return [selected];
   }):rankedPool;
   const buildTierSet = pool => {
+    // The shared pattern score remains the main signal. Bounded current
+    // movement and turnover distinguish equal/near-equal setups; a strong
+    // recent advance should not lose every tie to the earlier scan result.
+    const evidence = row => {
+      const dir=row.side==='SHORT'?-1:1;
+      const daily=dir*(Number(row.change24h)||0)*100;
+      const recent=dir*(Number(row.ret4h)||0)*100;
+      const turnover=Number(row.quoteVol)||0;
+      return Math.max(-5,Math.min(5,daily*.22))+
+        Math.max(-3,Math.min(3,recent*.3))+
+        Math.max(-2,Math.min(2,Math.log10(Math.max(1,turnover)/1e6)));
+    };
     const ranked = OXClassic.rankClassicTiers(pool, { compare: (a,b) =>
-      OXClassic.compareClassic(a,b) || (b.oxScore || 0) - (a.oxScore || 0) });
+      (b.classicSignal.qualityScore+evidence(b))-(a.classicSignal.qualityScore+evidence(a)) ||
+      OXClassic.compareClassic(a,b) || a.symbol.localeCompare(b.symbol) });
     return Object.fromEntries(['t1','t2','t3'].map(tier => [tier, ranked
       .filter(row => row.tier.toLowerCase() === tier).map(row => ({...row,tier,displayTier:tier}))]));
   };

@@ -21,7 +21,7 @@ test('US legacy pattern/RS/turnover scores cannot grant classic membership or sk
 test('US real OHLCV qualifies by the same signal, while missing volume cannot borrow a geometric grade',()=>{
  const bars=preparation(),row={symbol:'GOOD',type:'stock',interval:'1D',bars,patterns:{long:[]}};
  const s=evaluateClassic(bars);
- assert.equal(tierResults([row])[0].tier,s.tier);
+ assert.equal(tierResults([row])[0].qualityTier,s.tier);
  const observing=tierResults([{...row,bars:preparation({volume:false})}]);
  assert.equal(observing[0].tier,'T2');assert.equal(observing[0].classicSignal.eligible,false);
  assert.ok(observing[0].reasons.some(r=>r.includes('次獨立測試')));

@@ -4,7 +4,7 @@
  */
 (function (root) {
   'use strict';
-  const CLASSIC_VERSION = 6;
+  const CLASSIC_VERSION = 7;
   const CLASSIC_TIER_LIMITS = Object.freeze({ T1: 10, T2: 15, T3: 15 });
   // Initial, centralized defaults in ATR/bar units. These are implementation
   // thresholds, not claims of calibration or performance from trade screenshots.
@@ -249,14 +249,18 @@
     const observationEligible = observationDirection && (observationEvidence.liquidity || observationEvidence.directionalVolume || observationEvidence.priceStructure) &&
       volume.complete && !volume.distribution &&
       !failed && !liveFailure && (!exhausted||wickRecovered&&risk<=rules.maximumRiskATR) && (!chase||reversal.candidate) && risk > 0;
-    let qualityScore = Math.round(clamp(55 + (trigger ? Math.min(4, trigger.touches.length) * 4 : 0) +
-      (direction.higherLows ? 7 : 0) + (direction.higherHighs ? 4 : 0) +
-      (volume.supported ? 10 : 0) + Math.min(8, Math.max(0, volume.impulseRatio || 0) * 3) +
-      (near ? Math.max(0, 8 - Math.max(0, gap) * 5) : 2) + (target && spaceOK ? 4 : 0), 0, 100));
-    // A live crossing has not held at the close. It must not display a near-perfect
-    // score earned by the previous closed candle, especially after running far
-    // beyond the tested level during the unfinished candle.
-    if (phase === 'probe') qualityScore = Math.min(89, qualityScore - 6 - Math.min(10,
+    // Score distinct completed evidence rather than stacking a high base with
+    // volume counted twice. Multiple tests and a large impulse alone must not
+    // make a flat setup look nearly perfect; right-side structure still matters.
+    const testedLevel = trigger ? Math.min(4, trigger.touches.length) * 3 : 0;
+    const trendQuality = (direction.higherLows ? 6 : 0) + (direction.higherHighs ? 4 : 0) +
+      (direction.position >= .72 ? 3 : 0);
+    const volumeQuality = volume.supported ? Math.min(9, 5 + 2 * Math.log2(Math.max(1, volume.impulseRatio))) : 0;
+    const activationQuality = near ? Math.max(0, 8 * (1 - Math.max(0, gap) / rules.nearATR)) : broken ? 4 : 0;
+    let qualityScore = Math.round(clamp(40 + testedLevel + trendQuality + volumeQuality + activationQuality +
+      (broken && phase === 'breakout' ? 5 : 0) + (target && spaceOK ? 4 : 0), 0, 100));
+    // An unfinished crossing has not held at a close and cannot enter T1.
+    if (phase === 'probe') qualityScore = Math.min(79, qualityScore - 6 - Math.min(10,
       Math.round(Math.max(0, (observedPrice - pressure.level) / a - 0.45) * 4)));
     const rejectionReasons = [];
     if (!direction.confirmed) rejectionReasons.push(direction.falling ? '當下結構轉跌' : reversal.candidate?'較大級別轉向仍待確認':'右側上攻結構不足');
@@ -269,6 +273,7 @@
     if (liveFailure) rejectionReasons.push('最新價格已破壞結構');
     if (exhausted) rejectionReasons.push(wickRecovered&&risk<=rules.maximumRiskATR?'最新價格已收復前一根回落，等待收 K':'上攻回落或已走離可觀察位置');
     if (!spaceOK) rejectionReasons.push('下一個目標空間不足');
+    if (phase === 'probe') rejectionReasons.push('最新突破試探尚未收 K');
     const useReversal=reversal.candidate&&!structureReady;
     if(useReversal)phase=reversal.confirmed?'reversal':'reversal-probe';
     const publicPressure = useReversal?{kind:'swing',state:reversal.confirmed?'broken':'valid',level:dir*reversal.level,
@@ -303,7 +308,7 @@
     if (volume.supported || observationEvidence.directionalVolume) matchedReasons.push(framePrefix+
       (volume.supported?'同向放量已確認':'同向量能開始增加，尚未達完整放量門檻')+' · '+volume.impulseRatio.toFixed(2)+'x');
     if (near) matchedReasons.push(framePrefix+'距有效流動性 '+Math.max(0,gap).toFixed(2)+' ATR');
-    const strictEligible=structureReady && volume.supported;
+    const strictEligible=structureReady && volume.supported && phase !== 'probe';
     let completenessScore=strictEligible?qualityScore:qualityScore-(volume.supported?0:12)-(direction.confirmed?0:8)-(near?0:8);
     if(useReversal)completenessScore=Math.round(Math.max(completenessScore,55+Math.min(12,reversal.impulseRatio*3)+(reversal.confirmed?8:4)+(reversal.upwardShare>=.7?6:0)));
     const signal = { ...base, riskATR:risk, wickRecovered, qualityScore:completenessScore, atr: a, direction, volume, reversal, structureReady, observationEligible, observationEvidence, distanceATR: gap,
@@ -344,12 +349,12 @@
     // Keep partial-condition scores below T1, but leave enough headroom to
     // distinguish an ordinary probe from a fresh, volume-backed reversal.
     // Previously most otherwise different observations saturated at 79.
-    const observationScore=Math.round(clamp(44+Math.min(8,(setup.pressure?.touches||0)*2)+
+    const observationScore=Math.round(clamp(41+Math.min(8,(setup.pressure?.touches||0)*2)+
       (setup.direction?.confirmed?4:0)+(setup.volume?.supported?4:0)+
       (trigger.direction?.confirmed?7:0)+(trigger.volume?.supported?6:0)+
-      (trigger.direction?.position>=0.75?3:0)+(setup.reversal?.candidate?16:0)+
-      (setup.phase==='probe'?2:0)+Math.min(3,Math.log2(Math.max(1,trigger.volume?.impulseRatio||1)))-
-      (triggerSpaceBlocked?5:0)-(confirmationBlocked?8:0),0,79));
+      (trigger.direction?.position>=0.75?3:0)+(['reversal','reversal-probe'].includes(setup.phase)?14:0)+
+      Math.min(4,Math.log2(Math.max(1,trigger.volume?.impulseRatio||1)))-
+      (triggerSpaceBlocked?8:0)-(confirmationBlocked?8:0),0,79));
     const signal = { ...setup, observationEligible:!!observationEligible,
       qualityScore:eligible?setup.qualityScore:observationScore,
       triggerFrame, triggerClosedAt: trigger.closedAt, triggerVolume: trigger.volume,

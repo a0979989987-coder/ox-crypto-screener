@@ -1,4 +1,4 @@
-import { rankingSignal } from './classic-fixtures.mjs';
+import { preparation, shortBars, rankingSignal } from './classic-fixtures.mjs';
 import { OXClassicForTests } from './classic-test-runtime.mjs';
 import test from "node:test";
 import assert from "node:assert/strict";
@@ -72,6 +72,25 @@ test('radar publishes qualified rows while the first scan remains unfinished', (
   assert.equal(result.t1.length,1);
   assert.equal(result.t1[0].symbol,'SOLUSDT');
   assert.equal(result.t2.length+result.t3.length,0);
+});
+test('nearby quality uses current directional strength to break scan-order ties',()=>{
+ const rows=[
+  {symbol:'DEXEUSDT',side:'LONG',tier:'t1',change24h:.003,ret4h:.002,quoteVol:220000},
+  {symbol:'CAPUSDT',side:'LONG',tier:'t1',change24h:.27,ret4h:.12,quoteVol:4000000}
+ ];
+ assert.deepEqual(rank(rows).t1.map(r=>r.symbol),['CAPUSDT','DEXEUSDT']);
+});
+test('a 1H level with volume and matching 4H trend enters observations, never T1',()=>{
+ const frames={'1H':preparation(),'4H':preparation()};
+ const context={OXClassic:OXClassicForTests};
+ const signal=runInNewContext(`${scanner}\nintradayClassicObservation(frames,'long')`,{...context,frames});
+ assert.equal(signal.observationEligible,true);
+ assert.equal(signal.eligible,false);
+ assert.equal(signal.tier,null);
+ assert.ok(signal.qualityScore<=74);
+ const contrary=runInNewContext(`${scanner}\nintradayClassicObservation(frames,'long')`,
+  {...context,frames:{...frames,'4H':shortBars(preparation())}});
+ assert.equal(contrary,null);
 });
 test('both directions are independently ranked even when the cached primary direction is opposite',()=>{
   const long=rankingSignal('T1','long'),short=rankingSignal('T1','short');
