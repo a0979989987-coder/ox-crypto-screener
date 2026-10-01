@@ -11,6 +11,17 @@ test('repeated valid overhead pressure with upward progress and volume qualifies
   assert.ok(s.pressure.touches >= 2);
   assert.equal(s.pressure.state, 'valid');
 });
+test('same nearby pressure rewards directional volume without granting a weak test a top grade',()=>{
+ const bars=preparation(),last=bars.at(-1);
+ last.close=99.65;last.high=Math.max(last.open,last.close)+.25;
+ const weak=evaluateClassic(bars);
+ for(let i=65;i<bars.length;i++)bars[i].volume=3500;
+ const stronger=evaluateClassic(bars);
+ assert.equal(weak.phase,'prebreakout');assert.equal(stronger.phase,'prebreakout');
+ assert.equal(weak.eligible,true);assert.equal(stronger.eligible,true);
+ assert.ok(stronger.qualityScore>=weak.qualityScore+6);
+ assert.ok(weak.qualityScore<82);
+});
 test('price scale and market labels do not change qualification or quality tier', () => {
   const a = evaluateClassic(preparation(), { market: 'crypto' });
   for (const scale of [0.0001, 10, 10000]) {
