@@ -3,7 +3,7 @@ import { escapeTW as esc } from './radar-card.js';
 import { savedResearch } from './research-data.js';
 import { bundleState, bundleEntry, subscribeBundle, preloadBundle } from './patterns/bundle.js';
 import { fetchSeries } from './patterns/source.js';
-import { CHART_FRAMES, isIntraday, INTRADAY_MESSAGE, stockDetails } from './chart-data.js';
+import { CHART_FRAMES, isIntraday, INTRADAY_MESSAGE, stockDetails, chartTickFormatter } from './chart-data.js';
 import { cryptoRadarPart, attachCryptoRadarStyles } from '../../components/radar/market-workspace.js';
 const UP='#f16a70',DOWN='#48b78e';
 const num=n=>Number.isFinite(n)?n.toLocaleString('zh-TW',{maximumFractionDigits:2}):'—';
@@ -149,7 +149,7 @@ export function mountTWChartRadar(host,{state:marketState,watchlist=new Set()}={
   symbol=next;state.symbol=next;state.period=frame;state.chartPriceViewport=null;const run=++serial;controller?.abort();controller=new AbortController();
   renderQuote();$('[data-series-note]').textContent='';
   status('官方 K 線載入中');renderList();if(!ensureChart())return;
-  state.chart.applyOptions({timeScale:{timeVisible:isIntraday(frame),tickMarkFormatter:frame==='1Q'?time=>{const d=new Date(time*1000+8*3600000);return `${d.getUTCFullYear()} Q${Math.floor(d.getUTCMonth()/3)+1}`;}:null}});
+  state.chart.applyOptions({timeScale:{timeVisible:isIntraday(frame),tickMarkFormatter:chartTickFormatter(frame)}});
   state.candleData=[];state.candleSeries.setData([]);state.volumeSeries.setData([]);levels();
   if(isIntraday(frame)){status(INTRADAY_MESSAGE);$('[data-series-note]').textContent=CHART_FRAMES[frame]+' · 等待盤中資料';return;}
   try{if(!bundleEntry(next,'1D',snapshot()?.date))await preloadBundle().catch(()=>{});if(run!==serial||life.signal.aborted)return;const data=await fetchSeries(next,frame,controller.signal,snapshot()?.date,{minimum:1});if(run!==serial||life.signal.aborted)return;

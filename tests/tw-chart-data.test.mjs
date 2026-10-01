@@ -1,6 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {quarterlyCandles,aggregateChartCandles,stockDetails,isIntraday} from '../src/markets/tw/chart-data.js';
+import {quarterlyCandles,aggregateChartCandles,stockDetails,isIntraday,chartTickFormatter,CHART_FRAMES} from '../src/markets/tw/chart-data.js';
+
+test('every chart timeframe supplies a callable tick formatter and restores the library fallback outside quarters',()=>{
+ const t=Date.parse('2026-07-01T00:00:00+08:00')/1000;
+ for(const frame of Object.keys(CHART_FRAMES)){
+  const formatter=chartTickFormatter(frame);assert.equal(typeof formatter,'function');assert.equal(formatter(t),frame==='1Q'?'2026 Q3':null);
+ }
+});
 
 test('quarter candles preserve actual OHLC and turnover, exclude partial boundary quarters and retain gaps',()=>{
  const daily=[['2025-12-24',10,12,9,11,1,100],['2026-01-02',11,14,10,13,2,200],['2026-03-30',13,15,12,14,3,300],['2026-04-07',14,16,13,15,4,null],['2026-06-29',15,18,14,17,5,500],['2026-07-01',17,19,16,18,6,600]].map(([date,open,high,low,close,volume,quoteVolume])=>({date,open,high,low,close,volume,quoteVolume}));
