@@ -26,10 +26,22 @@ jobs:
         with:
           node-version: '22'
       - run: node --test tests/tw-research.test.mjs
-      - run: node scripts/collect-tw-radar.mjs
+      - name: Collect radar with bounded source retries
+        run: |
+          for attempt in 1 2 3; do
+            if node scripts/collect-tw-radar.mjs; then exit 0; fi
+            if [ "$attempt" -lt 3 ]; then sleep "$((attempt * 10))"; fi
+          done
+          exit 1
         id: radar
         continue-on-error: true
-      - run: node scripts/collect-tw-research.mjs --backfill
+      - name: Collect research with bounded source retries
+        run: |
+          for attempt in 1 2 3; do
+            if node scripts/collect-tw-research.mjs --backfill; then exit 0; fi
+            if [ "$attempt" -lt 3 ]; then sleep "$((attempt * 10))"; fi
+          done
+          exit 1
         id: research
         continue-on-error: true
       - name: Publish verified closing quotes before pattern classification
