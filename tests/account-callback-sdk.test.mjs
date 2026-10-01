@@ -91,7 +91,18 @@ test('missing/tampered flow cookies fail before provider and do not clear an exi
 test('provider callback refusal reveals no raw provider query or error detail', async () => {
   const flow = setup(); const req = request('callback'); req.query.error = 'access_denied'; req.query.error_description = 'synthetic-private-info';
   const result = response(); await flow.handler(req, result);
-  assert.equal(result.headers.Location, '/?ox_auth=error&ox_auth_reason=provider_denied');
+  assert.equal(result.headers.Location, '/?ox_auth=error&ox_auth_reason=provider_denied&ox_auth_provider=access_denied');
   assert.equal(flow.exchanges, 0);
   assert.ok(!JSON.stringify(result).includes('synthetic-private-info'));
+});
+
+test('provider callback exposes only allowlisted codes before cookie or token exchange', async () => {
+  for (const [code, expected] of [['unexpected_failure', 'unexpected_failure'], ['bad_oauth_state', 'bad_oauth_state'], ['synthetic-private-user-detail', 'server_error']]) {
+    const flow = setup(); const req = request('callback');
+    req.query.error = 'server_error'; req.query.error_code = code; req.query.error_description = 'synthetic-private-description';
+    const result = response(); await flow.handler(req, result);
+    assert.equal(flow.exchanges, 0);
+    assert.equal(result.headers.Location, '/?ox_auth=error&ox_auth_reason=provider_callback_error&ox_auth_provider=' + expected);
+    assert.ok(!JSON.stringify(result).includes('synthetic-private'));
+  }
 });

@@ -30,7 +30,7 @@ export function safeReturn(value) {
   if (parsed.origin !== 'https://ox.invalid' || parsed.pathname.startsWith('/api/')) return '/';
   // A retry must not carry a previous failure or OAuth artifacts back into a
   // successful landing page. Keep ordinary market query and fragment state.
-  for (const key of ['ox_auth', 'ox_auth_reason', 'code', 'state', 'sb_flow_id', 'error', 'error_code', 'error_description', 'access_token', 'refresh_token', 'id_token', 'provider_token', 'provider_refresh_token']) parsed.searchParams.delete(key);
+  for (const key of ['ox_auth', 'ox_auth_reason', 'ox_auth_provider', 'code', 'state', 'sb_flow_id', 'error', 'error_code', 'error_description', 'access_token', 'refresh_token', 'id_token', 'provider_token', 'provider_refresh_token']) parsed.searchParams.delete(key);
   const fragment = new URLSearchParams(parsed.hash.slice(1));
   if (['access_token', 'refresh_token', 'id_token', 'provider_token', 'provider_refresh_token'].some(key => fragment.has(key))) parsed.hash = '';
   return parsed.pathname + parsed.search + parsed.hash;
