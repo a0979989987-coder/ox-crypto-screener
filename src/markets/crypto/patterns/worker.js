@@ -1,4 +1,4 @@
-import { prepareCandles, classifyPrepared, qualifyPatternMatches, matchPrepared } from './matcher.js?v=20261001-classic1';
+import { prepareCandles, classifyPrepared, qualifyPatternMatches, matchPrepared } from './matcher.js?v=20261001-classic2';
 const index=new Map();
 self.onmessage=({data})=>{
   try{

@@ -1,5 +1,5 @@
 import { TIMEFRAMES, candleBoundary } from './catalog.js?v=patterns5d-20260929';
-import { evaluateClassic, compareClassic, compactClassic } from '../../../core/classic.js?v=20261001-classic1';
+import { evaluateClassic, compareClassic, compactClassic, CLASSIC_TIER_LIMITS } from '../../../core/classic.js?v=20261001-classic2';
 const BASE='https://api.bitget.com';
 const candleCache=new Map();let nextRequest=0;
 const abortError=()=>new DOMException('Aborted','AbortError');
@@ -43,7 +43,7 @@ export function selectUniverse(tickers,instruments,limit=80){
 export function radarCandidates(runtime=typeof state==='undefined'?null:state){
   if(runtime?.activeMarket&&runtime.activeMarket!=='crypto')return [];
   const seen=new Set();
-  return ['t1','t2','t3'].flatMap((tier,i)=>(runtime?.tierMap?.[tier]||[]).slice(0,10).flatMap((r,rank)=>{
+  return ['t1','t2','t3'].flatMap((tier,i)=>(runtime?.tierMap?.[tier]||[]).slice(0,CLASSIC_TIER_LIMITS[tier.toUpperCase()]).flatMap((r,rank)=>{
     if(!r.symbol||seen.has(r.symbol))return [];
     seen.add(r.symbol);return [{symbol:r.symbol,tier:i+1,rank,side:r.side}];
   }));

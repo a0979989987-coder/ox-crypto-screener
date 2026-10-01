@@ -1,6 +1,6 @@
 import { EOD_CAPABILITIES, EOD_INTERVALS, completedSession, eodSeries, closingQuote } from './eod.js';
 import { nyEpoch, tradingDay } from './calendar.js';
-import { analyzeStock } from './analysis.js?v=20261001-classic1';
+import { analyzeStock } from './analysis.js?v=20261001-classic2';
 
 const invalid = message => { throw Error(message); };
 const validDate = date => typeof date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(date) &&

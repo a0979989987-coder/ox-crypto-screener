@@ -36,7 +36,7 @@ test('TW frame grades use validated pattern direction and retain exact groups wi
  const entry={data:{candles:[{}]},classic:{long:rankingSignal('T2'),short:rankingSignal('T1','short')},matches:{w:{tier:2,similarity:90,label:'W'},hs:{tier:1,similarity:99,label:'HS'}}};
  assert.equal(patternFrameTier(entry,'long').tier,'T2');assert.equal(patternFrameTier(entry,'short').tier,'T1');assert.equal(patternFrameTier(null),null);
  const rows=[{symbol:'1234',price:10,changePct:1,tier:'T3',classic:{long:rankingSignal('T3')}}];
- assert.equal(rankChartRows(rows,{strictTier:true})[0].displayTier,'T3');assert.equal(rankChartRows(rows,{strictTier:true,tier:'T2'}).length,0);
+ assert.equal(rankChartRows(rows,{strictTier:true})[0].displayTier,'T2');assert.equal(rankChartRows(rows,{strictTier:true})[0].qualityTier,'T3');assert.equal(rankChartRows(rows,{strictTier:true,tier:'T1'}).length,0);
 });
 const analysis=(symbol,interval,distance,side='long')=>({symbol,interval,type:'stock',price:100,rvol:null,rs:null,liquidity:1e8,classic:{[side]:rankingSignal('T1',side)},patterns:{[side]:[{id:'W',label:'W',forming:true,distance}]}});
 test('US combines the full per-frame classification pool before display limits, without substituting daily or opposite-side grades',()=>{

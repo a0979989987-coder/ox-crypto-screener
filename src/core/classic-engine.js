@@ -5,6 +5,7 @@
 (function (root) {
   'use strict';
   const CLASSIC_VERSION = 1;
+  const CLASSIC_TIER_LIMITS = Object.freeze({ T1: 10, T2: 15, T3: 15 });
   // Initial, centralized defaults in ATR/bar units. These are implementation
   // thresholds, not claims of calibration or performance from trade screenshots.
   const CLASSIC_RULES = Object.freeze({
@@ -262,5 +263,24 @@
     const {levels,...decision}=signal;
     return decision;
   }
-  root.OXClassic = Object.freeze({ CLASSIC_VERSION, CLASSIC_RULES, evaluateClassic, evaluateFrames, qualifyClassicRow, compareClassic, compactClassic });
+  function rankClassicTiers(rows, { side, limits = CLASSIC_TIER_LIMITS, compare = compareClassic } = {}) {
+    const seen = new Set();
+    const pool = rows.filter(row => {
+      const signal = row.classicSignal;
+      return signal?.version === CLASSIC_VERSION && signal.eligible &&
+        (!side || signal.side === sideName(side));
+    }).sort(compare).filter(row => !seen.has(row.symbol) && seen.add(row.symbol));
+    // Only full T1 quality can occupy T1. Its unused slots stay empty.
+    // T2/T3 are the next two ranked groups, not isolated score buckets: a T1
+    // overflow or a T3-quality candidate may fill the remaining ranked slots.
+    const t1 = pool.filter(row => row.classicSignal.tier === 'T1').slice(0, limits.T1);
+    const selected = new Set(t1.map(row => row.symbol));
+    const rest = pool.filter(row => !selected.has(row.symbol));
+    const t2 = rest.slice(0, limits.T2);
+    const t3 = rest.slice(t2.length, t2.length + limits.T3);
+    return [t1, t2, t3].flatMap((group, i) => group.map(row => ({ ...row,
+      qualityTier: row.classicSignal.tier, tier: 'T' + (i + 1), displayTier: 'T' + (i + 1),
+      rankStatus: row.classicSignal.stage })));
+  }
+  root.OXClassic = Object.freeze({ CLASSIC_VERSION, CLASSIC_TIER_LIMITS, CLASSIC_RULES, evaluateClassic, evaluateFrames, qualifyClassicRow, compareClassic, compactClassic, rankClassicTiers });
 })(globalThis);

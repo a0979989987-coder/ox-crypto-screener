@@ -21,7 +21,7 @@ function rank(rows) {
   return state.tierMapBySide.long;
 }
 
-test("Crypto radar keeps up to 10 qualified symbols per tier, 30 total, without repeats", () => {
+test("Crypto radar preserves strict T1 and fills the next 15 plus 15 ranked slots without repeats", () => {
   const rows = ["t1", "t2", "t3"].flatMap((tier, tierIndex) =>
     Array.from({ length: 35 }, (_, index) => ({
       symbol: `COIN${tierIndex}${String(index).padStart(2, "0")}USDT`,
@@ -33,11 +33,12 @@ test("Crypto radar keeps up to 10 qualified symbols per tier, 30 total, without 
   );
   const result = rank(rows);
   for (const tier of ["t1", "t2", "t3"]) {
-    assert.equal(result[tier].length, 10);
+    assert.equal(result[tier].length, tier==='t1'?10:15);
     assert.ok(result[tier].every(row => row.tier === tier));
   }
   const symbols = ["t1", "t2", "t3"].flatMap(tier => result[tier].map(row => row.symbol));
-  assert.equal(new Set(symbols).size, 30);
+  assert.equal(new Set(symbols).size, 40);
+  assert.ok(result.t2.some(row=>row.qualityTier==='T1'),'Unused T1 candidates fill the remaining ranked slots');
   assert.ok(result.t1[0].t1Fit > result.t1.at(-1).t1Fit);
 });
 

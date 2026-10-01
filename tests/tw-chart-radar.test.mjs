@@ -6,9 +6,9 @@ import { aggregateCandles, dailyCandles, selectUniverse } from '../src/markets/t
 import { parseMarketDay, buildPatternEntry } from '../server/markets/tw/pattern-snapshot.js';
 import { prepareCandles, classifyPrepared } from '../src/markets/crypto/patterns/matcher.js';
 const stock=(symbol,tier,changePct=1)=>({symbol,name:'公司'+symbol,tier,changePct,price:100,market:'TWSE',turnoverTwd:1e8,oxScore:80,classic:tier?{[changePct<0?'short':'long']:rankingSignal(tier,changePct<0?'short':'long')}:null});
-test('TW chart radar maintains real tier membership and limits without duplicates or invented promotion',()=>{
+test('TW chart radar uses strict T1 plus the next two ranked groups of 15 without duplicates',()=>{
  const rows=[...Array.from({length:16},(_,i)=>stock(String(1000+i),'T1')),...Array.from({length:20},(_,i)=>stock(String(2000+i),'T2')),...Array.from({length:20},(_,i)=>stock(String(3000+i),'T3')),stock('2330',null),stock('030001','T1')];rows.push(rows[0]);
- const out=rankChartRows(rows);assert.equal(out.length,30);assert.deepEqual(['T1','T2','T3'].map(t=>out.filter(r=>r.displayTier===t).length),[10,10,10]);assert.equal(new Set(out.map(r=>r.symbol)).size,30);assert.ok(out.every(r=>r.displayTier===r.tier));assert.equal(rankChartRows(rows,{tier:'T1'}).length,10);assert.equal(rankChartRows([stock('1234','T3')],{tier:'T1'}).length,0);
+ const out=rankChartRows(rows);assert.equal(out.length,40);assert.deepEqual(['T1','T2','T3'].map(t=>out.filter(r=>r.displayTier===t).length),[10,15,15]);assert.equal(new Set(out.map(r=>r.symbol)).size,40);assert.ok(out.every(r=>r.displayTier===r.tier));assert.equal(rankChartRows(rows,{tier:'T1'}).length,10);assert.equal(rankChartRows([stock('1234','T3')],{tier:'T1'}).length,0);
 });
 test('TW chart radar watch and turnover pools use actual membership and search; direction stays separate',()=>{
  const rows=[stock('2330','T1',1),{...stock('6207','T2',-2),turnoverTwd:3e8}];assert.equal(rankChartRows(rows,{side:'short'})[0].symbol,'6207');assert.deepEqual(rankChartRows(rows,{tab:'watch',watchlist:new Set(['6207']),side:'long'}).map(r=>r.symbol),['6207']);assert.equal(rankChartRows(rows,{tab:'surge'})[0].symbol,'6207');assert.equal(rankChartRows(rows,{query:'2330'}).length,1);assert.equal(selectUniverse([{...rows[0],turnoverTwd:0}],0).length,1);

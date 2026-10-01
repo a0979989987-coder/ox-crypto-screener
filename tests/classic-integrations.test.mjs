@@ -7,9 +7,9 @@ import { tierResults, matchPath } from '../src/markets/us/analysis.js';
 import { USWorkspace } from '../src/markets/us/workspace.js';
 import { classicTWRow, classifyTWSeries } from '../src/markets/tw/classic.js';
 import { rankChartRows } from '../src/markets/tw/chart-radar-model.js';
-import { prepareCandles, qualifyPatternMatches } from '../src/markets/crypto/patterns/matcher.js';
+import { prepareCandles, qualifyPatternMatches, rankPatternMatches } from '../src/markets/crypto/patterns/matcher.js';
 import { applyClassicToRows } from '../server/markets/tw/classic-provider.js';
-import { preparation, shortBars } from './classic-fixtures.mjs';
+import { preparation, shortBars, rankingSignal } from './classic-fixtures.mjs';
 
 test('US legacy pattern/RS/turnover scores cannot grant classic membership or sketch membership',()=>{
  const row={symbol:'WEAK',type:'stock',price:100,rvol:100,liquidity:1e12,rs:100,
@@ -79,4 +79,18 @@ test('TW backend preserves factual quotes but withholds grades when history is f
  const [result]=await applyClassicToRows([row],'2026-10-02');
  assert.equal(result.price,200);assert.equal(result.turnoverTwd,1e12);
  assert.equal(result.oxScore,null);assert.equal(result.tier,'');assert.equal(result.classic,null);
+});
+test('US, TW and pattern search share strict T1 plus 15/15 remainder ranking',()=>{
+ for(const quality of ['T1','T3']){
+  const rows=Array.from({length:55},(_,i)=>({symbol:String(1000+i),type:'stock',interval:'1D',price:100,
+   classic:{long:{...rankingSignal(quality),qualityScore:(quality==='T1'?95:70)-i/100}}}));
+  const matches=rows.map(row=>({entry:{key:row.symbol+':1D',data:row},match:{classicSignal:row.classic.long,similarity:90,radar:true}}));
+  const us=tierResults(rows),tw=rankChartRows(rows),patterns=rankPatternMatches(matches);
+  const expected=quality==='T1'?[10,15,15]:[0,15,15];
+  for(const output of [us,tw])assert.deepEqual(['T1','T2','T3'].map(t=>output.filter(r=>r.tier===t).length),expected);
+  assert.deepEqual([1,2,3].map(t=>patterns.filter(r=>r.match.tier===t).length),expected);
+  assert.deepEqual(us.map(r=>r.symbol),tw.map(r=>r.symbol));
+  assert.deepEqual(us.map(r=>r.symbol),patterns.map(r=>r.entry.data.symbol));
+  assert.ok(patterns.every(r=>r.match.radarTier===r.match.tier));
+ }
 });

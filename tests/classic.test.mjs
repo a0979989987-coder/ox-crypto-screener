@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { evaluateClassic, evaluateFrames, CLASSIC_VERSION } from '../src/core/classic.js';
-import { preparation, shortBars } from './classic-fixtures.mjs';
+import { evaluateClassic, evaluateFrames, CLASSIC_VERSION, rankClassicTiers } from '../src/core/classic.js';
+import { preparation, shortBars, rankingSignal } from './classic-fixtures.mjs';
 
 test('repeated valid overhead pressure with upward progress and volume qualifies before breakout', () => {
   const s = evaluateClassic(preparation(), { frame: '4H' });
@@ -81,4 +81,22 @@ test('a higher-frame setup cannot waive exhaustion on the trigger frame',()=>{
  const trigger=preparation(),last=trigger.at(-1);last.high+=6;
  const s=evaluateFrames({'4H':preparation(),'1H':trigger},{setupFrame:'4H',triggerFrame:'1H'});
  assert.equal(s.eligible,false);assert.equal(s.tier,null);
+});
+test('T1 overflow fills T2 and T3 as the next 15 plus 15 ranked candidates',()=>{
+ const input=Array.from({length:55},(_,i)=>({symbol:'COIN'+i,classicSignal:{...rankingSignal(),qualityScore:100-i/10}}));
+ const output=rankClassicTiers([...input,input[0]],{side:'long'});
+ assert.deepEqual(['T1','T2','T3'].map(t=>output.filter(r=>r.tier===t).length),[10,15,15]);
+ assert.equal(new Set(output.map(r=>r.symbol)).size,40);
+ assert.ok(output.every(r=>r.qualityTier==='T1'));
+ assert.deepEqual(output.filter(r=>r.tier==='T2').map(r=>r.symbol),input.slice(10,25).map(r=>r.symbol));
+ assert.deepEqual(output.filter(r=>r.tier==='T3').map(r=>r.symbol),input.slice(25,40).map(r=>r.symbol));
+});
+test('an empty strict T1 never borrows weaker candidates while T2 and T3 still fill 15 each',()=>{
+ const input=Array.from({length:45},(_,i)=>({symbol:'C'+i,classicSignal:{...rankingSignal('T3'),qualityScore:70-i/10}}));
+ input.push({symbol:'INVALID',classicSignal:{...rankingSignal(),eligible:false}});
+ input.push({symbol:'BEAR',classicSignal:rankingSignal('T1','short')});
+ const output=rankClassicTiers(input,{side:'long'});
+ assert.deepEqual(['T1','T2','T3'].map(t=>output.filter(r=>r.tier===t).length),[0,15,15]);
+ assert.ok(output.every(r=>r.classicSignal.eligible&&r.classicSignal.side==='LONG'));
+ assert.equal(output.length,30);
 });

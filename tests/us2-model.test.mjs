@@ -279,8 +279,9 @@ test("classic tiers use qualified quality independently of breakthrough phase, w
   ]);
   assert.deepEqual(
     rows.map((r) => r.tier),
-    ["T1", "T3"],
+    ["T1", "T2"],
   );
+  assert.equal(rows[1].qualityTier,"T3","Original qualification remains separate from the displayed ranking group");
   assert.equal(rows.length, 2);
   assert.deepEqual(resamplePath([1, 1], 3), [0.5, 0.5, 0.5]);
 });

@@ -1,4 +1,4 @@
-import { evaluateClassic, compareClassic, compactClassic } from '../../../core/classic.js?v=20261001-classic1';
+import { evaluateClassic, compareClassic, compactClassic, rankClassicTiers } from '../../../core/classic.js?v=20261001-classic2';
 import { PATTERNS, patternById } from './catalog.js?v=patterns5d-20260929';
 const clamp = (x, a=0, b=1) => Math.max(a, Math.min(b, x));
 const mean = a => a.reduce((s,x)=>s+x,0)/a.length;
@@ -263,3 +263,10 @@ export function queryFromStrokes(strokes) {
   return best.s>=78?{id:best.t.id,points:p,mode:'sketch'}:{points:p,mode:'sketch'};
 }
 export function sortMatches(rows){return [...rows].sort((a,b)=>(a.displayTier??a.match?.tier??3)-(b.displayTier??b.match?.tier??3)||(b.rankPriority??-1)-(a.rankPriority??-1)||b.similarity-a.similarity||(b.oxScore??-1)-(a.oxScore??-1)||(b.turnover??0)-(a.turnover??0)||String(a.symbol??a.match?.label??'').localeCompare(String(b.symbol??b.match?.label??'')));}
+export function rankPatternMatches(matches){
+ const candidates=matches.map(value=>({...value,symbol:value.entry.data.symbol,
+  classicSignal:value.match.classicSignal,similarity:value.match.similarity}));
+ return rankClassicTiers(candidates,{compare:(a,b)=>compareClassic(a,b)||b.similarity-a.similarity})
+  .map(value=>{const tier=Number(value.tier.slice(1));return {...value,match:{...value.match,tier,
+   qualityTier:value.qualityTier,...(value.match.radar?{radarTier:tier}:{})}};});
+}

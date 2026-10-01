@@ -201,7 +201,6 @@ async function runScanQueueLoop() {
 
 function rebuildTierLists() {
   if (state.isQueueRunning && !state.radarSnapshotReady && !globalThis.OXTierFilters?.get('crypto').enabled) return;
-  const tierLimits = { t1: 10, t2: 10, t3: 10 };
   const tierConfig=globalThis.OXTierFilters?.get('crypto');
   const rankedPool=Array.from(state.analyzedCache.values()).filter(c=>{
     if(benchmarkSymbols.has(c.symbol)||(!tierConfig?.enabled&&!OXClassic.qualifyClassicRow(c,c.side)))return false;
@@ -221,26 +220,11 @@ function rebuildTierLists() {
     if(price&&signal?.invalidation?.level&&dir*(price-signal.invalidation.level)<-.2*signal.atr)return [];
     return [selected];
   }):rankedPool;
-  const pickRanked = (pool, fitKey, formalTier, taken = new Set()) => {
-    const tierLimit = tierLimits[formalTier];
-    const formal = pool
-      .filter(c => c.tier === formalTier && !taken.has(c.symbol))
-      .sort((a, b) => OXClassic.compareClassic(a,b) || ((b[fitKey] || 0) - (a[fitKey] || 0)));
-    const result = [];
-    for (const c of formal) {
-      if (result.length >= tierLimit) break;
-      result.push({ ...c, displayTier: formalTier, rankStatus: c.classicSignal?.stage || c.statusText });
-    }
-    return result;
-  };
-
   const buildTierSet = pool => {
-    const t1 = pickRanked(pool, "t1Fit", "t1");
-    const t1Symbols = new Set(t1.map(c => c.symbol));
-    const t2 = pickRanked(pool, "t2Fit", "t2", t1Symbols);
-    const t12Symbols = new Set([...t1Symbols, ...t2.map(c => c.symbol)]);
-    const t3 = pickRanked(pool, "t3Fit", "t3", t12Symbols);
-    return { t1, t2, t3 };
+    const ranked = OXClassic.rankClassicTiers(pool, { compare: (a,b) =>
+      OXClassic.compareClassic(a,b) || (b.oxScore || 0) - (a.oxScore || 0) });
+    return Object.fromEntries(['t1','t2','t3'].map(tier => [tier, ranked
+      .filter(row => row.tier.toLowerCase() === tier).map(row => ({...row,tier,displayTier:tier}))]));
   };
 
   // 保留原本 combined tierMap 供首頁、OX LIVE、其他既有模組讀取。

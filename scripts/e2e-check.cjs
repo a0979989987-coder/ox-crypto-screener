@@ -206,6 +206,48 @@ async function selectMarket(page, market) {
   await page.click(`[data-market-choice="${market}"]`);
 }
 
+async function tierCapacityRegression(page) {
+  // Ranking capacity uses explicit qualified fixtures after the real scanner's
+  // OHLCV qualification check; no fixture is sent to a provider or persisted.
+  const report = await page.evaluate(() => globalThis.eval(`(() => {
+    const previous={cache:state.analyzedCache,tickers:state.tickers,tab:state.currentTab,side:state.directionFilter};
+    const templates=['long','short'].map(side=>Object.values(state.tierMapBySide[side]).flat()[0]);
+    const reports=[];
+    try {
+      for(const quality of ['T1','T3']) {
+        const input=templates.flatMap((base,sideIndex)=>Array.from({length:55},(_,i)=>{
+          const symbol='QACAP'+sideIndex+'X'+i+'USDT',side=base.side.toLowerCase();
+          const signal={...base.classicSignal,tier:quality,qualityScore:(quality==='T1'?95:70)-i/100};
+          return {...base,symbol,at:Date.now(),tier:quality.toLowerCase(),classic:{...base.classic,[side]:signal},classicSignal:signal};
+        }));
+        state.analyzedCache=new Map(input.map(row=>[row.symbol,row]));
+        state.tickers=input.map(row=>({...row.ticker,symbol:row.symbol,lastPr:String(row.lastPrice)}));
+        rebuildTierLists();
+        const counts={};
+        for(const side of ['long','short']) {
+          state.directionFilter=side;
+          counts[side]={};
+          for(const tier of ['t1','t2','t3']) {
+            state.currentTab=tier;renderCurrentTab();
+            counts[side][tier]=document.querySelectorAll('#screener-list .coin-card').length;
+          }
+        }
+        reports.push({quality,counts});
+      }
+    } finally {
+      state.analyzedCache=previous.cache;state.tickers=previous.tickers;
+      state.currentTab=previous.tab;state.directionFilter=previous.side;
+      rebuildTierLists();renderCurrentTab();
+    }
+    return reports;
+  })()`));
+  for (const {quality,counts} of report) for (const side of ['long','short']) {
+    assert(counts[side].t1 === (quality === 'T1' ? 10 : 0), `${side}: strict T1 capacity or exclusion failed`);
+    assert(counts[side].t2 === 15 && counts[side].t3 === 15, `${side}: native T2/T3 did not render 15/15 cards`);
+  }
+  console.log(`Native tier capacity passed at ${page.viewportSize().width}px: strict T1, T2=15, T3=15, separated long/short`);
+}
+
 async function selectView(page, view) {
   const desktop = page.locator(`.ox-desktop-nav [data-view-target="${view}"]`);
   if (await desktop.isVisible()) await desktop.click();
@@ -234,6 +276,7 @@ async function desktopRegression(browser) {
   const memberships=await page.evaluate(()=>globalThis.eval(`({long:Object.values(state.tierMapBySide.long).flat().map(c=>({symbol:c.symbol,side:c.side,eligible:c.classicSignal.eligible})),short:Object.values(state.tierMapBySide.short).flat().map(c=>({symbol:c.symbol,side:c.side,eligible:c.classicSignal.eligible}))})`));
   assert(memberships.long.length>1&&memberships.long.every(c=>c.eligible&&c.side==='LONG'),'Long ranking includes only qualified upward structures');
   assert(memberships.short.length>1&&memberships.short.every(c=>c.eligible&&c.side==='SHORT'),'Short ranking remains separate');
+  await tierCapacityRegression(page);
   await page.evaluate(() => globalThis.eval('setScannerDirectionFilter("long")'));
   await page.waitForFunction(() => !document.querySelector("#view-radar")?.classList.contains("ox-filter-short"));
   await page.waitForFunction(() => {
@@ -363,6 +406,8 @@ async function mobileRegression(browser) {
   assert(railRect && Math.abs(railRect.y - chartRect.y) < 450 && railRect.x >= chartRect.x + chartRect.width - 2,
     `Mobile chart and ranked coins are not side by side: ${JSON.stringify({ chartRect, railRect })}`);
   const mobileCoin = page.locator("#view-radar .coin-card").nth(1);
+  await mobileCoin.waitFor({state:'visible'});
+  await tierCapacityRegression(page);
   const mobileSymbol = await mobileCoin.getAttribute("data-symbol");
   await mobileCoin.click();
   await page.waitForFunction(symbol => document.querySelector("#ticker-pair")?.textContent.includes(symbol), mobileSymbol);
