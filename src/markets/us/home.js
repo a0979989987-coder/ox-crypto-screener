@@ -6,7 +6,7 @@
  * - Render real US Market Pulse data.
  * - Read only from US Market State.
  * - Never call Twelve Data directly.
- * - Never touch Crypto / TW data.
+ * - Never touch Crypto / TW / Forex data.
  *
  * Current real-data coverage:
  * - SPY

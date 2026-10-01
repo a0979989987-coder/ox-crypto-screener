@@ -45,7 +45,7 @@ body[data-market="us"] #market-unavailable-card.us2-root[hidden],.us2-root [hidd
 .us2-root .us2-star {border:0;background:none;box-shadow:none;color:var(--muted)}.us2-root .us2-star.is-saved {color:#f4c65b}
 .us2-radar-layout {position:relative;align-items:start}
 .us2-chart-root {position:relative;min-width:0}
-.us2-widget-stage {position:relative;height:clamp(280px,46svh,520px);min-width:0;background:var(--bg)}
+.us2-widget-stage {position:relative;min-width:0;background:var(--bg)}
 .us2-widget-frame {position:relative;height:100%;width:100%;min-width:0}
 .us2-widget-frame .tradingview-widget-container__widget {height:calc(100% - 24px);width:100%}
 .us2-widget-frame .tradingview-widget-copyright {height:24px;font-size:10px;line-height:24px;padding:0 8px;color:var(--muted)}
@@ -54,10 +54,9 @@ body[data-market="us"] #market-unavailable-card.us2-root[hidden],.us2-root [hidd
 .us2-widget-status button,.us2-widget-status a {display:inline-block;margin:5px 8px 0 0;min-height:34px;padding:5px 8px;border:1px solid var(--line);border-radius:7px;background:none;color:inherit;font-size:11px}
 .us2-widget-info p {font-size:12px;line-height:1.7}
 .us2-widget-chart.us2-chart-full .us2-widget-stage {height:auto;flex:1;min-height:0;padding-bottom:env(safe-area-inset-bottom)}
-.us2-radar-layout.is-widget {display:flex;flex-direction:column;gap:8px}
-.us2-radar-layout.is-widget>.us2-chart-root {width:100%;flex:none}
-.us2-radar-layout.is-widget .us2-scanner {width:100%}
-.us2-radar-layout.is-widget .scanner-body {min-height:0;max-height:180px}
+/* Widget/native/error modes share Crypto's .workspace grid. A provider choice
+   must never change the phone's chart-left / list-right presentation. */
+.us2-radar-layout>.us2-scanner {align-self:stretch;display:flex;flex-direction:column;min-width:0;min-height:0}
 .us2-free-display .us2-quote-value {font-size:12px;color:var(--muted);font-weight:500}
 .us2-free-display .ox-home-price {display:none}
 .us2-widget-summary {display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;min-height:52px;padding:6px 8px;overflow:hidden}
@@ -77,7 +76,6 @@ body[data-market="us"] #market-unavailable-card.us2-root[hidden],.us2-root [hidd
 .us2-chart-root.is-empty-chart .us2-chart-stage {height:112px;min-height:112px}
 .us2-chart-root.is-empty-chart .us2-chart-message {top:8px}
 .us2-unavailable-chart-wrap {margin:10px 0 5px;min-width:0}
-.us2-radar-layout.is-unavailable .us2-scanner .scanner-body {min-height:0;max-height:160px}
 .us2-chart-root.is-blocked .us2-latest {display:none}
 .us2-latest {position:absolute;right:66px;bottom:28px;z-index:6;width:26px;height:26px;padding:4px;border:1px solid #ffffff42;border-radius:7px;background:#161b22df;color:var(--ink)}
 .us2-price-label {position:absolute;right:2px;top:0;z-index:7;pointer-events:none;background:#ad2350;color:#fff;border-radius:2px;padding:1px 2px;min-width:52px;text-align:right}
@@ -91,7 +89,7 @@ body.us2-chart-focus :is(.ox-shell-header,.ox-live-shell) {visibility:hidden;poi
 .us2-focus-exit {position:absolute;right:calc(8px + env(safe-area-inset-right));top:calc(6px + env(safe-area-inset-top));z-index:20;width:30px;height:30px;padding:5px;background:#161b22ee;color:var(--ink);border:1px solid #ffffff6a;border-radius:7px}
 .us2-tier-menu {position:absolute;right:0;top:48px;z-index:10;padding:5px;border:1px solid #ffffff6a;border-radius:9px;background:var(--panel);box-shadow:0 8px 22px #0008}
 .us2-tier-menu button {display:block;width:100%;min-height:34px;padding:6px 12px;color:inherit;background:none;border:0;text-align:left;font-size:11px}.us2-tier-menu button:hover {background:#ffffff12}
-.us2-scanner {position:relative}.us2-scanner .scanner-body {overflow:auto;max-height:clamp(320px,62svh,640px);scrollbar-width:thin}
+.us2-scanner {position:relative}.us2-scanner .scanner-body {height:0;min-height:0;flex:1 1 auto;overflow:auto;scrollbar-width:thin;overscroll-behavior-y:contain}
 .us2-scanner .radar-combined-logo svg {width:17px;height:17px}.us2-scanner .tab-btn>svg {width:13px;height:13px}
 .us2-empty {font-size:11px;color:var(--muted);line-height:1.7;padding:20px 10px;text-align:center}.us2-scanner .us2-empty {font-size:10px;padding:20px 8px}
 .us2-stock-row {position:relative;min-width:0;cursor:pointer}
@@ -141,10 +139,10 @@ body[data-market="us"][data-us-workspace="1"] :is(#scan-status,#btn-rescan,#mark
 body[data-market="us"][data-us-workspace="1"] #view-data:has(#ox-news-center),body[data-market="us"][data-us-workspace="1"] #view-media:has(.media-page) {display:none!important}
 @media(max-width:720px){
  .us2-radar-layout {gap:7px}
- .us2-radar-layout.is-unavailable {display:flex;flex-direction:column}
- .us2-radar-layout.is-unavailable>.us2-chart-root,.us2-radar-layout.is-unavailable>.us2-scanner {width:100%}
  .us2-symbol-picker {font-size:10px}.us2-data-brief {font-size:8px}
  .us2-home-grid {grid-template-columns:1fr;gap:8px}
  .us2-filter-line small {max-width:45%;text-align:right}
 }
 @media(prefers-reduced-motion:reduce){.us2-root *,.us2-root *::before,.us2-root *::after {animation:none;transition:none;scroll-behavior:auto}}
+.us2-eod-summary{display:flex;align-items:center;gap:10px;padding:8px 12px;margin-bottom:10px;border:1px solid rgba(255,255,255,.12);border-radius:14px;background:rgba(255,255,255,.025);font-size:11px;color:rgba(255,255,255,.65)}
+.us2-eod-summary strong{color:#f3f3f3;white-space:nowrap;font-size:12px}.us2-eod-summary span{flex:1;min-width:0;line-height:1.5}.us2-eod-summary button{flex-shrink:0}

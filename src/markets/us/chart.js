@@ -1,7 +1,8 @@
-import { USAdapter } from "./provider.js?v=20261001-loading1";
-import { INTERVALS, countdown, sessionAt, nyParts } from "./calendar.js?v=20261001-loading1";
-import { mergeCandles, movingAverage, vwap } from "./model.js?v=20261001-loading1";
-import { icon, positionTimeframe, openDialog, closeDialog } from "./ui.js?v=20261001-loading1";
+import { USAdapter } from "./provider.js?v=20261001-us-eod1";
+import { INTERVALS, countdown, sessionAt, nyParts } from "./calendar.js?v=20261001-us-eod1";
+import { mergeCandles, movingAverage, vwap } from "./model.js?v=20261001-us-eod1";
+import { icon, positionTimeframe, openDialog, closeDialog } from "./ui.js?v=20261001-us-eod1";
+import { sourceInfo, nativeAllowed } from "./view-utils.js?v=20261001-us-eod1";
 const UP = "#00b8d4",
   DOWN = "#ff3078";
 const esc = (s) =>
@@ -63,11 +64,13 @@ export class USChart {
     this.ma = false;
     this.vwap = false;
     const savedFrames = stored('ox-us-v2-chart-timeframes', null);
-    this.frames=(Array.isArray(savedFrames) ? savedFrames : ['1m','5m','15m','1H','4H','1D','1W']).filter(tf=>INTERVALS.includes(tf));
-    if(!this.frames.length)this.frames=[interval];
+    this.allowedFrames = capabilities.intervals || INTERVALS;
+    if (!this.allowedFrames.includes(this.interval)) this.interval = this.allowedFrames.includes('1D') ? '1D' : this.allowedFrames[0];
+    this.frames=(capabilities.mode === 'eod' ? this.allowedFrames : Array.isArray(savedFrames) ? savedFrames : ['1m','5m','15m','1H','4H','1D','1W']).filter(tf=>this.allowedFrames.includes(tf));
+    if(!this.frames.length)this.frames=[this.interval];
     root.innerHTML = `<div class="chart-controls us2-chart-toolbar"><div class="ctrl-group chart-timeframe-group"><div class="chart-timeframe-strip us2-timeframes" aria-label="圖表時間級別"><span class="tf-glass-indicator" aria-hidden="true"></span>${INTERVALS.map((tf,i)=>`<button class="btn-tf ${tf===interval?"active":""}" type="button" data-tf="${tf}" aria-pressed="${tf===interval}">${tf}${i===INTERVALS.length-1?'<span class="tf-hint">▾</span>':''}</button>`).join("")}</div></div><div class="ctrl-group chart-tool-actions"><button class="chart-tool-icon us2-indicator-open" type="button" data-indicator-open aria-label="指標與時段設定" aria-haspopup="dialog">${icon("settings")}</button>${onCollapse?`<button class="chart-tool-icon us2-list-toggle" type="button" data-collapse aria-label="收起／展開雷達清單">${icon("collapse")}</button>`:""}<button class="chart-tool-icon ox-chart-expand-dot us2-expand-control" type="button" data-expand aria-label="展開圖表">${icon("expand")}</button></div></div><button class="us2-focus-exit chart-tool-icon" data-exit-focus aria-label="收合圖表" hidden>${icon("expand")}</button>
       <div class="us2-chart-stage chart-container"><div class="us2-chart-canvas"></div><svg class="us2-drawings" aria-label="型態關鍵線"></svg><div class="us2-ohlc" role="status"></div><div class="chart-current-price" hidden><span class="chart-current-price-line"></span><div class="chart-mobile-last-price us2-price-label"><strong></strong><small></small></div></div><div class="us2-chart-message" role="status">取得歷史 OHLCV…</div><button class="chart-tool-icon us2-latest" data-latest title="回到最新行情" aria-label="回到最新行情">${icon("latest")}</button></div>
-      <dialog class="chart-tools-dialog us2-indicators-dialog" aria-label="指標與時段設定"><header><b>指標與交易時段</b><button data-close-indicators aria-label="關閉指標選單">${icon("close")}</button></header><div class="chart-indicator-options"><button class="chart-indicator-option" data-ma aria-pressed="false">MA20／50</button><button class="chart-indicator-option" data-vwap aria-pressed="false" title="依 OHLCV 加權估計，非逐筆 VWAP">VWAP 估計</button><select data-session aria-label="交易時段"><option value="regular">正常盤</option><option value="extended" ${capabilities.extendedHours ? "" : "disabled"}>含盤前盤後${capabilities.extendedHours ? "" : " · 權限未確認"}</option></select><button data-retry>重新取得行情</button></div><details class="us2-chart-source"><summary>來源與資料口徑</summary><div class="us2-chart-meta"></div><div class="us2-attribution"><a href="https://www.tradingview.com/" target="_blank" rel="noopener">TradingView Lightweight Charts™</a> · <a href="https://twelvedata.com/" target="_blank" rel="noopener">Twelve Data</a></div></details></dialog><dialog class="chart-tools-dialog us2-timeframe-dialog" aria-label="時間級別"><header><b>時間級別</b><button data-close-timeframes aria-label="關閉時間級別">${icon("close")}</button></header><div class="chart-timeframe-preferences">${INTERVALS.map(tf=>`<label class="chart-choice"><input type="checkbox" value="${tf}" ${this.frames.includes(tf)?"checked":""}><span>${tf}</span></label>`).join("")}</div><button class="chart-tools-save" data-save-timeframes>儲存時間級別</button></dialog>`;
+      <dialog class="chart-tools-dialog us2-indicators-dialog" aria-label="指標與時段設定"><header><b>指標與交易時段</b><button data-close-indicators aria-label="關閉指標選單">${icon("close")}</button></header><div class="chart-indicator-options"><button class="chart-indicator-option" data-ma aria-pressed="false">MA20／50</button><button class="chart-indicator-option" data-vwap aria-pressed="false" title="依 OHLCV 加權估計，非逐筆 VWAP" ${capabilities.mode === "eod" ? "hidden" : ""}>VWAP 估計</button><select data-session aria-label="交易時段" ${capabilities.mode === "eod" ? "hidden" : ""}><option value="regular">正常盤</option><option value="extended" ${capabilities.extendedHours ? "" : "disabled"}>含盤前盤後${capabilities.extendedHours ? "" : " · 權限未確認"}</option></select><button data-retry>重新取得行情</button></div><details class="us2-chart-source"><summary>來源與資料口徑</summary><div class="us2-chart-meta"></div><div class="us2-attribution"><a href="https://www.tradingview.com/" target="_blank" rel="noopener">TradingView Lightweight Charts™</a> · <a data-provider-credit href="https://verdenroz.github.io/finance-query/" target="_blank" rel="noopener">Finance Query / Yahoo</a></div></details></dialog><dialog class="chart-tools-dialog us2-timeframe-dialog" aria-label="時間級別"><header><b>時間級別</b><button data-close-timeframes aria-label="關閉時間級別">${icon("close")}</button></header><div class="chart-timeframe-preferences">${INTERVALS.map(tf=>`<label class="chart-choice"><input type="checkbox" value="${tf}" ${this.frames.includes(tf)?"checked":""}><span>${tf}</span></label>`).join("")}</div><button class="chart-tools-save" data-save-timeframes>儲存時間級別</button></dialog>`;
     this.message = root.querySelector(".us2-chart-message");
     this.svg = root.querySelector(".us2-drawings");
     const LC = globalThis.LightweightCharts;
@@ -83,7 +86,8 @@ export class USChart {
         background: { type: "solid", color: "transparent" },
         textColor: "#aeb3b3",
         fontSize: 10,
-        attributionLogo: true,
+        // The shared source dialog and OX settings retain the required attribution.
+        attributionLogo: false,
       },
       grid: {
         vertLines: { visible: false },
@@ -103,12 +107,12 @@ export class USChart {
       crosshair: { mode: LC.CrosshairMode.Normal },
       handleScroll: {
         pressedMouseMove: true,
-        horzTouchDrag: true,
+        horzTouchDrag: !globalThis.OXChartGestures,
         vertTouchDrag: false,
         mouseWheel: true,
       },
       handleScale: {
-        pinch: true,
+        pinch: !globalThis.OXChartGestures,
         mouseWheel: true,
         axisPressedMouseMove: { price: true, time: true },
       },
@@ -136,6 +140,30 @@ export class USChart {
       borderVisible: false,
       lastValueVisible: false,
       priceLineVisible: false,
+    });
+    const owner = this;
+    this.gestureState = {
+      get chart() { return owner.chart; },
+      get candleSeries() { return owner.series; },
+      get candleData() { return owner.bars; },
+      chartPriceViewport: null,
+      chartPriceViewportMargins: null,
+    };
+    this.autoscale = original => {
+      const info = original();
+      if (!info) return info;
+      this.gestureState.chartAutoPriceMargins = info.margins || { above: 0, below: 0 };
+      return this.gestureState.chartPriceViewport ? { ...info,
+        priceRange: { ...this.gestureState.chartPriceViewport },
+        margins: this.gestureState.chartPriceViewportMargins } : info;
+    };
+    this.series.applyOptions({ autoscaleInfoProvider: this.autoscale });
+    this.gestures = globalThis.OXChartGestures?.({ container,
+      state: this.gestureState, formatPrice: money,
+      getRange: () => this.getPriceRange(),
+      setRange: range => this.setPriceRange(range),
+      refreshRange: () => this.refreshPriceRange(),
+      isDrawing: () => root.querySelector('.chart-drawing-layer.is-editing'),
     });
     this.volume = this.chart.addHistogramSeries({
       priceScaleId: "",
@@ -185,24 +213,36 @@ export class USChart {
         this.loadOlder();
     });
     this.ro = new ResizeObserver(() => {
-      if (this.disposed) return;
-      this.chart.resize(container.clientWidth, container.clientHeight);
-      this.draw();
-      this.priceTimer();
-      positionTimeframe(root);
+      if (this.disposed || this.resizeFrame) return;
+      // WebKit reports an observer loop if LWC updates its canvas inside the
+      // resize notification. Batch it into the next frame and skip equal sizes.
+      this.resizeFrame = requestAnimationFrame(() => {
+        this.resizeFrame = 0;
+        if (this.disposed) return;
+        const width = container.clientWidth, height = container.clientHeight;
+        if (this.lastWidth !== width || this.lastHeight !== height) {
+          this.lastWidth = width; this.lastHeight = height;
+          this.chart.resize(width, height);
+        }
+        this.draw(); this.priceTimer(); positionTimeframe(root);
+      });
     });
     this.ro.observe(container);
     this.overlayEvents = new AbortController();
     for (const name of ["pointermove", "pointerdown", "wheel", "touchmove"])
       container.addEventListener(name, () => this.scheduleOverlay(), {passive:true, signal:this.overlayEvents.signal});
     const frameDialog=root.querySelector(".us2-timeframe-dialog");
+    frameDialog.querySelectorAll('input').forEach(input => {
+      input.disabled = !this.allowedFrames.includes(input.value);
+      if (input.disabled) input.checked = false;
+    });
     root.querySelector('.chart-timeframe-strip').onclick=event=>{
       const button=event.target.closest('[data-tf]');if(!button)return;
       if(button.dataset.tf===this.interval&&button.querySelector(".tf-hint")) openDialog(frameDialog,button);
       else this.change({interval:button.dataset.tf});
     };
     root.querySelector('[data-save-timeframes]').onclick=()=>{
-      const chosen=[...frameDialog.querySelectorAll('input:checked')].map(x=>x.value);
+      const chosen=[...frameDialog.querySelectorAll('input:checked')].map(x=>x.value).filter(tf => this.allowedFrames.includes(tf));
       this.frames=chosen.length?chosen:[this.interval];put('ox-us-v2-chart-timeframes',this.frames);
       this.renderTimeframes();closeDialog(frameDialog);
     };
@@ -224,8 +264,12 @@ export class USChart {
     positionTimeframe(root,true);
     root.querySelector("[data-session]").onchange = (e) =>
       this.change({ extended: e.target.value === "extended" });
-    root.querySelector("[data-latest]").onclick = () =>
+    root.querySelector("[data-latest]").onclick = () => {
+      this.gestureState.chartPriceViewport = null;
+      this.gestureState.chartPriceViewportMargins = null;
+      this.refreshPriceRange();
       this.chart.timeScale().scrollToRealTime();
+    };
     root.querySelector("[data-ma]").onclick = (e) => {
       this.ma = !this.ma;
       e.currentTarget.setAttribute("aria-pressed", this.ma);
@@ -237,20 +281,50 @@ export class USChart {
       this.indicators();
     };
     root.querySelector("[data-retry]").onclick = () => this.load(true);
-    this.timer = setInterval(() => this.priceTimer(), 1000);
+    if (this.capabilities.mode !== "eod") this.timer = setInterval(() => this.priceTimer(), 1000);
     this.load();
+  }
+  getPriceRange() {
+    const container = this.root.querySelector('.us2-chart-canvas');
+    const height = container.clientHeight - this.chart.timeScale().height();
+    const maxValue = this.series.coordinateToPrice(0), minValue = this.series.coordinateToPrice(height - 1);
+    return Number.isFinite(minValue) && Number.isFinite(maxValue) && maxValue > minValue ? { minValue, maxValue } : null;
+  }
+  setPriceRange(range) {
+    const state = this.gestureState, margins = this.chart.priceScale('right').options().scaleMargins;
+    const extra = (state.chartPriceViewport ? state.chartPriceViewportMargins : state.chartAutoPriceMargins) || { above: 0, below: 0 };
+    const height = this.root.querySelector('.us2-chart-canvas').clientHeight - this.chart.timeScale().height();
+    if (height <= 1) return;
+    const span = range.maxValue - range.minValue;
+    state.chartPriceViewportMargins = extra;
+    state.chartPriceViewport = {
+      minValue: range.minValue + span * (height * margins.bottom + extra.below) / (height - 1),
+      maxValue: range.maxValue - span * (height * margins.top + extra.above) / (height - 1),
+    };
+    this.refreshPriceRange();
+  }
+  refreshPriceRange() {
+    this.chart.priceScale('right').applyOptions({ autoScale: true });
+    this.series.applyOptions({ autoscaleInfoProvider: this.autoscale });
+    this.scheduleOverlay();
+    this.sharedDrawings?.sync();
   }
   mountDrawings() {
     if(!globalThis.OXChartDrawings)return;
-    const market="us-v2-twelve-data";
+    const source = this.result?.source || this.capabilities.source || 'finance-query-eod';
+    const market=`us-v2-${source.replace(/[^a-z0-9-]/gi, '-')}`;
     const drawingKey=`ox-${market}-chart-drawings-v1`;
+    if (this.drawingMarket && this.drawingMarket !== market) {
+      this.sharedDrawings?.destroy(); this.sharedDrawings = null;
+    }
+    this.drawingMarket = market;
     // Existing Crypto component; only OHLCV getters and US-specific persistence are supplied.
     if(!this.sharedDrawings){
       // Migrate all existing US stocks before the component takes its storage snapshot.
       const saved=stored(drawingKey,{});
       try{for(let i=0;i<localStorage.length;i++){
         const key=localStorage.key(i),match=/^ox-us-v2:drawings:([^:]+):twelve-data:(.+)$/.exec(key);
-        if(!match)continue;
+        if(!match || source !== 'twelve-data')continue;
         const scope=`${match[1]}:${match[2]}`,legacy=stored(key,[]);
         if(!saved[scope]&&Array.isArray(legacy)&&legacy.length)saved[scope]=legacy;
       }put(drawingKey,saved);}catch{}
@@ -266,15 +340,30 @@ export class USChart {
     requestAnimationFrame(()=>{if(!this.disposed)positionTimeframe(this.root,true);});
   }
   setCapabilities(capabilities) {
+    const previousInterval = this.interval;
+    const previousSource = this.capabilities.source;
+    const previousSession = this.capabilities.sessionDate;
     this.capabilities=capabilities;
-    if (capabilities.externalDisplayConfirmed === false && !capabilities.legacy) {
+    if (capabilities.mode === "eod") { clearTimeout(this.poll); clearInterval(this.timer); }
+    this.allowedFrames = capabilities.intervals || INTERVALS;
+    this.frames = this.frames.filter(tf => this.allowedFrames.includes(tf));
+    if (!this.frames.length) this.frames = [this.allowedFrames.includes('1D') ? '1D' : this.allowedFrames[0]];
+    if (!this.allowedFrames.includes(this.interval)) this.interval = this.frames[0];
+    this.root.querySelectorAll('.chart-timeframe-preferences input').forEach(input => {
+      input.disabled = !this.allowedFrames.includes(input.value);
+      if (input.disabled) input.checked = false;
+    });
+    this.renderTimeframes();
+    if (!nativeAllowed(capabilities)) {
       ++this.request;
       this.controller?.abort();
       this.loading = false;
-      this.unavailable("美股行情尚未開通對外展示；等待不會載入。", 403, "US_DATA_DISPLAY_RIGHTS_REQUIRED");
+      this.unavailable("盤後資料尚未開通公開使用；不載入盤中行情。", 403, "US_DATA_DISPLAY_RIGHTS_REQUIRED");
     }
     const option=this.root.querySelector('[data-session] option[value="extended"]');
     if(option){option.disabled=!capabilities.extendedHours;option.textContent=capabilities.extendedHours?'含盤前盤後':'含盤前盤後 · 權限未確認';}
+    if (nativeAllowed(capabilities) && (previousInterval !== this.interval || previousSource !== capabilities.source || previousSession !== capabilities.sessionDate))
+      this.change({ interval: this.interval });
   }
   unavailable(message, status = 0, code = null) {
     this.error = true;
@@ -293,17 +382,19 @@ export class USChart {
     this.onState({ error: message, errorStatus: status, errorCode: code, bars: this.bars });
   }
   key() {
-    return `ox-us-v2:drawings:${this.symbol}:twelve-data:${this.result?.adjustment || "pending"}`;
+    return `ox-us-v2:drawings:${this.symbol}:${this.result?.source || this.capabilities.source || 'finance-query-eod'}:${this.result?.adjustment || "pending"}`;
   }
   persist() {
     put(this.key(), this.drawings);
   }
   viewportKey() {
-    return `${this.symbol}:${this.interval}:${this.extended}`;
+    return `${this.capabilities.source || 'finance-query-eod'}:${this.symbol}:${this.interval}:${this.extended}:${this.result?.adjustment || 'pending'}`;
   }
   saveViewport() {
     const r = this.chart?.timeScale().getVisibleLogicalRange();
-    if (r) viewports.set(this.viewportKey(), r);
+    if (r) viewports.set(this.viewportKey(), { logical: r,
+      price: this.gestureState?.chartPriceViewport,
+      margins: this.gestureState?.chartPriceViewportMargins });
   }
   async change({
     symbol = this.symbol,
@@ -327,6 +418,8 @@ export class USChart {
     this.selected = -1;
     this.bars = [];
     this.result = null;
+    this.gestureState.chartPriceViewport = null;
+    this.gestureState.chartPriceViewportMargins = null;
     this.series.setData([]);
     this.volume.setData([]);
     this.ma20.setData([]);
@@ -347,8 +440,8 @@ export class USChart {
   }
   async load(force = false) {
     if (this.disposed || !this.chart || this.loading) return;
-    if (this.capabilities.externalDisplayConfirmed === false && !this.capabilities.legacy) {
-      this.unavailable("美股行情尚未開通對外展示；等待不會載入。", 403, "US_DATA_DISPLAY_RIGHTS_REQUIRED");
+    if (!nativeAllowed(this.capabilities)) {
+      this.unavailable("盤後資料尚未開通公開使用；不載入盤中行情。", 403, "US_DATA_DISPLAY_RIGHTS_REQUIRED");
       return;
     }
     const id = ++this.request,
@@ -357,7 +450,7 @@ export class USChart {
     this.loading = true;
     if (!this.bars.length) {
       this.message.hidden = false;
-      this.message.innerHTML = window.OXLoading?.markup(`${this.symbol} · ${this.interval} K 線載入中`,0,1) || `載入 ${this.symbol} · ${this.interval}…`;
+      this.message.textContent = `載入 ${this.symbol} · ${this.interval}…`;
     }
     try {
       const first = !this.bars.length;
@@ -378,8 +471,9 @@ export class USChart {
         : this.historyExhausted;
       this.applyBars(result.bars, first);
       this.sharedDrawings?.sync();
-      this.message.hidden = true;
-      this.error = false;
+      this.message.hidden = !result.stale;
+      this.message.textContent = result.stale ? "更新暫停 · 保留前次收盤 K 線，可手動重試" : "";
+      this.error = Boolean(result.stale);
       this.blocked = false;
       this.root.classList.remove("is-blocked","is-empty-chart");
       this.root.querySelector(".us2-chart-stage").classList.remove("us2-empty-stage");
@@ -391,14 +485,18 @@ export class USChart {
       }
       this.root.querySelector(".us2-chart-meta").textContent =
         `${result.source} · ${result.feed} · ${this.extended ? "含盤前盤後" : "正常盤"} · ${result.adjustment} · ${this.bars.length} 根 · ${result.volumeScope}`;
+      const provider = sourceInfo(result.source), link = this.root.querySelector('.us2-attribution [data-provider-credit]');
+      link.textContent = provider.label;
+      if (provider.url) link.href = provider.url;
+      else link.removeAttribute('href');
       this.onState({ ...result, bars: this.bars, error: null });
     } catch (e) {
       if (controller.signal.aborted || this.disposed || id !== this.request)
         return;
       const licenseRequired = e.code === "US_DATA_DISPLAY_RIGHTS_REQUIRED" || e.message.includes("對外展示授權");
       this.unavailable(licenseRequired
-        ? "美股行情尚未開通對外展示；等待不會載入。"
-        : e.status === 429 ? "額度用盡，稍後自動重試" : e.message, e.status, licenseRequired ? "US_DATA_DISPLAY_RIGHTS_REQUIRED" : e.code);
+        ? "盤後資料尚未開通公開使用；不載入盤中行情。"
+        : e.status === 429 ? "資料源暫時無法回應，請稍後手動重試" : e.message, e.status, licenseRequired ? "US_DATA_DISPLAY_RIGHTS_REQUIRED" : e.code);
     } finally {
       if (id === this.request) {
         this.loading = false;
@@ -409,7 +507,7 @@ export class USChart {
   }
   schedule() {
     clearTimeout(this.poll);
-    if (this.disposed || this.blocked) return;
+    if (this.disposed || this.blocked || this.capabilities.mode === "eod") return;
     const s = sessionAt(),
       ms = this.error
         ? 120000
@@ -455,11 +553,14 @@ export class USChart {
     if (first) {
       const saved = viewports.get(this.viewportKey());
       this.chart.timeScale().setVisibleLogicalRange(
-        saved || {
+        saved?.logical || {
           from: Math.max(0, this.bars.length - (innerWidth < 600 ? 75 : 125)),
           to: this.bars.length + 3,
         },
       );
+      this.gestureState.chartPriceViewport = saved?.price || null;
+      this.gestureState.chartPriceViewportMargins = saved?.margins || null;
+      this.refreshPriceRange();
     }
     this.indicators();
     this.sharedDrawings?.sync();
@@ -567,10 +668,10 @@ export class USChart {
     badge.style.width = `${Math.max(54, this.chart.priceScale("right").width?.() - 4 || 54)}px`;
     const priceNode = node.querySelector("strong"), timerNode = node.querySelector("small");
     const priceText = money(c.close);
-    const timer = countdown(c, this.interval, this.extended);
+    const timer = this.capabilities.mode === "eod" ? `收盤 ${c.periodEnd || c.date}` : countdown(c, this.interval, this.extended);
     const compactTimer = {"正常盤已收線":"已收線","等待成交／收線校正":"待校正","交易日曆待更新":"日曆未知"}[timer] || timer;
     const delay = this.result?.delaySeconds === null ? "未確認" : this.result?.delaySeconds > 0 ? `延${Math.round(this.result.delaySeconds / 60)}分` : "輪詢";
-    const timerText = this.error ? "舊資料" : `${compactTimer}·${delay}`;
+    const timerText = this.error || this.result?.stale ? "舊資料" : this.capabilities.mode === "eod" ? timer : `${compactTimer}·${delay}`;
     if (priceNode.textContent !== priceText) priceNode.textContent = priceText;
     if (timerNode.textContent !== timerText) timerNode.textContent = timerText;
     node.title = `${this.error ? "更新失敗，保留舊資料" : timer} · ${delay}`;
@@ -759,7 +860,9 @@ export class USChart {
     this.ro?.disconnect();
     this.overlayEvents?.abort();
     cancelAnimationFrame(this.overlayFrame);
+    cancelAnimationFrame(this.resizeFrame);
     this.sharedDrawings?.destroy();
+    this.gestures?.destroy();
     this.chart?.remove();
     this.root.classList.remove("us2-chart-full");
     document.body.classList.remove("us2-chart-focus");

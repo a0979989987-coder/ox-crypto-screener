@@ -212,7 +212,10 @@ export function bindPatternBoard(root, onPath) {
   root.addEventListener("pointerup", up);
   root.addEventListener("pointercancel", () => (pointer = null));
   root.addEventListener("click", click, true);
-  const ro = new ResizeObserver(paint);
+  let resizeFrame = 0;
+  const ro = new ResizeObserver(() => {
+    if (!resizeFrame) resizeFrame = requestAnimationFrame(() => { resizeFrame = 0; paint(); });
+  });
   ro.observe(root);
   paint();
   return {
@@ -223,6 +226,7 @@ export function bindPatternBoard(root, onPath) {
     },
     destroy() {
       ro.disconnect();
+      cancelAnimationFrame(resizeFrame);
       root.removeEventListener("pointerdown", down);
       root.removeEventListener("pointermove", move);
       root.removeEventListener("pointerup", up);

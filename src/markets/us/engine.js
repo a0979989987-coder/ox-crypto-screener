@@ -1,4 +1,4 @@
-import { usProvider } from "./api.js?v=20261001-loading1";
+import { usProvider } from "./api.js?v=20261001-us-eod1";
 
 /*
  * OX v4.0 Modular
@@ -13,7 +13,7 @@ import { usProvider } from "./api.js?v=20261001-loading1";
  * - store API secrets
  * - call Twelve Data directly
  * - render UI
- * - touch Crypto / TW
+ * - touch Crypto / TW / Forex
  */
 
 const BENCHMARK_SYMBOLS = Object.freeze([

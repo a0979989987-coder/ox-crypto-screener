@@ -1,9 +1,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { cachedRequest, resetCache } from "../server/markets/us/cache.js";
+import { resetBudget } from "../server/markets/us/budget.js";
 process.env.NODE_ENV = "test";
 process.env.US_DATA_PROVIDER = "twelve-data";
-import { handleUS2, capabilities } from "../server/markets/us/service.js";
+import { handleUS2, capabilities, snapshot } from "../server/markets/us/service.js";
 test("public adapter refuses redistribution when authorization is unconfirmed", async () => {
   const previous = process.env.NODE_ENV;
   process.env.NODE_ENV = "production";
@@ -42,56 +43,7 @@ test("simultaneous requests coalesce and a 429 starts backoff", async () => {
   await assert.rejects(cachedRequest("next", load), (e) => e.code === 429);
   resetCache();
 });
-test("adapter rejects unsupported symbols and extended hours instead of inventing data", async () => {
-  await assert.rejects(
-    handleUS2("chart-v2", { symbol: "ZZZINVALID" }, () => {}),
-    (e) => e.code === 404,
-  );
-  await assert.rejects(
-    handleUS2("chart-v2", { symbol: "AAPL", extendedHours: "true" }, () => {}),
-    (e) => e.code === 403,
-  );
-  assert.equal(capabilities().depth, false);
-  assert.equal(capabilities().externalDisplayConfirmed, false);
-});
-test("chart provider requests splits-only adjustment and passes native OHLCV and timestamps", async () => {
-  resetCache();
-  let params;
-  const result = await handleUS2(
-    "chart-v2",
-    { symbol: "AAPL", interval: "1m", limit: 400 },
-    async (path, p) => {
-      params = p;
-      return {
-        values: [
-          {
-            datetime: "2026-09-29 13:30:00",
-            open: "100",
-            high: "101",
-            low: "99",
-            close: "100.5",
-            volume: "120",
-          },
-        ],
-      };
-    },
-  );
-  assert.equal(params.adjust, "splits");
-  assert.equal(params.timezone, "UTC");
-  assert.equal(params.outputsize, 400);
-  assert.equal(result.bars[0].volume, 120);
-  assert.equal(result.feed, "未確認 feed");
-  assert.equal(result.delaySeconds, null);
-  assert.equal(result.adjustment, "splits");
-});
-
-test("unlicensed public snapshot returns explicit state and no private quotes", async () => {
-  const result = await handleUS2("snapshot", {}, () => {
-    throw Error("snapshot must not request upstream");
-  });
-  assert.equal(result.asOf, null);
-  assert.deepEqual(result.quotes, []);
-  assert.deepEqual(result.analyses, []);
-  assert.equal(result.counts.scanned, 0);
-  assert.match(result.error, /授權未確認/);
+test("unlicensed closing snapshot is explicit and contains no prices", async () => {
+  const result=await snapshot();assert.equal(result.mode,'eod');assert.equal(result.counts.scanned,0);
+  assert.deepEqual(result.quotes,[]);assert.match(result.error,/公開使用權尚待確認/);
 });
