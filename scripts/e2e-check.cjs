@@ -58,12 +58,27 @@ const tickers = symbols.map((symbol, index) => ({
   high24h: "65000", low24h: "61000"
 }));
 const contracts = symbols.map(symbol => ({ symbol, baseCoin: symbol.replace("USDT", ""), quoteCoin: "USDT", symbolStatus: "normal", symbolType: "perpetual" }));
-const instruments = symbols.map(symbol => ({ symbol, symbolType: "crypto", isRwa: false }));
+const instruments = symbols.map(symbol => ({ symbol, symbolType: "crypto",type:"perpetual",status:"online",quoteCoin:"USDT", isRwa: false }));
 const now = Date.now();
-const candles = Array.from({ length: 180 }, (_, index) => {
-  const price = 60000 + index * 14 + Math.sin(index / 4) * 180;
-  return [String(now - (180 - index) * 3600000), String(price), String(price + 120), String(price - 100), String(price + 45), String(900 + index), String((900 + index) * price)];
-});
+// Directional volume and tested pressure are required by the real scanner.
+// These explicit synthetic quotes/series deliberately alternate long and short.
+function candlesFor(url){
+  const symbol=url.searchParams.get('symbol')||'BTCUSDT',index=Math.max(0,symbols.indexOf(symbol));
+  const granularity=url.searchParams.get('granularity')||'1H';
+  const amount=parseInt(granularity)||1,unit=granularity.replace(/^[0-9]+/,'').replace(/utc$/,'');
+  const duration=amount*({m:60000,H:3600000,D:86400000,W:604800000,M:30*86400000}[unit]||3600000);
+  const boundary=Math.floor(now/duration)*duration,values=[];
+  const bullish=index%2===0,last=bullish?99.325:100.675,scale=Number(tickers[index].lastPr)/last;
+  for(let i=0;i<72;i++){
+    let close=i>=56?94+(i-56)*.355:95+Math.sin(i*Math.PI/8)*2;
+    const open=values.at(-1)?.close??close-.2;
+    values.push({open,close,high:[12,28,44].includes(i)?100:Math.max(open,close)+.25,low:Math.min(open,close)-.25});
+  }
+  return values.map((c,i)=>{
+    const bar=bullish?c:{open:200-c.open,close:200-c.close,high:200-c.low,low:200-c.high};
+    return [boundary-(72-i)*duration,bar.open*scale,bar.high*scale,bar.low*scale,bar.close*scale,i>=65?1800:1000,bar.close*scale*(i>=65?1800:1000)].map(String);
+  });
+}
 
 function bitgetBody(url) {
   if (url.pathname.includes("/api/v3/market/instruments")) return { code: "00000", data: instruments };
@@ -73,7 +88,7 @@ function bitgetBody(url) {
     const symbol = url.searchParams.get("symbol") || "BTCUSDT";
     return { code: "00000", data: [tickers.find(row => row.symbol === symbol) || tickers[0]] };
   }
-  if (url.pathname.endsWith("/candles")) return { code: "00000", data: candles };
+  if (url.pathname.endsWith("/candles")) return { code: "00000", data: candlesFor(url) };
   return { code: "00000", data: [] };
 }
 
@@ -191,6 +206,48 @@ async function selectMarket(page, market) {
   await page.click(`[data-market-choice="${market}"]`);
 }
 
+async function tierCapacityRegression(page) {
+  // Ranking capacity uses explicit qualified fixtures after the real scanner's
+  // OHLCV qualification check; no fixture is sent to a provider or persisted.
+  const report = await page.evaluate(() => globalThis.eval(`(() => {
+    const previous={cache:state.analyzedCache,tickers:state.tickers,tab:state.currentTab,side:state.directionFilter};
+    const templates=['long','short'].map(side=>Object.values(state.tierMapBySide[side]).flat()[0]);
+    const reports=[];
+    try {
+      for(const quality of ['T1','T3']) {
+        const input=templates.flatMap((base,sideIndex)=>Array.from({length:55},(_,i)=>{
+          const symbol='QACAP'+sideIndex+'X'+i+'USDT',side=base.side.toLowerCase();
+          const signal={...base.classicSignal,tier:quality,qualityScore:(quality==='T1'?95:70)-i/100};
+          return {...base,symbol,at:Date.now(),tier:quality.toLowerCase(),classic:{...base.classic,[side]:signal},classicSignal:signal};
+        }));
+        state.analyzedCache=new Map(input.map(row=>[row.symbol,row]));
+        state.tickers=input.map(row=>({...row.ticker,symbol:row.symbol,lastPr:String(row.lastPrice)}));
+        rebuildTierLists();
+        const counts={};
+        for(const side of ['long','short']) {
+          state.directionFilter=side;
+          counts[side]={};
+          for(const tier of ['t1','t2','t3']) {
+            state.currentTab=tier;renderCurrentTab();
+            counts[side][tier]=document.querySelectorAll('#screener-list .coin-card').length;
+          }
+        }
+        reports.push({quality,counts});
+      }
+    } finally {
+      state.analyzedCache=previous.cache;state.tickers=previous.tickers;
+      state.currentTab=previous.tab;state.directionFilter=previous.side;
+      rebuildTierLists();renderCurrentTab();
+    }
+    return reports;
+  })()`));
+  for (const {quality,counts} of report) for (const side of ['long','short']) {
+    assert(counts[side].t1 === (quality === 'T1' ? 10 : 0), `${side}: strict T1 capacity or exclusion failed`);
+    assert(counts[side].t2 === 15 && counts[side].t3 === 15, `${side}: native T2/T3 did not render 15/15 cards`);
+  }
+  console.log(`Native tier capacity passed at ${page.viewportSize().width}px: strict T1, T2=15, T3=15, separated long/short`);
+}
+
 async function selectView(page, view) {
   const desktop = page.locator(`.ox-desktop-nav [data-view-target="${view}"]`);
   if (await desktop.isVisible()) await desktop.click();
@@ -216,6 +273,10 @@ async function desktopRegression(browser) {
   await selectView(page, "radar");
   assert(await page.locator("#view-radar").isVisible(), "Desktop Radar is not visible");
   assert(await page.locator("#chart").getAttribute("data-chart-initialized") === "true", "Desktop BTC chart did not initialize");
+  const memberships=await page.evaluate(()=>globalThis.eval(`({long:Object.values(state.tierMapBySide.long).flat().map(c=>({symbol:c.symbol,side:c.side,eligible:c.classicSignal.eligible})),short:Object.values(state.tierMapBySide.short).flat().map(c=>({symbol:c.symbol,side:c.side,eligible:c.classicSignal.eligible}))})`));
+  assert(memberships.long.length>1&&memberships.long.every(c=>c.eligible&&c.side==='LONG'),'Long ranking includes only qualified upward structures');
+  assert(memberships.short.length>1&&memberships.short.every(c=>c.eligible&&c.side==='SHORT'),'Short ranking remains separate');
+  await tierCapacityRegression(page);
   await page.evaluate(() => globalThis.eval('setScannerDirectionFilter("long")'));
   await page.waitForFunction(() => !document.querySelector("#view-radar")?.classList.contains("ox-filter-short"));
   await page.waitForFunction(() => {
@@ -319,7 +380,7 @@ async function desktopRegression(browser) {
   assert(audit.localFailures.length === 0, `Desktop local request failures: ${audit.localFailures.join(" | ")}`);
   assert(audit.localHttpErrors.length === 0, `Desktop local HTTP errors: ${audit.localHttpErrors.join(" | ")}`);
   await context.close();
-  return { cards: await Promise.resolve(8), css, intervals: runtime.intervals.length };
+  return { cards: 3, css, intervals: runtime.intervals.length };
 }
 
 async function mobileRegression(browser) {
@@ -345,6 +406,8 @@ async function mobileRegression(browser) {
   assert(railRect && Math.abs(railRect.y - chartRect.y) < 450 && railRect.x >= chartRect.x + chartRect.width - 2,
     `Mobile chart and ranked coins are not side by side: ${JSON.stringify({ chartRect, railRect })}`);
   const mobileCoin = page.locator("#view-radar .coin-card").nth(1);
+  await mobileCoin.waitFor({state:'visible'});
+  await tierCapacityRegression(page);
   const mobileSymbol = await mobileCoin.getAttribute("data-symbol");
   await mobileCoin.click();
   await page.waitForFunction(symbol => document.querySelector("#ticker-pair")?.textContent.includes(symbol), mobileSymbol);

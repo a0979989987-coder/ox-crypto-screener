@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths: ['server/markets/tw/research*.js', 'server/markets/tw/pattern-snapshot.js', 'src/markets/tw/patterns/model.js', 'src/markets/crypto/patterns/matcher.js', 'scripts/collect-tw-patterns.mjs', 'scripts/collect-tw-research.mjs', 'scripts/collect-tw-radar.mjs', 'server/markets/tw/surveillance.js', 'api/v1/tw/providers/radar.js', 'tests/tw-radar-close-source.test.mjs', '.github/workflows/update-tw-research.yml']
+    paths: ['src/core/classic*.js', 'server/markets/tw/classic-provider.js', 'server/markets/tw/research*.js', 'server/markets/tw/pattern-snapshot.js', 'src/markets/tw/patterns/model.js', 'src/markets/crypto/patterns/matcher.js', 'scripts/collect-tw-patterns.mjs', 'scripts/collect-tw-research.mjs', 'scripts/collect-tw-radar.mjs', 'server/markets/tw/surveillance.js', 'api/v1/tw/providers/radar.js', 'tests/tw-radar-close-source.test.mjs', '.github/workflows/update-tw-research.yml']
   schedule:
     # UTC -> Taipei: 13:35, 14:10, 15:40, 18:35, 20:35.
     - cron: '35 5 * * 1-5'

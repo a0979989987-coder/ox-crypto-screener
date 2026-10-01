@@ -581,7 +581,7 @@
 
           <section class="media-section">
             <h2>OX 是做什麼的</h2>
-            <p>OX 是一個市場篩選與看盤工具。它先從 Bitget 全市場裡找出有流動性、有資金活動、有結構、有相對強弱與 Setup 的標的，再用 T1、T2、T3 幫我縮小觀察範圍。最後的交易決策仍然交給人。</p>
+            <p>OX 是一個市場篩選與看盤工具。加密、美股與台股共用 OX 經典判斷，先找有效水平或斜線壓力、右側方向與同向量能，再用 T1、T2、T3 幫我縮小觀察範圍。最後的交易決策仍然交給人。</p>
           </section>
 
           <section class="media-section full">
@@ -589,7 +589,7 @@
             <div class="media-function-list">
               <div class="media-function-item"><b>全市場輪巡</b><span>不是只看漲幅榜，而是持續掃描通過流動性門檻的 USDT 永續合約。</span></div>
               <div class="media-function-item"><b>資金與結構篩選</b><span>成交額、放量、相對強弱、價格結構與 Setup 一起看，而不是只靠單一指標。</span></div>
-              <div class="media-function-item"><b>T1 / T2 / T3</b><span>把「已成熟」、「接近觸發」、「早期形成」分開，讓看盤有先後順序。</span></div>
+              <div class="media-function-item"><b>T1 / T2 / T3</b><span>T1 完整條件最多 10 個且不補位；其餘合格同向候選依序列 T2 15 個、T3 15 個，階段另列。</span></div>
               <div class="media-function-item"><b>前高前低提醒</b><span>把真正重要的大級別結構位置變成可監控的提醒，而不是一直盯著螢幕。</span></div>
             </div>
           </section>
@@ -750,18 +750,19 @@
   </section>
 </div>
 
-<script src="src/core/runtime-config.js?v=20261001-tiercomb2"></script>
+<script src="src/core/runtime-config.js?v=20261001-classic2"></script>
 <script src="src/components/strength/snapshots.js?v=20261001-tiercomb2"></script>
 <script src="src/components/alerts/level-alerts.js?v=20261001-tiercomb2"></script>
 <script src="src/components/strength/market-strength.js?v=20261001-tiercomb2"></script>
 <script src="src/app/token-logos.js?v=20261001-tiercomb2"></script>
 <script src="src/app/view-home-theme.js?v=20261001-tiercomb2"></script>
-<script src="src/markets/crypto/api.js?v=20261001-tiercomb2"></script>
+<script src="src/markets/crypto/api.js?v=20261001-classic2"></script>
 <script src="src/markets/crypto/live-candles.js?v=20261001-tiercomb2"></script>
-<script src="src/markets/crypto/engine.js?v=20261001-tiercomb2"></script>
-<script src="src/markets/crypto/scanner.js?v=20261001-tiercomb2"></script>
-<script src="src/components/chart/workspace.js?v=20261001-tiercomb2"></script>
-<script src="src/markets/crypto/presentation.js?v=20261001-tiercomb2"></script>
+<script src="src/core/classic-engine.js?v=20261001-classic2"></script>
+<script src="src/markets/crypto/engine.js?v=20261001-classic2"></script>
+<script src="src/markets/crypto/scanner.js?v=20261001-classic2"></script>
+<script src="src/components/chart/workspace.js?v=20261001-classic2"></script>
+<script src="src/markets/crypto/presentation.js?v=20261001-classic2"></script>
 <script src="src/components/account/store.js?v=20261001-tiercomb2"></script>
 <script src="src/components/control-panel/feature-pack.js?v=20261001-tiercomb2"></script>
 <script src="src/components/navigation/runtime-actions.js?v=20261001-tiercomb2"></script>
@@ -816,9 +817,9 @@
 <!-- CSS moved: ox-v384-feature-search-provider-switch-styles -->
 
 <script src="src/components/search/provider-switch.js?v=20261001-tiercomb2"></script>
-<script src="src/app/market-boot.js?v=20261001-tiercomb2"></script>
-<script type="module" src="src/app/app.js?v=20261001-twhome1"></script>
-<script type="module" src="src/markets/crypto/analytics/entry.js?v=20261001-tiercomb2"></script>
+<script src="src/app/market-boot.js?v=20261001-classic2"></script>
+<script type="module" src="src/app/app.js?v=20261001-classic2"></script>
+<script type="module" src="src/markets/crypto/analytics/entry.js?v=20261001-classic2"></script>
 <script src="src/app/editorial-workspace.js?v=20261001-tiercomb2"></script>
 <script src="src/components/radar/controls.js?v=20261001-tiercomb2"></script>
 

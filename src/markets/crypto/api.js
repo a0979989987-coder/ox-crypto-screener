@@ -115,8 +115,8 @@ const BitgetAPI = {
         high: num(rawHigh),
         low: num(rawLow),
         close: num(rawClose),
-        volume: num(rawVol),
-        quoteVolume: num(rawQuoteVol)
+        volume: rawVol == null || rawVol === '' ? null : Number(rawVol),
+        quoteVolume: rawQuoteVol == null || rawQuoteVol === '' ? null : Number(rawQuoteVol)
       };
     }).filter(c => Number.isFinite(c.open) && Number.isFinite(c.close) && c.open > 0 && c.close > 0)
       .sort((a, b) => a.time - b.time);

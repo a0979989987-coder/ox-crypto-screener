@@ -1,3 +1,4 @@
+import { evaluateClassic, compareClassic, compactClassic, rankClassicTiers } from '../../../core/classic.js?v=20261001-classic2';
 import { PATTERNS, patternById } from './catalog.js?v=patterns5d-20260929';
 const clamp = (x, a=0, b=1) => Math.max(a, Math.min(b, x));
 const mean = a => a.reduce((s,x)=>s+x,0)/a.length;
@@ -99,44 +100,22 @@ export function structureValid(p,pattern) {
   }
 }
 function atr(c) {return mean(c.slice(1).map((v,i)=>Math.max(v.high-v.low,Math.abs(v.high-c[i].close),Math.abs(v.low-c[i].close))));}
-// These are observed setup phases, never a breakout prediction or the Radar's T1/T2/T3 score.
-function setupPhase(context,pattern,pivots,score,shape,visual,end){
-  const {candles,volatility:a}=context,last=candles.at(-1).close,age=candles.length-1-end,r=pattern?.rule;
-  if(!pattern||!pivots)return {tier:score>=90&&age<=2?2:3,stage:'相似路徑'};
-  const bullish=['w','ihs','triple-bottom'].includes(r),bearish=['m','hs','triple-top'].includes(r);
-  if(bullish||bearish){
-    const dir=bullish?1:-1,trough=pivots.at(-2).y,neck=pivots.length===5?pivots[2].y:(pivots[2].y+pivots[4].y)/2;
-    const height=Math.max(Math.abs(neck-trough),a),progress=(last-neck)*dir;
-    // A failed right shoulder or second bottom is not an actionable reversal.
-    if((last-trough)*dir<-.35*a)return null;
-    const symmetry=pivots.length===5?Math.abs(pivots[1].y-pivots[3].y)/height:Math.abs(pivots[1].y-pivots[5].y)/height;
-    const right=pivots.at(-2).x,after=candles.slice(right+1);
-    const excursion=Math.max(0,...after.map(c=>((bullish?c.high:c.low)-neck)*dir));
-    const quality=symmetry<=.34&&shape>=78&&visual>=58&&score>=74&&age<=5;
-    // Loosen the pre-breakout zone, not the post-breakout rule. A run-and-return
-    // cannot regain T1 just because the latest close is back near its neckline.
-    if(quality&&progress>=-.6*height&&progress<=.12*height&&excursion<=Math.max(.65*a,.18*height))return {tier:1,stage:bullish?'未噴發':'未破位'};
-    if(progress>=-.35*height&&progress<=.55*height&&excursion<=.7*height&&score>=74&&age<=7)return {tier:2,stage:progress>0?'初步越過頸線':'接近頸線'};
-    return {tier:3,stage:progress>Math.min(1.7*a,height*.38)?'已走離頸線':'尚未到觸發區'};
-  }
-  if(['triangle','ascending','descending'].includes(r)){
-    const highs=pivots.filter(p=>p.type===1),lows=pivots.filter(p=>p.type===-1);
-    if(highs.length<2||lows.length<2)return {tier:3,stage:'結構待確認'};
-    const upper=regression(highs),lower=regression(lows),x=candles.length-1;
-    const top=upper.m*x+upper.b,bottom=lower.m*x+lower.b;
-    const widthAtStart=(upper.m-lower.m)*pivots[0].x+upper.b-lower.b;
-    const width=(top-bottom),contract=widthAtStart>0?width/widthAtStart:1;
-    const up=(last-top)/a,down=(bottom-last)/a,opposite=r==='ascending'?down:r==='descending'?up:Math.max(0,Math.min(up,down));
-    if(opposite>.45)return null;
-    if(up>.35||down>.35){const move=Math.max(up,down);return move<=1.5&&score>=77?{tier:2,stage:'初步突破邊界'}:{tier:3,stage:'已走離收斂區'};}
-    const late=pivots.at(-2).x,hadBreak=candles.slice(late+1).some((c,i)=>c.close>upper.m*(late+1+i)+upper.b+.65*a||c.close<lower.m*(late+1+i)+lower.b-.65*a);
-    if(!hadBreak&&score>=78&&shape>=80&&visual>=58&&contract<=.76&&age<=5&&width>0)return {tier:1,stage:'未噴發 · 收斂'};
-    return {tier:3,stage:'收斂中'};
-  }
-  // Other catalog shapes have no verified trigger rule yet; keep them out of T1.
-  if(score>=88&&shape>=88&&age<=2)return {tier:2,stage:'形態候選 · 位置待確認'};
-  if(score>=78&&age<=5)return {tier:2,stage:'形態形成中'};
-  return {tier:3,stage:'相似形態 · 較早期'};
+const LONG_PATTERNS=new Set(['w','ascending','ihs','triple-bottom','falling-wedge','channel-up','flag-up','pennant-up','v-bottom','round-bottom','cup','retest-up','stairs-up']);
+const SHORT_PATTERNS=new Set(['m','descending','hs','triple-top','rising-wedge','channel-down','flag-down','pennant-down','v-top','round-top','cup-down','retest-down','stairs-down']);
+function patternSignal(context,pattern,query={}) {
+ const id=pattern?.id||query.id;
+ let side=LONG_PATTERNS.has(id)||id?.endsWith('-bull')?'long':SHORT_PATTERNS.has(id)||id?.endsWith('-bear')?'short':null;
+ if(!side&&query.points?.length&&Math.abs(query.points.at(-1).y-query.points[0].y)>.12)side=query.points.at(-1).y>query.points[0].y?'long':'short';
+ const signals=side?[context.classic[side]]:Object.values(context.classic);
+ return signals.filter(s=>s.eligible).sort(compareClassic)[0]||null;
+}
+function setupPhase(context,pattern,pivots,score,shape,visual,end,query) {
+ const signal=patternSignal(context,pattern,query);if(!signal)return null;
+ if(pattern&&['w','m','ihs','hs','triple-bottom','triple-top'].includes(pattern.rule)&&pivots){
+  const dir=signal.side==='LONG'?1:-1,trough=pivots.at(-2).y;
+  if((context.candles.at(-1).close-trough)*dir<-.35*context.volatility)return null;
+ }
+ return {tier:Number(signal.tier.slice(1)),stage:signal.stage,side:signal.side,classicSignal:signal};
 }
 // Build reusable features once per symbol/timeframe, independent of the selected drawing.
 export function prepareCandles(candles) {
@@ -152,62 +131,37 @@ export function prepareCandles(candles) {
     if(Math.max(...slice.map(c=>c.high))-Math.min(...slice.map(c=>c.low))<volatility*2)continue;
     windows.push({start,end,samples:resample(points)});
   }
-  return {candles,volatility,swings,windows,visuals:new Map()};
+  return {candles,volatility,swings,windows,visuals:new Map(),classic:{long:compactClassic(evaluateClassic(candles)),short:compactClassic(evaluateClassic(candles,{side:'short'}))}};
 }
 const targets=new Map(PATTERNS.map(p=>[p.id,resample(p.points)]));
 function levelMatch(context,pattern) {
-  const {candles:c,volatility:a,swings}=context,n=c.length,last=c.at(-1).close;
-  if(!a)return null;
-  const support=pattern.rule.endsWith('support'),trend=pattern.rule.startsWith('trend'),type=support?-1:1;
-  const pivots=swings[1].filter(p=>p.type===type&&p.x>=n-150);let best=null;
-  const consider=(candidate,line)=>{
-    const start=candidate[0].x,end=n-1,span=end-start;
-    if(span<15||candidate.length<3||end-candidate.at(-1).x>24)return;
-    const touches=candidate.filter(p=>Math.abs(p.y-(line.m*p.x+line.b))<=a*.42);
-    if(touches.length<3||touches.at(-1).x-touches[0].x<12)return;
-    const atEnd=line.m*end+line.b,distance=(last-atEnd)*(support?1:-1);
-    if(distance<-.42*a||distance>3*a)return;
-    // A support must remain below the candles, a resistance above them.
-    // Check the complete drawn segment, including every candle after the last touch.
-    // One shallow wick rejection is acceptable; a body or a full swing through
-    // the line makes it a different setup, even if price later returns.
-    let shallowWicks=0;
-    for(let i=start;i<=end;i++){
-      const bar=c[i],at=line.m*i+line.b;
-      const closeSide=(bar.close-at)*(support?1:-1);
-      const wickSide=((support?bar.low:bar.high)-at)*(support?1:-1);
-      if(closeSide<-.2*a||wickSide<-.42*a)return;
-      if(wickSide<-.2*a&&++shallowWicks>Math.max(1,Math.floor(span*.025)))return;
-    }
-    const error=mean(touches.map(p=>Math.abs(p.y-(line.m*p.x+line.b))))/a;
-    const latestTouch=touches.at(-1).x,recency=end-latestTouch;
-    const moveSinceTouch=Math.max(0,...c.slice(latestTouch+1).map((bar,j)=>((support?bar.high:bar.low)-(line.m*(latestTouch+1+j)+line.b))*(support?1:-1)));
-    const score=clamp(.73+Math.min(touches.length,5)*.035-error*.12-Math.abs(distance)/a*.025)*100;
-    const nearRetest=c.slice(-2).some((bar,j)=>Math.abs((support?bar.low:bar.high)-(line.m*(end-1+j)+line.b))<=.42*a);
-    const actionable=(recency<=8||nearRetest)&&distance>=-.12*a&&distance<=.85*a&&moveSinceTouch<=Math.max(3.5*a,last*.02)&&error<=.42&&score>=78;
-    const tier=actionable?1:recency<=12&&distance<=1.7*a&&score>=76?2:3;
-    const stage=tier===1?(support?'支撐未啟動':'阻力未突破'):tier===2?'等待重新靠近':'已離開觸發區';
-    if(best&&(tier>best.tier||tier===best.tier&&score<=best.similarity))return;
-    best={start,end,similarity:Math.round(score*10)/10,points:[{x:start,y:line.m*start+line.b},{x:end,y:atEnd}],label:pattern.name,lastTime:c[end].time,touches:touches.length,tier,stage,kind:'level'};
-  };
-  if(!trend){
-    for(const pivot of pivots){
-      const near=pivots.filter(p=>Math.abs(p.y-pivot.y)<=a*.42),touches=[];
-      for(const p of near)if(!touches.length||p.x-touches.at(-1).x>=4)touches.push(p);
-      if(touches.length>=3)consider(touches,{m:0,b:mean(touches.map(p=>p.y))});
-    }
-  }else for(let i=0;i<pivots.length-2;i++)for(let j=i+2;j<pivots.length;j++){
-    const first=pivots[i],last=pivots[j];if(last.x-first.x<12)continue;
-    const m=(last.y-first.y)/(last.x-first.x),line={m,b:first.y-m*first.x};
-    if(m*(support?1:-1)<a*.025)continue;
-    const touches=pivots.slice(i).filter(p=>Math.abs(p.y-(line.m*p.x+line.b))<=a*.42);
-    if(touches.length>=3)consider(touches,line);
-  }
-  return best;
+ const c=context.candles,trend=pattern.rule.startsWith('trend');
+ const sides=trend?['long','short']:pattern.rule.endsWith('support')?['short']:['long'];
+ const signal=sides.map(side=>context.classic[side]).filter(s=>s.eligible&&s.pressure&&s.pressure.kind===(trend?'diagonal':'horizontal')&&
+  (!trend||Math.sign(s.pressure.slope)===(pattern.id==='trend-up'?1:-1))).sort(compareClassic)[0];
+ if(!signal)return null;
+ const points=signal.pressure.points.map(p=>({x:c.findIndex(b=>b.time===p.time),y:p.price}));
+ return {start:points[0].x,end:points.at(-1).x,points,label:pattern.name,lastTime:c.at(-1).time,
+  touches:signal.pressure.touches,tier:Number(signal.tier.slice(1)),stage:signal.stage,side:signal.side,
+  kind:'level',similarity:signal.qualityScore,classicSignal:signal};
+}
+// Version-5 snapshots contain real OHLCV and useful geometry, but their grades
+// are obsolete. Requalify every result against the current shared engine.
+export function qualifyPatternMatches(context,matches) {
+ const result={};
+ for(const [id,match]of Object.entries(matches||{})){
+  const pattern=patternById(id);if(!pattern)continue;
+  if(pattern.rule.startsWith('level')||pattern.rule.startsWith('trend')){const m=levelMatch(context,pattern);if(m)result[id]=m;continue;}
+  const phase=setupPhase(context,pattern,match.points,match.similarity,match.similarity,match.similarity,match.end,{});
+  if(phase)result[id]={...match,...phase};
+ }
+ // A newly valid pressure must be discoverable even when absent in old geometry.
+ for(const p of PATTERNS.filter(p=>p.rule.startsWith('level')||p.rule.startsWith('trend'))){const m=levelMatch(context,p);if(m)result[p.id]=m;}
+ return result;
 }
 export function matchPrepared(context,query) {
   const {candles,n= context.candles.length}=context;
-  if(candles.length<24)return null;
+  if(candles.length<35||!Object.values(context.classic).some(s=>s.eligible))return null;
   const sketch=query.mode==='sketch',pattern=sketch?null:patternById(query.id);
   if(pattern?.rule.startsWith('level')||pattern?.rule.startsWith('trend'))return levelMatch(context,pattern);
   const target=sketch?resample(query.points||[]):targets.get(pattern?.id)||resample(query.points||[]);
@@ -223,7 +177,7 @@ export function matchPrepared(context,query) {
     const reversal=pattern&&['w','m'].includes(pattern.rule);
     const minimum=sketch?70:pattern?.rule==='harmonic'?72:reversal?71:77;
     if(score<minimum)return;
-    const phase=setupPhase(context,pattern,pivots,score,shape,visual,end);if(!phase)return;
+    const phase=setupPhase(context,pattern,pivots,score,shape,visual,end,query);if(!phase)return;
     if(best&&(phase.tier>best.tier||phase.tier===best.tier&&score<=best.similarity))return;
     best={start,end,similarity:Math.round(score*10)/10,points:pivots||candles.slice(start,end+1).map((c,i)=>({x:i+start,y:c.close})),ratios,label:sketch?'相似路徑':pattern?.name||'自繪路徑',...phase,kind:sketch?'sketch':'pattern',lastTime:candles[end].time};
   };
@@ -246,13 +200,13 @@ export function matchPrepared(context,query) {
     const structural=matchPrepared(context,{id:query.id});
     if(structural&&Math.abs(structural.end-best.end)<=8&&Math.abs(structural.start-best.start)<=25){
       best.tier=structural.tier;best.stage=structural.stage;
-    }else{best.tier=3;best.stage='路徑相似 · 結構未確認';}
+    }else{return null;}
   }
   return best;
 }
 export function matchCandles(candles,query){return matchPrepared(prepareCandles(candles),query);}
 export function classifyPrepared(context){
-  const matches={};for(const p of PATTERNS){const match=matchPrepared(context,{id:p.id});if(match)matches[p.id]=match;}return matches;
+  const matches={};if(!Object.values(context.classic).some(s=>s.eligible))return matches;for(const p of PATTERNS){const match=matchPrepared(context,{id:p.id});if(match)matches[p.id]=match;}return matches;
 }
 export function patternCounts(entries,frames){
   const sets=new Map(PATTERNS.map(p=>[p.id,new Set()]));
@@ -309,3 +263,10 @@ export function queryFromStrokes(strokes) {
   return best.s>=78?{id:best.t.id,points:p,mode:'sketch'}:{points:p,mode:'sketch'};
 }
 export function sortMatches(rows){return [...rows].sort((a,b)=>(a.displayTier??a.match?.tier??3)-(b.displayTier??b.match?.tier??3)||(b.rankPriority??-1)-(a.rankPriority??-1)||b.similarity-a.similarity||(b.oxScore??-1)-(a.oxScore??-1)||(b.turnover??0)-(a.turnover??0)||String(a.symbol??a.match?.label??'').localeCompare(String(b.symbol??b.match?.label??'')));}
+export function rankPatternMatches(matches){
+ const candidates=matches.map(value=>({...value,symbol:value.entry.data.symbol,
+  classicSignal:value.match.classicSignal,similarity:value.match.similarity}));
+ return rankClassicTiers(candidates,{compare:(a,b)=>compareClassic(a,b)||b.similarity-a.similarity})
+  .map(value=>{const tier=Number(value.tier.slice(1));return {...value,match:{...value.match,tier,
+   qualityTier:value.qualityTier,...(value.match.radar?{radarTier:tier}:{})}};});
+}

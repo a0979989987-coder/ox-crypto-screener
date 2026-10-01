@@ -6,18 +6,6 @@ const CONFIG = {
   
   liquidity: {
     minUsdtVolume24h: 3000000,
-    t1MinUsdtVolume: 12000000,
-    topPercentileCutoff: 0.65,
-    lowLiqPenaltyRatio: 0.35,
-  },
-
-  weights: {
-    liquidity: 0.25,
-    moneyFlow: 0.25,
-    structure: 0.20,
-    setupMatch: 0.15,
-    relativeStrength: 0.10,
-    momentum: 0.05
   },
 
   queueBatchSize: 10,

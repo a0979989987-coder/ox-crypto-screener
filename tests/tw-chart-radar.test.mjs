@@ -1,11 +1,12 @@
+import { rankingSignal } from './classic-fixtures.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { rankChartRows } from '../src/markets/tw/chart-radar-model.js';
 import { aggregateCandles, dailyCandles, selectUniverse } from '../src/markets/tw/patterns/model.js';
 import { parseMarketDay, buildPatternEntry } from '../server/markets/tw/pattern-snapshot.js';
 import { prepareCandles, classifyPrepared } from '../src/markets/crypto/patterns/matcher.js';
-const stock=(symbol,tier,changePct=1)=>({symbol,name:'公司'+symbol,tier,changePct,price:100,market:'TWSE',turnoverTwd:1e8,oxScore:80});
-test('TW chart radar maintains real tier membership and limits without duplicates or invented promotion',()=>{
+const stock=(symbol,tier,changePct=1)=>({symbol,name:'公司'+symbol,tier,changePct,price:100,market:'TWSE',turnoverTwd:1e8,oxScore:80,classic:tier?{[changePct<0?'short':'long']:rankingSignal(tier,changePct<0?'short':'long')}:null});
+test('TW chart radar uses strict T1 plus the next two ranked groups of 15 without duplicates',()=>{
  const rows=[...Array.from({length:16},(_,i)=>stock(String(1000+i),'T1')),...Array.from({length:20},(_,i)=>stock(String(2000+i),'T2')),...Array.from({length:20},(_,i)=>stock(String(3000+i),'T3')),stock('2330',null),stock('030001','T1')];rows.push(rows[0]);
  const out=rankChartRows(rows);assert.equal(out.length,40);assert.deepEqual(['T1','T2','T3'].map(t=>out.filter(r=>r.displayTier===t).length),[10,15,15]);assert.equal(new Set(out.map(r=>r.symbol)).size,40);assert.ok(out.every(r=>r.displayTier===r.tier));assert.equal(rankChartRows(rows,{tier:'T1'}).length,10);assert.equal(rankChartRows([stock('1234','T3')],{tier:'T1'}).length,0);
 });
@@ -28,6 +29,8 @@ test('published all-stock index accounts for every eligible symbol, and every cl
  for(const chunk of manifest.chunks){const payload=JSON.parse(gunzipSync(await readFile(new URL(chunk.file,dir))).toString());assert.equal(payload.date,manifest.date);assert.equal(payload.entries.length,chunk.count);for(const e of payload.entries){assert.ok(!symbols.has(e.data.symbol));symbols.add(e.data.symbol);assert.equal(e.data.dataDate,manifest.date);assert.equal(e.data.candles.at(-1).date,manifest.date);assert.ok(e.data.candles.length>=35);assert.ok(e.data.candles.every(c=>dates.has(c.date)&&c.high>=Math.max(c.open,c.close)&&c.low<=Math.min(c.open,c.close)&&c.volume>=0));for(const frame of Object.keys(e.frames))assert.ok(aggregateCandles(e.data.candles,frame,manifest.date).length>=35);count++;}}
  assert.equal(count,manifest.classified);assert.equal(count+manifest.unavailable.length,manifest.total);assert.equal(manifest.stocks.length,manifest.total);assert.equal(new Set([...symbols,...manifest.unavailable.map(r=>r.symbol)]).size,manifest.total);
 });
-test('TW follows Crypto WATCH fallback for T2/T3 while preserving provider facts and refusing to fill T1',()=>{
- const rows=Array.from({length:35},(_,i)=>stock(String(1000+i),null));const out=rankChartRows(rows);assert.equal(out.length,30);assert.ok(out.every(r=>r.rankStatus==='WATCH'&&r.tier===null&&r.displayTier!=='T1'));assert.equal(new Set(out.map(r=>r.symbol)).size,30);assert.equal(rankChartRows(rows,{tier:'T1'}).length,0);
+test('TW never fills any tier with legacy grades or unqualified WATCH rows',()=>{
+ const rows=Array.from({length:35},(_,i)=>stock(String(1000+i),null));
+ assert.equal(rankChartRows(rows).length,0);assert.equal(rankChartRows(rows,{tier:'T1'}).length,0);
+ assert.equal(rankChartRows(rows.map(r=>({...r,tier:'T1',oxScore:100}))).length,0);
 });

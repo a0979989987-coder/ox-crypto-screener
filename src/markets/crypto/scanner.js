@@ -1,6 +1,6 @@
 const WATCH_STAR_SVG = '<svg class="watch-star-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 2.78 5.63L21 9.54l-4.5 4.39 1.06 6.2L12 17.2l-5.56 2.93 1.06-6.2L3 9.54l6.22-.91Z"/></svg>';
 
-const RADAR_SNAPSHOT_KEY = 'ox-radar-snapshot-v2';
+const RADAR_SNAPSHOT_KEY = 'ox-radar-snapshot-v3-classic1';
 function restoreRadarSnapshot() {
   if (state.radarSnapshotChecked) return;
   state.radarSnapshotChecked = true;
@@ -10,7 +10,7 @@ function restoreRadarSnapshot() {
     const tickers = new Map(state.tickers.map(t=>[t.symbol,t]));
     for (const row of snapshot.rows) {
       const ticker=tickers.get(row.symbol);
-      if (!ticker || !isCryptoSymbolAllowed(row.symbol)) continue;
+      if (!ticker || !isCryptoSymbolAllowed(row.symbol) || !OXClassic.qualifyClassicRow(row, row.side)) continue;
       state.analyzedCache.set(row.symbol,{...row,ticker,change24h:num(ticker.change24h)});
     }
     state.radarSnapshotReady = state.analyzedCache.size > 0;
@@ -28,14 +28,24 @@ function closedTierCandles(candles,frame,now=Date.now()) {
   return Number.isFinite(end)&&end<=now/1000;
  });
 }
-function classifyTierFrame(candles,frame,liq,rs) {
- const closed=closedTierCandles(candles,frame);if(closed.length<25)return null;
- const flow=OXEngine.computeMoneyFlow(closed),structure=OXEngine.computeStructure(closed),setup=OXEngine.evaluateSetupMatch(closed,structure,flow),trigger=OXEngine.detectTrigger(closed,structure,flow),lifecycle=OXEngine.classifyLifecycle(liq,flow,structure,setup,trigger);
- return {tier:lifecycle.tier,side:setup.side,...OXEngine.computeTierFits(liq,flow,structure,setup,trigger,rs),setupName:setup.setupName,statusText:lifecycle.statusText,reasons:setup.reasons,at:Date.now(),closedAt:closed.at(-1).time};
+function cryptoClassicBars(candles,frame,now=Date.now()) {
+ const sorted=[...new Map(candles.filter(c=>[c.time,c.open,c.high,c.low,c.close].every(Number.isFinite)&&c.time<=now/1000&&
+   Math.min(c.open,c.low,c.close)>0&&c.high>=Math.max(c.open,c.close)&&c.low<=Math.min(c.open,c.close)).map(c=>[c.time,c])).values()].sort((a,b)=>a.time-b.time);
+ const duration=({m:60,H:3600,D:86400,W:604800})[frame.slice(-1)]*Number(frame.slice(0,-1));
+ let start=0;
+ for(let i=1;i<sorted.length;i++)if(Number.isFinite(duration)&&sorted[i].time-sorted[i-1].time!==duration)start=i;
+ const tail=sorted.slice(start);
+ if(Number.isFinite(duration)&&(!tail.length||now/1000-tail.at(-1).time>duration*2))return [];
+ const closed=new Set(closedTierCandles(tail,frame,now).map(c=>c.time));
+ return tail.map(c=>({...c,...(!closed.has(c.time)?{provisional:true}:{})}));
+}
+function classifyTierFrame(candles,frame) {
+ const row=OXEngine.analyzeCandles(cryptoClassicBars(candles,frame),{frame});
+ return {...row,at:Date.now(),closedAt:row.classicSignal.closedAt};
 }
 function cryptoFrameTier(row,frame,side) {
  const data=row.timeframeTiers?.[frame];
- return data&&Date.now()-data.at<=300000&&(!side||data.side?.toLowerCase()===side.toLowerCase())?data:null;
+ return data&&data.eligible&&Date.now()-data.at<=300000&&(!side||data.side?.toLowerCase()===side.toLowerCase())?data:null;
 }
 async function refreshMarketTickers() {
   if (state.activeMarket && state.activeMarket !== "crypto") return;
@@ -142,77 +152,27 @@ async function runScanQueueLoop() {
       if (!ticker) return;
 
       try {
-        const candles = await BitgetAPI.fetchCandles(symbol, "1H", 35);
-        if (!candles.length) return;
-
-        const liq = OXEngine.computeLiquidity(ticker, state.tickers);
-        const rs = OXEngine.computeRelativeStrength(ticker, state.btcTicker);
-        const moneyFlow = OXEngine.computeMoneyFlow(candles);
-        const structure = OXEngine.computeStructure(candles);
-        const setup = OXEngine.evaluateSetupMatch(candles, structure, moneyFlow);
-        const trigger = OXEngine.detectTrigger(candles, structure, moneyFlow);
-        const lifecycle = OXEngine.classifyLifecycle(liq, moneyFlow, structure, setup, trigger);
-        const fits = OXEngine.computeTierFits(liq, moneyFlow, structure, setup, trigger, rs);
-
-        const oxScore = Math.round(
-          liq.score * CONFIG.weights.liquidity +
-          moneyFlow.score * CONFIG.weights.moneyFlow +
-          structure.score * CONFIG.weights.structure +
-          setup.setupScore * CONFIG.weights.setupMatch +
-          rs.score * CONFIG.weights.relativeStrength +
-          (trigger.active ? 5 : 0)
-        );
-
-        const reasons = [
-          `24H 成交額市場前 ${liq.percentileStr}% (${fmtCryptoVolume(liq.quoteVol)} USDT)`,
-          `1H 放量比率: ${moneyFlow.volRatio1h}x`,
-          ...setup.reasons
-        ];
-        if (rs.isOutperforming) reasons.push(`強於 BTC +${rs.diffBtcPct}%`);
-        if (rs.isUnderperforming) reasons.push(`弱於 BTC ${rs.diffBtcPct}%`);
-
+        const [candles,contextBars] = await Promise.all([
+          BitgetAPI.fetchCandles(symbol, '1H', 180), BitgetAPI.fetchCandles(symbol, '4H', 180)
+        ]);
+        const frames={'1H':cryptoClassicBars(candles,'1H'),'4H':cryptoClassicBars(contextBars,'4H')};
+        const classic=Object.fromEntries(['long','short'].map(side=>[side,OXClassic.evaluateFrames(frames,{side,setupFrame:'4H',triggerFrame:'1H'})]));
+        const candidates=Object.values(classic).filter(s=>s.eligible).sort(OXClassic.compareClassic);
+        const signal=candidates[0]||classic.long;
+        const row=OXEngine.describe(signal,classic),liq=OXEngine.computeLiquidity(ticker,state.tickers),rs=OXEngine.computeRelativeStrength(ticker,state.btcTicker);
+        const timeframeTiers=Object.fromEntries(Object.entries(frames).map(([frame,bars])=>[frame,classifyTierFrame(bars,frame)]));
         const tierConfig=globalThis.OXTierFilters?.get('crypto');
-        const timeframeTiers={...state.analyzedCache.get(symbol)?.timeframeTiers};
-        if(tierConfig?.enabled){
-          await Promise.all(tierConfig.rules.map(async rule=>{
-            try {const bars=rule.frame==='1H'?candles:await BitgetAPI.fetchCandles(symbol,rule.frame,36);timeframeTiers[rule.frame]=classifyTierFrame(bars,rule.frame,liq,rs);}catch {timeframeTiers[rule.frame]=null;}
-          }));
-        }
+        if(tierConfig?.enabled)await Promise.all(tierConfig.rules.filter(r=>!frames[r.frame]).map(async rule=>{
+          try {timeframeTiers[rule.frame]=classifyTierFrame(await BitgetAPI.fetchCandles(symbol,rule.frame,180),rule.frame);}
+          catch {timeframeTiers[rule.frame]=null;}
+        }));
         state.analyzedCache.set(symbol, {
-          timeframeTiers,
-          symbol,
-          sparkline: candles.slice(-24).map(candle => candle.close),
-          ticker,
-          oxScore,
-          liqScore: liq.score,
-          flowScore: moneyFlow.score,
-          structScore: structure.score,
-          setupScore: setup.setupScore,
-          rsScore: rs.score,
-          side: setup.side,
-          setupName: setup.setupName,
-          tier: lifecycle.tier,
-          statusText: lifecycle.statusText,
-          isSurge: moneyFlow.isSurge,
-          triggerActive: trigger.active,
-          triggerType: trigger.type,
-          reasons,
-          change24h: num(ticker.change24h),
-          ret1h: candleReturn(candles, 1),
-          ret4h: candleReturn(candles, 4),
-          ret24h: candleReturn(candles, 24) || num(ticker.change24h),
-          quoteVol: liq.quoteVol,
-          liqPercentile: liq.percentileStr,
-          volRatio1h: moneyFlow.volRatio1h,
-          volRatio4h: moneyFlow.volRatio4h,
-          swingHigh: structure.swingHigh,
-          swingLow: structure.swingLow,
-          structureLabel: structure.isHHHL ? "HH / HL" : structure.isLHLL ? "LH / LL" : structure.side,
-          t1Fit: fits.t1Fit,
-          t2Fit: fits.t2Fit,
-          t3Fit: fits.t3Fit,
-          setupProgress: fits.setupProgress,
-          signalConfidence: fits.signalConfidence
+          ...row,timeframeTiers,symbol,ticker,at:Date.now(),lastPrice:candles.at(-1)?.close,
+          signalFrame:'4H',triggerFrame:'1H',sparkline:candles.slice(-24).map(c=>c.close),
+          liqScore:liq.score,rsScore:rs.score,quoteVol:liq.quoteVol,liqPercentile:liq.percentileStr,
+          reasons:['4H 結構＋1H 上攻確認',...row.reasons],
+          change24h:num(ticker.change24h),ret1h:candleReturn(candles,1),ret4h:candleReturn(candles,4),
+          ret24h:candleReturn(candles,24),
         });
       } catch (e) {} finally { const n=(initialScanLoading?.done||0)+1;if(initialScanLoading){initialScanLoading.done=n;initialScanLoading.update(n,state.scanQueue.length);} }
     }));
@@ -235,56 +195,40 @@ async function runScanQueueLoop() {
       }
     } else if (state.activeView === 'radar') renderCurrentTab();
     // Warm-up is rate-limited to at most 20 candle requests per second.
-    await new Promise(r=>setTimeout(r,state.radarSnapshotReady?Math.max(CONFIG.batchIntervalMs,500*(1+(globalThis.OXTierFilters?.get('crypto').enabled?globalThis.OXTierFilters.get('crypto').rules.filter(r=>r.frame!=='1H').length:0))):Math.max(0,500*Math.max(1,1+(globalThis.OXTierFilters?.get('crypto').enabled?globalThis.OXTierFilters.get('crypto').rules.filter(r=>r.frame!=='1H').length:0))-(performance.now()-batchStarted))));
+    await new Promise(r=>setTimeout(r,state.radarSnapshotReady?Math.max(CONFIG.batchIntervalMs,500*(2+(globalThis.OXTierFilters?.get('crypto').enabled?globalThis.OXTierFilters.get('crypto').rules.filter(r=>r.frame!=='1H').length:0))):Math.max(0,500*Math.max(2,2+(globalThis.OXTierFilters?.get('crypto').enabled?globalThis.OXTierFilters.get('crypto').rules.filter(r=>r.frame!=='1H').length:0))-(performance.now()-batchStarted))));
   }
 }
 
 function rebuildTierLists() {
   if (state.isQueueRunning && !state.radarSnapshotReady && !globalThis.OXTierFilters?.get('crypto').enabled) return;
-  const tierLimits = { t1: 10, t2: 15, t3: 15 };
   const tierConfig=globalThis.OXTierFilters?.get('crypto');
-  const rankedPool=Array.from(state.analyzedCache.values()).filter(c=>!benchmarkSymbols.has(c.symbol));
+  const rankedPool=Array.from(state.analyzedCache.values()).filter(c=>{
+    if(benchmarkSymbols.has(c.symbol)||(!tierConfig?.enabled&&!OXClassic.qualifyClassicRow(c,c.side)))return false;
+    const signal=c.classicSignal,price=num(state.tickers.find(t=>t.symbol===c.symbol)?.lastPr)||c.lastPrice;
+    if(!tierConfig?.enabled&&price&&signal?.invalidation?.level){const dir=c.side==='SHORT'?-1:1;
+      if(dir*(price-signal.invalidation.level)<-.2*signal.atr||c.lastPrice&&dir*(price-c.lastPrice)<-.9*signal.atr)return false;}
+    return !c.at||Date.now()-c.at<=300000;
+  });
   const allAnalyzed=tierConfig?.enabled?rankedPool.flatMap(c=>{
     const match=globalThis.OXTierFilters.resolve(c,tierConfig,cryptoFrameTier);
     if(!match)return [];
     // All requested frames must agree with the selected setup's direction.
     const directional=globalThis.OXTierFilters.resolve(c,tierConfig,cryptoFrameTier,match.value.side);
-    return directional?[{...c,...directional.value,reasons:[`${directional.frame} 時間組合`,...(directional.value.reasons||[])]}]:[];
+    if(!directional)return [];
+    const selected={...c,...directional.value,reasons:[`${directional.frame} 時間組合`,...(directional.value.reasons||[])]};
+    const price=num(state.tickers.find(t=>t.symbol===c.symbol)?.lastPr)||c.lastPrice,signal=selected.classicSignal,dir=selected.side==='SHORT'?-1:1;
+    if(price&&signal?.invalidation?.level&&dir*(price-signal.invalidation.level)<-.2*signal.atr)return [];
+    return [selected];
   }):rankedPool;
-  const pickRanked = (pool, fitKey, formalTier, taken = new Set()) => {
-    const tierLimit = tierLimits[formalTier];
-    const formal = pool
-      .filter(c => c.tier === formalTier && !taken.has(c.symbol))
-      .sort((a, b) => ((b[fitKey] || 0) - (a[fitKey] || 0)) || (num(b.oxScore) - num(a.oxScore)));
-    const result = [];
-    for (const c of formal) {
-      if (result.length >= tierLimit) break;
-      result.push({ ...c, displayTier: formalTier, rankStatus: formalTier === "t1" ? "CONFIRMED" : formalTier === "t2" ? "READY" : "EARLY" });
-    }
-    if (formalTier === "t1" || tierConfig?.enabled) return result; // Never promote non-T1 candidates to fill slots.
-    const used = new Set(result.map(x => x.symbol));
-    const fallback = pool
-      .filter(c => !used.has(c.symbol) && !taken.has(c.symbol))
-      .map(c => ({ c, adjusted: c[fitKey] || 0 }))
-      .sort((a, b) => (b.adjusted - a.adjusted) || (num(b.c.oxScore) - num(a.c.oxScore)));
-    for (const row of fallback) {
-      if (result.length >= tierLimit) break;
-      result.push({ ...row.c, displayTier: formalTier, rankStatus: "WATCH" });
-    }
-    return result;
-  };
-
   const buildTierSet = pool => {
-    const t1 = pickRanked(pool, "t1Fit", "t1");
-    const t1Symbols = new Set(t1.map(c => c.symbol));
-    const t2 = pickRanked(pool, "t2Fit", "t2", t1Symbols);
-    const t12Symbols = new Set([...t1Symbols, ...t2.map(c => c.symbol)]);
-    const t3 = pickRanked(pool, "t3Fit", "t3", t12Symbols);
-    return { t1, t2, t3 };
+    const ranked = OXClassic.rankClassicTiers(pool, { compare: (a,b) =>
+      OXClassic.compareClassic(a,b) || (b.oxScore || 0) - (a.oxScore || 0) });
+    return Object.fromEntries(['t1','t2','t3'].map(tier => [tier, ranked
+      .filter(row => row.tier.toLowerCase() === tier).map(row => ({...row,tier,displayTier:tier}))]));
   };
 
   // 保留原本 combined tierMap 供首頁、OX LIVE、其他既有模組讀取。
-  const combined = buildTierSet(allAnalyzed);
+  const combined = buildTierSet(allAnalyzed.filter(c => c.side === "LONG"));
   const longPool = allAnalyzed.filter(c => String(c.side || "").toUpperCase() === "LONG");
   const shortPool = allAnalyzed.filter(c => String(c.side || "").toUpperCase() === "SHORT");
   // 雷達則使用獨立六榜：LONG T1/T2/T3 與 SHORT T1/T2/T3，各自從全市場符合方向者重新排名。
@@ -349,7 +293,8 @@ function renderCurrentTab() {
       const analyzed = state.analyzedCache.get(rec.symbol);
       const ticker = state.tickers.find(t => t.symbol === rec.symbol);
       const c = analyzed || rec;
-      const tier = String(c.displayTier || c.tier || rec.tier || "t3").toLowerCase();
+      const current=analyzed&&OXClassic.qualifyClassicRow(analyzed,analyzed.side);
+      const tier = current?.tier?.toLowerCase() || "待確認";
       const side = c.side || rec.side || "—";
       const price = ticker ? ticker.lastPr : (c.lastPr || rec.lastPr);
       const change = ticker ? ticker.change24h : (c.change24h ?? rec.change24h);
@@ -389,7 +334,7 @@ function renderCurrentTab() {
   document.getElementById("pool-count").textContent = `${list.length} 檔${directionLabel}`;
   syncWatchBadge();
   if (!list.length) {
-    container.innerHTML = `<div style="padding:30px 16px;text-align:center;color:var(--muted)"><b>目前仍在輪巡 ${directionLabel} 標的</b><p style="font-size:11px">符合條件後會依${combinedRadar ? " T1 → T2 → T3 順序" : `目前 T${isTierTab ? tab.slice(1) : ""} 排名`}顯示。</p></div>`;
+    container.innerHTML = `<div style="padding:30px 16px;text-align:center;color:var(--muted)"><b>目前沒有符合 OX 經典的${directionLabel}標的</b><p style="font-size:11px">符合條件後會依${combinedRadar ? " T1 → T2 → T3 順序" : `目前 T${isTierTab ? tab.slice(1) : ""} 排名`}顯示。</p></div>`;
     return;
   }
 

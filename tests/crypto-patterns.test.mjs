@@ -1,3 +1,5 @@
+import { evaluateClassic } from '../src/core/classic.js';
+import { preparation, shortBars, rankingSignal } from './classic-fixtures.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
@@ -14,6 +16,11 @@ function fixture(points){
   const sign=Math.sign(points.at(-2).y-points.at(-1).y);for(let i=1;i<=4;i++)values.push(points.at(-1).y+sign*.025*i);
   return values.map((v,i)=>{const close=100+v*10,open=100+(values[i-1]??v)*10;return {time:1700000000+i*3600,open,high:Math.max(open,close)+.04,low:Math.min(open,close)-.04,close,volume:100,quoteVolume:close*100};});
 }
+function geometryMatch(candles,query){
+  const context=prepareCandles(candles);
+  context.classic={long:rankingSignal(),short:rankingSignal('T1','short')};
+  return matchPrepared(context,query);
+}
 test('drawing invariants: time scale, price scale and offset; inverse W is dissimilar',()=>{
   const p=patternById('w').points;
   assert.ok(similarity(resample(p),resample(p.map(v=>({x:v.x*300+7,y:v.y*14+991}))))>99.9);
@@ -24,7 +31,7 @@ test('drawing invariants: time scale, price scale and offset; inverse W is dissi
 });
 test('W matching cannot return an M, missing second trough or an old completed W',()=>{
   const w=fixture(patternById('w').points),m=fixture(patternById('m').points);
-  assert.ok(matchCandles(w,{id:'w'}));
+  assert.ok(geometryMatch(w,{id:'w'}));assert.equal(matchCandles(w,{id:'w'}),null,'shape without upward volume is excluded');
   assert.equal(matchCandles(m,{id:'w'}),null);
   assert.equal(matchCandles(w.slice(0,25),{id:'w'}),null);
   const tail=Array.from({length:30},(_,i)=>({...w.at(-1),time:w.at(-1).time+(i+1)*3600,open:111+i,close:111+i,high:111.1+i,low:110.9+i}));
@@ -45,8 +52,8 @@ test('harmonic ratios reject visually similar geometry with wrong Fibonacci prop
   }
   assert.equal(validateHarmonic(patternById('w').points,patternById('gartley-bull')),null);
 });
-test('all named templates can match observed OHLC pivots with small nonzero wicks',()=>{
-  for(const p of PATTERNS.filter(p=>!p.rule.startsWith('level')&&!p.rule.startsWith('trend')))assert.ok(matchCandles(fixture(p.points),{id:p.id}),p.id);
+test('geometric matcher retains every named template after the common eligibility gate',()=>{
+  for(const p of PATTERNS.filter(p=>!p.rule.startsWith('level')&&!p.rule.startsWith('trend')))assert.ok(geometryMatch(fixture(p.points),{id:p.id}),p.id);
 });
 test('closed candles only: deduplicate, reject invalid OHLC and never bridge a missing interval',()=>{
   const base=1700002800000,rows=Array.from({length:8},(_,i)=>[String(base+i*3600000),'100','102','99','101','5','505']);
@@ -83,42 +90,39 @@ test('ranking prioritizes similarity, OX only breaks ties',()=>{
   assert.deepEqual(sortMatches([{symbol:'B',similarity:82,oxScore:99},{symbol:'A',similarity:95,oxScore:40},{symbol:'C',similarity:95,oxScore:85}]).map(r=>r.symbol),['C','A','B']);
   assert.doesNotThrow(()=>sortMatches([{match:{tier:1,label:'W'},similarity:85},{match:{tier:1,label:'阻力'},similarity:85}]));
 });
-test('pattern T1 is a nearby clean setup, T2 early breakout, T3 lower priority; failed reversals are excluded',()=>{
-  const w=patternById('w').points;
-  const pending=fixture(w.map((p,i)=>({...p,y:i===4?.87:p.y}))).slice(0,-2);
-  const ready=matchCandles(pending,{id:'w'});assert.equal(ready?.tier,1);
-  const extended=matchCandles(fixture(w),{id:'w'});assert.equal(extended?.tier,2);
-  const triangle=matchCandles(fixture(patternById('triangle').points).slice(0,-2),{id:'triangle'});
-  assert.equal(triangle?.tier,1);
-  const failed=[...fixture(patternById('ihs').points)];
-  const rightShoulder=failed[51].low;for(let i=0;i<3;i++){const close=rightShoulder-2-i;failed.push({...failed.at(-1),time:failed.at(-1).time+3600,open:close,close,low:close-.1,high:close+.1});}
-  assert.equal(matchCandles(failed,{id:'ihs'}),null);
+test('pattern tier and phase come from the shared eligible signal; failed reversals remain excluded',()=>{
+  const p=fixture(patternById('w').points),context=prepareCandles(p);
+  context.classic.long={...rankingSignal('T2'),phase:'breakout',stage:'已收 K 確認突破'};
+  const match=matchPrepared(context,{id:'w'});assert.equal(match.tier,2);assert.equal(match.stage,'已收 K 確認突破');
+  const failed=fixture(patternById('ihs').points),close=failed[51].low-3;
+  failed.push({...failed.at(-1),time:failed.at(-1).time+3600,open:close+1,close,low:close-.1,high:close+1.1});
+  assert.equal(geometryMatch(failed,{id:'ihs'}),null);
   assert.deepEqual(sortMatches([{symbol:'L',similarity:99,match:{tier:3}},{symbol:'H',similarity:83,match:{tier:1}},{symbol:'M',similarity:90,match:{tier:2}}]).map(r=>r.symbol),['H','M','L']);
 });
-test('horizontal resistance needs at least three separate touches',()=>{
-  const three=fixture(patternById('range').points),two=fixture([{x:0,y:1},{x:.33,y:0},{x:.66,y:.99},{x:1,y:.1}]);
-  assert.ok(matchCandles(three,{id:'horizontal-resistance'})?.touches>=3);
-  assert.equal(matchCandles(two,{id:'horizontal-resistance'}),null);
+test('horizontal pressure uses independent rejected tests and actual upward volume',()=>{
+ const bars=preparation(),signal=evaluateClassic(bars),match=matchCandles(bars,{id:'horizontal-resistance'});
+ assert.ok(match);assert.ok(match.touches>=2);assert.equal(match.tier,Number(signal.tier.slice(1)));
+ assert.equal(matchCandles(preparation({volume:false}),{id:'horizontal-resistance'}),null);
+ const single=structuredClone(bars);single[12].high=97;single[28].high=97;
+ const candidate=matchCandles(single,{id:'horizontal-resistance'});
+ assert.ok(!candidate||candidate.classicSignal.pressure.level!==100);
 });
 test('classic score unavailable without the original engine; not replaced by similarity',()=>assert.equal(classicScore({},[],[]),null));
-test('score adapter agrees with the unchanged classic formula on the same data',()=>{
-  const engine=readFileSync(new URL('../src/markets/crypto/engine.js',import.meta.url),'utf8');
-  const cfg={weights:{liquidity:.25,moneyFlow:.25,structure:.2,setupMatch:.15,relativeStrength:.1},liquidity:{t1MinUsdtVolume:12000000,minUsdtVolume24h:3000000,lowLiqPenaltyRatio:.35}};
-  const ticker={symbol:'BTCUSDT',usdtVolume:'90000000',change24h:'.025'},candles=fixture(patternById('w').points);
-  const context={CONFIG:cfg,num:Number,clamp:n=>Math.min(100,Math.max(0,n)),fmtPrice:String,ticker,candles};
-  runInNewContext(engine+'\n'+classicScore.toString()+'\nresult=classicScore(ticker,candles,[ticker]);',context);
-  assert.ok(Number.isFinite(context.result));assert.ok(context.result>=0&&context.result<=100);
+test('score adapter uses shared eligibility and cannot reward high turnover or bearish volume',()=>{
+ const ticker={usdtVolume:1e12,change24h:2},bars=preparation();
+ assert.equal(classicScore(ticker,bars,[ticker]),evaluateClassic(bars).qualityScore);
+ assert.equal(classicScore(ticker,preparation({volume:false}),[ticker]),null);
 });
 
-test('clear asymmetric W is recognized structurally; optional similar-path mode remains ungated',()=>{
+test('clear asymmetric W is recognized structurally; optional similar-path mode retains the common gate',()=>{
   const points=[1,.04,.75,0,.62].map((y,i)=>({x:[0,.18,.51,.79,1][i],y}));
   const query=queryFromStrokes([points]);assert.equal(query.mode,'pattern');assert.equal(query.id,'w');assert.ok(query.points.length);
-  const c=fixture(points);assert.ok(matchCandles(c,query));
-  const sketch={...query,mode:'sketch'},forced={...sketch,id:'m'};assert.equal(matchCandles(c,forced)?.similarity,matchCandles(c,sketch)?.similarity);
+  const c=fixture(points);assert.ok(geometryMatch(c,query));assert.equal(matchCandles(c,query),null);
+  const sketch={...query,mode:'sketch'},forced={...sketch,id:'m'};assert.equal(geometryMatch(c,forced),null);assert.ok(geometryMatch(c,sketch));
 });
 test('forming W can be found without requiring neckline completion; inverse is rejected',()=>{
   const c=fixture([1,0,.8,.10,.60].map((y,i)=>({x:i/4,y})));
-  const match=matchCandles(c,{id:'w'});assert.ok(match);assert.equal(match.stage,'未噴發');assert.equal(match.tier,1);
+  const match=geometryMatch(c,{id:'w'});assert.ok(match);assert.equal(match.stage,rankingSignal().stage);assert.equal(match.tier,1);assert.equal(matchCandles(c,{id:'w'}),null);
   assert.equal(matchCandles(c,{id:'m'}),null);
 });
 test('uneven hand-drawn W and M tolerate small tremors, but a V is not a W',()=>{
@@ -127,11 +131,11 @@ test('uneven hand-drawn W and M tolerate small tremors, but a V is not a W',()=>
   assert.equal(queryFromStrokes([drawn]).id,'w');assert.equal(queryFromStrokes([drawn.map(p=>({...p,y:1-p.y}))]).id,'m');
   assert.notEqual(queryFromStrokes([[{x:0,y:1},{x:.5,y:0},{x:1,y:1}]]).id,'w');
 });
-test('a W that already ran past the neckline cannot return to T1 on a pullback',()=>{
-  const base=fixture(patternById('w').points.map((p,i)=>({...p,y:i===4?.87:p.y}))).slice(0,-2);
-  const original=matchCandles(base,{id:'w'});assert.equal(original?.tier,1);
-  const spiked=structuredClone(base);spiked.at(-3).high+=8;
-  assert.notEqual(matchCandles(spiked,{id:'w'})?.tier,1);
+test('a consumed pressure cannot be promoted by a W drawing or similarity score',()=>{
+ const bars=preparation();for(const [i,close]of [[66,102],[67,103],[68,98]]){const open=bars[i].open;Object.assign(bars[i],{close,high:Math.max(open,close)+.2,low:Math.min(open,close)-.2});}
+ const match=matchCandles(bars,{id:'w'});
+ assert.ok(!match||match.classicSignal.pressure?.state!=='consumed');
+ assert.ok(evaluateClassic(bars).levels.some(p=>p.level===100&&p.state==='consumed'));
 });
 test('radar candidate bridge is read-only, deduplicated and Crypto-only',()=>{
   const runtime={activeMarket:'crypto',tierMap:{t1:[{symbol:'BTCUSDT'}],t2:[{symbol:'BTCUSDT'},{symbol:'ALGOUSDT'}],t3:[]}},before=JSON.stringify(runtime);
@@ -155,35 +159,24 @@ function cleanRisingSupport(){
     return {time:1700000000+i*3600,open,close,high:Math.max(open,close)+.035,low:Math.min(open,close)-.035,volume:100,quoteVolume:close*100};
   });
 }
-test('levels and trend lines overlap other patterns without becoming pattern aliases',()=>{
-  const range=fixture(patternById('range').points),up=cleanRisingSupport();
-  const down=up.map(c=>({...c,open:210-c.open,close:210-c.close,high:210-c.low,low:210-c.high}));
-  const matches=classifyPrepared(prepareCandles(range));
-  assert.ok(matches['horizontal-resistance']);assert.ok(matchCandles(fixture(patternById('range').points.map(p=>({...p,y:1-p.y}))),{id:'horizontal-support'}));assert.ok(matches.range);
-  assert.equal(matchCandles(up,{id:'trend-up'})?.tier,1);assert.equal(matchCandles(down,{id:'trend-down'})?.tier,1);
-  assert.equal(matchCandles(up,{id:'trend-down'}),null);
-  const broken=[...range,...Array.from({length:8},(_,i)=>({...range.at(-1),close:120+i,open:120+i,high:121+i,low:119+i}))];
-  assert.equal(matchCandles(broken,{id:'horizontal-resistance'}),null);
+test('horizontal and diagonal level searches do not substitute each other',()=>{
+ const bars=preparation(),matches=classifyPrepared(prepareCandles(bars));
+ assert.ok(matches['horizontal-resistance']);
+ assert.ok(matchCandles(shortBars(bars),{id:'horizontal-support'}));
+ for(const id of ['trend-up','trend-down']){const m=matchCandles(bars,{id});assert.ok(!m||m.classicSignal.pressure.kind==='diagonal');}
+ const noVolume=cleanRisingSupport();assert.equal(matchCandles(noVolume,{id:'trend-up'}),null);
 });
-test('a line passing through a full candle swing or a run is never a T1 entry setup',()=>{
-  const clean=cleanRisingSupport();
-  assert.equal(matchCandles(clean,{id:'trend-up'})?.tier,1);
-  const crossed=structuredClone(clean);
-  for(let i=65;i<=68;i++){crossed[i].open-=5;crossed[i].close-=5;crossed[i].low-=5;crossed[i].high-=5;}
-  assert.equal(matchCandles(crossed,{id:'trend-up'}),null);
-  const run=structuredClone(clean);
-  for(let i=76;i<=80;i++){run[i].open+=4;run[i].close+=4;run[i].low+=4;run[i].high+=4;}
-  assert.notEqual(matchCandles(run,{id:'trend-up'})?.tier,1);
-  const resist=clean.map(c=>({...c,open:210-c.open,close:210-c.close,high:210-c.low,low:210-c.high}));
-  for(let i=65;i<=68;i++){resist[i].open+=5;resist[i].close+=5;resist[i].low+=5;resist[i].high+=5;}
-  assert.equal(matchCandles(resist,{id:'trend-down'}),null);
+test('a full close-through-and-return removes that line from every search mode',()=>{
+ const bars=preparation();for(const [i,close]of [[50,102],[51,103],[52,94]]){const open=bars[i].open;Object.assign(bars[i],{close,high:Math.max(open,close)+.3,low:Math.min(open,close)-.3});}
+ const signal=evaluateClassic(bars);assert.ok(signal.levels.filter(p=>p.level===100).every(p=>p.state==='consumed'));
+ const match=matchCandles(bars,{id:'horizontal-resistance'});assert.ok(!match||match.classicSignal.pressure.level!==100);
 });
-test('preclassification equals direct search; counts deduplicate symbols across selected frames',()=>{
-  const candles=fixture(patternById('w').points),context=prepareCandles(candles),matches=classifyPrepared(context);
-  assert.deepEqual(matches.w,matchCandles(candles,{id:'w'}));
-  assert.ok(matchPrepared(context,{mode:'sketch',points:patternById('w').points}));
-  const entries=[{data:{symbol:'BTCUSDT',frame:'1H'},matches},{data:{symbol:'BTCUSDT',frame:'4H'},matches},{data:{symbol:'ETHUSDT',frame:'15m'},matches}];
-  assert.equal(patternCounts(entries,['1H','4H']).w,1);assert.equal(patternCounts(entries,['1H','4H','15m']).w,2);
+test('preclassification and direct search use the same gate; counts deduplicate symbols across frames',()=>{
+ const bars=preparation(),context=prepareCandles(bars),matches=classifyPrepared(context),direct=matchPrepared(context,{id:'horizontal-resistance'});
+ assert.deepEqual(matches['horizontal-resistance'],direct);
+ const entries=[{data:{symbol:'BTCUSDT',frame:'1H'},matches},{data:{symbol:'BTCUSDT',frame:'4H'},matches},{data:{symbol:'ETHUSDT',frame:'15m'},matches}];
+ assert.equal(patternCounts(entries,['1H','4H'])['horizontal-resistance'],1);assert.equal(patternCounts(entries,['1H','4H','15m'])['horizontal-resistance'],2);
+ assert.deepEqual(classifyPrepared(prepareCandles(preparation({volume:false}))),{});
 });
 
 test('cache cannot carry an index across a close boundary or algorithm version',async()=>{

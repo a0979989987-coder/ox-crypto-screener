@@ -1,4 +1,5 @@
-import { USAdapter } from "./provider.js?v=20261001-us-device1";
+import { evaluateClassic, compareClassic } from '../../core/classic.js?v=20261001-classic2';
+import { USAdapter } from "./provider.js?v=20261001-classic2";
 import { INTERVALS, countdown, sessionAt, nyParts } from "./calendar.js?v=20261001-us-eod1";
 import { mergeCandles, movingAverage, vwap } from "./model.js?v=20261001-us-eod1";
 import { icon, positionTimeframe, openDialog, closeDialog } from "./ui.js?v=20261001-us-eod1";
@@ -538,6 +539,7 @@ export class USChart {
         ),
     );
     this.bars = mergeCandles(old, next);
+    this.classicSignal=["long","short"].map(side=>evaluateClassic(this.bars,{side,frame:this.interval})).filter(s=>s.eligible).sort(compareClassic)[0]||null;
     const vol = (c) => ({
       time: c.time,
       value: c.volume ?? 0,
@@ -768,6 +770,17 @@ export class USChart {
       h = this.svg.clientHeight;
     this.svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
     this.svg.innerHTML = "";
+    const signal=this.classicSignal;
+    for(const [label,level,color]of [['觸發',signal?.pressure,'#eee7df'],['下一目標',signal?.target,'#f7bd52'],['結構失效',signal?.invalidation,'#5ca5ff']]){
+      if(!level)continue;
+      const points=level.points||[{time:this.bars[0].time,price:level.level},{time:this.bars.at(-1).time,price:level.level}];
+      const x1=level.kind==='diagonal'?this.projectTime(points[0].time):0,x2=level.kind==='diagonal'?this.projectTime(points[1].time):w-58;
+      const y1=this.series.priceToCoordinate(points[0].price),y2=this.series.priceToCoordinate(points[1].price);
+      if([x1,x2,y1,y2].some(x=>x===null))continue;
+      const line=document.createElementNS('http://www.w3.org/2000/svg','line');
+      Object.entries({x1,x2,y1,y2,stroke:color,'stroke-width':1,'stroke-dasharray':'4 4'}).forEach(([k,v])=>line.setAttribute(k,v));line.style.pointerEvents='none';this.svg.append(line);
+      const text=document.createElementNS('http://www.w3.org/2000/svg','text');text.setAttribute('x',Math.max(4,x2-82));text.setAttribute('y',y2-4);text.setAttribute('fill',color);text.setAttribute('font-size',10);text.textContent=label;text.style.pointerEvents='none';this.svg.append(text);
+    }
     const guide = this.guide?.line || [];
     const segments =
       this.guide?.id === "triangle"

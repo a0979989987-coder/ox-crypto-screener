@@ -1,4 +1,5 @@
 import { TIMEFRAMES, candleBoundary } from './catalog.js?v=patterns5d-20260929';
+import { evaluateClassic, compareClassic, compactClassic, CLASSIC_TIER_LIMITS } from '../../../core/classic.js?v=20261001-classic2';
 const BASE='https://api.bitget.com';
 const candleCache=new Map();let nextRequest=0;
 const abortError=()=>new DOMException('Aborted','AbortError');
@@ -42,7 +43,7 @@ export function selectUniverse(tickers,instruments,limit=80){
 export function radarCandidates(runtime=typeof state==='undefined'?null:state){
   if(runtime?.activeMarket&&runtime.activeMarket!=='crypto')return [];
   const seen=new Set();
-  return ['t1','t2','t3'].flatMap((tier,i)=>(runtime?.tierMap?.[tier]||[]).slice(0,10).flatMap((r,rank)=>{
+  return ['t1','t2','t3'].flatMap((tier,i)=>(runtime?.tierMap?.[tier]||[]).slice(0,CLASSIC_TIER_LIMITS[tier.toUpperCase()]).flatMap((r,rank)=>{
     if(!r.symbol||seen.has(r.symbol))return [];
     seen.add(r.symbol);return [{symbol:r.symbol,tier:i+1,rank,side:r.side}];
   }));
@@ -87,24 +88,20 @@ export async function fetchSeries(symbol,frame,signal,now=Date.now()){
 export function primeCandleCache(data){
   if(data?.candles?.length>=35&&TIMEFRAMES[data.frame])candleCache.set(`${data.symbol}:${data.frame}`,data);
 }
-// Read the preserved classic engine. No strategy state or score constants are modified.
 export function classicScore(ticker,candles,tickers){
-  if(typeof OXEngine==='undefined'||typeof CONFIG==='undefined'||candles?.length<35)return null;
-  const engine=OXEngine,liq=engine.computeLiquidity(ticker,tickers),rs=engine.computeRelativeStrength(ticker,tickers.find(t=>t.symbol==='BTCUSDT'));
-  const flow=engine.computeMoneyFlow(candles),structure=engine.computeStructure(candles),setup=engine.evaluateSetupMatch(candles,structure,flow),trigger=engine.detectTrigger(candles,structure,flow);
-  return Math.round(liq.score*CONFIG.weights.liquidity+flow.score*CONFIG.weights.moneyFlow+structure.score*CONFIG.weights.structure+setup.setupScore*CONFIG.weights.setupMatch+rs.score*CONFIG.weights.relativeStrength+(trigger.active?5:0));
+  const signals=['long','short'].map(side=>evaluateClassic(candles,{side}));
+  return signals.filter(s=>s.eligible).sort(compareClassic)[0]?.qualityScore ?? null;
 }
 export async function scanUniverse(universe,frames,{signal,onSeries,onProgress}){
   let cursor=0,done=0,failed=0,coinsDone=0;const total=universe.tickers.length*frames.length,coinsTotal=universe.tickers.length;
   const jobs=universe.tickers.map(ticker=>async()=>{
-    let hourly=null;
-    try{hourly=await fetchSeries(ticker.symbol,'1H',signal,universe.serverTime);}catch(e){if(signal.aborted)throw e;}
-    const oxScore=hourly?classicScore(ticker,hourly.candles,universe.allTickers):null;
     for(const frame of frames){
       if(signal.aborted)throw abortError();
       try{
-        const data=frame==='1H'?(hourly||await fetchSeries(ticker.symbol,frame,signal,universe.serverTime)):await fetchSeries(ticker.symbol,frame,signal,universe.serverTime);
-        await onSeries({...data,ticker,oxScore,quoteTime:universe.serverTime,turnover:Number(ticker.usdtVolume),change:Number(ticker.change24h)*100});
+        const data=await fetchSeries(ticker.symbol,frame,signal,universe.serverTime);
+        const classic=Object.fromEntries(['long','short'].map(side=>[side,compactClassic(evaluateClassic(data.candles,{side,frame,now:universe.serverTime}))]));
+        const chosen=Object.values(classic).filter(s=>s.eligible).sort(compareClassic)[0];
+        await onSeries({...data,ticker,classic,oxScore:chosen?.qualityScore??null,quoteTime:universe.serverTime,turnover:Number(ticker.usdtVolume),change:Number(ticker.change24h)*100});
       }catch(e){if(signal.aborted)throw e;failed++;}
       done++;onProgress({done,total,failed,coinsDone,coinsTotal});
     }
