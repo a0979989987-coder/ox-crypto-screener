@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {quarterlyCandles,aggregateChartCandles,stockDetails,isIntraday,chartTickFormatter,CHART_FRAMES} from '../src/markets/tw/chart-data.js';
+import {quarterlyCandles,aggregateChartCandles,stockDetails,chartTickFormatter,CHART_FRAMES} from '../src/markets/tw/chart-data.js';
 
 test('every chart timeframe supplies a callable tick formatter and restores the library fallback outside quarters',()=>{
  const t=Date.parse('2026-07-01T00:00:00+08:00')/1000;
@@ -19,7 +19,7 @@ test('quarter candles preserve actual OHLC and turnover, exclude partial boundar
  assert.deepEqual(quarterlyCandles([],'2026-07-02'),[]);
  const closed=quarterlyCandles([...daily,{date:'2026-09-30',open:18,high:20,low:17,close:19,volume:7,quoteVolume:700}],'2026-09-30');
  assert.deepEqual(closed.map(c=>c.date),['2026-01-01','2026-04-01','2026-07-01']);assert.equal(closed.at(-1).close,19);
- assert(isIntraday('1m'));assert(isIntraday('1H'));assert(!isIntraday('1D'));assert(!isIntraday('1Q'));
+ assert.deepEqual(Object.keys(CHART_FRAMES),['1D','2D','3D','5D','1W','2W','1M','1Q']);
  assert.throws(()=>aggregateChartCandles(daily,'1H','2026-07-02'));
 });
 
