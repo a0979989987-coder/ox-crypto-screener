@@ -1,6 +1,9 @@
 import { createClient } from '@supabase/supabase-js';
 import { seal, unseal, cookie, readCookie, safeReturn } from './cookies.js';
 const bursts = new Map();
+// Only fixed public API categories may cross the callback boundary.
+const providerCodes = new Set(['unexpected_failure', 'bad_oauth_callback', 'bad_oauth_state', 'flow_state_expired', 'flow_state_not_found', 'provider_disabled', 'oauth_provider_not_supported', 'provider_email_needs_verification', 'signup_disabled', 'identity_already_exists', 'email_exists', 'user_already_exists', 'user_banned', 'over_request_rate_limit', 'request_timeout', 'validation_failed']);
+const providerErrors = new Set(['access_denied', 'server_error', 'invalid_request', 'temporarily_unavailable', 'unauthorized_client', 'unsupported_response_type', 'invalid_scope']);
 function allow(key) {
   const now = Date.now();
   for (const [k, v] of bursts) if (v.until < now) bursts.delete(k);
@@ -46,11 +49,11 @@ export function createAccountHandler({ env = process.env, clientFactory = create
       res.setHeader('Set-Cookie', [cookie('access', seal(session.access_token, secret, 'access')), cookie('refresh', seal(session.refresh_token, secret, 'refresh')), cookie('flow', '')]);
     };
     const redirect = path => { res.setHeader('Location', path); return res.status(303).end(); };
-    const callbackFailure = reason => {
+    const callbackFailure = (reason, providerCode) => {
       // Fixed, non-sensitive categories only. Never return/log the auth code,
       // verifier, cookie, token, user data, or raw upstream exception.
       res.setHeader('Set-Cookie', cookie('flow', ''));
-      return redirect(`/?ox_auth=error&ox_auth_reason=${reason}`);
+      return redirect(`/?ox_auth=error&ox_auth_reason=${reason}${providerCode ? `&ox_auth_provider=${providerCode}` : ''}`);
     };
     try {
       client = clientFactory(url, key, { auth: { flowType: 'pkce', persistSession: true, autoRefreshToken: false, detectSessionInUrl: false, storage } });
@@ -63,7 +66,10 @@ export function createAccountHandler({ env = process.env, clientFactory = create
         return json(200, { ok: true, url: data.url });
       }
       if (endpoint === 'callback') {
-        if (req.query.error) return callbackFailure(req.query.error === 'access_denied' ? 'provider_denied' : 'provider_callback_error');
+        if (req.query.error) {
+          const category = providerCodes.has(req.query.error_code) ? req.query.error_code : providerErrors.has(req.query.error) ? req.query.error : 'unclassified';
+          return callbackFailure(req.query.error === 'access_denied' ? 'provider_denied' : 'provider_callback_error', category);
+        }
         if (!flow) return callbackFailure(rawFlow ? 'flow_invalid' : 'flow_missing');
         if (typeof req.query.code !== 'string' || !req.query.code || req.query.code.length > 2048) return callbackFailure('code_missing');
         const options = flow.flowId ? { flowId: flow.flowId } : undefined;

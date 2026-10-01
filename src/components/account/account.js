@@ -112,6 +112,8 @@
     const landing = new URL(location.href);
     const failedCallback = landing.searchParams.get('ox_auth') === 'error' && !window.OXAuth.user;
     const reason = landing.searchParams.get('ox_auth_reason');
+    const provider = landing.searchParams.get('ox_auth_provider');
+    const providerLabels = new Set(['unexpected_failure', 'bad_oauth_callback', 'bad_oauth_state', 'flow_state_expired', 'flow_state_not_found', 'provider_disabled', 'oauth_provider_not_supported', 'provider_email_needs_verification', 'signup_disabled', 'identity_already_exists', 'email_exists', 'user_already_exists', 'user_banned', 'over_request_rate_limit', 'request_timeout', 'validation_failed', 'access_denied', 'server_error', 'invalid_request', 'temporarily_unavailable', 'unauthorized_client', 'unsupported_response_type', 'invalid_scope', 'unclassified']);
     const messages = {
       flow_missing: '登入驗證 Cookie 未收到。請重新點選登入；若仍發生，請回報原因：flow_missing。',
       flow_invalid: '登入驗證 Cookie 已失效或無法驗證。請重新點選登入；原因：flow_invalid。',
@@ -127,9 +129,12 @@
       callback_unavailable: '登入回呼暫時無法完成。請回報原因：callback_unavailable。'
     };
     status.textContent = failedCallback ? (Object.hasOwn(messages, reason) ? messages[reason] : '登入回呼未完成。請重新點選 Google 或 Email 登入。') : config.configured ? '使用電子郵件登入連結，不需要設定密碼。' : '正式登入服務尚未設定，訪客功能可正常使用。';
+    if (failedCallback && reason === 'provider_callback_error') {
+      status.textContent = `Supabase 登入提供者在返回 OX 前已回報錯誤。請回報診斷代碼：provider_callback_error / ${providerLabels.has(provider) ? provider : 'unclassified'}。這不是 OX 授權碼交換或會員查詢失敗，暫勿重複登入。`;
+    }
     // Remove transient errors before another attempt; never collect their URL.
     if (landing.searchParams.has('ox_auth')) {
-      landing.searchParams.delete('ox_auth'); landing.searchParams.delete('ox_auth_reason');
+      landing.searchParams.delete('ox_auth'); landing.searchParams.delete('ox_auth_reason'); landing.searchParams.delete('ox_auth_provider');
       history.replaceState(null, '', landing.pathname + landing.search + landing.hash);
     }
     if (failedCallback) open();

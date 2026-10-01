@@ -56,6 +56,14 @@ try {
   await page.locator('#ox-account-signout').click();
   await page.waitForFunction(() => window.OXAuth.user === null);
   user = null;
+  await page.goto('https://ox.test/?ox_auth=error&ox_auth_reason=provider_callback_error&ox_auth_provider=unexpected_failure');
+  await page.waitForFunction(() => !location.search.includes('ox_auth'));
+  await page.locator('#ox-account-google').waitFor({ state: 'visible' });
+  assert.match(await page.locator('#ox-account-auth-status').innerText(), /provider_callback_error \/ unexpected_failure/);
+  await page.goto('https://ox.test/?ox_auth=error&ox_auth_reason=provider_callback_error&ox_auth_provider=synthetic-private-detail');
+  await page.waitForFunction(() => !location.search.includes('ox_auth') && document.querySelector('#ox-account-auth-status')?.textContent.includes('unclassified'));
+  assert.match(await page.locator('#ox-account-auth-status').innerText(), /unclassified/);
+  assert.doesNotMatch(await page.locator('#ox-account-auth-status').innerText(), /synthetic-private-detail/);
   await page.goto('https://ox.test/?ox_auth=error&ox_auth_reason=exchange_failed');
   await page.locator('#ox-account-overlay').waitFor({ state: 'visible' });
   await page.waitForFunction(() => !location.search.includes('ox_auth'));
