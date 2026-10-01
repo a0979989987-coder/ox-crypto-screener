@@ -22,6 +22,7 @@
 .twx-contribution-list b{text-align:right;font-weight:500;white-space:nowrap}
 .twx-briefing{margin-top:26px}.twx-briefing-head h2{margin:0 0 4px;font-size:16px;font-weight:600}.twx-briefing-head>small{text-align:right}
 .twx-briefing-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;align-items:start}
+@media(min-width:641px){.twx-briefing-grid.is-packed{grid-auto-rows:1px;grid-auto-flow:row dense;row-gap:0}}
 .twx-night{grid-column:1/-1}
 .twx-night-close{display:flex;justify-content:space-between;align-items:center;gap:16px}
 .twx-night-close>div{display:flex;flex-direction:column;gap:4px}
