@@ -20,14 +20,15 @@ const OXEngine = {
       tier: signal.tier?.toLowerCase() || 'none',
       triggerActive: signal.eligible && ['breakout', 'continuation'].includes(signal.phase),
       triggerType: signal.phase === 'breakout' ? '有效突破' : signal.phase === 'continuation' ? '強勢延續' : '',
-      reasons: signal.eligible ? signal.reasons : signal.rejectionReasons,
+      reasons: signal.eligible ? signal.reasons : [...(signal.matchedReasons||[]),...signal.rejectionReasons],
       flowScore: volume.supported ? Math.round(Math.min(100, 60 + volume.impulseRatio * 10)) : 0,
       structScore: direction.confirmed ? score : 0, setupScore: signal.structureReady ? score : 0,
       volRatio1h: volume.ratio ?? null, volRatio4h: volume.recentRatio ?? null,
       isSurge: signal.eligible && volume.supported,
       swingHigh: signal.side === 'LONG' ? signal.pressure?.level || signal.target?.level || 0 : signal.invalidation?.level || 0,
       swingLow: signal.side === 'SHORT' ? signal.pressure?.level || signal.target?.level || 0 : signal.invalidation?.level || 0,
-      structureLabel: direction.higherLows ? '右側低點墊高' : direction.reclaim ? '右側轉強' : signal.stage,
+      structureLabel: direction.higherLows ? (signal.side==='LONG'?'右側低點墊高':'右側高點降低') :
+        direction.reclaim ? (signal.side==='LONG'?'右側轉強':'右側轉弱') : signal.stage,
       t1Fit: score ?? 0, t2Fit: score ?? 0, t3Fit: score ?? 0,
       setupProgress: score ?? 0, signalConfidence: signal.eligible ? score : 0
     };

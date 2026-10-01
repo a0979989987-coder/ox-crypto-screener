@@ -1,6 +1,6 @@
 const WATCH_STAR_SVG = '<svg class="watch-star-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 2.78 5.63L21 9.54l-4.5 4.39 1.06 6.2L12 17.2l-5.56 2.93 1.06-6.2L3 9.54l6.22-.91Z"/></svg>';
 
-const RADAR_SNAPSHOT_KEY = 'ox-radar-snapshot-v3-classic4';
+const RADAR_SNAPSHOT_KEY = 'ox-radar-snapshot-v3-classic5';
 function restoreRadarSnapshot() {
   if (state.radarSnapshotChecked) return;
   state.radarSnapshotChecked = true;
@@ -94,7 +94,9 @@ async function refreshMarketTickers() {
     state.ethTicker = state.tickers.find(t => t.symbol === "ETHUSDT") || null;
     captureStrengthSnapshot();
 
-    const eligible = state.tickers.filter(t => num(t.usdtVolume) >= CONFIG.liquidity.minUsdtVolume24h);
+    // Rank the whole active crypto universe. The former 3m turnover cutoff
+    // silently removed genuine lower-turnover setups before they were scored.
+    const eligible = state.tickers.filter(t => num(t.usdtVolume) > 0);
     eligible.sort((a, b) => num(b.usdtVolume) - num(a.usdtVolume));
     
     if (!state.scanQueue.length) {

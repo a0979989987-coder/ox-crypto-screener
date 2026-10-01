@@ -1,11 +1,11 @@
 import { deviceRecord } from './device-storage.js?v=20261001-us-device1';
-import { buildDeviceDataset, deviceCandles } from './device-eod-core.js?v=20261001-classic4';
+import { buildDeviceDataset, deviceCandles } from './device-eod-core.js?v=20261001-classic5';
 
 let active = null, restoring;
 async function build(packet, progress) {
   if (typeof Worker === 'undefined') return buildDeviceDataset(packet, { progress });
   return new Promise((resolve, reject) => {
-    const worker = new Worker(new URL('./device-eod-worker.js?v=20261001-classic4', import.meta.url), { type:'module' });
+    const worker = new Worker(new URL('./device-eod-worker.js?v=20261001-classic5', import.meta.url), { type:'module' });
     const timer = setTimeout(() => { worker.terminate(); reject(Error('本機分析逾時，請換較小的盤後檔重試。')); }, 120000);
     const finish = () => { clearTimeout(timer); worker.terminate(); };
     worker.onmessage = ({ data }) => {

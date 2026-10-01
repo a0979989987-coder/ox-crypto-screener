@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { runInNewContext } from 'node:vm';
 import { PATTERNS,patternById,TIMEFRAMES,candleBoundary } from '../src/markets/crypto/patterns/catalog.js';
-import { normalize,resample,similarity,matchCandles,validateHarmonic,structureValid,queryFromStrokes,sortMatches,prepareCandles,classifyPrepared,matchPrepared,patternCounts } from '../src/markets/crypto/patterns/matcher.js';
+import { normalize,resample,similarity,matchCandles,validateHarmonic,structureValid,queryFromStrokes,sortMatches,prepareCandles,classifyPrepared,matchPrepared,patternCounts,rankPatternMatches,browsePatternEntries } from '../src/markets/crypto/patterns/matcher.js';
 import { parseCandles,selectUniverse,classicScore,fetchSeries,radarSymbols,radarCandidates } from '../src/markets/crypto/patterns/source.js';
 
 // Explicit synthetic fixtures, only for checking positive/negative geometric invariants.
@@ -31,7 +31,7 @@ test('drawing invariants: time scale, price scale and offset; inverse W is dissi
 });
 test('W matching cannot return an M, missing second trough or an old completed W',()=>{
   const w=fixture(patternById('w').points),m=fixture(patternById('m').points);
-  assert.ok(geometryMatch(w,{id:'w'}));assert.equal(matchCandles(w,{id:'w'}),null,'shape without upward volume is excluded');
+  assert.ok(geometryMatch(w,{id:'w'}));assert.ok(matchCandles(w,{id:'w'}).patternOnly,'A forming shape remains searchable without full volume confirmation');
   assert.equal(matchCandles(m,{id:'w'}),null);
   assert.equal(matchCandles(w.slice(0,25),{id:'w'}),null);
   const tail=Array.from({length:30},(_,i)=>({...w.at(-1),time:w.at(-1).time+(i+1)*3600,open:111+i,close:111+i,high:111.1+i,low:110.9+i}));
@@ -81,10 +81,10 @@ test('UTC Monday week boundary and provisional Bitget candle are explicit, fresh
     assert.equal(entryCurrent(entry,now+299000),true);assert.equal(entryCurrent(entry,now+301000),false);
   }finally{globalThis.fetch=originalFetch;}
 });
-test('universe excludes stock tokens, unavailable instruments and illiquid pairs',()=>{
+test('canvas universe excludes stock tokens and unavailable instruments while retaining low-turnover formations',()=>{
   const tickers=['BTC','ETH','AAPL','LOW','OFF'].map((s,i)=>({symbol:s+'USDT',lastPr:'10',usdtVolume:s==='LOW'?'90000':String(1e8-i*1e7)}));
   const instruments=tickers.map(t=>({symbol:t.symbol,symbolType:t.symbol==='AAPLUSDT'?'stock':'crypto',type:'perpetual',status:t.symbol==='OFFUSDT'?'offline':'online',quoteCoin:'USDT'}));
-  assert.deepEqual(selectUniverse(tickers,instruments,80).map(t=>t.symbol),['BTCUSDT','ETHUSDT']);
+  assert.deepEqual(selectUniverse(tickers,instruments,80).map(t=>t.symbol),['BTCUSDT','ETHUSDT','LOWUSDT']);
 });
 test('ranking prioritizes similarity, OX only breaks ties',()=>{
   assert.deepEqual(sortMatches([{symbol:'B',similarity:82,oxScore:99},{symbol:'A',similarity:95,oxScore:40},{symbol:'C',similarity:95,oxScore:85}]).map(r=>r.symbol),['C','A','B']);
@@ -102,7 +102,8 @@ test('pattern tier and phase come from the shared eligible signal; failed revers
 test('horizontal pressure uses independent rejected tests and actual upward volume',()=>{
  const bars=preparation(),signal=evaluateClassic(bars),match=matchCandles(bars,{id:'horizontal-resistance'});
  assert.ok(match);assert.ok(match.touches>=2);assert.equal(match.tier,Number(signal.tier.slice(1)));
- assert.equal(matchCandles(preparation({volume:false}),{id:'horizontal-resistance'}),null);
+ const forming=matchCandles(preparation({volume:false}),{id:'horizontal-resistance'});
+ assert.ok(forming);assert.equal(forming.classicSignal.eligible,false);assert.notEqual(forming.tier,1);
  const single=structuredClone(bars);single[12].high=97;single[28].high=97;
  const candidate=matchCandles(single,{id:'horizontal-resistance'});
  assert.ok(!candidate||candidate.classicSignal.pressure.level!==100);
@@ -117,12 +118,12 @@ test('score adapter uses shared eligibility and cannot reward high turnover or b
 test('clear asymmetric W is recognized structurally; optional similar-path mode retains the common gate',()=>{
   const points=[1,.04,.75,0,.62].map((y,i)=>({x:[0,.18,.51,.79,1][i],y}));
   const query=queryFromStrokes([points]);assert.equal(query.mode,'pattern');assert.equal(query.id,'w');assert.ok(query.points.length);
-  const c=fixture(points);assert.ok(geometryMatch(c,query));assert.equal(matchCandles(c,query),null);
+  const c=fixture(points);assert.ok(geometryMatch(c,query));assert.ok(matchCandles(c,query).patternOnly);
   const sketch={...query,mode:'sketch'},forced={...sketch,id:'m'};assert.equal(geometryMatch(c,forced),null);assert.ok(geometryMatch(c,sketch));
 });
 test('forming W can be found without requiring neckline completion; inverse is rejected',()=>{
   const c=fixture([1,0,.8,.10,.60].map((y,i)=>({x:i/4,y})));
-  const match=geometryMatch(c,{id:'w'});assert.ok(match);assert.equal(match.stage,rankingSignal().stage);assert.equal(match.tier,1);assert.equal(matchCandles(c,{id:'w'}),null);
+  const match=geometryMatch(c,{id:'w'});assert.ok(match);assert.equal(match.stage,rankingSignal().stage);assert.equal(match.tier,1);assert.ok(matchCandles(c,{id:'w'}).patternOnly);
   assert.equal(matchCandles(c,{id:'m'}),null);
 });
 test('uneven hand-drawn W and M tolerate small tremors, but a V is not a W',()=>{
@@ -164,7 +165,8 @@ test('horizontal and diagonal level searches do not substitute each other',()=>{
  assert.ok(matches['horizontal-resistance']);
  assert.ok(matchCandles(shortBars(bars),{id:'horizontal-support'}));
  for(const id of ['trend-up','trend-down']){const m=matchCandles(bars,{id});assert.ok(!m||m.classicSignal.pressure.kind==='diagonal');}
- const noVolume=cleanRisingSupport();assert.equal(matchCandles(noVolume,{id:'trend-up'}),null);
+ const noVolume=cleanRisingSupport(),forming=matchCandles(noVolume,{id:'trend-up'});
+ assert.ok(forming);assert.equal(forming.classicSignal.eligible,false);assert.notEqual(forming.tier,1);
 });
 test('a full close-through-and-return removes that line from every search mode',()=>{
  const bars=preparation();for(const [i,close]of [[50,102],[51,103],[52,94]]){const open=bars[i].open;Object.assign(bars[i],{close,high:Math.max(open,close)+.3,low:Math.min(open,close)-.3});}
@@ -176,7 +178,15 @@ test('preclassification and direct search use the same gate; counts deduplicate 
  assert.deepEqual(matches['horizontal-resistance'],direct);
  const entries=[{data:{symbol:'BTCUSDT',frame:'1H'},matches},{data:{symbol:'BTCUSDT',frame:'4H'},matches},{data:{symbol:'ETHUSDT',frame:'15m'},matches}];
  assert.equal(patternCounts(entries,['1H','4H'])['horizontal-resistance'],1);assert.equal(patternCounts(entries,['1H','4H','15m'])['horizontal-resistance'],2);
- assert.deepEqual(classifyPrepared(prepareCandles(preparation({volume:false}))),{});
+ const forming=classifyPrepared(prepareCandles(preparation({volume:false})));
+ assert.ok(forming['horizontal-resistance']);assert.ok(Object.values(forming).every(m=>m.patternOnly&&m.tier!==1));
+});
+test('canvas searches retain more than radar quotas and blank browsing does not depend on radar membership',()=>{
+ const bars=preparation({volume:false}),context=prepareCandles(bars),matches=classifyPrepared(context);
+ const entries=Array.from({length:65},(_,i)=>({key:'DRAW'+i+':1H',data:{symbol:'DRAW'+i,frame:'1H',candles:bars,classic:context.classic},matches}));
+ const results=rankPatternMatches(entries.map(entry=>({entry,match:matches['horizontal-resistance']})));
+ assert.equal(results.length,65);assert.ok(results.every(r=>!r.match.classicSignal.eligible&&r.match.tier!==1));
+ assert.equal(browsePatternEntries(entries).length,65);
 });
 
 test('cache cannot carry an index across a close boundary or algorithm version',async()=>{
@@ -186,4 +196,15 @@ test('cache cannot carry an index across a close boundary or algorithm version',
   assert.equal(entryCurrent(entry,now),true);assert.equal(entryCurrent(entry,now+3600000),false);
   assert.equal(entryCurrent({...entry,version:0},now),false);
   assert.equal(Object.keys(TIMEFRAMES).length,11);
+});
+test('canvas reuses current native candle observations without requesting them again',async()=>{
+ const now=Date.now(),boundary=candleBoundary(now,'1H'),previous=globalThis.BitgetAPI,originalFetch=globalThis.fetch;
+ const candles=Array.from({length:40},(_,i)=>({time:boundary-(40-i)*3600,open:100,high:102,low:99,close:101,volume:10,quoteVolume:1010}));
+ let requests=0;
+ try{
+  globalThis.BitgetAPI={peekCandles:()=>({symbol:'REUSEQAUSDT',frame:'1H',serverTime:now,candles})};
+  globalThis.fetch=async()=>{requests++;throw Error('Candle transport must not be used');};
+  const series=await fetchSeries('REUSEQAUSDT','1H',new AbortController().signal,now);
+  assert.equal(series.candles.length,40);assert.equal(requests,0);assert.equal(series.candles.at(-1).quoteVolume,1010);
+ }finally{globalThis.fetch=originalFetch;if(previous===undefined)delete globalThis.BitgetAPI;else globalThis.BitgetAPI=previous;}
 });

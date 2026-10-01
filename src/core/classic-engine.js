@@ -4,7 +4,7 @@
  */
 (function (root) {
   'use strict';
-  const CLASSIC_VERSION = 3;
+  const CLASSIC_VERSION = 4;
   const CLASSIC_TIER_LIMITS = Object.freeze({ T1: 10, T2: 15, T3: 15 });
   // Initial, centralized defaults in ATR/bar units. These are implementation
   // thresholds, not claims of calibration or performance from trade screenshots.
@@ -168,8 +168,8 @@
         { time: bars[level.end].time, index: level.end, price: dir * level.level }] };
   }
   function finish(signal, eligible, phase, pressure, reasons) {
-    const score = signal.qualityScore;
-    return { ...signal, eligible, tier: eligible ? score >= 82 ? 'T1' : score >= 72 ? 'T2' : 'T3' : null,
+    const score = eligible ? Math.min(99,signal.qualityScore) : Math.min(79,signal.qualityScore);
+    return { ...signal, qualityScore:score, eligible, tier: eligible ? score >= 82 ? 'T1' : score >= 72 ? 'T2' : 'T3' : null,
       phase, stage: phase === 'prebreakout' ? (signal.side === 'LONG' ? '帶量逼近 · 尚未突破' : '帶量逼近 · 尚未跌破') :
         phase === 'probe' ? '突破試探 · 尚未收 K' : phase === 'breakout' ? '已收 K 確認突破' :
           phase === 'continuation' ? (signal.side === 'LONG' ? '帶量上漲 · 強勢延續' : '帶量下跌 · 弱勢延續') : '待確認',
@@ -219,11 +219,13 @@
     // T2/T3 are directional observations, not miniature copies of the strict
     // entry gate. Missing activation/impulse alone must not empty those lists.
     const observationDirection = !direction.falling && !direction.opposingContext &&
-      direction.advance >= 0.15 && direction.position >= 0.45 &&
+      (direction.advance > 0 && direction.position >= 0.4 || direction.higherLows && direction.lateMove >= -0.2 && direction.position >= 0.4) &&
       (!direction.lowerLows || direction.reclaim || direction.contextReclaimed);
     const observationEvidence = { liquidity:!!pressure || !!broken,
-      directionalVolume:volume.supported && direction.confirmed && direction.advance >= 1 };
-    const observationEligible = observationDirection && (observationEvidence.liquidity || observationEvidence.directionalVolume) &&
+      directionalVolume:volume.complete && !volume.distribution && volume.upwardShare >= 0.5 &&
+        volume.impulseRatio >= 1.05 && direction.advance >= 0.5,
+      priceStructure:direction.higherLows && direction.higherHighs || direction.reclaim };
+    const observationEligible = observationDirection && (observationEvidence.liquidity || observationEvidence.directionalVolume || observationEvidence.priceStructure) &&
       volume.complete && !volume.distribution &&
       !failed && !liveFailure && !exhausted && !chase && risk > 0 && spaceOK;
     const qualityScore = Math.round(clamp(55 + (trigger ? Math.min(4, trigger.touches.length) * 4 : 0) +
@@ -241,7 +243,7 @@
     if (liveFailure) rejectionReasons.push('最新價格已破壞結構');
     if (exhausted) rejectionReasons.push('上攻回落或已走離可觀察位置');
     if (!spaceOK) rejectionReasons.push('下一個目標空間不足');
-    const publicPressure = publicLevel(trigger, bars, dir);
+    const publicPressure = publicLevel(trigger || pressure, bars, dir);
     const reasons = [side === 'LONG' ? '右側價格向上推進' : '右側價格向下推進'];
     if (publicPressure) reasons.push((publicPressure.kind === 'horizontal' ? '水平' : '斜線') +
       (side === 'LONG' ? '壓力' : '支撐') + ' · ' + publicPressure.touches + ' 次獨立測試 · ' +
@@ -250,11 +252,30 @@
     if (volume.complete) reasons.push((side === 'LONG' ? '上攻' : '下攻') + '量比 ' + volume.impulseRatio.toFixed(2) +
       'x · 同向量 ' + (volume.upwardShare * 100).toFixed(0) + '%');
     if (!target) reasons.push('下一個歷史目標尚未辨識');
-    const signal = { ...base, qualityScore, atr: a, direction, volume, structureReady, observationEligible, observationEvidence, distanceATR: gap,
+    // Observations display the features that actually earned their place,
+    // alongside missing confirmations. A distant valid level is still evidence,
+    // but it must not be described as an imminent, volume-confirmed breakout.
+    const framePrefix=options.frame ? options.frame+' ' : '';
+    const matchedReasons=[];
+    if (observationDirection) matchedReasons.push(framePrefix+(direction.advance>0 ?
+      (side==='LONG'?'價格向上推進':'價格向下推進') :
+      (side==='LONG'?'低點墊高，當下未轉弱':'高點降低，當下未轉強')));
+    if (observationEvidence.liquidity && publicPressure) matchedReasons.push(framePrefix+
+      (publicPressure.kind==='horizontal'?'水平':'斜線')+(side==='LONG'?'壓力':'支撐')+' · '+
+      publicPressure.touches+' 次獨立測試 · '+(publicPressure.state==='valid'?'仍有效':'已收 K 越過'));
+    if (observationEvidence.priceStructure) matchedReasons.push(framePrefix+(direction.reclaim ?
+      (side==='LONG'?'已收復近期高點':'已跌破近期低點') :
+      (side==='LONG'?'高低點向上移動':'高低點向下移動')));
+    if (volume.supported || observationEvidence.directionalVolume) matchedReasons.push(framePrefix+
+      (volume.supported?'同向放量已確認':'同向量能開始增加，尚未達完整放量門檻')+' · '+volume.impulseRatio.toFixed(2)+'x');
+    if (near) matchedReasons.push(framePrefix+'距有效流動性 '+Math.max(0,gap).toFixed(2)+' ATR');
+    const strictEligible=structureReady && volume.supported;
+    const completenessScore=strictEligible?qualityScore:qualityScore-(volume.supported?0:12)-(direction.confirmed?0:8)-(near?0:8);
+    const signal = { ...base, qualityScore:completenessScore, atr: a, direction, volume, structureReady, observationEligible, observationEvidence, distanceATR: gap,
       invalidation: { level: dir * stop.price, time: stop.time }, target: publicLevel(target, bars, dir),
-      levels: levels.map(p => publicLevel(p, bars, dir)), rejectionReasons,
+      levels: levels.map(p => publicLevel(p, bars, dir)), matchedReasons, rejectionReasons,
       priority: phase === 'prebreakout' || phase === 'probe' ? 0 : 1 };
-    return finish(signal, structureReady && volume.supported, phase, publicPressure, reasons);
+    return finish(signal, strictEligible, phase, publicPressure, reasons);
   }
   function evaluateFrames(frames, { side = 'long', setupFrame, triggerFrame, now = Date.now(), rules } = {}) {
     const setup = evaluateClassic(frames[setupFrame] || [], { side, frame: setupFrame, now, rules });
@@ -272,7 +293,11 @@
     const reasons = [setupFrame + ' 結構＋' + triggerFrame + (setup.side === 'LONG' ? ' 上攻確認' : ' 下攻確認'), ...setup.reasons.filter(r => !r.includes('量比')),
       ...trigger.reasons.filter(r => r.includes('量比'))];
     const signal = { ...setup, observationEligible:!!observationEligible,
+      qualityScore:eligible?setup.qualityScore:Math.min(79,setup.qualityScore-(trigger.direction?.confirmed?0:8)-(trigger.volume?.supported?0:8)),
       triggerFrame, triggerClosedAt: trigger.closedAt, triggerVolume: trigger.volume,
+      matchedReasons:[...(setup.matchedReasons||[]),
+        ...(trigger.direction?.confirmed?[triggerFrame+' 同向結構已確認']:[]),
+        ...(trigger.volume?.supported?[triggerFrame+' 同向放量已確認 · '+trigger.volume.impulseRatio.toFixed(2)+'x']:[])],
       rejectionReasons: eligible ? [] : [...setup.rejectionReasons, ...(triggerOK ? [] : [triggerFrame + ' 當下方向或上攻量能未確認'])] };
     return finish(signal, !!eligible, setup.phase, setup.pressure, reasons);
   }
@@ -283,7 +308,7 @@
   }
   function compareClassic(a, b) {
     const x = a.classicSignal || a, y = b.classicSignal || b;
-    return (x.priority ?? 1) - (y.priority ?? 1) || (y.qualityScore || 0) - (x.qualityScore || 0);
+    return (y.qualityScore || 0) - (x.qualityScore || 0) || (x.priority ?? 1) - (y.priority ?? 1);
   }
   function compactClassic(signal) {
     if (!signal.eligible && !signal.observationEligible) return {version:signal.version,eligible:false,side:signal.side,

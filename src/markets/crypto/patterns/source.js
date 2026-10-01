@@ -1,5 +1,5 @@
 import { TIMEFRAMES, candleBoundary } from './catalog.js?v=patterns5d-20260929';
-import { evaluateClassic, compareClassic, compactClassic, CLASSIC_TIER_LIMITS } from '../../../core/classic.js?v=20261001-classic4';
+import { evaluateClassic, compareClassic, compactClassic, CLASSIC_TIER_LIMITS } from '../../../core/classic.js?v=20261001-classic5';
 const BASE='https://api.bitget.com';
 const candleCache=new Map();let nextRequest=0;
 const abortError=()=>new DOMException('Aborted','AbortError');
@@ -24,6 +24,7 @@ export function parseCandles(rows,frame,serverTime,{includeOpen=false}={}){
   const times=[...new Set(rows.map(r=>Number(r[0])).filter(Number.isFinite))].sort((a,b)=>a-b);
   if(times.some((t,i)=>i&&(t-times[i-1])%(seconds*1000)!==0))return [];
   for(const row of rows){
+    if(row.length<7||row[5]==null||row[6]==null||row[5]===''||row[6]==='')continue;
     const [ms,open,high,low,close,volume,quoteVolume]=row.map(Number),time=ms/1000;
     const provisional=time===boundary&&time+seconds>serverTime/1000;
     if(![ms,open,high,low,close,volume,quoteVolume].every(Number.isFinite)||(time-boundary)%seconds||open<=0||close<=0||low<=0||high<Math.max(open,close)||low>Math.min(open,close)||high<low||volume<0||quoteVolume<0||time>serverTime/1000||provisional&&!includeOpen||!provisional&&ms+seconds*1000>serverTime)continue;
@@ -38,7 +39,7 @@ export function parseCandles(rows,frame,serverTime,{includeOpen=false}={}){
 }
 export function selectUniverse(tickers,instruments,limit=80){
   const allowed=new Set(instruments.filter(i=>i.symbolType==='crypto'&&i.type==='perpetual'&&i.status==='online'&&i.quoteCoin==='USDT').map(i=>i.symbol));
-  return tickers.filter(t=>allowed.has(t.symbol)&&Number(t.usdtVolume)>=3000000&&Number(t.lastPr)>0).sort((a,b)=>Number(b.usdtVolume)-Number(a.usdtVolume)).slice(0,limit||Infinity);
+  return tickers.filter(t=>allowed.has(t.symbol)&&Number(t.usdtVolume)>0&&Number(t.lastPr)>0).sort((a,b)=>Number(b.usdtVolume)-Number(a.usdtVolume)).slice(0,limit||Infinity);
 }
 export function radarCandidates(runtime=typeof state==='undefined'?null:state){
   if(runtime?.activeMarket&&runtime.activeMarket!=='crypto')return [];
@@ -63,6 +64,14 @@ export async function fetchUniverse(signal,limit=80){
 export async function fetchSeries(symbol,frame,signal,now=Date.now()){
   const key=`${symbol}:${frame}`,cached=candleCache.get(key),boundary=candleBoundary(now,frame);
   if(cached?.candles.at(-1)?.provisional?cached.candles.at(-1).time===boundary&&now-cached.serverTime<300000:cached?.candles.at(-1)?.time+TIMEFRAMES[frame]===boundary)return cached;
+  // The native radar already obtains real 1H/4H observations. Reuse those
+  // responses when current instead of downloading the same series again.
+  const shared=typeof BitgetAPI!=='undefined'?BitgetAPI.peekCandles?.(symbol,frame,now):null;
+  if(shared&&candleBoundary(shared.serverTime,frame)===boundary){
+    const candles=parseCandles(shared.candles.map(c=>[c.time*1000,c.open,c.high,c.low,c.close,c.volume,c.quoteVolume]),
+      frame,shared.serverTime,{includeOpen:frame==='1W'}).slice(-200);
+    if(candles.length>=35){const value={...shared,candles,source:'Bitget'};candleCache.set(key,value);return value;}
+  }
   const granularity=['6H','12H','1D','1W'].includes(frame)?frame+'utc':frame;
   const path=`/api/v2/mix/market/candles?symbol=${encodeURIComponent(symbol)}&productType=USDT-FUTURES&granularity=${granularity}&limit=200`;
   const data=await request(path,signal),serverTime=Number(data.requestTime);
