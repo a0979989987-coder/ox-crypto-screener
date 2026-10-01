@@ -1,4 +1,15 @@
 /* Isolated TW Home / Indicators. No global palette or navigation overrides. */
+.twx .twx-home-grid>section.twx-institution{grid-column:span 2;padding:16px;display:flex;flex-direction:column}
+.twx .twx-home-grid>section.twx-core{grid-column:span 2}
+.twx-institution-details{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:14px;flex:1}
+.twx-institution-market>div{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:5px 0;border-bottom:1px solid #ffffff10;font-size:11px}
+.twx-institution-market+div{border-left:1px solid #ffffff16;padding-left:14px}
+.twx-institution-foot{font-size:9px;color:var(--tx-muted);margin-top:9px}
+.twx-institution .twx-section-head{margin-bottom:10px}
+.twx-institution-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.twx-institution-metrics>div{display:flex;flex-direction:column;gap:4px}
+.twx-institution-metrics strong{font-size:20px;font-weight:600}
+.twx-institution-metrics small,.twx-institution .twx-section-head small{font-size:10px}
 .twx-home-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
 .twx-session-toggle{display:flex;gap:10px;align-items:center;border:1px solid #ffffff40;border-radius:22px;padding:7px 14px;background:#ffffff08;font-size:12px!important;color:var(--tx-muted)!important}
 .twx-session-toggle .active{color:var(--tx-ink);font-weight:600}

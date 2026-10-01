@@ -131,3 +131,28 @@ body.ox-terminal #market-unavailable-card.tw-radar-root { margin-top: 16px !impo
 .tw-radar-root .twr-retry { margin: 6px 0 10px; padding: 7px 14px; border: 1px solid #ffffff50; border-radius: 9px; color: inherit; background: #ffffff12; font: inherit; font-size: 12px; cursor: pointer; }
 .tw-radar-root .twr-retry:disabled { opacity: .55; cursor: wait; }
 .tw-radar-root .twr-retry[hidden], .tw-radar-root .twr-source-notice[hidden] { display: none !important; }
+/* Native top-layer dialog: unaffected by transformed radar ancestors or chart loads. */
+dialog.tw-stock-detail { width:100vw; height:100dvh; max-width:none; max-height:none; margin:0; padding:14px; border:0; box-sizing:border-box; background:transparent; color:#f3f0e9; transition:none; }
+dialog.tw-stock-detail::backdrop { background:#040507c9; backdrop-filter:blur(3px); }
+.tw-stock-detail .tw-stock-detail-panel { width:min(100%,1100px); max-height:88dvh; box-sizing:border-box; padding:20px; transform:none; transition:none; }
+.tw-stock-detail.visible .tw-stock-detail-panel { transform:none; }
+.tw-stock-detail-panel h3 { margin:5px 0 12px; }
+.tw-risk-tags,.tw-risk-links { display:flex; flex-wrap:wrap; gap:7px; margin-bottom:12px; font-size:11px; }
+.tw-risk-tags span { border:1px solid #ffffff27; border-radius:8px; padding:3px 7px; background:#ffffff09; }
+.tw-risk-links a { color:#eae6de; text-decoration:none; border-bottom:1px solid #ffffff35; padding:4px 0; margin-right:12px; }
+.tw-risk-announcement { padding:14px; border:1px solid #ffffff35; border-radius:14px; background:#ffffff08; margin:14px 0; }
+.tw-risk-announcement>div { display:flex; justify-content:space-between; gap:12px; }
+.tw-risk-announcement p { margin:8px 0 0; font-size:12px; line-height:1.7; color:#e7e5df; }
+.tw-risk-announcement-text { white-space:pre-wrap; overflow-wrap:anywhere; }
+.tw-risk-quote-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin:14px 0; }
+.tw-risk-quote-grid>section,.tw-risk-metric { border:1px solid #ffffff21; border-radius:12px; padding:13px; background:#ffffff06; min-width:0; }
+.tw-risk-quote,.tw-risk-analysis,.tw-risk-metric { display:flex; flex-direction:column; gap:7px; }
+.tw-risk-quote>strong { font-size:27px; }.tw-risk-quote b { font-size:13px; }
+.tw-risk-analysis strong { font-size:15px; }.tw-risk-analysis p { font-size:11px; line-height:1.5; margin:0; }
+.tw-risk-progress { height:7px; border-radius:9px; overflow:hidden; background:#ffffff12; }.tw-risk-progress i { display:block; height:100%; background:linear-gradient(90deg,#bcbab4,#fff); }
+.tw-risk-metrics { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; }.tw-risk-metric { min-height:45px; }.tw-risk-metric small { font-size:10px; }.tw-risk-metric strong { font-size:16px; overflow-wrap:anywhere; }
+.tw-stock-detail-panel .up { color:#ff5b68; }.tw-stock-detail-panel .down { color:#37c7a4; }
+.tw-stock-detail-panel footer { display:flex; justify-content:space-between; align-items:center; gap:15px; margin-top:15px; }.tw-stock-detail-panel footer small { font-size:10px; }
+.tw-stock-detail-panel button[data-twr-chart] { flex:none; width:auto; height:auto; padding:9px 16px; border-radius:12px; }
+.tw-radar-root .tw-stock-status.urgent,.tw-risk-analysis strong.urgent { color:#fff; font-weight:750; text-shadow:0 0 3px #ffffffa8,0 0 9px #ffffff66; }
+@media(max-width:640px) { .tw-stock-detail .tw-stock-detail-panel { padding:14px; border-radius:18px; }.tw-stock-detail-panel h3 { font-size:20px; }.tw-risk-quote-grid { grid-template-columns:1fr; gap:8px; }.tw-risk-metrics { grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }.tw-risk-metric { padding:10px; }.tw-stock-detail-panel footer { align-items:flex-start; }.tw-risk-announcement { padding:11px; } }

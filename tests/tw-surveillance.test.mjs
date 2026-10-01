@@ -20,6 +20,12 @@ const feeds = () => ({
 });
 const options = { now: new Date('2026-09-27T11:00:00Z'), dataDate:'2026-09-24' };
 
+test('near-threshold warning retains exact-date full attention announcement without replacing risk counts',()=>{
+ const input=feeds();input.twseAttentionHistory=ok([{日期:'1150924',證券代號:'1560',證券名稱:'中砂',注意交易資訊:'最近六個營業日累積漲幅達公告标准。'},{日期:'1151001',證券代號:'1560',注意交易資訊:'未來公告'}]);
+ const row=buildTWSurveillance(input,[],options).modes.risk.find(r=>r.symbol==='1560');
+ assert.equal(row.disposition.noticeText,'最近六個營業日累積漲幅達公告标准。');assert.equal(row.disposition.noticeTextDate,'2026-09-24');assert(row.disposition.riskBasis.includes('連續二次'));
+});
+
 test('official dates parse ROC and Gregorian without accepting invalid dates', () => {
   assert.equal(officialDate('1150924'), '2026-09-24');
   assert.equal(officialDate('20260924'), '2026-09-24');
