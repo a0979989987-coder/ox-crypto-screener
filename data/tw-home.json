@@ -156,6 +156,34 @@
       "current": "https://www.twse.com.tw/exchangeReport/MI_INDEX?response=json&date=20260930&type=ALLBUT0999",
       "previous": "https://www.twse.com.tw/exchangeReport/MI_INDEX?response=json&date=20260929&type=ALLBUT0999",
       "weights": "https://www.taifex.com.tw/cht/9/futuresQADetail"
+    },
+    "institutional": {
+      "date": "2026-09-30",
+      "collectedAt": "2026-10-01T06:04:47.650Z",
+      "method": "official-all-securities",
+      "markets": {
+        "TPEX": {
+          "market": "TPEX",
+          "date": "2026-09-30",
+          "total": 5778479664,
+          "foreign": 7653490404,
+          "trust": -2203220923,
+          "dealer": 328210183,
+          "sourceUrl": "https://www.tpex.org.tw/www/zh-tw/insti/summary?type=Daily&prod=0&response=json&date=2026%2F09%2F30",
+          "status": "ok"
+        },
+        "TWSE": {
+          "market": "TWSE",
+          "date": "2026-09-30",
+          "total": 40387694847,
+          "foreign": 30856555666,
+          "trust": 8290786559,
+          "dealer": 1240352622,
+          "sourceUrl": "https://www.twse.com.tw/rwd/zh/fund/BFI82U?response=json&type=day&dayDate=20260930",
+          "status": "ok"
+        }
+      },
+      "total": 46166174511
     }
   },
   "coreStatus": {

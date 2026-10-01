@@ -11,6 +11,11 @@ function accept(section,data){
  const old=value[section],date=section==='core'?'date':section==='night'?'tradeDate':'date';
  const time=section==='core'?'savedAt':'collectedAt';
  if(!old||fresh[date]>old[date]||fresh[date]===old[date]&&Date.parse(fresh[time])>=Date.parse(old[time]))value[section]=fresh;
+ if(section==='core'&&old?.date===fresh.date){
+  const previous=old.institutional,next=fresh.institutional;
+  const latest=!previous?next:!next?previous:Date.parse(next.collectedAt)>=Date.parse(previous.collectedAt)?next:previous;
+  if(latest)value.core={...value.core,institutional:latest};
+ }
 }
 export async function loadHome({force=false,onChange}={}){
  savedHome();if(job)return job;
