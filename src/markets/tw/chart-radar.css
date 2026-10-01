@@ -13,19 +13,20 @@
 #market-unavailable-card.tw-radar-root .tw-chart-radar .market-line-price{position:relative;padding-right:34px!important}
 #market-unavailable-card.tw-radar-root .tw-chart-radar #tw-radar-ticker-pair::after{content:none!important}
 #market-unavailable-card.tw-radar-root .tw-chart-radar .twcr-search-open{position:absolute;top:2px;right:2px;display:grid;place-items:center;width:32px;height:32px;border:0;border-radius:6px;padding:0;background:none;color:var(--ink,#eeece7);cursor:pointer}
-.twcr-workspace>.twcr-details{grid-column:1;grid-row:2;min-width:0;padding:12px;border:1px solid var(--line,#ffffff20);border-radius:10px;background:var(--panel,#14181d)}
+.twcr-workspace>.twcr-details{grid-column:1/-1;grid-row:2;min-width:0;margin-top:0}
 .twcr-workspace>.twcr-scanner{grid-column:2;grid-row:1}
-.twcr-details header{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap;font:12px system-ui}
-.twcr-details header small,.twcr-details dt{color:var(--muted,#92979e);font-size:10px}
-.twcr-series-note{color:var(--muted,#92979e);font:10px/1.5 system-ui;margin:8px 0 0}.twcr-series-note:empty{display:none}
-.twcr-details dl{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px 8px;margin:14px 0 0}
-.twcr-details dl>div{min-width:0}.twcr-details dd{margin:4px 0 0;font:12px/1.5 system-ui;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+.twcr-series-note:empty{display:none}
 .tw-chart-radar.is-focused .twcr-details{display:none}
 .twcr-quote{flex:none}
 .twcr-date{color:var(--muted);font:9px/1.4 system-ui;white-space:nowrap}
 .tw-chart-radar .market-line-price label{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:default}
 .tw-chart-radar .market-line-item strong{font-variant-numeric:tabular-nums}
 .twcr-status{pointer-events:none}.twcr-status:empty{display:none}
+.twcr-intraday-empty{position:absolute;inset:0;z-index:25;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:9px;padding:24px;text-align:center;background:var(--bg,#101216);color:var(--ink,#eeece7);font:13px/1.6 system-ui}
+.twcr-intraday-empty strong{font-size:16px}.twcr-intraday-empty p{margin:0;font:13px/1.6 system-ui;color:var(--ink,#eeece7)}.twcr-intraday-empty small{color:var(--muted,#aaa);font:11px/1.6 system-ui}
+.twcr-intraday-empty>div{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:10px}
+.twcr-intraday-empty a,.twcr-intraday-empty button{border:1px solid var(--line,#ffffff36);border-radius:8px;padding:8px 12px;background:var(--panel,#1c1f23);color:inherit;font:inherit;text-decoration:none;cursor:pointer}
+.twcr-chart-box.is-intraday :is(.chart-drawing-layer,.chart-drawing-tools,.chart-axis-hit){display:none!important}
 .twcr-pool-info{flex:none;padding:5px 8px;color:var(--muted);font:10px/1.4 system-ui}
 .twcr-scanner{display:flex;flex-direction:column;min-height:0}
 .twcr-results{flex:1 1 0;min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin}
@@ -48,7 +49,6 @@
 .tw-chart-radar button:focus-visible,.tw-chart-radar input:focus-visible,.twcr-card:focus-visible{outline:1px solid #ffffffb3;outline-offset:2px}
 body.tw-chart-focus .app-dock{visibility:hidden}
 @media(max-width:720px){
- .twcr-workspace>.twcr-details{grid-column:1/-1}.twcr-details dl{grid-template-columns:repeat(3,minmax(0,1fr))}
  .twcr-card .coin-symbol-mobile{display:flex;flex-direction:column;gap:1px}
  .twcr-card .twcr-name{display:block;width:100%;overflow:hidden;text-overflow:ellipsis;font-size:11px}
  .twcr-card-price{font-size:12px}.twcr-desktop-change{display:none}.twcr-card-turnover{font-size:9px}
