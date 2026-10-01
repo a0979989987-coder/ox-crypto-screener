@@ -1,5 +1,5 @@
-import { dataDate, TIMEFRAMES } from './source.js?v=20261001-resume1';
-export const INDEX_VERSION = 3;
+import { dataDate, TIMEFRAMES } from './source.js?v=20261001-reversal1';
+export const INDEX_VERSION = 4;
 const memory = new Map(); let opening;
 export function entryCurrent(entry) {
   const d = entry?.data, date = dataDate();

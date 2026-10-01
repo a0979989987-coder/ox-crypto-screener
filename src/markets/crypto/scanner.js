@@ -1,7 +1,7 @@
 const WATCH_STAR_SVG = '<svg class="watch-star-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 2.78 5.63L21 9.54l-4.5 4.39 1.06 6.2L12 17.2l-5.56 2.93 1.06-6.2L3 9.54l6.22-.91Z"/></svg>';
 
 const RADAR_RETAIN_MS=2*60*60*1000;
-const RADAR_SNAPSHOT_KEY = 'ox-radar-snapshot-v3-classic5';
+const RADAR_SNAPSHOT_KEY = 'ox-radar-snapshot-v4-classic6';
 function restoreRadarSnapshot() {
   if (state.radarSnapshotChecked) return;
   state.radarSnapshotChecked = true;
@@ -153,7 +153,9 @@ async function runScanQueueLoop() {
     if(!state.radarSnapshotReady&&!initialScanLoading)initialScanLoading=window.OXLoading?.begin('crypto','掃描幣種',{done:0,total:state.scanQueue.length,views:['home','strength']});
     const batchSymbols = [];
     const remaining = state.scanQueue.length-state.scanIndex;
-    for (let i = 0; i < Math.min(CONFIG.queueBatchSize, remaining); i++) {
+    const extraFrames=globalThis.OXTierFilters?.get('crypto').enabled?globalThis.OXTierFilters.get('crypto').rules.filter(r=>!['1H','4H','1D'].includes(r.frame)).length:0;
+    const batchLimit=Math.min(CONFIG.queueBatchSize,Math.max(1,Math.floor(20/(3+extraFrames))));
+    for (let i = 0; i < Math.min(batchLimit, remaining); i++) {
       batchSymbols.push(state.scanQueue[state.scanIndex]);
       state.scanIndex++;
     }
@@ -167,11 +169,16 @@ async function runScanQueueLoop() {
       if (!ticker) return;
 
       try {
-        const [candles,contextBars] = await Promise.all([
-          BitgetAPI.fetchCandles(symbol, '1H', 180), BitgetAPI.fetchCandles(symbol, '4H', 180)
+        const [candles,contextBars,dailyBars] = await Promise.all([
+          BitgetAPI.fetchCandles(symbol, '1H', 180), BitgetAPI.fetchCandles(symbol, '4H', 180),
+          BitgetAPI.fetchCandles(symbol,'1D',180).catch(()=>[])
         ]);
-        const frames={'1H':cryptoClassicBars(candles,'1H'),'4H':cryptoClassicBars(contextBars,'4H')};
-        const classic=Object.fromEntries(['long','short'].map(side=>[side,OXClassic.evaluateFrames(frames,{side,setupFrame:'4H',triggerFrame:'1H'})]));
+        const frames={'1H':cryptoClassicBars(candles,'1H'),'4H':cryptoClassicBars(contextBars,'4H'),'1D':cryptoClassicBars(dailyBars,'1D')};
+        const classic=Object.fromEntries(['long','short'].map(side=>{
+          const signals=[['4H','1H'],['1D','4H']].map(([setupFrame,triggerFrame])=>OXClassic.evaluateFrames(frames,{side,setupFrame,triggerFrame}));
+          const qualified=signals.filter(s=>s.eligible||s.observationEligible).sort(OXClassic.compareClassic);
+          return [side,qualified[0]||signals[0]];
+        }));
         const candidates=Object.values(classic).filter(s=>s.eligible||s.observationEligible).sort(OXClassic.compareClassic);
         const signal=candidates[0]||classic.long;
         const row=OXEngine.describe(signal,classic),liq=OXEngine.computeLiquidity(ticker,state.tickers),rs=OXEngine.computeRelativeStrength(ticker,state.btcTicker);
@@ -183,7 +190,7 @@ async function runScanQueueLoop() {
         }));
         state.analyzedCache.set(symbol, {
           ...row,timeframeTiers,symbol,ticker,at:Date.now(),lastPrice:candles.at(-1)?.close,
-          signalFrame:'4H',triggerFrame:'1H',sparkline:candles.slice(-24).map(c=>c.close),
+          signalFrame:signal.frame||'4H',triggerFrame:signal.triggerFrame||'1H',sparkline:candles.slice(-24).map(c=>c.close),
           liqScore:liq.score,rsScore:rs.score,quoteVol:liq.quoteVol,liqPercentile:liq.percentileStr,
           reasons:row.reasons,
           change24h:num(ticker.change24h),ret1h:candleReturn(candles,1),ret4h:candleReturn(candles,4),
@@ -204,7 +211,7 @@ async function runScanQueueLoop() {
     }
     publishRadarProgress(true);
     // Warm-up is rate-limited to at most 20 candle requests per second.
-    await new Promise(r=>setTimeout(r,state.radarSnapshotReady?Math.max(CONFIG.batchIntervalMs,500*(2+(globalThis.OXTierFilters?.get('crypto').enabled?globalThis.OXTierFilters.get('crypto').rules.filter(r=>r.frame!=='1H').length:0))):Math.max(0,500*Math.max(2,2+(globalThis.OXTierFilters?.get('crypto').enabled?globalThis.OXTierFilters.get('crypto').rules.filter(r=>r.frame!=='1H').length:0))-(performance.now()-batchStarted))));
+    await new Promise(r=>setTimeout(r,state.radarSnapshotReady?Math.max(CONFIG.batchIntervalMs,1000):Math.max(0,1000-(performance.now()-batchStarted))));
   }
 }
 

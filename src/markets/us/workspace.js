@@ -15,11 +15,11 @@ import {
   sourceInfo,
   nativeAllowed,
 } from "./view-utils.js?v=20261001-us-device1";
-import { toolsViews } from "./tools.js?v=20261001-resume1";
-import { newsViews } from "./news.js?v=20261001-resume1";
-import { USAdapter, fetchJSON } from "./provider.js?v=20261001-resume1";
-import { DeviceEOD } from "./device-eod.js?v=20261001-resume1";
-import { USChart } from "./chart.js?v=20261001-resume1";
+import { toolsViews } from "./tools.js?v=20261001-reversal1";
+import { newsViews } from "./news.js?v=20261001-reversal1";
+import { USAdapter, fetchJSON } from "./provider.js?v=20261001-reversal1";
+import { DeviceEOD } from "./device-eod.js?v=20261001-reversal1";
+import { USChart } from "./chart.js?v=20261001-reversal1";
 import { USWidgetChart } from "./widget-chart.js?v=20261001-tiercomb1";
 import { usDisplayCapabilities } from "./widget-config.js?v=20261001-us-device1";
 import { EOD_CAPABILITIES, EOD_INTERVALS } from "./eod.js";
@@ -27,7 +27,7 @@ import { searchDirectory, quoteStatus } from "./model.js?v=20261001-us-eod1";
 import { sessionAt, nyParts } from "./calendar.js?v=20261001-us-eod1";
 import { catalogueMode, cataloguePage, stockName } from "./directory-view.js?v=20261001-us-names1";
 
-import { tierResults, timeframeTierResults, stockClassic } from "./analysis.js?v=20261001-resume1";
+import { tierResults, timeframeTierResults, stockClassic } from "./analysis.js?v=20261001-reversal1";
 import { icon, openDialog, closeDialog } from "./ui.js?v=20261001-us-eod1";
 export class USWorkspace {
   constructor() {

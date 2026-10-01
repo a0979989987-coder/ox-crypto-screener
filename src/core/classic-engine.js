@@ -4,7 +4,7 @@
  */
 (function (root) {
   'use strict';
-  const CLASSIC_VERSION = 4;
+  const CLASSIC_VERSION = 5;
   const CLASSIC_TIER_LIMITS = Object.freeze({ T1: 10, T2: 15, T3: 15 });
   // Initial, centralized defaults in ATR/bar units. These are implementation
   // thresholds, not claims of calibration or performance from trade screenshots.
@@ -157,6 +157,23 @@
     };
     return { confirmed, falling, opposingContext, contextAdvance, contextReclaimed, higherLows, higherHighs, lowerLows, reclaim, advance, lateMove, position, invalidation };
   }
+  function reversalEvidence(bars, features, observed, a, volume, rules) {
+    const n=bars.length,last=bars.at(-1),low=features.lows.filter(p=>p.index>=n-10).at(-1);
+    const high=low&&features.highs.filter(p=>p.index<low.index&&p.index>=n-24).at(-1);
+    if(!high||!volume.complete)return {candidate:false};
+    // A consumed swing cannot be recycled as a fresh reversal trigger.
+    if(bars.slice(high.index+1,low.index).some(c=>c.close>high.price+a*rules.holdATR))return {candidate:false};
+    const recovery=bars.slice(low.index+1),up=recovery.filter(c=>c.close>c.open).reduce((n,c)=>n+c.volume,0),
+      down=recovery.filter(c=>c.close<c.open).reduce((n,c)=>n+c.volume,0);
+    const impulse=Math.max(0,...recovery.filter(c=>c.close-c.open>a*.2).map(c=>c.volume/volume.baseline));
+    const supported=impulse>=rules.impulseVolume&&up/(up+down||1)>=rules.upwardShare&&
+      last.close>=bars.at(-2).close&&(last.close-low.price)/a>=1.5;
+    const confirmed=last.close>high.price+a*rules.holdATR;
+    const probing=observed.provisional&&observed.close>high.price+a*rules.holdATR&&
+      observed.close>last.close&&Number.isFinite(observed.volume)&&observed.volume>=volume.baseline*1.05;
+    return {candidate:supported&&(confirmed||probing),confirmed,probing,level:high.price,
+      high,low,impulseRatio:impulse,upwardShare:up/(up+down||1)};
+  }
   function publicLevel(level, bars, dir) {
     if (!level) return null;
     return { kind: level.kind, state: level.state, level: dir * level.level,
@@ -171,7 +188,8 @@
     const score = eligible ? Math.min(99,signal.qualityScore) : Math.min(79,signal.qualityScore);
     return { ...signal, qualityScore:score, eligible, tier: eligible ? score >= 82 ? 'T1' : score >= 72 ? 'T2' : 'T3' : null,
       phase, stage: phase === 'prebreakout' ? (signal.side === 'LONG' ? '帶量逼近 · 尚未突破' : '帶量逼近 · 尚未跌破') :
-        phase === 'probe' ? '突破試探 · 尚未收 K' : phase === 'breakout' ? '已收 K 確認突破' :
+        phase === 'probe' ? '突破試探 · 尚未收 K' : phase === 'reversal-probe' ? '放量反轉試探 · 尚未收 K' :
+        phase === 'reversal' ? '放量反轉 · 已收復近期轉折' : phase === 'breakout' ? '已收 K 確認突破' :
           phase === 'continuation' ? (signal.side === 'LONG' ? '帶量上漲 · 強勢延續' : '帶量下跌 · 弱勢延續') : '待確認',
       pressure, reasons };
   }
@@ -190,6 +208,7 @@
     const features = pivots(bars, rules.pivotRadius), direction = directionEvidence(bars, features, a);
     const volume = volumeEvidence(bars, a, rules), levels = pressureLevels(bars, features, a, rules);
     const last = bars.at(-1), observedPrice = observed.close * dir, n = bars.length;
+    const reversal=reversalEvidence(bars,features,{...observed,open:observed.open*dir,close:observedPrice},a,volume,rules);
     const ahead = levels.filter(p => p.state === 'valid' && p.level >= last.close - a * 0.15)
       .sort((x, y) => x.level - y.level || y.touches.length - x.touches.length || x.error - y.error);
     const pressure = ahead[0] || null, gap = pressure ? (pressure.level - last.close) / a : null;
@@ -202,50 +221,57 @@
     const liveFailure = observedPrice < stop.price - a * 0.2 ||
       observed.provisional && observedPrice < last.close - a * 0.9;
     const lastRange = Math.max(last.high - last.low, a * 0.1);
-    const exhausted = (last.high - last.close) / lastRange > 0.55 && last.high - last.close > a * 0.7 ||
-      risk > rules.maximumRiskATR;
-    const next = ahead.find(p => !pressure || p.level > pressure.level + a * 0.5) || null;
+    const wickExhausted=(last.high-last.close)/lastRange>0.55&&last.high-last.close>a*.7;
+    const wickRecovered=wickExhausted&&observed.provisional&&observedPrice>=last.high+a*.2;
+    const exhausted=wickExhausted||risk>rules.maximumRiskATR;
     const breakoutDistance = broken ? (observedPrice - broken.level) / a : null;
     const chase = !near && broken && breakoutDistance > 2;
     // Activation must originate from a verified multi-test liquidity level.
     // Momentum alone, without that origin, is not an OX classic opportunity.
-    const phase = near ? observed.provisional && observedPrice > pressure.level + a * rules.holdATR ? 'probe' : 'prebreakout' :
+    let phase = near ? observed.provisional && observedPrice > pressure.level + a * rules.holdATR ? 'probe' : 'prebreakout' :
       broken ? 'breakout' : 'watch';
-    const trigger = near ? pressure : broken, target = near ? next : ahead[0] || null;
-    const space = target ? (target.level - observedPrice) / a : null;
+    const trigger = near ? pressure : broken;
+    const target=ahead.find(p=>p!==trigger&&p.level+p.slope*(observed.provisional?1:0)>observedPrice+a*.15)||null;
+    const space = target ? (target.level+target.slope*(observed.provisional?1:0)-observedPrice) / a : null;
     const spaceOK = space === null || space >= 0.65;
     const structureReady = phase !== 'watch' && direction.confirmed && !failed && !liveFailure && !exhausted && !chase &&
       risk > 0 && spaceOK;
     // T2/T3 are directional observations, not miniature copies of the strict
     // entry gate. Missing activation/impulse alone must not empty those lists.
-    const observationDirection = !direction.falling && !direction.opposingContext &&
+    const observationDirection = !direction.falling && (reversal.candidate||!direction.opposingContext) &&
       (direction.advance > 0 && direction.position >= 0.4 || direction.higherLows && direction.lateMove >= -0.2 && direction.position >= 0.4) &&
-      (!direction.lowerLows || direction.reclaim || direction.contextReclaimed);
+      (!direction.lowerLows || direction.reclaim || direction.contextReclaimed || reversal.candidate);
     const observationEvidence = { liquidity:!!pressure || !!broken,
       directionalVolume:volume.complete && !volume.distribution && volume.upwardShare >= 0.5 &&
         volume.impulseRatio >= 1.05 && direction.advance >= 0.5,
-      priceStructure:direction.higherLows && direction.higherHighs || direction.reclaim };
+      priceStructure:direction.higherLows && direction.higherHighs || direction.reclaim || reversal.candidate,
+      reversal:reversal.candidate };
     const observationEligible = observationDirection && (observationEvidence.liquidity || observationEvidence.directionalVolume || observationEvidence.priceStructure) &&
       volume.complete && !volume.distribution &&
-      !failed && !liveFailure && !exhausted && !chase && risk > 0 && spaceOK;
+      !failed && !liveFailure && (!exhausted||wickRecovered&&risk<=rules.maximumRiskATR) && (!chase||reversal.candidate) && risk > 0;
     const qualityScore = Math.round(clamp(55 + (trigger ? Math.min(4, trigger.touches.length) * 4 : 0) +
       (direction.higherLows ? 7 : 0) + (direction.higherHighs ? 4 : 0) +
       (volume.supported ? 10 : 0) + Math.min(8, Math.max(0, volume.impulseRatio || 0) * 3) +
       (near ? Math.max(0, 8 - Math.max(0, gap) * 5) : 2) + (target && spaceOK ? 4 : 0), 0, 100));
     const rejectionReasons = [];
-    if (!direction.confirmed) rejectionReasons.push(direction.falling ? '當下結構轉跌' : '右側上攻結構不足');
-    if (direction.opposingContext) rejectionReasons.push('較大結構仍逆向，局部反彈／回檔不算轉向');
-    if (chase) rejectionReasons.push('突破後已離開流動性，禁止追高／追空');
+    if (!direction.confirmed) rejectionReasons.push(direction.falling ? '當下結構轉跌' : reversal.candidate?'較大級別轉向仍待確認':'右側上攻結構不足');
+    if (direction.opposingContext) rejectionReasons.push(reversal.candidate?'較大跌勢尚未完全收復，近期轉折正在轉強':'較大結構仍逆向，局部反彈／回檔不算轉向');
+    if (chase&&!reversal.candidate) rejectionReasons.push('突破後已離開流動性，禁止追高／追空');
     if (!volume.complete) rejectionReasons.push('成交量歷史不足');
-    else if (!volume.supported) rejectionReasons.push(volume.distribution ? '下跌放量／派發' : '上攻量能不足');
-    if (phase === 'watch') rejectionReasons.push('沒有接近有效壓力或強勢啟動');
+    else if (!volume.supported) rejectionReasons.push(volume.distribution ? '下跌放量／派發' : reversal.candidate?'近八根整體同向量待確認，低點之後放量已成立':'上攻量能不足');
+    if (phase === 'watch'&&!reversal.candidate) rejectionReasons.push('沒有接近有效壓力或強勢啟動');
     if (failed) rejectionReasons.push('近期突破失敗，壓力已上下貫穿');
     if (liveFailure) rejectionReasons.push('最新價格已破壞結構');
-    if (exhausted) rejectionReasons.push('上攻回落或已走離可觀察位置');
+    if (exhausted) rejectionReasons.push(wickRecovered&&risk<=rules.maximumRiskATR?'最新價格已收復前一根回落，等待收 K':'上攻回落或已走離可觀察位置');
     if (!spaceOK) rejectionReasons.push('下一個目標空間不足');
-    const publicPressure = publicLevel(trigger || pressure, bars, dir);
+    const useReversal=reversal.candidate&&!structureReady;
+    if(useReversal)phase=reversal.confirmed?'reversal':'reversal-probe';
+    const publicPressure = useReversal?{kind:'swing',state:reversal.confirmed?'broken':'valid',level:dir*reversal.level,
+      slope:0,touches:1,formedAt:reversal.high.confirmedAt,testedAt:reversal.high.time,
+      brokenAt:reversal.confirmed?last.time:null,consumedAt:null,
+      points:[{time:reversal.high.time,index:reversal.high.index,price:dir*reversal.level},{time:observed.time,index:n-1+(observed.provisional?1:0),price:dir*reversal.level}]}:publicLevel(trigger || pressure, bars, dir);
     const reasons = [side === 'LONG' ? '右側價格向上推進' : '右側價格向下推進'];
-    if (publicPressure) reasons.push((publicPressure.kind === 'horizontal' ? '水平' : '斜線') +
+    if (publicPressure) reasons.push((publicPressure.kind === 'swing' ? '近期轉折' : publicPressure.kind === 'horizontal' ? '水平' : '斜線') +
       (side === 'LONG' ? '壓力' : '支撐') + ' · ' + publicPressure.touches + ' 次獨立測試 · ' +
       (publicPressure.state === 'valid' ? '尚未有效突破' : '已收 K 越過'));
     if (gap !== null && near) reasons.push('距觸發 ' + Math.max(0, gap).toFixed(2) + ' ATR');
@@ -260,18 +286,22 @@
     if (observationDirection) matchedReasons.push(framePrefix+(direction.advance>0 ?
       (side==='LONG'?'價格向上推進':'價格向下推進') :
       (side==='LONG'?'低點墊高，當下未轉弱':'高點降低，當下未轉強')));
-    if (observationEvidence.liquidity && publicPressure) matchedReasons.push(framePrefix+
+    if (observationEvidence.liquidity && publicPressure && !useReversal) matchedReasons.push(framePrefix+
       (publicPressure.kind==='horizontal'?'水平':'斜線')+(side==='LONG'?'壓力':'支撐')+' · '+
       publicPressure.touches+' 次獨立測試 · '+(publicPressure.state==='valid'?'仍有效':'已收 K 越過'));
-    if (observationEvidence.priceStructure) matchedReasons.push(framePrefix+(direction.reclaim ?
+    if (direction.higherLows&&direction.higherHighs||direction.reclaim) matchedReasons.push(framePrefix+(direction.reclaim ?
       (side==='LONG'?'已收復近期高點':'已跌破近期低點') :
       (side==='LONG'?'高低點向上移動':'高低點向下移動')));
+    if(useReversal)matchedReasons.push(framePrefix+(reversal.confirmed?'已收復近期轉折':'正在突破近期轉折，等待收 K')+' · '+(dir*reversal.level),
+      framePrefix+'低點之後已收 K 同向放量 · '+reversal.impulseRatio.toFixed(2)+'x');
+    if(wickRecovered)matchedReasons.push(framePrefix+'最新價格已收復前一根上影線，等待收 K 確認');
     if (volume.supported || observationEvidence.directionalVolume) matchedReasons.push(framePrefix+
       (volume.supported?'同向放量已確認':'同向量能開始增加，尚未達完整放量門檻')+' · '+volume.impulseRatio.toFixed(2)+'x');
     if (near) matchedReasons.push(framePrefix+'距有效流動性 '+Math.max(0,gap).toFixed(2)+' ATR');
     const strictEligible=structureReady && volume.supported;
-    const completenessScore=strictEligible?qualityScore:qualityScore-(volume.supported?0:12)-(direction.confirmed?0:8)-(near?0:8);
-    const signal = { ...base, qualityScore:completenessScore, atr: a, direction, volume, structureReady, observationEligible, observationEvidence, distanceATR: gap,
+    let completenessScore=strictEligible?qualityScore:qualityScore-(volume.supported?0:12)-(direction.confirmed?0:8)-(near?0:8);
+    if(useReversal)completenessScore=Math.round(Math.max(completenessScore,55+Math.min(12,reversal.impulseRatio*3)+(reversal.confirmed?8:4)+(reversal.upwardShare>=.7?6:0)));
+    const signal = { ...base, riskATR:risk, wickRecovered, qualityScore:completenessScore, atr: a, direction, volume, reversal, structureReady, observationEligible, observationEvidence, distanceATR: gap,
       invalidation: { level: dir * stop.price, time: stop.time }, target: publicLevel(target, bars, dir),
       levels: levels.map(p => publicLevel(p, bars, dir)), matchedReasons, rejectionReasons,
       priority: phase === 'prebreakout' || phase === 'probe' ? 0 : 1 };
@@ -288,7 +318,7 @@
       !trigger.volume.distribution && !triggerVeto.some(reason => trigger.rejectionReasons.includes(reason));
     const eligible = setup.eligible && triggerOK;
     const observationEligible = setup.observationEligible && trigger.volume?.complete &&
-      !trigger.direction?.falling && !trigger.direction?.opposingContext && !trigger.volume?.distribution &&
+      !trigger.direction?.falling && (!trigger.direction?.opposingContext||trigger.reversal?.candidate) && !trigger.volume?.distribution &&
       !triggerVeto.some(reason => trigger.rejectionReasons.includes(reason));
     const reasons = [setupFrame + ' 結構＋' + triggerFrame + (setup.side === 'LONG' ? ' 上攻確認' : ' 下攻確認'), ...setup.reasons.filter(r => !r.includes('量比')),
       ...trigger.reasons.filter(r => r.includes('量比'))];
@@ -335,8 +365,8 @@
     return [t1, t2, t3].flatMap((group, i) => group.map(row => ({ ...row,
       qualityTier: row.classicSignal.tier, tier: 'T' + (i + 1), displayTier: 'T' + (i + 1),
       observationOnly:!row.classicSignal.eligible,
-      stage:row.classicSignal.eligible ? row.classicSignal.stage : '同向觀察 · 尚未確認',
-      rankStatus: row.classicSignal.eligible ? row.classicSignal.stage : '同向觀察 · 尚未通過完整入選條件' })));
+      stage:row.classicSignal.eligible || ['reversal','reversal-probe','probe'].includes(row.classicSignal.phase) ? row.classicSignal.stage : '同向觀察 · 尚未確認',
+      rankStatus: row.classicSignal.eligible || ['reversal','reversal-probe','probe'].includes(row.classicSignal.phase) ? row.classicSignal.stage : '同向觀察 · 尚未通過完整入選條件' })));
   }
   root.OXClassic = Object.freeze({ CLASSIC_VERSION, CLASSIC_TIER_LIMITS, CLASSIC_RULES, evaluateClassic, evaluateFrames, qualifyClassicRow, compareClassic, compactClassic, rankClassicTiers });
 })(globalThis);
