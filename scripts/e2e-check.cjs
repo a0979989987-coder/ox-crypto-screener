@@ -197,6 +197,8 @@ async function selectView(page, view) {
   else await page.click(`.app-dock [data-view-target="${view}"]`);
   if (await page.locator("body").getAttribute("data-market") === "us")
     await page.waitForFunction(view => document.body.dataset.view === view && !document.querySelector(".us2-root")?.hidden, view);
+  else if (await page.locator("body").getAttribute("data-market") === "tw")
+    await page.waitForFunction(view => document.body.dataset.view === view && !document.querySelector("#market-unavailable-card")?.hidden, view);
   else await page.waitForSelector(`#view-${view}.active`);
 }
 
@@ -266,6 +268,12 @@ async function desktopRegression(browser) {
   await page.waitForSelector('.twcr-search-results [data-search-symbol="2330"]');
   assert((await page.locator('.twcr-search-results [data-search-symbol="2330"]').innerText()).includes("2330"), "TW stock search did not display the selected official snapshot symbol");
   await page.locator('.twcr-search-dialog [data-action="search-close"]').click();
+  await selectView(page, "strength");
+  await page.locator('[data-tw-tool="bubbles"]').click();
+  await page.waitForFunction(() => Number(document.querySelector('#ox-tw-patterns')?.shadowRoot?.querySelector('canvas')?.dataset.coins) > 0);
+  assert(await page.locator('[data-tw-tool]').count() === 3, "Taiwan indicators must have three aligned tools");
+  assert(await page.locator('.ox-data-loading').count() === 0, "Loading must stay inside the data area");
+  await selectView(page, "radar");
   await selectMarket(page, "crypto");
   assert(await page.locator("#view-radar").isVisible(), "Crypto market did not restore");
 
@@ -379,6 +387,12 @@ async function mobileRegression(browser) {
   await page.waitForSelector('.twcr-search-results [data-search-symbol="2330"]');
   assert(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth) <= 2, "Mobile TW chart radar overflowed");
   await page.locator('.twcr-search-dialog [data-action="search-close"]').click();
+  await selectView(page, "strength");
+  await page.locator('[data-tw-tool="bubbles"]').click();
+  await page.waitForFunction(() => Number(document.querySelector('#ox-tw-patterns')?.shadowRoot?.querySelector('canvas')?.dataset.coins) > 0);
+  assert(await page.locator('[data-tw-tool]').count() === 3, "Taiwan indicators must have three aligned tools");
+  assert(await page.locator('.ox-data-loading').count() === 0, "Loading must stay inside the data area");
+  await selectView(page, "radar");
   await selectMarket(page, "crypto");
   assert(await page.locator("#view-radar").isVisible(), "Mobile market switch back to Crypto failed");
   await page.click("#ox-control-close");

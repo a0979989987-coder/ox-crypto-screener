@@ -1,8 +1,8 @@
 import { rankChartRows, chartUniverse } from './chart-radar-model.js';
 import { escapeTW as esc } from './radar-card.js';
 import { savedResearch } from './research-data.js?v=20261001-loading1';
-import { bundleState, bundleEntry, subscribeBundle, preloadBundle } from './patterns/bundle.js?v=20261001-loading1';
-import { fetchSeries } from './patterns/source.js?v=20261001-loading1';
+import { bundleState, bundleEntry, subscribeBundle, preloadBundle } from './patterns/bundle.js?v=20261001-twbubbles1';
+import { fetchSeries } from './patterns/source.js?v=20261001-twbubbles1';
 import { CHART_FRAMES, aggregateChartCandles, stockDetails, chartTickFormatter } from './chart-data.js?v=20261001-loading1';
 import { cryptoRadarPart, attachCryptoRadarStyles } from '../../components/radar/market-workspace.js';
 import { chartHistory, loadHistoryPage, preserveHistoryViewport } from './chart-history.js?v=20261001-loading1';
@@ -85,7 +85,7 @@ export function mountTWChartRadar(host,{state:marketState,watchlist=new Set()}={
  const scannerSize=new ResizeObserver(()=>{$('.twcr-scanner').style.height=`${el.clientHeight+box.querySelector('.chart-controls').offsetHeight+$('.twcr-history-bar').offsetHeight+2}px`;marker();});scannerSize.observe(el);scannerSize.observe($('.twcr-history-bar'));
  const snapshot=()=>{const b=bundleState();return b.stocks.length?{date:b.date,stocks:b.stocks}:savedResearch();};
  const universe=()=>chartUniverse(marketState,snapshot());
- function status(message){const node=$('.twcr-status');if(/載入中|正在載入/.test(message)&&window.OXLoading)node.innerHTML=OXLoading.markup(message,0,1);else node.textContent=message;node.classList.toggle('show',!!message);}
+ function status(message){const node=$('.twcr-status');if(/載入中|正在載入/.test(message)&&window.OXLoading)OXLoading.render(node,message,0,1);else node.textContent=message;node.classList.toggle('show',!!message);}
  const cardNodes=new Map();
  function renderSearch(){
   const value=$('.twcr-search-dialog input').value.trim().toLowerCase(),stocks=universe().filter(r=>`${r.symbol} ${r.name}`.toLowerCase().includes(value)),rows=stocks.slice(0,60);
@@ -174,7 +174,7 @@ export function mountTWChartRadar(host,{state:marketState,watchlist=new Set()}={
  async function fillHistory(){
   const run=serial,record=historyRecord,signal=controller.signal;if(!record||record.complete)return;
   if(historyJob?.run===run)return historyJob.promise;
-  const loading=window.OXLoading?.begin('tw',`${record.symbol} 歷史 K 線載入中`,{signal,done:0,total:1,views:['radar']});
+  const loading=window.OXLoading?.begin('tw',`${record.symbol} 歷史 K 線載入中`,{signal,done:0,total:1,views:['radar'],target:$('.twcr-history-bar')});
   const promise=(async()=>{try{while(!record.complete){await loadHistoryPage(record,signal);if(run!==serial||life.signal.aborted)return;renderHistory();}}
    catch(error){if(run===serial&&!life.signal.aborted&&error.name!=='AbortError')renderHistory();}
    finally{loading?.finish();if(historyJob?.run===run)historyJob=null;}
