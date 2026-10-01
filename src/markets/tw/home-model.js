@@ -19,5 +19,13 @@ export function validBriefing(r){
 export function acceptHomeSection(section,value){
  if(value==null)return null;
  if(section==='core'&&!validCloseReport(value)||section==='night'&&value.status!=='unavailable'&&!validNight(value)||section==='briefing'&&!validBriefing(value))throw Error('資料日期或完整性驗證失敗，保留上次有效資料');
+ if(section==='core'&&value.institutional){
+  const r=value.institutional,markets=['TWSE','TPEX'].map(key=>r.markets?.[key]);
+  const invalidMarket=m=>{
+   if(!m||m.date!==r.date||!['ok','stale','unavailable'].includes(m.status))return true;
+   return m.status==='unavailable'?m.total!==null:![m.total,m.foreign,m.trust,m.dealer].every(Number.isSafeInteger)||m.total!==m.foreign+m.trust+m.dealer;
+  };
+  if(r.date!==value.date||!Number.isFinite(Date.parse(r.collectedAt))||markets.some(invalidMarket)||r.total!==(markets.every(m=>Number.isSafeInteger(m.total))?markets[0].total+markets[1].total:null))throw Error('法人彙總驗證失敗');
+ }
  return value;
 }

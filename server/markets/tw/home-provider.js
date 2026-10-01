@@ -2,6 +2,7 @@ import {readFile} from 'node:fs/promises';
 import {taipeiClock,tradingDates,collect} from './home-close.js';
 import {collectBriefing} from './home-markets.js';
 import {collectNight} from './home-night.js';
+import {collectInstitutionSummary} from './institution-summary.js';
 import {acceptHomeSection} from '../../../src/markets/tw/home-model.js';
 const cache=new Map(),pending=new Map();let seed;
 export async function readHomeSeed(){
@@ -10,12 +11,13 @@ export async function readHomeSeed(){
  for(const section of ['core','briefing','night'])try{seed[section]=acceptHomeSection(section,seed[section]);}catch{seed[section]=null;}
  return seed;
 }
-export async function collectCore(previous,now=new Date(),dependencies={tradingDates,collect}){
+export async function collectCore(previous,now=new Date(),dependencies={tradingDates,collect,collectInstitutionSummary}){
  const clock=taipeiClock(now),dates=await dependencies.tradingDates(clock.date);
  const complete=dates.filter(date=>date<clock.date||clock.minutes>=810&&date===clock.date);
  const date=complete.at(-1),previousDate=complete.filter(day=>day<date).at(-1);
  if(!date||!previousDate)throw Error('完整收盤交易日尚未公布');
- const report=await dependencies.collect(date,previousDate);
+ const [report,institutional]=await Promise.all([dependencies.collect(date,previousDate),dependencies.collectInstitutionSummary?.(date,previous?.institutional)]);
+ if(institutional)report.institutional=institutional;
  return acceptHomeSection('core',report);
 }
 export async function refreshHomeSection(section,previous,now=new Date(),collectors={core:collectCore,briefing:collectBriefing,night:collectNight}){

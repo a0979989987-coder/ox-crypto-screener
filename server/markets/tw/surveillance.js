@@ -310,6 +310,16 @@ export function buildTWSurveillance(feeds, quotes = [], { now = new Date(), data
       modes.risk.push(row);
     }
   }
+  // Preserve full notices for near-threshold rows too; warning counts are not announcement text.
+  const notices=new Map();
+  for(const [source,market] of [['twseAttentionHistory','TWSE'],['tpexAttentionHistory','TPEX'],['twseAttention','TWSE'],['tpexAttention','TPEX']])for(const item of feeds[source]?.rows||[]){
+    const symbol=stockCode(item.Code||item.SecuritiesCompanyCode||item.SecuritiesCode||item['證券代號']);
+    const date=officialDate(item.Date||item.AnnouncementDate||item.TradeDate||item['日期']||item['公告日期']);
+    const text=clean(item.AttentionTradingInformation||item.TradingInformation||item.Reason||item['注意交易資訊']);
+    if(!symbol||!date||!text||date>dataDate||date<recentAttentionFrom)continue;
+    const key=market+symbol,previous=notices.get(key);if(!previous||date>=previous.date)notices.set(key,{date,text});
+  }
+  for(const row of [...modes.risk,...active.values()]){const notice=notices.get(row.market+row.symbol);if(notice)Object.assign(row.disposition,{noticeText:notice.text,noticeTextDate:notice.date});}
   modes.disposal = [...active.values()].sort((a,b) => a.disposition.endDate.localeCompare(b.disposition.endDate));
   modes.release = modes.disposal.filter(row => row.disposition.releaseDays !== null && row.disposition.releaseDays <= 3)
     .map(row => ({ ...row, disposition: { ...row.disposition, status: 'release' } }));

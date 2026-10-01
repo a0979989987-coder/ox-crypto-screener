@@ -1,5 +1,7 @@
+import {riskDetailContent} from './risk-detail.js';
+import {savedResearch} from './research-data.js?v=20261001-loading1';
 import { twProvider } from "./api.js?v=20261001-loading1";
-import { escapeTW, renderTWCandles, renderTWCurrentCandle } from "./radar-card.js";
+import { renderTWCurrentCandle } from "./radar-card.js";
 
 const cache = new Map();
 const pending = new Map();
@@ -73,33 +75,14 @@ export function observeTWMiniCandles(root) {
   nodes.forEach(node => observer.observe(node));
 }
 
-export async function openTWStockDetail(root, row) {
-  if (!row) return;
-  root.querySelector(".tw-stock-detail")?.remove();
-  const scrollY = window.scrollY;
-  const dialog = document.createElement("div");
-  const disposition = row.disposition || {};
-  const officialLink = url => {
-    try { const value = new URL(url); return value.protocol === 'https:' && ['www.twse.com.tw','www.tpex.org.tw'].includes(value.hostname) ? value.href : ''; }
-    catch { return ''; }
-  };
-  const sourceUrl = officialLink(disposition.sourceUrl || disposition.riskSourceUrl);
-  const announcement = `<div class="tw-stock-announcement">${disposition.riskBasis ? `<p><b>${escapeTW(disposition.riskLevel || '官方注意累計')}</b><br>${escapeTW(disposition.riskBasis)}<br>須後續再達官方注意標準，才可能進入處置。</p>` : ''}${disposition.detail ? `<details><summary>查看處置公告</summary><p>${escapeTW(disposition.detail)}</p></details>` : ''}${sourceUrl ? `<a href="${escapeTW(sourceUrl)}" target="_blank" rel="noopener noreferrer">官方公告 ↗</a>` : ''}</div>`;
-  dialog.className = "tw-stock-detail";
-  dialog.innerHTML = `<div class="tw-stock-detail-scrim" data-twr-close></div><section class="tw-stock-detail-panel" role="dialog" aria-modal="true" aria-label="${escapeTW(row.name || row.symbol)} K 線"><header><div><small>OX TW · 官方日 K</small><h3>${escapeTW(row.name || row.symbol)} <span>${escapeTW(row.symbol)}</span></h3></div><button type="button" data-twr-close aria-label="返回雷達">×</button></header><div class="tw-stock-detail-chart">日 K 載入中…</div><p>歷史日 K，非即時行情。出關倒數依公告迄日與官方交易日曆計算。</p>${announcement}</section>`;
-  root.append(dialog);
-  dialog.querySelector("[data-twr-close]:last-child")?.focus({ preventScroll: true });
-  const close = () => {
-    dialog.classList.remove("visible");
-    setTimeout(() => dialog.remove(), 190);
-    window.scrollTo(0, scrollY);
-    root.querySelector(`[data-twr-symbol="${CSS.escape(row.symbol)}"]`)?.focus({ preventScroll: true });
-  };
-  dialog.addEventListener("click", event => { if (event.target.closest("[data-twr-close]")) close(); });
-  dialog.addEventListener("keydown", event => { if (event.key === "Escape") close(); });
-  requestAnimationFrame(() => dialog.classList.add("visible"));
-  const result = await schedule(row.symbol);
-  if (!dialog.isConnected) return;
-  const chart = renderTWCandles(result.candles, { width: 760, height: 330, count: 60 });
-  dialog.querySelector(".tw-stock-detail-chart").innerHTML = chart || (result.error ? "官方日 K 暫時無法載入" : "官方日 K 尚無資料");
+export function openTWStockDetail(root,row){
+ if(!row)return;document.querySelector('.tw-stock-detail')?.close();document.querySelector('.tw-stock-detail')?.remove();
+ const scrollY=window.scrollY,dialog=document.createElement('dialog');
+ dialog.className='tw-stock-detail';dialog.setAttribute('aria-label',`${row.name||row.symbol} 風險與處置資訊`);
+ dialog.innerHTML='<section class="tw-stock-detail-panel">'+riskDetailContent(row,savedResearch())+'</section>';
+ document.body.append(dialog);dialog.showModal();
+ const close=()=>{dialog.close();dialog.remove();window.scrollTo(0,scrollY);root.querySelector(`[data-twr-symbol="${CSS.escape(row.symbol)}"]`)?.focus({preventScroll:true});};
+ dialog.addEventListener('cancel',event=>{event.preventDefault();close();});
+ dialog.addEventListener('click',event=>{if(event.target===dialog||event.target.closest('[data-twr-close]'))close();else if(event.target.closest('[data-twr-chart]')){close();document.querySelector('.dock-btn[data-view-target="radar"]')?.click();document.dispatchEvent(new CustomEvent('ox:tw-chart-symbol',{detail:{symbol:row.symbol}}));}});
+ dialog.querySelector('[data-twr-close]')?.focus({preventScroll:true});dialog.classList.add('visible');
 }

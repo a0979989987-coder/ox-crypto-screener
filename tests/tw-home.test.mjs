@@ -69,7 +69,7 @@ test('manual refresh bypasses cache and fetches sources even before publication;
 test('home renders only one actual change field, estimates, independent dates, native market groups and bp/units',()=>{
  const html=coreContent(seed,false)+briefingContent(seed,false);
  assert(!html.includes('當日加權指數實際漲跌'));assert.equal((html.match(/今日大盤漲跌/g)||[]).length,1);assert(html.includes('十二大權值股淨貢獻'));assert(html.includes('估算'));assert(html.includes('上漲貢獻合計'));assert(html.includes('下跌拖累合計'));assert(!html.includes('<iframe'));
- assert(html.includes('台指期盤後／夜盤'));assert(html.includes(seed.night.contract.slice(0,4)+'/'+seed.night.contract.slice(4)));assert(html.includes('交易歸屬日 '+seed.night.tradeDate));assert(html.includes('USD/桶'));assert(html.includes(' bp'));
+ assert(html.includes('台指期盤後／夜盤'));assert(!html.includes('交易歸屬日'));assert(!html.includes('資料取得'));assert(!html.includes('TX 近月'));assert(!html.includes('Yahoo Finance'));assert(html.includes('USD/桶'));assert(html.includes(' bp'));
  const blank=coreContent({},false);assert(!blank.includes('0.00'));assert(blank.includes('—'));
  assert.throws(()=>acceptHomeSection('briefing',{...seed.briefing,rows:seed.briefing.rows.map(row=>row.group==='asia'?{...row,marketDate:seed.briefing.date}:row)}),/驗證/);
 });

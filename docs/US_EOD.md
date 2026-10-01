@@ -33,6 +33,6 @@ US_PRIVATE_INPUT=/tmp/ox-us-eod/bundle.json npm run dev -- --us-private --port 4
 
 - 真實來源日線離線重建私人快照：2026-09-30，335 檔有效收盤／分析，636 筆日線與週線分析；不足資料明確排除。沒有新抓盤中行情。
 - Chromium 390／430px 經真實本地 HTTP：SPY 400 根日線、91 根週線、21 根月線與實際 chart renderer 完全對應；首頁及型態工具能切換，無 runtime error、橫向溢出。模擬五分鐘過程無圖表、報價或快照輪詢。
-- 整合最新主線後單元測試 246 項通過，build check 與 diff check 通過。
+- 整合最新主線後單元測試 253 項通過，build check 與 diff check 通過。
 - WebKit 本次未完成：執行環境缺少相容圖形系統，啟動時失敗。不能用先前盤中版驗證替代本次盤後版的 WebKit 驗收。
 - Finance Query 公開權限尚待供應商回覆；本次私人數字不是正式網站已有公开行情的宣告。

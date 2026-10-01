@@ -1,5 +1,5 @@
 import {savedHome,loadHome} from './home-data.js';
-import {coreContent,briefingContent,mountBriefingLayout} from './home-content.js';
+import {coreContent,briefingContent,institutionContent,mountBriefingLayout} from './home-content.js';
 import { savedResearch, loadResearch, selectSectors, readWatchlist, quadrant } from './research-data.js?v=20261001-loading1';
 import { escape, number, pct, money, direction, segments, mountResearch, stockRows } from './research-ui.js';
 import { bubbleChart, bubblePoints } from './research-bubbles.js?v=20261001-loading1';
@@ -13,42 +13,17 @@ async function refreshHome(s,force=false){
  try{home=await loadHome({force,onChange(snapshot,count){home=snapshot;if(count)progress?.update(count.done,count.total);if(session?.view==='home'&&current(session))paint(session);}});}
  finally{progress?.finish();homeLoading=false;homeFetched=Date.now();if(session?.view==='home'&&current(session))paint(session);}
 }
-let outlook = { day: null, up: 0, down: 0, mine: null, status: '載入多空看法中', ready: false, checkedAt: 0, pending: false };
-async function loadOutlook(s) {
-  if (s.view !== 'home' || outlook.pending || Date.now() - outlook.checkedAt < 60000) return;
-  outlook.pending = true; outlook.checkedAt = Date.now();
-  try {
-    const response = await fetch('/api/v1/tw/outlook', { cache: 'no-store' });
-    const result = await response.json();
-    if (!response.ok) throw new Error(result.error === 'POLL_NOT_CONFIGURED' ? '多空投票尚未啟用' : '多空投票暫時無法連線');
-    outlook = { ...result, status: result.mine ? '已記錄，可修改 · 每個瀏覽器一票' : '每個瀏覽器一票', ready: true, checkedAt: Date.now(), pending: false };
-  } catch (e) { outlook.ready = false; outlook.status = e.message === '多空投票尚未啟用' ? e.message : '多空投票暫時無法連線'; outlook.pending = false; }
-  if (current(s)) paint(s);
-}
-async function submitOutlook(s, side) {
-  if (!outlook.ready || outlook.pending) return;
-  outlook.pending = true; outlook.status = '送出中'; paint(s);
-  try {
-    const response = await fetch('/api/v1/tw/outlook', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ day: outlook.day, side }) });
-    const result = await response.json();
-    if (!response.ok) throw new Error(result.error === 'TRADING_DAY_CHANGED' ? '交易日已更新，請再投一次' : '送出失敗，請稍後再試');
-    outlook = { ...result, status: '已記錄，可修改 · 每個瀏覽器一票', ready: true, checkedAt: Date.now(), pending: false };
-  } catch (e) { outlook.status = e.message === '交易日已更新，請再投一次' ? e.message : '送出失敗，請稍後再試'; outlook.pending = false; outlook.checkedAt = 0; }
-  if (current(s)) paint(s);
-}
 export function stopResearch() { session?.briefingLayout?.(); if (session?.replayTimer) clearInterval(session.replayTimer); session?.controller.abort(); session = null; closeResearchDetails(); }
 const current = s => session === s && document.body.dataset.market === 'tw' && s.root.querySelector(`[data-twx-view="${s.view}"]`);
 function homeContent(state) {
   const stocks = data?.stocks || [];
   const sectors = selectSectors(data).filter(s => Number.isFinite(s.flow));
   const leaders = [...sectors].sort((a, b) => b.flow - a.flow);
-  const { day, up: bulls, down: bears, mine: vote, ready } = outlook;
-  const votes = bulls + bears, bullPct = votes ? Math.round(bulls / votes * 100) : 0;
   const chip = s => `<button type="button" class="twx-sector-chip" data-sector="${escape(s.name)}"><span>${escape(s.name)}</span><b class="${direction(s.flow)}">${money(s.flow)}</b></button>`;
 
   const toolbar=`<div class="twx-home-toolbar"><button type="button" class="twx-session-toggle" data-home-session aria-label="切換${homeSession==='after'?'盤前':'盤後'}資訊"><span class="${homeSession==='after'?'active':''}">盤後</span><span aria-hidden="true">⇄</span><span class="${homeSession==='before'?'active':''}">盤前</span></button><button type="button" class="twx-refresh" data-home-refresh ${homeLoading?'disabled':''}>${homeLoading?'更新中…':'更新資料'}</button></div>`;
   if(homeSession==='before')return toolbar+briefingContent(home,homeLoading);
-  return `${toolbar}<div class="twx-home-grid">${coreContent(home,homeLoading)}<section class="twx-glass twx-outlook"><div class="twx-section-head"><span>下一交易日</span><small>${day || '—'} · 我的看法</small></div><div class="twx-votes"><button type="button" data-vote="up" aria-pressed="${vote === 'up'}" ${!ready || outlook.pending ? 'disabled' : ''}><span class="up">↗</span>看漲</button><button type="button" data-vote="down" aria-pressed="${vote === 'down'}" ${!ready || outlook.pending ? 'disabled' : ''}><span class="down">↘</span>看跌</button></div><div class="twx-energy" aria-label="多空能量：看漲 ${bulls} 票，看跌 ${bears} 票"><div class="twx-energy-label"><span class="up">看漲 ${ready ? `${bulls} · ${bullPct}%` : '—'}</span><span>多空能量 · ${ready ? `${votes} 票` : '—'}</span><span class="down">看跌 ${ready ? `${bears} · ${votes ? 100 - bullPct : 0}%` : '—'}</span></div><div class="twx-energy-track">${ready && votes ? `<i class="up" style="width:${bullPct}%"></i><i class="down" style="width:${100 - bullPct}%"></i>` : ''}</div></div><small class="twx-vote-status" role="status">${escape(outlook.status)}</small></section><section class="twx-glass twx-flows"><div class="twx-section-head"><span>法人買賣超產業</span><button type="button" data-go="strength">查看泡泡圖 ↗</button></div><div class="twx-flow-columns"><div><h3 class="up">買超</h3><div class="twx-chip-list">${leaders.filter(s => s.flow > 0).slice(0, 5).map(chip).join('') || '<span class="twx-muted">法人資料待更新</span>'}</div></div><div><h3 class="down">賣超</h3><div class="twx-chip-list">${leaders.filter(s => s.flow < 0).reverse().slice(0, 5).map(chip).join('') || '<span class="twx-muted">法人資料待更新</span>'}</div></div></div></section><section class="twx-glass twx-home-wide"><div class="twx-section-head"><span>法人動向</span><small>估算淨買超</small></div>${stockRows([...stocks].filter(s => Number.isFinite(s.netTwd)).sort((a, b) => b.netTwd - a.netTwd), readWatchlist(), 5) || '<div class="twx-empty">官方資料載入後顯示</div>'}</section></div>`;
+  return `${toolbar}<div class="twx-home-grid">${coreContent(home,homeLoading)}${institutionContent(home)}<section class="twx-glass twx-flows"><div class="twx-section-head"><span>法人買賣超產業</span><button type="button" data-go="strength">查看泡泡圖 ↗</button></div><div class="twx-flow-columns"><div><h3 class="up">買超</h3><div class="twx-chip-list">${leaders.filter(s => s.flow > 0).slice(0, 5).map(chip).join('') || '<span class="twx-muted">法人資料待更新</span>'}</div></div><div><h3 class="down">賣超</h3><div class="twx-chip-list">${leaders.filter(s => s.flow < 0).reverse().slice(0, 5).map(chip).join('') || '<span class="twx-muted">法人資料待更新</span>'}</div></div></div></section><section class="twx-glass twx-home-wide"><div class="twx-section-head"><span>法人動向</span><small>估算淨買超</small></div>${stockRows([...stocks].filter(s => Number.isFinite(s.netTwd)).sort((a, b) => b.netTwd - a.netTwd), readWatchlist(), 5) || '<div class="twx-empty">官方資料載入後顯示</div>'}</section></div>`;
 }
 function chartMode() {
   if (prefs.replayIndex !== null) return 'day';
@@ -116,7 +91,7 @@ function paint(s) {
 async function refresh(s, force) {
   if (loading) return;
   loading = true; error = null; paint(s);
-  const loadingTask=window.OXLoading?.begin('tw','台股產業資料載入中');
+  const loadingTask=window.OXLoading?.begin('tw','台股產業資料載入中',{signal:s.controller.signal,target:()=>s.view==='strength'?s.root.querySelector('.twx-chart-content'):s.root.querySelector('.twx-market')});
   const result = await loadResearch({ force, onCached(snapshot) { data = snapshot; if (current(s)) paint(s); } });
   loadingTask?.finish();
   loading = false; lastFetch = Date.now(); data = result.data; error = result.error;
@@ -132,9 +107,9 @@ export function renderResearch(view, state, { host } = {}) {
   const outer = mountResearch(view); if (!outer) return null;
   const root = host || outer;
   data = savedResearch() || data;
-  if (session?.view === view && session.root === root && root.querySelector(`[data-twx-view="${view}"]`)) { session.state = state; if (!document.querySelector('.twx-dialog') && document.activeElement?.tagName !== 'INPUT') paint(session); loadOutlook(session); if(view==='home'&&Date.now()-homeFetched>300000)refreshHome(session); return root; }
+  if (session?.view === view && session.root === root && root.querySelector(`[data-twx-view="${view}"]`)) { session.state = state; if (!document.querySelector('.twx-dialog') && document.activeElement?.tagName !== 'INPUT') paint(session); if(view==='home'&&Date.now()-homeFetched>300000)refreshHome(session); return root; }
   stopResearch();
-  const s = { view, root, state, controller: new AbortController() }; session = s; paint(s); loadOutlook(s); if(view==='home'&&Date.now()-homeFetched>300000)refreshHome(s);
+  const s = { view, root, state, controller: new AbortController() }; session = s; paint(s); if(view==='home'&&Date.now()-homeFetched>300000)refreshHome(s);
   root.addEventListener('click', event => {
     if (Date.now() < (s.suppressClickUntil || 0) && event.target.closest('.twx-bubble')) return;
     const button = event.target.closest('button, [data-sector]'); if (!button) return;
@@ -144,10 +119,7 @@ export function renderResearch(view, state, { host } = {}) {
     if (button.dataset.stock) { showStock(data?.stocks.find(stock => stock.symbol === button.dataset.stock)); return; }
     if (button.dataset.sector) { const sector = selectSectors(data, prefs).find(x => x.name === button.dataset.sector) || selectSectors(data).find(x => x.name === button.dataset.sector); if (sector) showSector(sector); return; }
     if (button.dataset.go) { if(button.dataset.go==='strength') document.dispatchEvent(new CustomEvent('ox:tw-tool',{detail:{tool:'rotation'}})); document.querySelector(`.dock-btn[data-view-target="${button.dataset.go}"]`)?.click(); return; }
-    if (button.dataset.vote) {
-      submitOutlook(s, button.dataset.vote); return;
-    }
-    if (button.hasAttribute('data-help')) { prefs.help = !prefs.help; paint(s); return; }
+if (button.hasAttribute('data-help')) { prefs.help = !prefs.help; paint(s); return; }
     if (button.hasAttribute('data-replay')) {
       if (prefs.replayIndex !== null) { pauseReplay(s); prefs.replayIndex = null; paint(s); }
       else { prefs.market = 'ALL'; prefs.scope = 'all'; prefs.quadrant = null; resetChart(); playReplay(s); }

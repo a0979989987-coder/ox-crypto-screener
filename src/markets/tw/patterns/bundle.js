@@ -4,7 +4,7 @@ const manifestURL=new URL('../../../../data/tw-patterns/manifest.json',import.me
 const entries=new Map(),listeners=new Set();let manifest=null,pending=null,checkedAt=0,failed=0;
 export function subscribeBundle(listener){listeners.add(listener);return()=>listeners.delete(listener);}
 const emit=()=>{for(const listener of listeners)listener(bundleState());};
-export function bundleState(){return {date:manifest?.date,total:manifest?.total||0,classified:entries.size,unavailable:manifest?.unavailable||[],stocks:manifest?.stocks||[],failed,loading:!!pending};}
+export function bundleState(){return {date:manifest?.date,total:manifest?.total||0,expected:manifest?.classified||0,dates:manifest?.dates||[],classified:entries.size,unavailable:manifest?.unavailable||[],stocks:manifest?.stocks||[],failed,loading:!!pending};}
 export function bundleEntry(symbol,frame='1D',date){const base=entries.get(symbol+':1D');if(!base||date&&base.data.dataDate!==date)return null;if(frame==='1D')return base;const prepared=base.frames?.[frame];if(!prepared)return null;return {key:symbol+':'+frame,data:{...base.data,frame,candles:aggregateCandles(base.data.candles,frame,base.data.dataDate)},matches:prepared.matches};}
 export function bundleEntries(frames=['1D'],date){return [...entries.values()].filter(e=>frames.includes(e.data.frame)&&(!date||e.data.dataDate===date));}
 export async function preloadBundle({force=false}={}){

@@ -1,4 +1,4 @@
-import { createToolsRail } from "../../../components/strength/tools-rail.js?v=20261001-loading1";
+import { createToolsRail } from "../../../components/strength/tools-rail.js?v=20261001-twbubbles1";
 // Crypto-only inline tools. Preserve the existing strength calculations and DOM.
 const section = document.querySelector('#view-strength .strength-page');
 if (section) {
@@ -55,18 +55,18 @@ if (section) {
     pending = true;loading.hidden=false;loading.innerHTML=window.OXLoading?.markup('工具載入中')||'工具載入中…';const token = ++generation;
     try {
       if(selected==='bubbles'){
-        const { mountCryptoBubbles } = await import('../bubbles/view.js?v=20261001-loading1');
+        const { mountCryptoBubbles } = await import('../bubbles/view.js?v=20261001-twbubbles1');
         if(token!==generation||!active())return;
         instance=mountCryptoBubbles(host);
         return;
       }
       if(selected==='patterns'){
-        const { mountPatternSearch } = await import('../patterns/view.js?v=20261001-loading1');
+        const { mountPatternSearch } = await import('../patterns/view.js?v=20261001-twbubbles1');
         if(token!==generation||!active())return;
         instance=mountPatternSearch(host);
         return;
       }
-      const { mountCryptoFlow } = await import('./flow-view.js?v=20261001-loading1');
+      const { mountCryptoFlow } = await import('./flow-view.js?v=20261001-twbubbles1');
       if (token !== generation || !active()) return;
       instance = mountCryptoFlow(host, { initialTab:selected, autoRefresh:true, onExit() { ns.querySelector('[data-crypto-tool="strength"]').click(); } });
       const style = document.createElement('style');

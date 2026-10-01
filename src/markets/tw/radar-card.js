@@ -45,6 +45,8 @@ export function normalizeTWStockCard(source) {
       riskLabel: text(disposition.riskLabel),
       riskBasis: text(disposition.riskBasis),
       noticeDate: safeDate(disposition.noticeDate),
+      noticeText: text(disposition.noticeText),
+      noticeTextDate: safeDate(disposition.noticeTextDate),
       announcementDate: safeDate(disposition.announcementDate),
       detail: text(disposition.detail),
       sourceUrl: text(disposition.sourceUrl),
@@ -134,7 +136,7 @@ export function renderTWStockCard(source, watchlist) {
   const change = `${row.changePct > 0 ? "▲" : row.changePct < 0 ? "▼" : ""}${row.change === null ? "—" : fmt(Math.abs(row.change))}`;
   const pct = row.changePct === null ? "—" : `${fmt(Math.abs(row.changePct))}%`;
   const candle = renderTWCurrentCandle(row.currentCandle ? [row.currentCandle] : []);
-  return `<article class="tw-stock-card" role="button" tabindex="0" aria-label="查看 ${escapeTW(row.name || row.symbol)} K 線" data-twr-symbol="${escapeTW(row.symbol)}">
+  return `<article class="tw-stock-card" role="button" tabindex="0" aria-label="查看 ${escapeTW(row.name || row.symbol)} 風險與處置資訊" data-twr-symbol="${escapeTW(row.symbol)}">
     <div class="tw-stock-top">
       <div class="tw-stock-identity"><strong title="${escapeTW(row.name)}">${escapeTW(row.name || "名稱待更新")}</strong><span>${escapeTW(row.symbol)}</span></div>
       <span class="tw-stock-industry" title="${escapeTW(row.industry)}">${escapeTW(row.industry || "—")}</span>
@@ -145,7 +147,7 @@ export function renderTWStockCard(source, watchlist) {
       <span class="tw-stock-change">${change} <small>(${pct})</small></span>
     </div>
     <div class="tw-stock-risk-area ${!hasRiskProgress ? 'no-progress' : ''}">
-      <div class="tw-stock-status">${escapeTW(riskLabel(row))}</div>
+      <div class="tw-stock-status ${riskLabel(row).includes('最快')?'urgent':''}">${escapeTW(riskLabel(row))}</div>
       ${hasRiskProgress || hasBatch ? `<div class="tw-stock-risk-row">
         ${hasRiskProgress ? `<div class="tw-stock-risk" title="${escapeTW(d.riskLevel || "風險程度")}">
           <span class="tw-stock-risk-icon known" aria-hidden="true">◆</span>

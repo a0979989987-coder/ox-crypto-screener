@@ -137,6 +137,7 @@ export class USWorkspace {
     save(prefsKey, this.state);
   }
   destroyTools() {
+    this.patternLoading?.finish();
     ++this.workerId;
     this.heatChart?.destroy();this.heatChart=null;this.toolsLife?.abort();this.toolsSurface=null;
     this.toolsRail?.destroy();this.toolsRail=null;
