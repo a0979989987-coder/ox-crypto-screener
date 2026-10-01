@@ -2,7 +2,7 @@ import { createToolsRail } from "../../../components/strength/tools-rail.js";
 // Crypto-only inline tools. Preserve the existing strength calculations and DOM.
 const section = document.querySelector('#view-strength .strength-page');
 if (section) {
-  const tabs = [['patterns','型態搜尋'],['overview','總覽'],['strength','強弱對比'],['heatmap','熱力圖'],['rotation','板塊輪動'],['flow','主動買賣'],['liquidations','爆倉'],['zones','清算'],['derivatives','合約'],['order','訂單流']];
+  const tabs = [['patterns','型態搜尋'],['bubbles','泡泡圖'],['overview','總覽'],['strength','強弱對比'],['heatmap','熱力圖'],['rotation','板塊輪動'],['flow','主動買賣'],['liquidations','爆倉'],['zones','清算'],['derivatives','合約'],['order','訂單流']];
   let selected = 'patterns';
   const rail = createToolsRail({ tabs, selected, label:'Crypto 指標分類', attribute:'data-crypto-tool', onSelect(id){selected=id;unmount();sync();} });
   const nav = rail.element; nav.id='ox-crypto-tools-nav'; nav.hidden=true;
@@ -54,6 +54,14 @@ if (section) {
     if (instance || pending) return;
     pending = true; const token = ++generation;
     try {
+      if(selected==='bubbles'){
+        const { mountCryptoBubbles } = await import('../bubbles/view.js?v=20261001-bubbles1');
+        if(token!==generation||!active())return;
+        instance=mountCryptoBubbles(host);
+        observer = new MutationObserver(syncFocus);
+        observer.observe(host.shadowRoot.querySelector('.cfx'), {attributes:true,attributeFilter:['class']});
+        return;
+      }
       if(selected==='patterns'){
         const { mountPatternSearch } = await import('../patterns/view.js?v=tw-all-20260930');
         if(token!==generation||!active())return;
