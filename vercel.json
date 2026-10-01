@@ -1,0 +1,5 @@
+{
+  "functions": {
+    "api/v1/tw/*.js": { "maxDuration": 120 }
+  }
+}
