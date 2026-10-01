@@ -1,6 +1,6 @@
 import { marketRouter } from "./marketRouter.js?v=20261001-loading1";
 import { cryptoModule } from "../markets/crypto/index.js";
-import { usModule } from "../markets/us/index.js?v=20261001-us-tv1";
+import { usModule } from "../markets/us/index.js?v=20261001-us-tv2";
 import { twModule } from "../markets/tw/index.js?v=20261001-twlayout1";
 
 export function bootOXModules(modules = []) {
