@@ -92,7 +92,7 @@ function bitgetBody(url) {
   return { code: "00000", data: [] };
 }
 
-async function preparePage(context, viewport) {
+async function preparePage(context, viewport, { holdCandle } = {}) {
   const page = await context.newPage();
   await page.setViewportSize(viewport);
   const audit = { pageErrors: [], consoleErrors: [], assetWarnings: [], localFailures: [], localHttpErrors: [], cssResponses: new Map() };
@@ -153,7 +153,11 @@ async function preparePage(context, viewport) {
     status: 200, contentType: "application/json",
     body: JSON.stringify({ configured: false, providerConnectionVerified: false, databaseConnected: false })
   }));
-  await page.route("https://api.bitget.com/**", route => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(bitgetBody(new URL(route.request().url()))) }));
+  await page.route("https://api.bitget.com/**", async route => {
+    const url=new URL(route.request().url());
+    if(url.pathname.endsWith('/candles')&&holdCandle)await holdCandle(url);
+    return route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(bitgetBody(url)) });
+  });
   await page.route("https://fapi.binance.com/**", route => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ symbol: "BTCUSDT", lastPrice: "63250", priceChangePercent: "1.2", quoteVolume: "900000000", volume: "12000" }) }));
   await page.route("https://api.bybit.com/**", route => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ retCode: 0, result: { list: [{ lastPrice: "63250", price24hPcnt: ".012", turnover24h: "900000000", volume24h: "12000" }] } }) }));
   await page.route("https://ox-crypto-screener.vercel.app/api/v1/tw/**", route => {
@@ -325,6 +329,7 @@ async function desktopRegression(browser) {
   assert(await page.locator("#market-unavailable-card").isVisible(), "TW market placeholder did not display");
   await page.click("#ox-control-close");
   await page.locator('[data-twr-mode="chart"]').click();
+  assert(await page.locator('.twcr-scanner .ox-loading-ring').count()===0,'TW radar must not animate its background data loading');
   await page.locator('.twcr-search-open').click();
   await page.waitForSelector(".twcr-search-dialog input");
   await page.fill(".twcr-search-dialog input", "2330");
@@ -484,11 +489,30 @@ async function mobileRegression(browser) {
 }
 
 module.exports = { server, preparePage, selectMarket, selectView, testBase };
+async function progressiveRadarRegression(browser) {
+  const context=await browser.newContext({viewport:{width:390,height:844}});
+  let release;const pending=new Promise(resolve=>release=resolve);
+  const {page,audit}=await preparePage(context,{width:390,height:844},{holdCandle:url=>url.searchParams.get('symbol')==='DOGEUSDT'?pending:Promise.resolve()});
+  try {
+    await page.goto(testBase,{waitUntil:'domcontentloaded'});
+    await page.locator('#view-radar .coin-card[data-symbol="SOLUSDT"]').waitFor({timeout:10000});
+    assert(await page.evaluate(()=>globalThis.eval('!state.radarSnapshotReady')),'A cold scan must publish before the full pass finishes');
+    assert(await page.locator('#view-radar .coin-card[data-symbol="DOGEUSDT"]').count()===0,'Pending analysis cannot enter the radar');
+    assert(await page.locator('#radar-scanner-panel .ox-loading-ring').count()===0,'Incremental radar must not show loading animation');
+    assert(!(await page.locator('#radar-scanner-panel').innerText()).includes('正在整理全市場榜單'),'A pending request cannot replace the available ranking');
+    release();
+    await page.locator('#view-radar .coin-card[data-symbol="DOGEUSDT"]').waitFor({timeout:10000});
+    assert(await page.locator('#view-radar .coin-card[data-symbol="SOLUSDT"]').count()===1,'Earlier results remain available when a later result is added');
+    assert(audit.pageErrors.length===0,'Incremental rendering raised a runtime error');
+    console.log('Progressive radar passed: available results render during a blocked candle request, then the completed symbol joins without a loading animation');
+  } finally {release();await context.close();}
+}
 if (require.main === module) (async () => {
   await new Promise(resolve => server.listen(testPort, "127.0.0.1", resolve));
   const browser = await chromium.launch({ headless: true, ...(process.env.OX_BROWSER_PATH ? {executablePath:process.env.OX_BROWSER_PATH} : {}) })
     .catch(() => chromium.launch({ channel: "chrome", headless: true }));
   try {
+    await progressiveRadarRegression(browser);
     const desktop = await desktopRegression(browser);
     const mobile = await mobileRegression(browser);
     console.log(`Desktop regression passed: Crypto cards=${desktop.cards}, CSS=${desktop.css.classified}/${desktop.css.total}, rules=${desktop.css.rules}, intervals=${desktop.intervals}`);

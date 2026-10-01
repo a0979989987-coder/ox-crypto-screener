@@ -49,7 +49,7 @@ function cryptoFrameTier(row,frame,side) {
 }
 async function refreshMarketTickers() {
   if (state.activeMarket && state.activeMarket !== "crypto") return;
-  const loading=window.OXLoading?.begin('crypto','加密行情載入中',{views:['home','strength','radar']});
+  const loading=window.OXLoading?.begin('crypto','加密行情載入中',{views:['home','strength']});
   try {
     const rawTickers = await BitgetAPI.fetchTickers();
     if (!state.contracts.size) {
@@ -123,7 +123,19 @@ async function refreshMarketTickers() {
   } finally { loading?.finish(); }
 }
 
-let lastRadarBatchPaint = 0, initialScanLoading=null;
+let radarPaintTimer=0, initialScanLoading=null;
+function publishRadarProgress(immediate=false) {
+  if (!immediate) {
+    if (!radarPaintTimer) radarPaintTimer=setTimeout(()=>publishRadarProgress(true),150);
+    return;
+  }
+  clearTimeout(radarPaintTimer);radarPaintTimer=0;
+  if (state.activeMarket !== 'crypto') return;
+  rebuildTierLists();
+  if (state.activeView === 'radar') {
+    renderCurrentTab();updateHeaderHUD();renderBenchmarkBar();
+  }
+}
 async function runScanQueueLoop() {
   while (true) {
     // Keep the ranking data, but do not spend CPU scanning Crypto in the
@@ -137,7 +149,7 @@ async function runScanQueueLoop() {
       continue;
     }
 
-    if(!state.radarSnapshotReady&&!initialScanLoading)initialScanLoading=window.OXLoading?.begin('crypto','掃描幣種',{done:0,total:state.scanQueue.length,views:['home','strength','radar']});
+    if(!state.radarSnapshotReady&&!initialScanLoading)initialScanLoading=window.OXLoading?.begin('crypto','掃描幣種',{done:0,total:state.scanQueue.length,views:['home','strength']});
     const batchSymbols = [];
     const remaining = state.scanQueue.length-state.scanIndex;
     for (let i = 0; i < Math.min(CONFIG.queueBatchSize, remaining); i++) {
@@ -176,33 +188,26 @@ async function runScanQueueLoop() {
           change24h:num(ticker.change24h),ret1h:candleReturn(candles,1),ret4h:candleReturn(candles,4),
           ret24h:candleReturn(candles,24),
         });
+        publishRadarProgress();
       } catch (e) {} finally { const n=(initialScanLoading?.done||0)+1;if(initialScanLoading){initialScanLoading.done=n;initialScanLoading.update(n,state.scanQueue.length);} }
     }));
 
     const completed = state.scanIndex >= state.scanQueue.length;
-    // The first visible ranking is a complete pass, never a partial five-coin list.
+    // A completed pass persists the snapshot; visible rows are published as
+    // their own analysis completes, even while another request is pending.
     if (completed) {
       initialScanLoading?.finish();initialScanLoading=null;
       state.scanIndex = 0;
       state.radarSnapshotReady = true;
       saveRadarSnapshot();
     }
-    if (state.radarSnapshotReady) {
-      rebuildTierLists();
-      if (state.activeView === 'radar') {
-        const now=performance.now();
-        if (completed || !lastRadarBatchPaint || now-lastRadarBatchPaint >= 8000) {
-          renderCurrentTab(); updateHeaderHUD(); renderBenchmarkBar(); lastRadarBatchPaint=now;
-        }
-      }
-    } else if (state.activeView === 'radar') renderCurrentTab();
+    publishRadarProgress(true);
     // Warm-up is rate-limited to at most 20 candle requests per second.
     await new Promise(r=>setTimeout(r,state.radarSnapshotReady?Math.max(CONFIG.batchIntervalMs,500*(2+(globalThis.OXTierFilters?.get('crypto').enabled?globalThis.OXTierFilters.get('crypto').rules.filter(r=>r.frame!=='1H').length:0))):Math.max(0,500*Math.max(2,2+(globalThis.OXTierFilters?.get('crypto').enabled?globalThis.OXTierFilters.get('crypto').rules.filter(r=>r.frame!=='1H').length:0))-(performance.now()-batchStarted))));
   }
 }
 
 function rebuildTierLists() {
-  if (state.isQueueRunning && !state.radarSnapshotReady && !globalThis.OXTierFilters?.get('crypto').enabled) return;
   const tierConfig=globalThis.OXTierFilters?.get('crypto');
   const rankedPool=Array.from(state.analyzedCache.values()).filter(c=>{
     if(benchmarkSymbols.has(c.symbol)||(!tierConfig?.enabled&&!OXClassic.qualifyClassicRow(c,c.side,{observations:true})))return false;
@@ -317,11 +322,6 @@ function renderCurrentTab() {
     return;
   }
 
-  if (!state.radarSnapshotReady && state.isQueueRunning) {
-    document.getElementById("pool-count").textContent = '整理完整榜單中';
-    container.innerHTML = '<div class="turnover-empty" role="status">正在整理全市場榜單… '+state.scanIndex+'/'+state.scanQueue.length+'</div>';
-    return;
-  }
   const isTierTab = ["t1","t2","t3"].includes(tab);
   // The all entry opens the combined radar. Reuse the already
   // ranked directional results; never rebuild, sort or mutate them here.
@@ -333,7 +333,7 @@ function renderCurrentTab() {
     : (state.tierMap[tab] || []).filter(c => passesDirectionFilter(c.side));
   const list = window.OXChartToolbar?.filterList(sourceList) || sourceList;
   const directionLabel = state.directionFilter === "long" ? "多頭" : "空頭";
-  document.getElementById("pool-count").textContent = `${list.length} 檔${directionLabel}`;
+  document.getElementById("pool-count").textContent = `${list.length} 檔${directionLabel}${!state.radarSnapshotReady&&state.isQueueRunning?` · 已分析 ${state.analyzedCache.size}/${state.scanQueue.length}`:''}`;
   syncWatchBadge();
   if (!list.length) {
     container.innerHTML = `<div style="padding:30px 16px;text-align:center;color:var(--muted)"><b>目前沒有符合 OX 經典的${directionLabel}標的</b><p style="font-size:11px">符合條件後會依${combinedRadar ? " T1 → T2 → T3 順序" : `目前 T${isTierTab ? tab.slice(1) : ""} 排名`}顯示。</p></div>`;

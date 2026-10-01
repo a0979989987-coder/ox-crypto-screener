@@ -7,10 +7,10 @@ import { runInNewContext } from "node:vm";
 
 const scanner = readFileSync(new URL("../src/markets/crypto/scanner.js", import.meta.url), "utf8");
 
-function rank(rows) {
+function rank(rows, scanState={}) {
   const state = {
     analyzedCache: new Map(rows.map(row => [row.symbol, {...row,classic:{long:rankingSignal(row.tier.toUpperCase())},classicSignal:rankingSignal(row.tier.toUpperCase())}])),
-    tickers: [], directionFilter: "long"
+    tickers: [], directionFilter: "long", ...scanState
   };
   const context = {
     OXClassic:OXClassicForTests, state, benchmarkSymbols: new Set(["BTCUSDT", "ETHUSDT"]), num: Number,
@@ -55,10 +55,12 @@ test("Crypto radar shows only available symbols when fewer than 10 exist", () =>
  assert.equal(result.t2.length+result.t3.length,1);
  });
 
-test('radar does not publish a partial first scan', () => {
-  const state = {isQueueRunning:true,radarSnapshotReady:false,analyzedCache:new Map(),tierMap:{t1:['existing']}};
-  runInNewContext(`${scanner}\nrebuildTierLists();`,{state});
-  assert.equal(state.tierMap.t1[0],'existing');
+test('radar publishes qualified rows while the first scan remains unfinished', () => {
+  const result=rank([{symbol:'SOLUSDT',side:'LONG',tier:'t1',oxScore:90,t1Fit:90}],
+    {isQueueRunning:true,radarSnapshotReady:false});
+  assert.equal(result.t1.length,1);
+  assert.equal(result.t1[0].symbol,'SOLUSDT');
+  assert.equal(result.t2.length+result.t3.length,0);
 });
 
 test('radar snapshot uses current tickers and excludes expired or unavailable coins', () => {

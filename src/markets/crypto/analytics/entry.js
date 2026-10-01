@@ -61,7 +61,7 @@ if (section) {
         return;
       }
       if(selected==='patterns'){
-        const { mountPatternSearch } = await import('../patterns/view.js?v=20261001-classic5');
+        const { mountPatternSearch } = await import('../patterns/view.js?v=20261001-progress1');
         if(token!==generation||!active())return;
         instance=mountPatternSearch(host);
         return;

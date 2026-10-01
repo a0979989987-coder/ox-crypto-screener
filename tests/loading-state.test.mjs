@@ -43,3 +43,16 @@ test('OX LIVE starts off, restores an explicit preference and stays off when sto
   }
   let hidden=false;vm.runInNewContext(code,{localStorage:{getItem(){throw Error('blocked');}},document:{documentElement:{classList:{add:()=>hidden=true}}}});assert(hidden);
 });
+test('Crypto and Taiwan background data tasks never animate their radar lists',()=>{
+ const f=fixture();f.document.querySelector=()=>f.target;
+ for(const market of ['crypto','tw']){
+  f.document.body.dataset.market=market;
+  const task=f.api.begin(market,'更新標的',{views:['radar','home'],done:1,total:100});f.flush();
+  assert.equal(f.target.children.length,0);
+  if(market==='crypto'){
+   f.document.body.dataset.view='home';f.events.get('ox:viewchange')();assert.equal(f.target.children.length,1);
+   f.document.body.dataset.view='radar';f.events.get('ox:viewchange')();assert.equal(f.target.children.length,0);
+  }
+  task.finish();f.flush();
+ }
+});

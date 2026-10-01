@@ -7,7 +7,7 @@ import {
 import {
   createTWMarketState,
   refreshTWMarketState, seedTWRadar
-} from "./engine.js?v=20261001-classic5";
+} from "./engine.js?v=20261001-progress1";
 
 import {
   renderTWHome
@@ -15,15 +15,15 @@ import {
 
 import {
   renderTWStrength
-} from "./strength.js?v=20261001-classic5";
+} from "./strength.js?v=20261001-progress1";
 
 import {
   renderTWRadar, stopTWRadar
-} from "./radar.js?v=20261001-classic5";
+} from "./radar.js?v=20261001-progress1";
 import { cancelTWLookup } from "./lookup.js?v=20261001-tiercomb1";
-import { stopTWStrength, preloadTWStrength } from "./strength.js?v=20261001-classic5";
+import { stopTWStrength, preloadTWStrength } from "./strength.js?v=20261001-progress1";
 import { createPreloader } from "./preload.js?v=20261001-twhome1";
-import { preloadBundle } from "./patterns/bundle.js?v=20261001-classic5";
+import { preloadBundle } from "./patterns/bundle.js?v=20261001-progress1";
 import {savedRadarSnapshot,saveRadarSnapshot,bundledRadarSnapshot} from './radar-snapshot.js?v=20261001-tiercomb1';
 import { radarNeedsRecovery } from './recovery.js?v=20261001-tiercomb1';
 
@@ -374,7 +374,6 @@ function render(
 
 const ensureMarketData = createPreloader(async ({silent=false}={}) => {
   const controller = new AbortController();
-  const loading=silent?null:window.OXLoading?.begin('tw','台股資料載入中',{views:['radar']});
   try {
   const state = await refreshTWMarketState({
     signal: controller.signal,
@@ -387,7 +386,7 @@ const ensureMarketData = createPreloader(async ({silent=false}={}) => {
   cacheRadarState(state);
   if (isActive) render(state);
   return state;
-  } finally { loading?.finish(); scheduleRecovery(); }
+  } finally { scheduleRecovery(); }
 }, { usable: state => ["ready", "partial"].includes(state?.status)
   && Array.isArray(state?.data?.radar) && !radarNeedsRecovery(state) });
 
