@@ -4,8 +4,43 @@
   const authView = $('#ox-account-auth-view');
   const center = $('#ox-account-center');
   const status = $('#ox-account-auth-status');
-  let priorFocus = null;
+  let priorFocus = null, busy = false;
+  const form = $('#ox-account-email-form');
+  $('#ox-account-password')?.removeAttribute('required');
+  async function perform(action) {
+    if (busy) return;
+    busy = true; form?.setAttribute('aria-busy','true');
+    const buttons = [$('#ox-account-google'), $('#ox-account-email-submit')];
+    buttons.forEach(button => { if (button) button.disabled = true; });
+    try { return await action(); } finally { busy = false; form?.removeAttribute('aria-busy'); buttons.forEach(button => { if (button) button.disabled = false; }); }
+  }
+  const renderUser = user => {
+    if (!center) return;
+    let profile = $('#ox-account-profile');
+    if (!profile) {
+      center.querySelector('h2 + p')?.remove();
+      profile = document.createElement('div'); profile.id = 'ox-account-profile';
+      center.querySelector('h2')?.after(profile);
+      const signout = document.createElement('button'); signout.type = 'button'; signout.className = 'ox-account-skip'; signout.id = 'ox-account-signout'; signout.textContent = '登出'; center.append(signout);
+    }
+    profile.replaceChildren();
+    if (user) {
+      const initial = document.createElement('span'); initial.className = 'ox-account-avatar'; initial.textContent = user.displayName.slice(0,1); profile.append(initial);
+      for (const [label,value] of [['名稱',user.displayName],['電子郵件',user.email],['OX Account ID',user.id],['加入日期',new Date(user.createdAt).toLocaleDateString('zh-TW')],['登入方式',user.methods.map(v => v === 'google' ? 'Google' : v === 'email' ? '電子郵件' : v).join('、')]]) {
+        const row = document.createElement('p'), name = document.createElement('strong'); name.textContent = label + '：'; row.append(name,document.createTextNode(value)); profile.append(row);
+      }
+      const storage = document.createElement('p');
+      storage.textContent = user.accountStorage === 'stored' ? '會員資料已儲存。' : user.accountStorage === 'missing' ? '已登入，會員資料尚未建立。' : '已登入，會員資料儲存狀態尚未確認。';
+      profile.append(storage);
+    }
+    const title = $('#ox-account-title'), subtitle = $('#ox-account-sub');
+    if (title) title.textContent = user ? user.displayName : '登入 / 註冊';
+    if (subtitle) subtitle.textContent = user ? '管理你的 OX 帳號' : '建立你的 OX 統一帳號。';
+    const trigger = $('#ox-account-trigger'); if (trigger) trigger.setAttribute('aria-label',user ? `OX 帳號：${user.displayName}` : '登入或註冊 OX 帳號');
+  };
+  document.addEventListener('ox:accountchange',event => renderUser(event.detail.user));
   const open = (view='auth', returnFocus=null) => {
+    if (view === 'auth' && window.OXAuth.user) view = 'center';
     priorFocus = returnFocus || document.activeElement;
     overlay?.classList.add('is-open'); overlay?.setAttribute('aria-hidden','false');
     document.body.classList.add('ox-account-open');
@@ -25,10 +60,10 @@
     $('#ox-account-tab-register').setAttribute('aria-selected', String(register));
     $('#ox-account-title-main').textContent = register ? '建立 OX 帳號' : '登入 OX';
     $('#ox-account-email-submit').textContent = register ? '建立帳號' : '繼續';
-    $('#ox-account-password-wrap').hidden = !register;
-    $('#ox-account-password').autocomplete = register ? 'new-password' : 'current-password';
+    $('.ox-account-password-wrap').hidden = true;
+
     $('#ox-account-lead')?.remove();
-    status.textContent = 'Google 與 Email 驗證服務尚未連接，現在不會提交或保存你的資料。';
+    status.textContent = window.OXAuth.status.configured ? '使用電子郵件登入連結，不需要設定密碼。' : '正式登入服務尚未設定。';
   };
   // The control panel stops click bubbling, so its account CTA must open the
   // account surface on the button itself instead of relying on document delegation.
@@ -47,11 +82,22 @@
     if (e.target.closest('[data-ox-account-login]')) open();
     if (e.target.closest('#ox-account-tab-login')) mode(false);
     if (e.target.closest('#ox-account-tab-register')) mode(true);
-    if (e.target.closest('#ox-account-google')) window.OXAuth.signInWithGoogle().then(() => { status.textContent = 'Google 登入目前尚未連接，沒有傳送任何帳號資料。'; });
+    if (e.target.closest('#ox-account-google')) perform(async () => { status.textContent = '正在連接 Google…'; const result = await window.OXAuth.signInWithGoogle(); if (!result.ok) status.textContent = result.message; });
+    if (e.target.closest('#ox-account-signout')) perform(async () => { const result = await window.OXAuth.signOut(); if (result.ok) close(); else status.textContent = result.message; });
     if (e.target.closest('#ox-account-bitget-info')) { $('#ox-account-info-modal').classList.add('is-open'); $('#ox-account-info-modal').setAttribute('aria-hidden','false'); }
     if (e.target.closest('#ox-account-info-close') || (e.target.id === 'ox-account-info-modal')) { $('#ox-account-info-modal').classList.remove('is-open'); $('#ox-account-info-modal').setAttribute('aria-hidden','true'); }
   });
-  $('#ox-account-email-form')?.addEventListener('submit', e => { e.preventDefault(); const register=$('#ox-account-tab-register').getAttribute('aria-selected')==='true'; const action=register?window.OXAuth.registerWithEmail:window.OXAuth.signInWithEmail; action().then(() => { status.textContent = 'Email 驗證目前尚未連接，沒有傳送或保存你的資料。'; }); });
+  form?.addEventListener('submit', e => {
+    e.preventDefault();
+    if (!$('#ox-account-email').reportValidity()) return;
+    perform(async () => {
+      const email = $('#ox-account-email').value.trim();
+      status.textContent = '正在寄送登入連結…';
+      const register = $('#ox-account-tab-register').getAttribute('aria-selected') === 'true';
+      const result = await (register ? window.OXAuth.registerWithEmail(email) : window.OXAuth.signInWithEmail(email));
+      status.textContent = result.message;
+    });
+  });
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape') { if ($('#ox-account-info-modal')?.classList.contains('is-open')) { $('#ox-account-info-modal').classList.remove('is-open'); $('#ox-account-info-modal').setAttribute('aria-hidden','true'); } else close(); }
     if (e.key === 'Tab' && overlay?.classList.contains('is-open')) {
@@ -61,5 +107,10 @@
       else if (!e.shiftKey && document.activeElement===last) { e.preventDefault(); first.focus(); }
     }
   });
-  window.OXAccount = Object.freeze({open,close, get sessionStatus(){return 'provider-not-connected';}});
+  window.OXAccount = Object.freeze({open,close, get sessionStatus(){return window.OXSession.status;}});
+  window.OXAuth.initialize().then(config => {
+    const failedCallback = new URL(location.href).searchParams.get('ox_auth') === 'error';
+    status.textContent = failedCallback ? '登入連結已失效或不是在同一個瀏覽器開啟，請重新取得登入連結。' : config.configured ? '使用電子郵件登入連結，不需要設定密碼。' : '正式登入服務尚未設定，訪客功能可正常使用。';
+    if (failedCallback) open();
+  });
 })();

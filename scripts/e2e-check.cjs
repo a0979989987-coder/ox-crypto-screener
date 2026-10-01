@@ -142,6 +142,12 @@ async function preparePage(context, viewport) {
     };
   });
   await page.route("https://unpkg.com/**", route => route.fulfill({ status: 200, contentType: "text/javascript", body: chartStub }));
+  // Static preview has no server functions. Model the unconfigured guest state;
+  // real auth handlers and configured account UI are tested separately.
+  await page.route("**/api/v1/account/config", route => route.fulfill({
+    status: 200, contentType: "application/json",
+    body: JSON.stringify({ configured: false, providerConnectionVerified: false, databaseConnected: false })
+  }));
   await page.route("https://api.frankfurter.app/**", route => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(rates) }));
   await page.route("https://api.frankfurter.dev/**", route => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(forexV2Rows) }));
   await page.route("https://api.bitget.com/**", route => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(bitgetBody(new URL(route.request().url()))) }));

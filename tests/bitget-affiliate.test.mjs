@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createBitgetAffiliateClient, kycWindow, signBitget, validateUid } from '../server/integrations/bitget/affiliate.js';
-import { createHandler } from '../api/v1/account/bitget-status.js';
+import { createHandler } from '../server/integrations/bitget/http-handler.js';
 
 // Synthetic fixtures only. None of these values are real credentials or users.
 const now = 1700000000000;
