@@ -89,3 +89,15 @@ test('recorded CAP still enters a directional observation during strong volume-b
  assert.equal(signal.observationEligible,true);assert.equal(signal.eligible,false);
  assert.ok(signal.qualityScore>=72);
 });
+test('partial-condition scores separate a strong swing reversal from a nearby-target probe',()=>{
+ const cap=recordedFrames(radarAudit.responses.CAPUSDT),lobster=sample('龙虾USDT');
+ const probe=evaluateFrames(cap.frames,{setupFrame:'4H',triggerFrame:'1H',now:cap.now});
+ const reversal=evaluateFrames(lobster.frames,{setupFrame:'4H',triggerFrame:'1H',now:lobster.now});
+ assert.equal(probe.observationEligible,true);
+ assert.equal(reversal.observationEligible,true);
+ assert.ok(reversal.qualityScore>probe.qualityScore,
+   `fresh reversal ${reversal.qualityScore} must outrank target-constrained probe ${probe.qualityScore}`);
+ assert.deepEqual(rankClassicTiers([
+  {symbol:'CAPUSDT',classicSignal:probe},{symbol:'龙虾USDT',classicSignal:reversal}
+ ]).map(row=>row.symbol),['龙虾USDT','CAPUSDT']);
+});
