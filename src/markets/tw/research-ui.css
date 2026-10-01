@@ -13,6 +13,24 @@
 .twx-outlook .twx-energy{margin-top:10px}
 .twx-outlook .twx-vote-status{font-size:10px}
 .twx-home-toolbar+.twx-briefing{margin-top:0}
+@media(max-width:640px){
+ .twx .twx-core{padding:12px}
+ .twx .twx-core-head{margin-bottom:10px;font-size:9px}
+ .twx .twx-core-metrics{grid-template-columns:minmax(0,1.3fr) repeat(2,minmax(0,1fr));gap:7px}
+ .twx .twx-core-metrics>div{gap:4px}
+ .twx .twx-core-metrics>div+div{border-top:0;border-left:1px solid #ffffff16;padding:0 0 0 7px}
+ .twx .twx-core-metrics small{font-size:9px;line-height:1.4;overflow-wrap:anywhere}
+ .twx .twx-core-metrics small:first-child{min-height:28px}
+ .twx .twx-core-metrics strong{font-size:clamp(14px,4vw,18px);letter-spacing:-.04em}
+ .twx .twx-core-metrics>div:first-child strong{font-size:clamp(18px,5.3vw,24px)}
+ .twx .twx-core-metrics>div>span{font-size:10px}
+ .twx .twx-core em{font-size:8px}
+ .twx .twx-estimate{font-size:8px;padding:0 3px;margin-left:1px}
+ .twx .twx-contribution-totals{gap:8px;margin-top:10px;padding-top:8px}
+ .twx .twx-contribution-totals>div{align-items:center;flex-direction:row;gap:4px;flex-wrap:wrap}
+ .twx .twx-contribution-totals small,.twx .twx-contribution-totals b{font-size:9px}
+ .twx .twx-contribution-detail{margin-top:7px;padding-top:7px;font-size:9px}
+}
 /* Close/contribution summary and source-dated briefing share the OX glass. */
 .twx-core-head,.twx-briefing-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}
 .twx-refresh{border:1px solid #ffffff40;border-radius:22px;background:linear-gradient(135deg,#ffffff17,#ffffff04);padding:6px 14px;white-space:nowrap;font-size:11px!important}
