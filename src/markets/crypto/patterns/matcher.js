@@ -1,4 +1,4 @@
-import { evaluateClassic, compareClassic, compactClassic, rankClassicTiers } from '../../../core/classic.js?v=20261001-classic4';
+import { evaluateClassic, compareClassic, compactClassic, rankClassicTiers } from '../../../core/classic.js?v=20261001-classic5';
 import { PATTERNS, patternById } from './catalog.js?v=patterns5d-20260929';
 const clamp = (x, a=0, b=1) => Math.max(a, Math.min(b, x));
 const mean = a => a.reduce((s,x)=>s+x,0)/a.length;
@@ -107,7 +107,14 @@ function patternSignal(context,pattern,query={}) {
  let side=LONG_PATTERNS.has(id)||id?.endsWith('-bull')?'long':SHORT_PATTERNS.has(id)||id?.endsWith('-bear')?'short':null;
  if(!side&&query.points?.length&&Math.abs(query.points.at(-1).y-query.points[0].y)>.12)side=query.points.at(-1).y>query.points[0].y?'long':'short';
  const signals=side?[context.classic[side]]:Object.values(context.classic);
- return signals.filter(s=>s.eligible).sort(compareClassic)[0]||null;
+ return signals.filter(Boolean).sort((a,b)=>Number(b.eligible)-Number(a.eligible)||
+  Number(b.observationEligible)-Number(a.observationEligible)||compareClassic(a,b))[0]||null;
+}
+function patternPhase(signal){
+ const decision=compactClassic(signal);
+ return {tier:signal.eligible?Number(signal.tier.slice(1)):signal.observationEligible?2:3,
+  stage:signal.eligible?signal.stage:'型態形成 · 尚待量價確認',side:signal.side,
+  patternOnly:!signal.eligible,classicSignal:decision};
 }
 function setupPhase(context,pattern,pivots,score,shape,visual,end,query) {
  const signal=patternSignal(context,pattern,query);if(!signal)return null;
@@ -115,7 +122,7 @@ function setupPhase(context,pattern,pivots,score,shape,visual,end,query) {
   const dir=signal.side==='LONG'?1:-1,trough=pivots.at(-2).y;
   if((context.candles.at(-1).close-trough)*dir<-.35*context.volatility)return null;
  }
- return {tier:Number(signal.tier.slice(1)),stage:signal.stage,side:signal.side,classicSignal:signal};
+ return patternPhase(signal);
 }
 // Build reusable features once per symbol/timeframe, independent of the selected drawing.
 export function prepareCandles(candles) {
@@ -131,19 +138,29 @@ export function prepareCandles(candles) {
     if(Math.max(...slice.map(c=>c.high))-Math.min(...slice.map(c=>c.low))<volatility*2)continue;
     windows.push({start,end,samples:resample(points)});
   }
-  return {candles,volatility,swings,windows,visuals:new Map(),classic:{long:compactClassic(evaluateClassic(candles)),short:compactClassic(evaluateClassic(candles,{side:'short'}))}};
+  return {candles,volatility,swings,windows,visuals:new Map(),classic:{long:evaluateClassic(candles),short:evaluateClassic(candles,{side:'short'})}};
 }
 const targets=new Map(PATTERNS.map(p=>[p.id,resample(p.points)]));
 function levelMatch(context,pattern) {
  const c=context.candles,trend=pattern.rule.startsWith('trend');
  const sides=trend?['long','short']:pattern.rule.endsWith('support')?['short']:['long'];
- const signal=sides.map(side=>context.classic[side]).filter(s=>s.eligible&&s.pressure&&s.pressure.kind===(trend?'diagonal':'horizontal')&&
-  (!trend||Math.sign(s.pressure.slope)===(pattern.id==='trend-up'?1:-1))).sort(compareClassic)[0];
+ const price=c.at(-1)?.close;
+ const candidates=sides.flatMap(side=>{
+  const signal=context.classic[side];if(!signal)return [];
+  const levels=[signal.pressure,...(signal.levels||[])].filter(p=>p&&p.state!=='consumed'&&
+   (p.state==='valid'||signal.eligible&&p.state==='broken')&&p.kind===(trend?'diagonal':'horizontal')&&
+   (!trend||Math.sign(p.slope)===(pattern.id==='trend-up'?1:-1))&&
+   (p.state==='broken'||(signal.side==='LONG'?p.level-price:price-p.level)>=-.15*(signal.atr||context.volatility)));
+  levels.sort((a,b)=>Math.abs(a.level-price)-Math.abs(b.level-price)||b.touches-a.touches);
+  return levels.length?[{...signal,pressure:levels[0]}]:[];
+ });
+ const signal=candidates.sort((a,b)=>Number(b.eligible)-Number(a.eligible)||compareClassic(a,b))[0];
  if(!signal)return null;
  const points=signal.pressure.points.map(p=>({x:c.findIndex(b=>b.time===p.time),y:p.price}));
  return {start:points[0].x,end:points.at(-1).x,points,label:pattern.name,lastTime:c.at(-1).time,
-  touches:signal.pressure.touches,tier:Number(signal.tier.slice(1)),stage:signal.stage,side:signal.side,
-  kind:'level',similarity:signal.qualityScore,classicSignal:signal};
+  touches:signal.pressure.touches,...patternPhase(signal),
+  kind:'level',similarity:Math.round(clamp(1-(signal.pressure.errorATR||0)/2)*100),
+  classicSignal:{...compactClassic(signal),pressure:signal.pressure}};
 }
 // Version-5 snapshots contain real OHLCV and useful geometry, but their grades
 // are obsolete. Requalify every result against the current shared engine.
@@ -152,6 +169,9 @@ export function qualifyPatternMatches(context,matches) {
  for(const [id,match]of Object.entries(matches||{})){
   const pattern=patternById(id);if(!pattern)continue;
   if(pattern.rule.startsWith('level')||pattern.rule.startsWith('trend')){const m=levelMatch(context,pattern);if(m)result[id]=m;continue;}
+  if(!Array.isArray(match.points)||!Number.isFinite(match.start)||!Number.isFinite(match.end)||
+    context.candles.length-1-match.end>8||match.end>=context.candles.length||
+    pattern.rule!=='path'&&!structureValid(match.points,pattern))continue;
   const phase=setupPhase(context,pattern,match.points,match.similarity,match.similarity,match.similarity,match.end,{});
   if(phase)result[id]={...match,...phase};
  }
@@ -161,7 +181,7 @@ export function qualifyPatternMatches(context,matches) {
 }
 export function matchPrepared(context,query) {
   const {candles,n= context.candles.length}=context;
-  if(candles.length<35||!Object.values(context.classic).some(s=>s.eligible))return null;
+  if(candles.length<35)return null;
   const sketch=query.mode==='sketch',pattern=sketch?null:patternById(query.id);
   if(pattern?.rule.startsWith('level')||pattern?.rule.startsWith('trend'))return levelMatch(context,pattern);
   const target=sketch?resample(query.points||[]):targets.get(pattern?.id)||resample(query.points||[]);
@@ -206,7 +226,11 @@ export function matchPrepared(context,query) {
 }
 export function matchCandles(candles,query){return matchPrepared(prepareCandles(candles),query);}
 export function classifyPrepared(context){
-  const matches={};if(!Object.values(context.classic).some(s=>s.eligible))return matches;for(const p of PATTERNS){const match=matchPrepared(context,{id:p.id});if(match)matches[p.id]=match;}return matches;
+  const matches={};if(context.candles.length<35)return matches;for(const p of PATTERNS){const match=matchPrepared(context,{id:p.id});if(match)matches[p.id]=match;}return matches;
+}
+export function indexPrepared(context,matches){
+ return {matches:matches?qualifyPatternMatches(context,matches):classifyPrepared(context),
+  classic:Object.fromEntries(Object.entries(context.classic).map(([side,signal])=>[side,compactClassic(signal)]))};
 }
 export function patternCounts(entries,frames){
   const sets=new Map(PATTERNS.map(p=>[p.id,new Set()]));
@@ -266,7 +290,31 @@ export function sortMatches(rows){return [...rows].sort((a,b)=>(a.displayTier??a
 export function rankPatternMatches(matches){
  const candidates=matches.map(value=>({...value,symbol:value.entry.data.symbol,
   classicSignal:value.match.classicSignal,similarity:value.match.similarity}));
+ // The canvas discovers formations across the selected universe. Radar quotas
+ // only apply to an explicitly supplied radar list, never to drawing searches.
+ if(!matches.length||!matches.every(value=>value.match.radar)){
+  const seen=new Set();return sortMatches(candidates).filter(value=>{
+   const key=value.entry.key||value.entry.data.symbol+':'+value.entry.data.frame;
+   return !seen.has(key)&&seen.add(key);
+  });
+ }
  return rankClassicTiers(candidates,{compare:(a,b)=>compareClassic(a,b)||b.similarity-a.similarity})
   .map(value=>{const tier=Number(value.tier.slice(1));return {...value,match:{...value.match,tier,
    qualityTier:value.qualityTier,...(value.match.radar?{radarTier:tier}:{})}};});
+}
+export function browsePatternEntries(entries){
+ const bestBySymbol=new Map();
+ for(const entry of entries){
+  const best=sortMatches(Object.values(entry.matches||{}).map(match=>({match,similarity:match.similarity}))).at(0)?.match;
+  const signal=best?.classicSignal||Object.values(entry.data.classic||{}).sort((a,b)=>
+   Number(b.eligible)-Number(a.eligible)||Number(b.observationEligible)-Number(a.observationEligible)||compareClassic(a,b))[0];
+  if(!signal)continue;
+  const n=entry.data.candles.length;
+  const candidate={entry,match:best||{label:'走勢瀏覽',similarity:0,points:[],start:Math.max(0,n-60),end:n-1,
+   ...patternPhase(signal),stage:'走勢瀏覽 · 尚未選擇型態',browse:true}};
+  const previous=bestBySymbol.get(entry.data.symbol);
+  if(!previous||candidate.match.tier<previous.match.tier||candidate.match.tier===previous.match.tier&&
+   candidate.match.similarity>previous.match.similarity)bestBySymbol.set(entry.data.symbol,candidate);
+ }
+ return rankPatternMatches([...bestBySymbol.values()]);
 }

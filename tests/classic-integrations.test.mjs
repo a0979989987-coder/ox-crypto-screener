@@ -24,6 +24,8 @@ test('US real OHLCV qualifies by the same signal, while missing volume cannot bo
  assert.equal(tierResults([row])[0].tier,s.tier);
  const observing=tierResults([{...row,bars:preparation({volume:false})}]);
  assert.equal(observing[0].tier,'T2');assert.equal(observing[0].classicSignal.eligible,false);
+ assert.ok(observing[0].reasons.some(r=>r.includes('次獨立測試')));
+ assert.ok(observing[0].reasons.some(r=>r.startsWith('待確認：')));
  const missing=preparation();missing[50].volume=null;
  assert.equal(tierResults([{...row,bars:missing}]).length,0);
 });
@@ -72,10 +74,12 @@ test('a positive TW day percentage cannot move a bearish current structure into 
  assert.equal(rankChartRows([row],{side:'long'}).length,0);
  assert.equal(rankChartRows([row],{side:'short'})[0].classicSignal.side,'SHORT');
 });
-test('cached geometric matches are requalified and cannot bypass missing upward volume',()=>{
+test('canvas observations do not grant full radar eligibility or trust unverified cached geometry',()=>{
  const context=prepareCandles(preparation({volume:false}));
  const legacy={'horizontal-resistance':{tier:1,similarity:100},w:{tier:1,similarity:100}};
- assert.deepEqual(qualifyPatternMatches(context,legacy),{});
+ const matches=qualifyPatternMatches(context,legacy);
+ assert.equal(matches.w,undefined);assert.ok(matches['horizontal-resistance']);
+ assert.ok(Object.values(matches).every(m=>m.classicSignal.eligible===false&&m.tier!==1));
 });
 test('TW backend preserves factual quotes but withholds grades when history is from a different day',async()=>{
  const row={symbol:'2330',dataDate:'2026-10-02',price:200,changePct:10,turnoverTwd:1e12};

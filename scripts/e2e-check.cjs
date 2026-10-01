@@ -53,7 +53,7 @@ const tickers = symbols.map((symbol, index) => ({
   symbol,
   lastPr: String(index === 0 ? 63250 : 3200 / (index + 1)),
   change24h: String((index % 2 ? -1 : 1) * (0.012 + index * 0.002)),
-  usdtVolume: String(900000000 - index * 50000000),
+  usdtVolume: String(index===7 ? 500000 : 900000000 - index * 50000000),
   baseVolume: String(200000 - index * 10000),
   high24h: "65000", low24h: "61000"
 }));

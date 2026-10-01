@@ -1,4 +1,4 @@
-import { evaluateClassic, qualifyClassicRow, compareClassic, compactClassic, CLASSIC_VERSION, CLASSIC_TIER_LIMITS, rankClassicTiers } from '../../core/classic.js?v=20261001-classic4';
+import { evaluateClassic, qualifyClassicRow, compareClassic, compactClassic, CLASSIC_VERSION, CLASSIC_TIER_LIMITS, rankClassicTiers } from '../../core/classic.js?v=20261001-classic5';
 import { closedCandles, relativeStrength } from "./model.js?v=20261001-us-eod1";
 const mean = (a) => a.reduce((s, x) => s + x, 0) / a.length;
 export function pivots(bars, radius = 3) {
@@ -197,7 +197,9 @@ export function tierResults(rows,{side='long',mode='classic',type='stock',patter
   candidates.push({...row,classicSignal:signal,side:side.toUpperCase(),tier,
     setup:mode==='classic'?'OX 經典 · '+(signal.eligible?signal.stage:'同向觀察'):({ma:'均線排列',gap:'跳空觀察',rs:'相對 SPY 強勢',breakout:'放量突破'})[mode],
     forming:signal?.phase==='prebreakout'||signal?.phase==='probe',stage:signal?.stage,
-    reasons:[...(signal?.eligible?signal.reasons:[]),...(row.rs!==null&&Number.isFinite(row.rs)?['同日期20期相對 SPY '+row.rs.toFixed(2)+'%']:[])],
+    reasons:[...(signal?.eligible?signal.reasons:signal?.matchedReasons||[]),
+      ...(!signal?.eligible?(signal?.rejectionReasons||[]).map(reason=>'待確認：'+reason):[]),
+      ...(row.rs!==null&&Number.isFinite(row.rs)?['同日期20期相對 SPY '+row.rs.toFixed(2)+'%']:[])],
     distance:signal?.distanceATR??Infinity});seen.add(row.symbol);
  }
  const compare=(a,b)=>compareClassic(a,b)||(b.liquidity||0)-(a.liquidity||0);

@@ -147,3 +147,22 @@ test('direction alone without tested liquidity or a supported strong impulse is 
  assert.equal(s.volume.supported,false);assert.equal(s.observationEvidence.liquidity,false);
  assert.equal(s.observationEligible,false);assert.deepEqual(rankClassicTiers([{symbol:'BARE',classicSignal:s}]),[]);
 });
+test('missing activation confirmation cannot display a perfect completeness score',()=>{
+ const s=evaluateClassic(preparation({volume:false}));
+ assert.equal(s.observationEligible,true);assert.equal(s.eligible,false);assert.ok(s.qualityScore<=79);
+ const combined=evaluateFrames({'4H':preparation(),'1H':preparation({volume:false})},{setupFrame:'4H',triggerFrame:'1H'});
+ assert.equal(combined.eligible,false);assert.ok(combined.qualityScore<=79);
+});
+test('remaining candidates descend by fulfilled-condition score before proximity priority',()=>{
+ const near={symbol:'NEAR',classicSignal:{...rankingSignal('T3'),qualityScore:45,priority:0}};
+ const stronger={symbol:'STRONG',classicSignal:{...rankingSignal('T3'),qualityScore:75,priority:1}};
+ assert.deepEqual(rankClassicTiers([near,stronger]).map(r=>r.symbol),['STRONG','NEAR']);
+});
+test('observations retain actual qualifying features without claiming missing confirmations',()=>{
+ const combined=evaluateFrames({'4H':preparation(),'1H':preparation({volume:false})},{setupFrame:'4H',triggerFrame:'1H'});
+ assert.equal(combined.observationEligible,true);assert.equal(combined.eligible,false);
+ assert.ok(combined.matchedReasons.some(r=>r.includes('次獨立測試')));
+ assert.ok(combined.matchedReasons.some(r=>r.includes('4H 同向放量已確認')));
+ assert.ok(!combined.matchedReasons.some(r=>r.includes('1H 同向放量已確認')));
+ assert.ok(combined.rejectionReasons.some(r=>r.includes('1H')));
+});

@@ -75,9 +75,11 @@ function renderOxDetail() {
   document.getElementById("detail-progress-bar").style.width = `${scored.setupProgress ?? 0}%`;
   document.getElementById("detail-progress-bar").style.setProperty("--meter-color", (scored.setupProgress ?? 0) < 40 ? "var(--meter-weak)" : (scored.setupProgress ?? 0) < 70 ? "var(--meter-mid)" : "var(--meter-strong)");
   document.getElementById("detail-confidence").textContent = `${scored.signalConfidence ?? 0}%`;
-  document.getElementById("detail-trigger").textContent = classic?.stage || "等待確認";
+  document.getElementById("detail-trigger").textContent = classic?.eligible ? classic.stage : "條件觀察 · 等待完整確認";
 
-  const reasons = (classic?.eligible?classic.reasons:classic?.rejectionReasons||[]).map(text=>({ok:classic?.eligible,text}));
+  const reasons = classic?.eligible ? (classic.reasons||[]).map(text=>({ok:true,text})) : [
+    ...(classic?.matchedReasons||[]).map(text=>({ok:true,text})),
+    ...(classic?.rejectionReasons||[]).map(text=>({ok:false,text}))];
   document.getElementById("detail-reasons-list").innerHTML = reasons.map(r => `<div class="detail-reason ${r.ok ? 'ok' : 'wait'}">${r.ok ? '✓' : '△'} ${r.text}</div>`).join('');
   updateAlertButtons();
 }

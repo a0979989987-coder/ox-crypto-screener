@@ -1,8 +1,8 @@
-import { classifyTWSeries } from '../classic.js?v=20261001-classic4';
-import { qualifyClassicRow, compareClassic, rankClassicTiers } from '../../../core/classic.js?v=20261001-classic4';
-import { preloadBundle, bundleEntry, bundleEntries, bundleState } from './bundle.js?v=20261001-classic4';
+import { classifyTWSeries } from '../classic.js?v=20261001-classic5';
+import { qualifyClassicRow, compareClassic, rankClassicTiers } from '../../../core/classic.js?v=20261001-classic5';
+import { preloadBundle, bundleEntry, bundleEntries, bundleState } from './bundle.js?v=20261001-classic5';
 import { twProvider } from '../api.js?v=20261001-tiercomb1';
-import { createTWMarketState } from '../engine.js?v=20261001-classic4';
+import { createTWMarketState } from '../engine.js?v=20261001-classic5';
 import { savedResearch, loadResearch } from '../research-data.js?v=20261001-twhome1';
 import { TIMEFRAMES, selectUniverse, dailyCandles } from './model.js';
 import { aggregateChartCandles } from '../chart-data.js?v=20261001-loading1';
@@ -10,7 +10,7 @@ export { TIMEFRAMES };
 export const detailStamp = row => `${row.frame!=='1D'?'已完成合併 K · 截至':'資料日'} ${row.candles.at(-1).lastDate || row.candles.at(-1).date}`;
 export const id = 'tw', label = '台股 · TWSE／TPEx', asset = '股票', currency = '元', period = '當日', defaultFrames = ['1D'], defaultLimit = 0;
 export const displayName = row => `${row.symbol} ${row.name || row.ticker?.name || ''}`.trim();
-export const help = '<p>以官方上市、上櫃普通股的真實日 K 與成交量判斷 OX 經典；其他級別由已完成的日 K 合併。休市與缺漏不補造 K 線。先確認有效水平或斜線壓力、右側方向和同向量能，才排列 T123 榜單，突破階段另列。已明顯上下貫穿的線失效，下跌放量和弱反彈不得進入多頭榜。</p><p>舊快照只保留真實 OHLCV，分級重算。T1 完整條件最多 10 檔且不補位；其餘合格同向候選前 15 檔列 T2、接續 15 檔列 T3，足夠時 T2＋T3 共 30 檔。資料日行情非即時；相似度不代表勝率。未畫圖顯示符合 OX 經典的雷達候選，手繪與型態搜尋沿用同一條件。</p>';
+export const help = '<p>型態畫板使用官方真實 K 線，其他級別由已完成日 K 合併；休市與缺漏不補造 K 線。以實際幾何、轉折及有效水平／斜線搜尋形成中的型態，已明顯上下貫穿的線失效。</p><p>T1 完整量價確認，T2／T3 為部分確認或形成中觀察；型態搜尋沒有雷達名額上限，未達完整量價者保留並明確標示。未畫圖時瀏覽全觀察池，型態相似度不代表勝率，也不會因此取得雷達資格。</p>';
 const cache = new Map();
 export function dataDate() { return bundleState().date || savedResearch()?.date || null; }
 export function radarCandidates() {

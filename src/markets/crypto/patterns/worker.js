@@ -1,10 +1,10 @@
-import { prepareCandles, classifyPrepared, qualifyPatternMatches, matchPrepared } from './matcher.js?v=20261001-classic4';
+import { prepareCandles, indexPrepared, matchPrepared } from './matcher.js?v=20261001-classic5';
 const index=new Map();
 self.onmessage=({data})=>{
   try{
     if(data.type==='index'){
       const context=prepareCandles(data.candles);index.set(data.key,context);
-      self.postMessage({id:data.id,result:data.matches?qualifyPatternMatches(context,data.matches):classifyPrepared(context)});
+      self.postMessage({id:data.id,result:indexPrepared(context,data.matches)});
     }else if(data.type==='prepare'){
       for(const entry of data.entries)index.set(entry.key,prepareCandles(entry.candles));
       self.postMessage({id:data.id,result:true});

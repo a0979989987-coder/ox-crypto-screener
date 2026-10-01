@@ -71,7 +71,12 @@ function isCryptoSymbolAllowed(symbol) {
   return isCryptoInstrument({ symbol, baseCoin: String(symbol || "").replace(/USDT$|USDC$/i, "") });
 }
 
+const cryptoCandleObservations=new Map();
 const BitgetAPI = {
+  peekCandles(symbol,frame,now=Date.now()) {
+    const observation=cryptoCandleObservations.get(symbol+':'+frame);
+    return observation&&now-observation.serverTime<=300000?observation:null;
+  },
   async fetchTickers() {
     const res = await fetch(`${CONFIG.apiBase}/tickers?productType=${CONFIG.productType}`, { cache: "no-store" });
     const json = await res.json();
@@ -107,7 +112,7 @@ const BitgetAPI = {
     if (json.code !== "00000" || !Array.isArray(json.data)) return [];
     
     // 使用 ES6 陣列解構，百分之百避免任何下標被誤刪
-    return json.data.map(d => {
+    const candles=json.data.map(d => {
       const [rawTime, rawOpen, rawHigh, rawLow, rawClose, rawVol, rawQuoteVol] = d;
       return {
         time: Math.floor(num(rawTime) / 1000),
@@ -120,5 +125,10 @@ const BitgetAPI = {
       };
     }).filter(c => Number.isFinite(c.open) && Number.isFinite(c.close) && c.open > 0 && c.close > 0)
       .sort((a, b) => a.time - b.time);
+    if(!endTime&&candles.length){
+      cryptoCandleObservations.set(symbol+':'+granularity,{symbol,frame:granularity,candles,serverTime:Number(json.requestTime)||Date.now()});
+      if(cryptoCandleObservations.size>1200)cryptoCandleObservations.delete(cryptoCandleObservations.keys().next().value);
+    }
+    return candles;
   }
 };
