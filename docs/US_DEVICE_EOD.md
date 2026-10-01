@@ -29,3 +29,5 @@ node scripts/export-us-device-eod.mjs --input /private/bundle.json --output /pri
 執行 `US_DEVICE_INPUT=/private/OX_US_EOD.json OX_BROWSER_PATH=/path/to/chromium node scripts/test-us-device-live.cjs`，驗證真實檔案選擇、原生 K 線資料一致性、首頁候選、雷達結果、泡泡、畫板路徑與真實縮圖、畫線保存、IndexedDB 還原、壞檔不覆蓋及移除返回公開圖表。無原始行情 API 請求或個人檔 POST。
 
 已通過 Chromium 390／430／1366 px，SPY 400 根日線、91 根週線、21 根月線與真實資料一致。268 項單元測試與 build check 通過，公開名錄 390／430／1363 px 回歸通過。沒有完成實體 iPhone 或 WebKit 驗收。
+
+正式網站匯入驗收發現，桌面共用 Crypto 樣式隱藏了 US 使用的手機代號／漲跌／收藏欄。已補上僅限 US 桌面雷達的呈現，增加三欄可見性檢查；私人資料不重新上傳或公開。

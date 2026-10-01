@@ -59,7 +59,9 @@ test('close gate uses Taipei time, never selects intraday, and source empty firs
 });
 test('manual refresh bypasses cache and fetches sources even before publication; failure keeps valid data and acquisition time',async()=>{
  let count=0;const collectors={core:async()=>{count++;return seed.core;},briefing:async()=>{count++;return seed.briefing;}};
- const now=new Date('2026-10-01T03:00:00Z');
+ // Keep this pre-publication scenario independent of daily seed refreshes.
+ const now=new Date(seed.core.date+'T03:00:00Z');
+ do{now.setUTCDate(now.getUTCDate()+1);}while(taipeiClock(now).weekend);
  const a=await getHomeSection('core',{refresh:true,now,collectors});assert.equal(count,1);assert(a.refreshed);assert.equal(a.publication,'pending');
  const b=await getHomeSection('core',{now,collectors});assert.equal(count,1);assert.equal(b.refreshed,false);
  await getHomeSection('core',{refresh:true,now,collectors});assert.equal(count,2);
