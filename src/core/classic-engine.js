@@ -4,7 +4,7 @@
  */
 (function (root) {
   'use strict';
-  const CLASSIC_VERSION = 5;
+  const CLASSIC_VERSION = 6;
   const CLASSIC_TIER_LIMITS = Object.freeze({ T1: 10, T2: 15, T3: 15 });
   // Initial, centralized defaults in ATR/bar units. These are implementation
   // thresholds, not claims of calibration or performance from trade screenshots.
@@ -249,10 +249,15 @@
     const observationEligible = observationDirection && (observationEvidence.liquidity || observationEvidence.directionalVolume || observationEvidence.priceStructure) &&
       volume.complete && !volume.distribution &&
       !failed && !liveFailure && (!exhausted||wickRecovered&&risk<=rules.maximumRiskATR) && (!chase||reversal.candidate) && risk > 0;
-    const qualityScore = Math.round(clamp(55 + (trigger ? Math.min(4, trigger.touches.length) * 4 : 0) +
+    let qualityScore = Math.round(clamp(55 + (trigger ? Math.min(4, trigger.touches.length) * 4 : 0) +
       (direction.higherLows ? 7 : 0) + (direction.higherHighs ? 4 : 0) +
       (volume.supported ? 10 : 0) + Math.min(8, Math.max(0, volume.impulseRatio || 0) * 3) +
       (near ? Math.max(0, 8 - Math.max(0, gap) * 5) : 2) + (target && spaceOK ? 4 : 0), 0, 100));
+    // A live crossing has not held at the close. It must not display a near-perfect
+    // score earned by the previous closed candle, especially after running far
+    // beyond the tested level during the unfinished candle.
+    if (phase === 'probe') qualityScore = Math.min(89, qualityScore - 6 - Math.min(10,
+      Math.round(Math.max(0, (observedPrice - pressure.level) / a - 0.45) * 4)));
     const rejectionReasons = [];
     if (!direction.confirmed) rejectionReasons.push(direction.falling ? '當下結構轉跌' : reversal.candidate?'較大級別轉向仍待確認':'右側上攻結構不足');
     if (direction.opposingContext) rejectionReasons.push(reversal.candidate?'較大跌勢尚未完全收復，近期轉折正在轉強':'較大結構仍逆向，局部反彈／回檔不算轉向');
@@ -307,28 +312,50 @@
       priority: phase === 'prebreakout' || phase === 'probe' ? 0 : 1 };
     return finish(signal, strictEligible, phase, publicPressure, reasons);
   }
-  function evaluateFrames(frames, { side = 'long', setupFrame, triggerFrame, now = Date.now(), rules } = {}) {
+  function evaluateFrames(frames, { side = 'long', setupFrame, triggerFrame, confirmationFrame, now = Date.now(), rules } = {}) {
     const setup = evaluateClassic(frames[setupFrame] || [], { side, frame: setupFrame, now, rules });
     if (!triggerFrame || triggerFrame === setupFrame) return setup;
     const trigger = evaluateClassic(frames[triggerFrame] || [], { side, frame: triggerFrame, now, rules });
     // The trigger frame need not have its own nearby ceiling, but failures,
     // distribution and exhaustion may never be waived by a larger frame.
     const triggerVeto = ['最新價格已破壞結構', '近期突破失敗，壓力已上下貫穿', '上攻回落或已走離可觀察位置'];
+    const triggerSpaceBlocked = trigger.rejectionReasons.includes('下一個目標空間不足');
+    const confirmation = confirmationFrame && confirmationFrame !== triggerFrame && confirmationFrame !== setupFrame &&
+      frames[confirmationFrame]?.length ? evaluateClassic(frames[confirmationFrame], { side, frame:confirmationFrame, now, rules }) : null;
+    const confirmationBlocked = !!(confirmation?.volume?.distribution || confirmation?.direction?.falling);
     const triggerOK = trigger.direction?.confirmed && trigger.volume?.supported &&
       !trigger.volume.distribution && !triggerVeto.some(reason => trigger.rejectionReasons.includes(reason));
-    const eligible = setup.eligible && triggerOK;
-    const observationEligible = setup.observationEligible && trigger.volume?.complete &&
+    const eligible = setup.eligible && triggerOK && !triggerSpaceBlocked && !confirmationBlocked;
+    // A daily signal from several candles ago does not make a flat or fading
+    // 4H/1H market a current upward observation. A fresh swing recovery may
+    // qualify through its own recent volume/structure evidence.
+    const triggerObservationReady = trigger.direction?.confirmed && (
+      trigger.volume?.supported || trigger.observationEvidence?.directionalVolume ||
+      trigger.direction.advance >= 0.65 && trigger.volume?.upwardShare >= 0.5 && trigger.volume?.recentRatio >= 0.8
+    ) || trigger.reversal?.candidate;
+    const observationEligible = setup.observationEligible && triggerObservationReady && trigger.volume?.complete &&
       !trigger.direction?.falling && (!trigger.direction?.opposingContext||trigger.reversal?.candidate) && !trigger.volume?.distribution &&
-      !triggerVeto.some(reason => trigger.rejectionReasons.includes(reason));
+      !triggerVeto.some(reason => trigger.rejectionReasons.includes(reason)) && !confirmationBlocked;
     const reasons = [setupFrame + ' 結構＋' + triggerFrame + (setup.side === 'LONG' ? ' 上攻確認' : ' 下攻確認'), ...setup.reasons.filter(r => !r.includes('量比')),
       ...trigger.reasons.filter(r => r.includes('量比'))];
+    // Score partial observations from current evidence. Capping a 100-point
+    // daily setup at 79 made very different, often weak candidates all tie at
+    // 79 and pushed fresh recoveries below them by scan order.
+    const observationScore=Math.round(clamp(42+Math.min(12,(setup.pressure?.touches||0)*3)+
+      (setup.direction?.confirmed?6:0)+(setup.volume?.supported?6:0)+
+      (trigger.direction?.confirmed?8:0)+(trigger.volume?.supported?8:0)+
+      (trigger.direction?.position>=0.75?4:0)+(setup.reversal?.candidate?16:0)+
+      (setup.phase==='probe'?3:0)-(triggerSpaceBlocked?5:0)-(confirmationBlocked?8:0),0,79));
     const signal = { ...setup, observationEligible:!!observationEligible,
-      qualityScore:eligible?setup.qualityScore:Math.min(79,setup.qualityScore-(trigger.direction?.confirmed?0:8)-(trigger.volume?.supported?0:8)),
+      qualityScore:eligible?setup.qualityScore:observationScore,
       triggerFrame, triggerClosedAt: trigger.closedAt, triggerVolume: trigger.volume,
       matchedReasons:[...(setup.matchedReasons||[]),
         ...(trigger.direction?.confirmed?[triggerFrame+' 同向結構已確認']:[]),
         ...(trigger.volume?.supported?[triggerFrame+' 同向放量已確認 · '+trigger.volume.impulseRatio.toFixed(2)+'x']:[])],
-      rejectionReasons: eligible ? [] : [...setup.rejectionReasons, ...(triggerOK ? [] : [triggerFrame + ' 當下方向或上攻量能未確認'])] };
+      rejectionReasons: eligible ? [] : [...setup.rejectionReasons,
+        ...(triggerOK ? [] : [triggerFrame + ' 當下方向或上攻量能未確認']),
+        ...(triggerSpaceBlocked ? [triggerFrame + ' 下一個目標空間不足'] : []),
+        ...(confirmationBlocked ? [confirmationFrame + ' 短線方向或同向量能轉弱'] : [])] };
     return finish(signal, !!eligible, setup.phase, setup.pressure, reasons);
   }
   function qualifyClassicRow(row, side = 'long', { observations = false } = {}) {
@@ -338,7 +365,8 @@
   }
   function compareClassic(a, b) {
     const x = a.classicSignal || a, y = b.classicSignal || b;
-    return (y.qualityScore || 0) - (x.qualityScore || 0) || (x.priority ?? 1) - (y.priority ?? 1);
+    return (y.qualityScore || 0) - (x.qualityScore || 0) ||
+      Number(!!y.reversal?.candidate)-Number(!!x.reversal?.candidate) || (x.priority ?? 1) - (y.priority ?? 1);
   }
   function compactClassic(signal) {
     if (!signal.eligible && !signal.observationEligible) return {version:signal.version,eligible:false,side:signal.side,

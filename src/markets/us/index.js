@@ -1,6 +1,6 @@
 import { US_MODULE_CONFIG } from "./config.js?v=20261001-us-eod1";
 import { createUSMarketState } from "./engine.js?v=20261001-us-eod1";
-import { USWorkspace } from "./workspace.js?v=20261001-reversal1";
+import { USWorkspace } from "./workspace.js?v=20261001-audit1";
 const workspace = new USWorkspace();
 let active = false,
   entered = false;

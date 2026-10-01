@@ -52,6 +52,12 @@ function classifyInstrument(contract = {}) {
   if (/\b(metal|commodity)\b/.test(metadataHint)) return ASSET_CLASS.COMMODITY;
   if (/\bcrypto(currency)?\b/.test(metadataHint)) return ASSET_CLASS.CRYPTO;
 
+  // A v2 perpetual explicitly marked non-RWA is a crypto contract even when
+  // its token ticker also names an equity (for example CVX). The official v3
+  // asset type above still wins when the same ticker really is a stock.
+  if (String(contract.isRwa || '').toUpperCase() === 'NO' &&
+      contract.symbolType === 'perpetual' && contract.quoteCoin === 'USDT') return ASSET_CLASS.CRYPTO;
+
   for (const cls of [ASSET_CLASS.STOCK, ASSET_CLASS.ETF, ASSET_CLASS.COMMODITY, ASSET_CLASS.INDEX]) {
     if (NON_CRYPTO_UNDERLYINGS[cls]?.has(base)) return cls;
   }

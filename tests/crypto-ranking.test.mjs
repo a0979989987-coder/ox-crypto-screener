@@ -6,19 +6,30 @@ import { readFileSync } from "node:fs";
 import { runInNewContext } from "node:vm";
 
 const scanner = readFileSync(new URL("../src/markets/crypto/scanner.js", import.meta.url), "utf8");
+const api=readFileSync(new URL('../src/markets/crypto/api.js',import.meta.url),'utf8');
 
-function rank(rows, scanState={}) {
+test('Bitget non-RWA crypto token survives a colliding stock ticker fallback',()=>{
+  const classify=contract=>runInNewContext(`${api}\nclassifyInstrument(${JSON.stringify(contract)})`,{});
+  assert.equal(classify({symbol:'CVXUSDT',baseCoin:'CVX',symbolType:'perpetual',quoteCoin:'USDT',isRwa:'NO'}),'crypto');
+  assert.equal(classify({symbol:'CVXUSDT',baseCoin:'CVX',symbolType:'perpetual',quoteCoin:'USDT',isRwa:'YES'}),'stock');
+  assert.equal(classify({symbol:'CVXUSDT',baseCoin:'CVX',symbolType:'perpetual',quoteCoin:'USDT',isRwa:'NO',assetSymbolType:'stock'}),'stock');
+});
+
+function rank(rows, scanState={}, side='long') {
   const state = {
-    analyzedCache: new Map(rows.map(row => [row.symbol, {...row,classic:{long:rankingSignal(row.tier.toUpperCase())},classicSignal:rankingSignal(row.tier.toUpperCase())}])),
+    analyzedCache: new Map(rows.map(row => [row.symbol, {...row,classic:row.classic||{long:rankingSignal(row.tier.toUpperCase())},
+      classicSignal:row.classicSignal||rankingSignal(row.tier.toUpperCase())}])),
     tickers: [], directionFilter: "long", ...scanState
   };
   const context = {
     OXClassic:OXClassicForTests, state, benchmarkSymbols: new Set(["BTCUSDT", "ETHUSDT"]), num: Number,
+    OXEngine:{describe:signal=>({classicSignal:signal,side:signal.side,oxScore:signal.qualityScore,
+      tier:signal.tier?.toLowerCase()||'none',reasons:signal.reasons||[],setupProgress:signal.qualityScore})},
     syncDirectionalBadges() {}, syncWatchBadge() {}, renderMarketStrength() {},
     renderHomeOverview() {}, renderOxLive() {}
   };
   runInNewContext(`${scanner}\nrebuildTierLists();`, context);
-  return state.tierMapBySide.long;
+  return state.tierMapBySide[side];
 }
 
 test("Crypto radar preserves strict T1 and fills the next 15 plus 15 ranked slots without repeats", () => {
@@ -61,6 +72,14 @@ test('radar publishes qualified rows while the first scan remains unfinished', (
   assert.equal(result.t1.length,1);
   assert.equal(result.t1[0].symbol,'SOLUSDT');
   assert.equal(result.t2.length+result.t3.length,0);
+});
+test('both directions are independently ranked even when the cached primary direction is opposite',()=>{
+  const long=rankingSignal('T1','long'),short=rankingSignal('T1','short');
+  const row={symbol:'BOTHUSDT',side:'SHORT',tier:'t1',classic:{long,short},classicSignal:short,oxScore:short.qualityScore};
+  const longRank=rank([row]),shortRank=rank([row],{},'short');
+  assert.equal(longRank.t1.length,1);assert.equal(longRank.t1[0].side,'LONG');
+  assert.equal(longRank.t1[0].classicSignal.side,'LONG');
+  assert.equal(shortRank.t1.length,1);assert.equal(shortRank.t1[0].side,'SHORT');
 });
 
 test('radar snapshot uses current tickers and excludes expired or unavailable coins', () => {
