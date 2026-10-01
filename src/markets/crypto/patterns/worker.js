@@ -1,4 +1,4 @@
-import { prepareCandles, indexPrepared, matchPrepared } from './matcher.js?v=20261001-rank2';
+import { prepareCandles, indexPrepared, matchPrepared } from './matcher.js?v=20261001-rank3';
 const index=new Map();
 self.onmessage=({data})=>{
   try{
