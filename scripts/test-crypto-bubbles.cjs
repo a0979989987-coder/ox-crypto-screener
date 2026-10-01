@@ -18,35 +18,40 @@ let browser;
  browser=await chromium.launch({executablePath:process.env.OX_CHROMIUM_EXECUTABLE,headless:true,args:['--no-sandbox']});
  const page=await browser.newPage({viewport:{width:1440,height:950},hasTouch:true});page.on('pageerror',e=>errors.push(e.message));
  await page.route('**/bubbles/field.js*',r=>r.fulfill({contentType:'text/javascript',body:readFileSync(root+'/src/markets/crypto/bubbles/field.js','utf8').replace('this.canvas=canvas;','window.oxField=this;this.canvas=canvas;')}));
+ await page.route('**/bubbles/bubbles.css*',async r=>{await new Promise(resolve=>setTimeout(resolve,200));await r.fulfill({contentType:'text/css',body:readFileSync(root+'/src/markets/crypto/bubbles/bubbles.css','utf8')});});
  await page.route(base+'/__bubbles',r=>r.fulfill({contentType:'text/html',body:'<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{margin:0;padding:16px;background:#080d10}#view-strength{max-width:1280px;margin:auto}</style><section id="view-strength"><div class="strength-page"><div class="strength-compare-panel"></div></div></section><script src="/src/app/token-logos.js"></script>'}));
  await page.route('https://api.coingecko.com/**',r=>r.fulfill({json:caps.map(c=>({...c,last_updated:new Date().toISOString()}))}));
  let flowRequests=0;
- await page.route('https://api.bitget.com/**',r=>{flowRequests++;return r.fulfill({json:{code:'00000',requestTime:Date.now(),data:[{tradeId:'a',side:'buy',size:150,price:100,ts:Date.now()},{tradeId:'b',side:'sell',size:100,price:100,ts:Date.now()}]}});});
+ await page.route('https://api.bitget.com/**',r=>{flowRequests++;const positive=quotes.findIndex(t=>t.symbol===new URL(r.request().url()).searchParams.get('symbol'))%2===0;return r.fulfill({json:{code:'00000',requestTime:Date.now(),data:[{tradeId:'a',side:'buy',size:positive?150:100,price:100,ts:Date.now()},{tradeId:'b',side:'sell',size:positive?100:150,price:100,ts:Date.now()}]}});});
  await page.goto(base+'/__bubbles');
  await page.evaluate(async q=>{window.state={activeMarket:'crypto',tickers:q.map(t=>({...t,ts:Date.now()})),analyzedCache:new Map(q.map((t,i)=>[t.symbol,{oxScore:(i*7)%101}]))};window.getWatchlistRecords=()=>[{symbol:q[0].symbol}];window.switchSymbol=s=>{window.openedRadar=s;};document.body.dataset.market='crypto';document.body.dataset.view='strength';await import('/src/markets/crypto/analytics/entry.js');window.freshTimer=setInterval(()=>state.tickers.forEach(t=>t.ts=Date.now()),1000);},quotes);
  const tab=id=>page.locator(`[data-crypto-tool="${id}"]`);
  await tab('bubbles').click();
  const canvas=page.locator('canvas');await canvas.waitFor();await page.waitForFunction(()=>document.querySelector('#ox-crypto-tools-inline>div')?.shadowRoot?.querySelector('canvas')?.dataset.coins==='50');
+ await canvas.waitFor({state:'visible'});assert.ok(await page.evaluate(()=>oxField.nodes.every(n=>Number.isFinite(n.x)&&Number.isFinite(n.y))),'cold stylesheet load preserves finite bubble positions');
  const metric=id=>page.locator(`[data-bubble-metric="${id}"]`).click();
  await metric('volume');assert.equal(await canvas.getAttribute('data-metric'),'volume');
  await metric('cap');assert.ok(Number(await canvas.getAttribute('data-coins'))>0);
  await metric('score');assert.equal(await canvas.getAttribute('data-metric'),'score');assert.equal(await canvas.getAttribute('data-coins'),'50');
  await page.locator('select').selectOption('30');assert.equal(await canvas.getAttribute('data-coins'),'30');
- await page.getByRole('button',{name:'自選',exact:true}).click();assert.equal(await canvas.getAttribute('data-coins'),'1');
- await page.getByRole('button',{name:'全部',exact:true}).click();
- await page.getByRole('searchbox').fill('BTC');assert.equal(await canvas.getAttribute('data-coins'),'1');await page.getByRole('searchbox').fill('');
+ assert.equal(await page.getByRole('searchbox').count(),0);assert.equal(await page.locator('[data-action="help"],[data-action="pause"],[data-action="focus"]').count(),0);
+ assert.equal(await page.locator('[data-action="scope"]').count(),1);
+ await page.locator('[data-action="scope"]').click();assert.equal(await canvas.getAttribute('data-coins'),'1');assert.equal(await page.locator('[data-action="scope"]').getAttribute('data-scope'),'watch');
+ await page.locator('[data-action="scope"]').click();assert.equal(await page.locator('[data-action="scope"]').getAttribute('data-scope'),'all');
+ for(const direction of ['long','short','both']){await page.locator('[data-action="direction"]').click();assert.equal(await canvas.getAttribute('data-direction'),direction);assert.ok(await page.evaluate(d=>oxField.nodes.every(n=>d==='both'||(d==='long'?n.change>0:n.change<0)),direction));}
+ await page.locator('select').selectOption('100');assert.equal(await canvas.getAttribute('data-coins'),'100');await page.locator('select').selectOption('30');
  await metric('flow');await page.waitForFunction(()=>document.querySelector('#ox-crypto-tools-inline>div').shadowRoot.querySelector('canvas').dataset.coins==='30',{},{timeout:20000});assert.ok(flowRequests>=30);
+ for(const direction of ['long','short','both']){await page.locator('[data-action="direction"]').click();assert.equal(await canvas.getAttribute('data-direction'),direction);assert.ok(await page.evaluate(d=>oxField.nodes.every(n=>d==='both'||(d==='long'?n.value>0:n.value<0)),direction));}
  await metric('change');await page.locator('select').selectOption('50');
  const shotDir=process.env.OX_BUBBLE_SHOTS;if(shotDir){mkdirSync(shotDir,{recursive:true});await page.waitForTimeout(700);await page.screenshot({path:shotDir+'/desktop.png',fullPage:true});}
  await page.locator('summary').click();await page.locator('[data-asset]').first().click();assert.equal(await page.locator('.oxb-dialog[open]').count(),1);
  const symbol=await page.locator('[data-asset]').first().getAttribute('data-asset');await page.locator('[data-action="radar"]').click();assert.equal(await page.evaluate(()=>window.openedRadar),symbol);
  await page.locator('summary').click();
- for(const width of [320,390,768,1440]){await page.setViewportSize({width,height:844});await page.waitForTimeout(100);assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'page overflow '+width);}
+ for(const width of [320,390,768,1440]){await page.setViewportSize({width,height:844});await page.waitForTimeout(100);assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'page overflow '+width);const scopeBox=await page.locator('[data-action="scope"]').boundingBox(),directionBox=await page.locator('[data-action="direction"]').boundingBox(),metricBox=await page.locator('[data-bubble-metric="change"]').boundingBox();assert.ok(Math.abs(scopeBox.y-directionBox.y)<2&&Math.abs(scopeBox.y-metricBox.y)<6,'one control row '+width);}
  await page.setViewportSize({width:390,height:844});await page.waitForTimeout(500);
  if(shotDir)await page.screenshot({path:shotDir+'/mobile.png',fullPage:true});assert.ok(await page.evaluate(()=>Math.max(0,...oxField.nodes.flatMap((a,i)=>oxField.nodes.slice(i+1).map(b=>a.r+b.r-Math.hypot(a.x-b.x,a.y-b.y))))<2),'resize preserves bubble spacing'); 
- await page.locator('[data-action="focus"]').click();await page.locator('body>dialog[open]').waitFor();assert.ok((await canvas.boundingBox()).height>600);
  const cdp=await page.context().newCDPSession(page),box=await canvas.boundingBox();
- await page.locator('[data-action="pause"]').click();
+ await page.evaluate(()=>{oxField.paused=true;oxField.run();});
  const before=await canvas.evaluate(c=>c.toDataURL());
  await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:box.x+100,y:box.y+200,id:1},{x:box.x+230,y:box.y+200,id:2}]});
  await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:box.x+65,y:box.y+200,id:1},{x:box.x+270,y:box.y+200,id:2}]});
@@ -56,7 +61,6 @@ let browser;
  const dragged=await page.evaluate(()=>{const n=oxField.nodes[0],b=oxField.canvas.getBoundingClientRect();return {symbol:n.symbol,x:b.x+n.x,y:b.y+n.y,nx:n.x,ny:n.y};});
  await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:dragged.x,y:dragged.y,id:1}]});await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:dragged.x+25,y:dragged.y+18,id:1}]});await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});assert.ok(await page.evaluate(d=>{const n=oxField.nodes.find(n=>n.symbol===d.symbol);return Math.hypot(n.x-d.nx,n.y-d.ny)>5;},dragged),'drag moves bubble');assert.equal(await page.locator('.oxb-dialog[open]').count(),0);
  await page.keyboard.press('Escape');assert.equal(await page.locator('body>dialog').count(),0);assert.equal(await page.evaluate(()=>document.body.style.overflow),'');
- await page.getByRole('button',{name:'泡泡圖資料說明'}).click();assert.equal(await page.locator('.oxb-help[open]').count(),1);await page.keyboard.press('Escape');assert.equal(await page.locator('.oxb-help[open]').count(),0);
  // The field is exercised directly to verify motion, collision constraints, reduced motion and teardown.
  await page.evaluate(async()=>{const {BubbleField}=await import('/src/markets/crypto/bubbles/field.js');const c=document.createElement('canvas');c.style='width:360px;height:500px';document.body.append(c);const f=new BubbleField(c);f.paused=true;f.setRows(Array.from({length:50},(_,i)=>({symbol:'X'+i,base:'X'+i,value:i+1,change:i%2?2:-2})),'change');window.testField=f;});
  const physics=await page.evaluate(()=>{const f=testField,start=f.nodes.map(n=>({x:n.x,y:n.y}));for(let i=0;i<240;i++)f.advance(1,i*16.67);return {moved:f.nodes.some((n,i)=>Math.hypot(n.x-start[i].x,n.y-start[i].y)>1),bounds:f.nodes.every(n=>n.x>=n.r&&n.x<=f.width-n.r&&n.y>=n.r&&n.y<=f.height-n.r),overlap:Math.max(0,...f.nodes.flatMap((a,i)=>f.nodes.slice(i+1).map(b=>a.r+b.r-Math.hypot(a.x-b.x,a.y-b.y))))};});
@@ -65,5 +69,5 @@ let browser;
  await page.evaluate(()=>{testField.setRows(testField.nodes.map((n,i)=>({...n,value:i===0?100000:1})),'cap');if(!testField.nodes.every(n=>n.r===n.target))throw Error('paused/reduced radii did not update');testField.destroy();if(testField.frame!==0)throw Error('rAF not cleared');});
  for(const market of ['tw','us','forex','crypto']){await page.evaluate(m=>{state.activeMarket=m;document.body.dataset.market=m;document.dispatchEvent(new CustomEvent('ox:marketchange'));},market);assert.equal(await page.locator('#ox-crypto-tools-inline').isVisible(),market==='crypto');}
  await tab('strength').click();assert.equal(await page.locator('#ox-crypto-tools-inline canvas').count(),0);await tab('bubbles').click();await page.locator('#ox-crypto-tools-inline canvas').waitFor();
- assert.deepEqual(errors,[]);console.log('PASS: five metrics, watch/search/30–100 coins, real large-trade sample route, detail/radar, 320–1440px, touch pinch/reset, fullscreen/Escape, physics/bounds, reduced motion and market teardown.');
+ assert.deepEqual(errors,[]);console.log('PASS: compact single control row, removed utilities, scope toggle, long/short filtering, five metrics/30–100 coins, detail/radar, 320–1440px, touch drag/pinch/reset, differentiated sizes/physics, reduced motion and market teardown.');
 })().catch(e=>{console.error(e);process.exitCode=1;}).finally(async()=>{await browser?.close();server.kill();});

@@ -55,11 +55,9 @@ if (section) {
     pending = true; const token = ++generation;
     try {
       if(selected==='bubbles'){
-        const { mountCryptoBubbles } = await import('../bubbles/view.js?v=20261001-bubbles1');
+        const { mountCryptoBubbles } = await import('../bubbles/view.js?v=20261001-bubbles2');
         if(token!==generation||!active())return;
         instance=mountCryptoBubbles(host);
-        observer = new MutationObserver(syncFocus);
-        observer.observe(host.shadowRoot.querySelector('.cfx'), {attributes:true,attributeFilter:['class']});
         return;
       }
       if(selected==='patterns'){

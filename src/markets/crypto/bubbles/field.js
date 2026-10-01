@@ -1,9 +1,9 @@
-import { radiusTargets, metricText, canonical } from './model.js?v=20261001-bubbles1';
+import { radiusTargets, metricText, canonical } from './model.js?v=20261001-bubbles2';
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const hash=s=>[...s].reduce((v,c)=>(v*31+c.charCodeAt(0))>>>0,7);
 export class BubbleField {
   constructor(canvas,{onSelect=()=>{},logo=()=>null}={}) {
-    this.canvas=canvas;this.ctx=canvas.getContext('2d');this.onSelect=onSelect;this.logo=logo;
+    this.canvas=canvas;this.ctx=canvas.getContext('2d');this.onSelect=onSelect;this.logo=logo;this.width=360;this.height=500;
     this.nodes=[];this.images=new Map();this.zoom=1;this.panX=0;this.panY=0;this.pointers=new Map();this.life=new AbortController();this.visible=true;this.paused=false;this.reduced=matchMedia('(prefers-reduced-motion:reduce)');
     this.resizeObserver=new ResizeObserver(()=>this.resize());this.resizeObserver.observe(canvas);
     this.intersection=new IntersectionObserver(entries=>{this.visible=entries[0].isIntersecting;this.run();},{threshold:.01});this.intersection.observe(canvas);
