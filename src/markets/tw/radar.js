@@ -1,7 +1,7 @@
-import { mountTWChartRadar } from './chart-radar.js?v=20261001-twlayout1';
-import { radarAvailability } from './recovery.js';
+import { mountTWChartRadar } from './chart-radar.js?v=20261001-tiercomb1';
+import { radarAvailability } from './recovery.js?v=20261001-tiercomb1';
 import { TW_RADAR_MODES, normalizeTWStockCard, rowsForTWMode, renderTWStockCard } from "./radar-card.js";
-import { observeTWMiniCandles, resetTWMiniCandles, openTWStockDetail } from "./radar-candles.js?v=20261001-twlayout1";
+import { observeTWMiniCandles, resetTWMiniCandles, openTWStockDetail } from "./radar-candles.js?v=20261001-tiercomb1";
 
 /*
  * OX v4.0 Modular
@@ -2438,7 +2438,7 @@ function ensureStyles() {
   const ui = document.createElement("link");
   ui.id = 'ox-tw-radar-css';
   ui.rel = "stylesheet";
-  ui.href = "src/markets/tw/radar-ui.css?v=20261001-twlayout1";
+  ui.href = "src/markets/tw/radar-ui.css?v=20261001-tiercomb1";
   document.head.appendChild(ui);
 }
 

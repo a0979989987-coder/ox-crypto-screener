@@ -1,6 +1,7 @@
 import {
   twProvider
-} from "./api.js?v=20261001-loading1";
+} from "./api.js?v=20261001-tiercomb1";
+import {validRadarSnapshot} from './radar-snapshot.js?v=20261001-tiercomb1';
 
 
 /*
@@ -1578,6 +1579,20 @@ export function createTWMarketState() {
   return currentState;
 }
 
+export function seedTWRadar(saved) {
+  if(!validRadarSnapshot(saved))return currentState;
+  const existing=Date.parse(currentState.data?.radarUpdatedAt)||0;
+  if(existing>=saved.savedAt)return currentState;
+  const payload=saved.data;
+  const state=setState({...currentState,status:currentState.status==='loading'?'loading':'partial',data:{
+    ...(currentState.data||{}),radar:normalizeTWRadar(payload),radarModes:payload.modes,
+    radarModesMeta:payload.modesMeta,radarUpdatedAt:new Date(saved.savedAt).toISOString(),
+    radarDataDate:payload.dataDate,usingCachedRadar:true
+  }});
+  emitState(state);
+  return state;
+}
+
 
 /* ========================================================================== */
 /* Refresh                                                                    */
@@ -1687,7 +1702,7 @@ export async function refreshTWMarketState(
 
   const radarRequest = twProvider.getRadar({
     market: "ALL",
-    limit: 1000,
+    limit: 2000,
     sort: "oxScore",
     timeoutMs: 28000,
     signal
@@ -1702,6 +1717,7 @@ export async function refreshTWMarketState(
           radarModes: payload?.modes || {},
           radarModesMeta: payload?.modesMeta || {},
           radarUpdatedAt: new Date().toISOString(),
+          radarDataDate: payload?.dataDate,
           usingCachedRadar: false,
           meta: { ...(currentState.data?.meta || {}), sourceErrors: { ...(currentState.data?.meta?.sourceErrors || {}), radar: null } }
         }
@@ -1968,6 +1984,7 @@ export async function refreshTWMarketState(
                 resultValue(radarResult, { modes: currentState.data?.radarModes })?.modes || {},
               radarModesMeta: resultValue(radarResult, { modesMeta: currentState.data?.radarModesMeta })?.modesMeta || {},
               radarUpdatedAt: currentState.data?.radarUpdatedAt || null,
+              radarDataDate: currentState.data?.radarDataDate || null,
               usingCachedRadar: radarResult.status === 'rejected' && !!currentState.data?.radarUpdatedAt,
 
               indicators,

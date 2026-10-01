@@ -22,8 +22,6 @@
 .tw-chart-radar .market-line-price label{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:default}
 .tw-chart-radar .market-line-item strong{font-variant-numeric:tabular-nums}
 .twcr-status{pointer-events:none}.twcr-status:empty{display:none}
-.twcr-history-bar{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;padding:6px 10px;min-height:30px;box-sizing:border-box;border-bottom:1px solid var(--line,#ffffff26);color:var(--muted,#aaa);font:10px/1.4 system-ui}
-.twcr-history-bar>div{display:flex;gap:6px}.twcr-history-bar button{border:1px solid var(--line,#ffffff36);border-radius:5px;padding:3px 7px;background:transparent;color:var(--ink,#eeece7);font:10px/1.4 system-ui;cursor:pointer}
 .twcr-pool-info{flex:none;padding:5px 8px;color:var(--muted);font:10px/1.4 system-ui}
 .twcr-scanner{display:flex;flex-direction:column;min-height:0}
 .twcr-results{flex:1 1 0;min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin}
@@ -52,3 +50,10 @@ body.tw-chart-focus .app-dock{visibility:hidden}
  .twcr-card-rank{grid-column:1/-1;font-size:8px}
 }
 @media(prefers-reduced-motion:reduce){.twcr-tier-menu{animation:none}}
+
+.twcr-history-retry{justify-self:start;border:1px solid var(--line,#ffffff36);border-radius:5px;padding:5px 8px;background:transparent;color:var(--ink,#eeece7);font:11px/1.4 system-ui;cursor:pointer}
+
+body.ox-terminal dialog.twcr-tools{box-sizing:border-box;width:100%;height:100dvh;max-width:none;max-height:none;margin:0;border:0;outline:0}
+body.ox-terminal dialog.twcr-tools::backdrop{background:transparent}
+.twcr-tools .chart-tools-panel{padding-bottom:34px}
+.twcr-tools .chart-tier-filter{padding-bottom:0}

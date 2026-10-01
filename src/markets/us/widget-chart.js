@@ -6,11 +6,11 @@ import { chartWidgetSettings, widgetSymbol } from "./widget-config.js?v=20261001
 // occurs when the provider updates prices. Bounded cache is cleared on page unload.
 const frames = new Map();
 export class USWidgetChart {
-  constructor(root, {symbol="SPY", interval="1D", capabilities={}, asset={}, onState=()=>{}, onInterval=()=>{}, onCollapse=null}={}) {
+  constructor(root, {symbol="SPY", interval="1D", capabilities={}, asset={}, onState=()=>{}, onInterval=()=>{}, onCollapse=null,onTierFilter=()=>{}}={}) {
     Object.assign(this, {root,symbol,interval,capabilities,asset,onState,onInterval,onCollapse,bars:[],disposed:false});
     root.classList.add("us2-widget-chart");
     root.classList.remove('is-empty-chart', 'is-blocked');
-    root.innerHTML = `<div class="chart-controls us2-chart-toolbar"><div class="ctrl-group chart-timeframe-group"><div class="chart-timeframe-strip us2-timeframes" aria-label="圖表時間級別"><span class="tf-glass-indicator" aria-hidden="true"></span>${EOD_INTERVALS.map(tf=>`<button class="btn-tf ${tf===interval?'active':''}" data-tf="${tf}" aria-pressed="${tf===interval}">${tf}</button>`).join('')}</div></div><div class="ctrl-group chart-tool-actions"><button class="chart-tool-icon us2-indicator-open" data-widget-info aria-label="圖表工具與資料來源">${icon('settings')}</button>${onCollapse?`<button class="chart-tool-icon us2-list-toggle" data-collapse aria-label="收起／展開雷達清單">${icon('collapse')}</button>`:''}<button class="chart-tool-icon us2-expand-control" data-expand aria-label="展開圖表">${icon('expand')}</button></div></div><button class="us2-focus-exit chart-tool-icon" data-exit-focus aria-label="收合圖表" hidden>${icon('expand')}</button><div class="us2-widget-stage chart-container"></div><dialog class="chart-tools-dialog us2-widget-info" aria-label="圖表工具與資料來源"><header><b>圖表工具與資料來源</b><button data-close-widget-info aria-label="關閉">${icon('close')}</button></header><p>指標、繪圖、成交量與時段，使用圖表內工具。行情由 TradingView 自行更新，當日 K 線可能尚未收盤；來源、延遲與成交量口徑以圖表標示為準。</p><p>免費圖表不提供原始 OHLCV 給 OX；OX 經典與型態畫板不會讀取或假造它的資料。</p><p>畫線由 TradingView 管理；免費圖表不保證切頁或重新整理後保留畫線。</p><a href="https://www.tradingview.com/widget-docs/" target="_blank" rel="noopener">TradingView 官方圖表說明 ↗</a></dialog>`;
+    root.innerHTML = `<div class="chart-controls us2-chart-toolbar"><div class="ctrl-group chart-timeframe-group"><div class="chart-timeframe-strip us2-timeframes" aria-label="圖表時間級別"><span class="tf-glass-indicator" aria-hidden="true"></span>${EOD_INTERVALS.map(tf=>`<button class="btn-tf ${tf===interval?'active':''}" data-tf="${tf}" aria-pressed="${tf===interval}">${tf}</button>`).join('')}</div></div><div class="ctrl-group chart-tool-actions"><button class="chart-tool-icon us2-indicator-open" data-widget-info aria-label="圖表工具與資料來源">${icon('settings')}</button>${onCollapse?`<button class="chart-tool-icon us2-list-toggle" data-collapse aria-label="收起／展開雷達清單">${icon('collapse')}</button>`:''}<button class="chart-tool-icon us2-expand-control" data-expand aria-label="展開圖表">${icon('expand')}</button></div></div><button class="us2-focus-exit chart-tool-icon" data-exit-focus aria-label="收合圖表" hidden>${icon('expand')}</button><div class="us2-widget-stage chart-container"></div><dialog class="chart-tools-dialog us2-widget-info" aria-label="圖表工具與資料來源"><header><b>圖表工具與資料來源</b><button data-close-widget-info aria-label="關閉">${icon('close')}</button></header><p>指標、繪圖、成交量與時段，使用圖表內工具。行情由 TradingView 自行更新，當日 K 線可能尚未收盤；來源、延遲與成交量口徑以圖表標示為準。</p><p>免費圖表不提供原始 OHLCV 給 OX；OX 經典與型態畫板不會讀取或假造它的資料。</p><p>畫線由 TradingView 管理；免費圖表不保證切頁或重新整理後保留畫線。</p><div class="chart-tier-filter" data-us-tier-filter></div><a href="https://www.tradingview.com/widget-docs/" target="_blank" rel="noopener">TradingView 官方圖表說明 ↗</a></dialog>`;
     this.stage=root.querySelector('.us2-widget-stage');
     this.tools=false;
     const toolsButton=document.createElement('button');
@@ -21,6 +21,7 @@ export class USWidgetChart {
     root.querySelector('.us2-widget-info header').after(toolsButton);
     toolsButton.after(toolsNote);
     this.events=new AbortController();
+    this.tierFilters=globalThis.OXTierFilters?.mount(root.querySelector('[data-us-tier-filter]'),{market:'us',frames:EOD_INTERVALS,signal:this.events.signal,onChange:onTierFilter});
     root.addEventListener('click', event=>{
       const button=event.target.closest('button');
       if(!button)return;
@@ -104,5 +105,5 @@ export class USWidgetChart {
     this.root.querySelector('[data-exit-focus]').hidden=!expanded;
   }
   release(){if(this.entry){this.entry.owner=null;this.entry.element.remove();this.entry=null;}}
-  destroy(){this.disposed=true;this.events.abort();this.release();this.root.classList.remove('us2-chart-full','us2-widget-chart');document.body.classList.remove('us2-chart-focus');}
+  destroy(){this.disposed=true;this.tierFilters?.destroy();this.events.abort();this.release();this.root.classList.remove('us2-chart-full','us2-widget-chart');document.body.classList.remove('us2-chart-focus');}
 }

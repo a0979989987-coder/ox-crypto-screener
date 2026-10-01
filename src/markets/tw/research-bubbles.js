@@ -1,5 +1,5 @@
 import { escape, money, pct } from './research-ui.js';
-import { quadrant } from './research-data.js?v=20261001-loading1';
+import { quadrant } from './research-data.js?v=20261001-tiercomb1';
 const colors = ['#ed686d', '#e2ba5e', '#b4bab9', '#43b998'];
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 // Symmetric, invertible compression: sign/order stay unchanged and axes show true values.

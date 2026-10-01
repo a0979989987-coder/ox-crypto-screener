@@ -145,7 +145,9 @@ dialog.tw-stock-detail::backdrop { background:#040507c9; backdrop-filter:blur(3p
 .tw-risk-tags span { border:1px solid #ffffff27; border-radius:8px; padding:3px 7px; background:#ffffff09; }
 .tw-risk-links a { color:#eae6de; text-decoration:none; border-bottom:1px solid #ffffff35; padding:4px 0; margin-right:12px; }
 .tw-risk-announcement { padding:14px; border:1px solid #ffffff35; border-radius:14px; background:#ffffff08; margin:14px 0; }
-.tw-risk-announcement>div { display:flex; justify-content:space-between; gap:12px; }
+.tw-risk-announcement>summary { cursor:pointer; display:list-item; font-size:13px; color:#eeece7; }
+.tw-risk-announcement>summary small { float:right; margin-left:8px; font-size:11px; color:#aaa; }
+.tw-risk-announcement>summary:focus-visible { outline:1px solid #ffffff60; outline-offset:4px; }
 .tw-risk-announcement p { margin:8px 0 0; font-size:12px; line-height:1.7; color:#e7e5df; }
 .tw-risk-announcement-text { white-space:pre-wrap; overflow-wrap:anywhere; }
 .tw-risk-quote-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin:14px 0; }

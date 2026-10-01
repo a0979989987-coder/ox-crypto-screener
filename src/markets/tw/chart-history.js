@@ -1,5 +1,5 @@
 import {dailyCandles} from './patterns/model.js';
-import {twProvider} from './api.js?v=20261001-loading1';
+import {twProvider} from './api.js?v=20261001-tiercomb1';
 
 export const HISTORY_START=Object.freeze({TWSE:'2010-01-01',TPEX:'1994-01-01'});
 const records=new Map();

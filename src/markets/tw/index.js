@@ -1,29 +1,30 @@
-import { stopResearch, preloadResearch } from "./research-page.js?v=20261001-twbubbles1";
+import { stopResearch, preloadResearch } from "./research-page.js?v=20261001-tiercomb1";
 import {
   TW_MODULE_CONFIG
 } from "./config.js";
 
 import {
   createTWMarketState,
-  refreshTWMarketState
-} from "./engine.js?v=20261001-loading1";
+  refreshTWMarketState, seedTWRadar
+} from "./engine.js?v=20261001-tiercomb1";
 
 import {
   renderTWHome
-} from "./home.js?v=20261001-twbubbles1";
+} from "./home.js?v=20261001-tiercomb1";
 
 import {
   renderTWStrength
-} from "./strength.js?v=20261001-twlayout1";
+} from "./strength.js?v=20261001-tiercomb1";
 
 import {
   renderTWRadar, stopTWRadar
-} from "./radar.js?v=20261001-twlayout1";
-import { cancelTWLookup } from "./lookup.js?v=20261001-loading1";
-import { stopTWStrength, preloadTWStrength } from "./strength.js?v=20261001-twlayout1";
+} from "./radar.js?v=20261001-tiercomb1";
+import { cancelTWLookup } from "./lookup.js?v=20261001-tiercomb1";
+import { stopTWStrength, preloadTWStrength } from "./strength.js?v=20261001-tiercomb1";
 import { createPreloader } from "./preload.js";
-import { preloadBundle } from "./patterns/bundle.js?v=20261001-twbubbles1";
-import { radarNeedsRecovery } from './recovery.js';
+import { preloadBundle } from "./patterns/bundle.js?v=20261001-tiercomb1";
+import {savedRadarSnapshot,saveRadarSnapshot,bundledRadarSnapshot} from './radar-snapshot.js?v=20261001-tiercomb1';
+import { radarNeedsRecovery } from './recovery.js?v=20261001-tiercomb1';
 
 
 /*
@@ -83,31 +84,24 @@ let isActive =
   false;
 
 
-const TW_RADAR_CACHE_KEY = "ox-tw-official-radar-session-v2";
-const TW_RADAR_CACHE_MS = 15 * 60 * 1000;
-
-function readRadarCache() {
-  if (typeof sessionStorage === "undefined") return null;
-  try {
-    const saved = JSON.parse(sessionStorage.getItem(TW_RADAR_CACHE_KEY) || "null");
-    return saved && Number.isFinite(saved.savedAt) && saved.savedAt <= Date.now()
-      && Date.now() - saved.savedAt < TW_RADAR_CACHE_MS && Array.isArray(saved.rows)
-      ? saved : null;
-  } catch { return null; }
-}
-
 function cacheRadarState(state) {
-  if (typeof sessionStorage === "undefined" || !Array.isArray(state?.data?.radar)
-    || state.status === 'error' || state.data.usingCachedRadar || state.data.meta?.sourceErrors?.radar) return;
-  try {
-    sessionStorage.setItem(TW_RADAR_CACHE_KEY, JSON.stringify({
-      savedAt: Date.parse(state.data.radarUpdatedAt) || Date.now(), rows: state.data.radar,
-      radarUpdatedAt: state.data.radarUpdatedAt,
-      radarModes: state.data.radarModes, radarModesMeta: state.data.radarModesMeta
-    }));
-  } catch { /* Storage limits never block market rendering. */ }
+ if(state?.data?.usingCachedRadar||state?.data?.meta?.sourceErrors?.radar)return;
+ const data=state?.data;
+ saveRadarSnapshot({savedAt:Date.parse(data?.radarUpdatedAt),data:{radar:data?.radar,
+   modes:data?.radarModes,modesMeta:data?.radarModesMeta,dataDate:data?.radarDataDate}});
 }
-
+function showSavedRadar(saved) {
+ if(!saved)return;
+ const state=seedTWRadar(saved);
+ if(isActive&&activeView==='radar')render(state);
+}
+showSavedRadar(savedRadarSnapshot());
+let recoveryTimer,recoveryAttempts=0;
+function scheduleRecovery() {
+ clearTimeout(recoveryTimer);
+ if(!isActive||!radarNeedsRecovery(createTWMarketState())||recoveryAttempts>=3)return;
+ recoveryTimer=setTimeout(()=>{recoveryAttempts++;recoverMarketData(true);},[5000,15000,30000][recoveryAttempts]);
+}
 
 /* ========================================================================== */
 /* Shared market host                                                        */
@@ -369,16 +363,7 @@ function render(
   );
 
 
-  const previousRows = activeView === "radar" && !state?.data?.radar?.length
-    && (!Array.isArray(state?.data?.radar) || state?.data?.meta?.sourceErrors?.radar)
-    ? readRadarCache() : null;
-
-  return renderer(previousRows ? {
-    ...state,
-    data: { ...(state.data || {}), radar: previousRows.rows, radarModes: previousRows.radarModes,
-      radarModesMeta: previousRows.radarModesMeta, usingCachedRadar: true,
-      radarUpdatedAt: previousRows.radarUpdatedAt || new Date(previousRows.savedAt).toISOString() }
-  } : state);
+  return renderer(state);
 }
 
 
@@ -388,7 +373,7 @@ function render(
 
 const ensureMarketData = createPreloader(async () => {
   const controller = new AbortController();
-  const loading=window.OXLoading?.begin('tw','台股資料載入中');
+  const loading=window.OXLoading?.begin('tw','台股資料載入中',{views:['radar']});
   try {
   const state = await refreshTWMarketState({
     signal: controller.signal,
@@ -401,11 +386,13 @@ const ensureMarketData = createPreloader(async () => {
   cacheRadarState(state);
   if (isActive) render(state);
   return state;
-  } finally { loading?.finish(); }
+  } finally { loading?.finish(); scheduleRecovery(); }
 }, { usable: state => ["ready", "partial"].includes(state?.status)
   && Array.isArray(state?.data?.radar) && !radarNeedsRecovery(state) });
 
 function loadMarketData(options = {}) {
+  showSavedRadar(savedRadarSnapshot());
+  bundledRadarSnapshot().then(showSavedRadar).catch(()=>{});
   const pending = ensureMarketData(options);
   if (isActive) render(createTWMarketState());
   return pending;
@@ -468,7 +455,7 @@ export const twModule =
 
       isActive =
         true;
-
+      recoveryAttempts=0;
 
       if (
         isValidView(
@@ -530,7 +517,7 @@ export const twModule =
 
       isActive =
         false;
-
+      clearTimeout(recoveryTimer);
 
       stopTWStrength();
       stopTWRadar();

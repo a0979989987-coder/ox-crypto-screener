@@ -60,10 +60,11 @@
     (returnFocusElement?.isConnected ? returnFocusElement : $('#chart-indicator-open'))?.focus({preventScroll:true});
   }
   function setMode(mode) {
-    filterMode = mode === 'custom' ? 'custom' : 'classic';
+    filterMode = ['custom','timeframes'].includes(mode) ? mode : 'classic';
     localStorage.setItem('ox-radar-filter-mode', filterMode);
     $$('[data-filter-mode]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.filterMode === filterMode)));
     const custom = $('#chart-custom-filters'); if (custom) custom.hidden = filterMode !== 'custom';
+    combinations?.setEnabled(filterMode==='timeframes');
     document.dispatchEvent(new CustomEvent('ox:radar-filter-change'));
   }
   function updateCustomFilters() {
@@ -90,6 +91,7 @@
     localStorage.setItem('ox-chart-indicators', JSON.stringify(Object.fromEntries(indicatorInputs.map(item => [item.id,item.checked]))));
   }));
 
+  const combinations=window.OXTierFilters?.mount($('#crypto-tier-combination'),{market:'crypto',frames:intervals.map(([id,label])=>({id,label})),controls:false});
   renderTimeframes(); renderPreferences();
   setMode(filterMode);
   $$('[data-custom-filter]').forEach(input => { input.checked = customFilters.includes(input.dataset.customFilter); });

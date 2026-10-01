@@ -1,4 +1,4 @@
-import {getTWApiBase} from './api.js?v=20261001-loading1';
+import {getTWApiBase} from './api.js?v=20261001-tiercomb1';
 import {acceptHomeSection} from './home-model.js';
 const KEY='ox-tw-home-v1',sections=['core','briefing','night'];let value,job;
 export function savedHome(){

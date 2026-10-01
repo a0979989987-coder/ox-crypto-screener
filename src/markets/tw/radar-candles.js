@@ -1,6 +1,6 @@
-import {riskDetailContent} from './risk-detail.js?v=20261001-twlayout1';
-import {savedResearch} from './research-data.js?v=20261001-loading1';
-import { twProvider } from "./api.js?v=20261001-loading1";
+import {riskDetailContent} from './risk-detail.js?v=20261001-tiercomb1';
+import {savedResearch} from './research-data.js?v=20261001-tiercomb1';
+import { twProvider } from "./api.js?v=20261001-tiercomb1";
 import { renderTWCurrentCandle } from "./radar-card.js";
 
 const cache = new Map();

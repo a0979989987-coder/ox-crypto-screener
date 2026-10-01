@@ -16,7 +16,7 @@
  const style=document.createElement('style');style.textContent=css;document.head.append(style);
  function defaultTarget(market,view){
   if(market==='crypto')return document.querySelector(view==='radar'?'#radar-scanner-panel':view==='home'?'.ox-home-t1':':not(*)');
-  if(market==='tw')return document.querySelector(view==='radar'?'.twcr-scanner':view==='home'?'.twx-market':':not(*)');
+  if(market==='tw')return document.querySelector(view==='radar'?'.twcr-scanner':':not(*)');
   if(market==='us')return document.querySelector('#market-unavailable-card .us2-main');
   return null;
  }

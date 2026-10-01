@@ -1,17 +1,16 @@
-import {savedHome,loadHome} from './home-data.js';
+import {savedHome,loadHome} from './home-data.js?v=20261001-tiercomb1';
 import {coreContent,briefingContent,institutionContent,mountBriefingLayout} from './home-content.js';
-import { savedResearch, loadResearch, selectSectors, readWatchlist, quadrant } from './research-data.js?v=20261001-loading1';
+import { savedResearch, loadResearch, selectSectors, readWatchlist, quadrant } from './research-data.js?v=20261001-tiercomb1';
 import { escape, number, pct, money, direction, segments, mountResearch, stockRows } from './research-ui.js';
-import { bubbleChart, bubblePoints } from './research-bubbles.js?v=20261001-loading1';
-import { closeResearchDetails, showSector, showStock, watchClick } from './research-detail.js?v=20261001-loading1';
+import { bubbleChart, bubblePoints } from './research-bubbles.js?v=20261001-tiercomb1';
+import { closeResearchDetails, showSector, showStock, watchClick } from './research-detail.js?v=20261001-tiercomb1';
 const prefs = { tab: 'bubble', scope: 'all', market: 'ALL', mode: 'auto', density: 'top', zoom: 1, panX: 0, panY: 0, sort: 'buy', query: '', quadrant: null, help: false, replayIndex: null };
 let session, data = savedResearch(), loading = false, error = null, lastFetch = 0;
 let home=savedHome(),homeLoading=false,homeFetched=0,homeSession='after';
 async function refreshHome(s,force=false){
  if(homeLoading)return;homeLoading=true;if(current(s))paint(s);
- const progress=window.OXLoading?.begin('tw','更新台股首頁資料',{views:['home'],done:0,total:3});
- try{home=await loadHome({force,onChange(snapshot,count){home=snapshot;if(count)progress?.update(count.done,count.total);if(session?.view==='home'&&current(session))paint(session);}});}
- finally{progress?.finish();homeLoading=false;homeFetched=Date.now();if(session?.view==='home'&&current(session))paint(session);}
+ try{home=await loadHome({force,onChange(snapshot){home=snapshot;if(session?.view==='home'&&current(session))paint(session);}});}
+ finally{homeLoading=false;homeFetched=Date.now();if(session?.view==='home'&&current(session))paint(session);}
 }
 export function stopResearch() { session?.briefingLayout?.(); if (session?.replayTimer) clearInterval(session.replayTimer); session?.controller.abort(); session = null; closeResearchDetails(); }
 const current = s => session === s && document.body.dataset.market === 'tw' && s.root.querySelector(`[data-twx-view="${s.view}"]`);
@@ -91,7 +90,7 @@ function paint(s) {
 async function refresh(s, force) {
   if (loading) return;
   loading = true; error = null; paint(s);
-  const loadingTask=window.OXLoading?.begin('tw','台股產業資料載入中',{signal:s.controller.signal,target:()=>s.view==='strength'?s.root.querySelector('.twx-chart-content'):s.root.querySelector('.twx-market')});
+  const loadingTask=window.OXLoading?.begin('tw','台股產業資料載入中',{views:['strength'],signal:s.controller.signal,target:()=>s.root.querySelector('.twx-chart-content')});
   const result = await loadResearch({ force, onCached(snapshot) { data = snapshot; if (current(s)) paint(s); } });
   loadingTask?.finish();
   loading = false; lastFetch = Date.now(); data = result.data; error = result.error;

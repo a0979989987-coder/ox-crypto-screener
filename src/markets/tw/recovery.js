@@ -34,7 +34,7 @@ export async function retryTWRequest(load, { signal, delays = [750, 1750], wait 
 }
 
 export function radarNeedsRecovery(state) {
-  return state?.status === 'error' || !!state?.data?.meta?.sourceErrors?.radar
+  return state?.status === 'error' || !!state?.data?.usingCachedRadar || !!state?.data?.meta?.sourceErrors?.radar
     || Object.values(state?.data?.radarModesMeta || {}).some(meta => meta?.status === 'error' || meta?.status === 'partial');
 }
 

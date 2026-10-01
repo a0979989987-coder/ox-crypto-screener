@@ -172,7 +172,7 @@ function preparedAnalysis(item, data, benchmark, interval) {
 }
 export function tierResults(
   rows,
-  { side = "long", mode = "classic", type = "stock", pattern = "all" } = {},
+  { side = "long", mode = "classic", type = "stock", pattern = "all", limit = 10 } = {},
 ) {
   const candidates = [];
   for (const row of rows) {
@@ -236,8 +236,20 @@ export function tierResults(
     candidates
       .filter((x) => x.tier === t)
       .sort((a, b) => a.distance - b.distance || b.liquidity - a.liquidity)
-      .slice(0, 10),
+      .slice(0, limit),
   );
+}
+
+export function timeframeTierResults(analyses,options,config) {
+ if(!config?.enabled||!config.rules?.length)return tierResults(analyses.filter(x=>x.interval===options.scanInterval),options);
+ const indexes=new Map(config.rules.map(rule=>[rule.frame,new Map(tierResults(analyses.filter(x=>x.interval===rule.frame),{...options,mode:'classic',limit:Infinity}).map(row=>[row.symbol,row]))]));
+ const symbols=new Set([...indexes.values()].flatMap(index=>[...index.keys()])),matched=[];
+ for(const symbol of symbols){
+  const rows=config.rules.map(rule=>{const row=indexes.get(rule.frame).get(symbol);return row?.tier===rule.tier?row:null;});
+  const row=config.match==='any'?rows.find(Boolean):rows.every(Boolean)?rows[0]:null;
+  if(row)matched.push({...row,combination:true});
+ }
+ return ['T1','T2','T3'].flatMap(tier=>matched.filter(r=>r.tier===tier).sort((a,b)=>a.distance-b.distance||b.liquidity-a.liquidity).slice(0,10));
 }
 export function resamplePath(values, count = 32) {
   if (values.length < 2) return [];

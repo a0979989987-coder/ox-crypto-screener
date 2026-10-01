@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths: ['server/markets/tw/research*.js', 'server/markets/tw/pattern-snapshot.js', 'src/markets/tw/patterns/model.js', 'src/markets/crypto/patterns/matcher.js', 'scripts/collect-tw-patterns.mjs', 'scripts/collect-tw-research.mjs', '.github/workflows/update-tw-research.yml']
+    paths: ['server/markets/tw/research*.js', 'server/markets/tw/pattern-snapshot.js', 'src/markets/tw/patterns/model.js', 'src/markets/crypto/patterns/matcher.js', 'scripts/collect-tw-patterns.mjs', 'scripts/collect-tw-research.mjs', 'scripts/collect-tw-radar.mjs', 'server/markets/tw/surveillance.js', 'api/v1/tw/providers/radar.js', '.github/workflows/update-tw-research.yml']
   schedule:
     - cron: '35 10 * * 1-5'
 permissions:
@@ -23,9 +23,10 @@ jobs:
       - run: node --test tests/tw-research.test.mjs
       - run: node scripts/collect-tw-research.mjs --backfill
       - run: node scripts/collect-tw-patterns.mjs --curl
+      - run: node scripts/collect-tw-radar.mjs
       - name: Save verified snapshot
         run: |
-          git add data/tw-research.json data/tw-research-history.json data/tw-patterns
+          git add data/tw-radar.json data/tw-research.json data/tw-research-history.json data/tw-patterns
           if git diff --cached --quiet; then exit 0; fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"

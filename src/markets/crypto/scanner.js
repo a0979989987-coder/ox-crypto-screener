@@ -20,6 +20,22 @@ function saveRadarSnapshot() {
   try { localStorage.setItem(RADAR_SNAPSHOT_KEY,JSON.stringify({savedAt:Date.now(),rows:[...state.analyzedCache.values()]})); } catch (_) {}
 }
 
+function closedTierCandles(candles,frame,now=Date.now()) {
+ const duration=({m:60,H:3600,D:86400,W:604800})[frame.slice(-1)]*Number(frame.slice(0,-1));
+ return candles.filter(c=>{
+  const end=frame.endsWith('M')?Date.UTC(new Date(c.time*1000).getUTCFullYear(),new Date(c.time*1000).getUTCMonth()+Number(frame.slice(0,-1)),1)/1000:c.time+duration;
+  return Number.isFinite(end)&&end<=now/1000;
+ });
+}
+function classifyTierFrame(candles,frame,liq,rs) {
+ const closed=closedTierCandles(candles,frame);if(closed.length<25)return null;
+ const flow=OXEngine.computeMoneyFlow(closed),structure=OXEngine.computeStructure(closed),setup=OXEngine.evaluateSetupMatch(closed,structure,flow),trigger=OXEngine.detectTrigger(closed,structure,flow),lifecycle=OXEngine.classifyLifecycle(liq,flow,structure,setup,trigger);
+ return {tier:lifecycle.tier,side:setup.side,...OXEngine.computeTierFits(liq,flow,structure,setup,trigger,rs),setupName:setup.setupName,statusText:lifecycle.statusText,reasons:setup.reasons,at:Date.now(),closedAt:closed.at(-1).time};
+}
+function cryptoFrameTier(row,frame,side) {
+ const data=row.timeframeTiers?.[frame];
+ return data&&Date.now()-data.at<=300000&&(!side||data.side?.toLowerCase()===side.toLowerCase())?data:null;
+}
 async function refreshMarketTickers() {
   if (state.activeMarket && state.activeMarket !== "crypto") return;
   const loading=window.OXLoading?.begin('crypto','加密行情載入中',{views:['home','strength','radar']});
@@ -154,7 +170,15 @@ async function runScanQueueLoop() {
         if (rs.isOutperforming) reasons.push(`強於 BTC +${rs.diffBtcPct}%`);
         if (rs.isUnderperforming) reasons.push(`弱於 BTC ${rs.diffBtcPct}%`);
 
+        const tierConfig=globalThis.OXTierFilters?.get('crypto');
+        const timeframeTiers={...state.analyzedCache.get(symbol)?.timeframeTiers};
+        if(tierConfig?.enabled){
+          await Promise.all(tierConfig.rules.map(async rule=>{
+            try {const bars=rule.frame==='1H'?candles:await BitgetAPI.fetchCandles(symbol,rule.frame,36);timeframeTiers[rule.frame]=classifyTierFrame(bars,rule.frame,liq,rs);}catch {timeframeTiers[rule.frame]=null;}
+          }));
+        }
         state.analyzedCache.set(symbol, {
+          timeframeTiers,
           symbol,
           sparkline: candles.slice(-24).map(candle => candle.close),
           ticker,
@@ -210,16 +234,22 @@ async function runScanQueueLoop() {
       }
     } else if (state.activeView === 'radar') renderCurrentTab();
     // Warm-up is rate-limited to at most 20 candle requests per second.
-    await new Promise(r=>setTimeout(r,state.radarSnapshotReady?CONFIG.batchIntervalMs:Math.max(0,500-(performance.now()-batchStarted))));
+    await new Promise(r=>setTimeout(r,state.radarSnapshotReady?Math.max(CONFIG.batchIntervalMs,500*(1+(globalThis.OXTierFilters?.get('crypto').enabled?globalThis.OXTierFilters.get('crypto').rules.filter(r=>r.frame!=='1H').length:0))):Math.max(0,500*Math.max(1,1+(globalThis.OXTierFilters?.get('crypto').enabled?globalThis.OXTierFilters.get('crypto').rules.filter(r=>r.frame!=='1H').length:0))-(performance.now()-batchStarted))));
   }
 }
 
 function rebuildTierLists() {
-  if (state.isQueueRunning && !state.radarSnapshotReady) return;
+  if (state.isQueueRunning && !state.radarSnapshotReady && !globalThis.OXTierFilters?.get('crypto').enabled) return;
   const tierLimits = { t1: 10, t2: 15, t3: 15 };
-  const allAnalyzed = Array.from(state.analyzedCache.values())
-    .filter(c => !benchmarkSymbols.has(c.symbol));
-
+  const tierConfig=globalThis.OXTierFilters?.get('crypto');
+  const rankedPool=Array.from(state.analyzedCache.values()).filter(c=>!benchmarkSymbols.has(c.symbol));
+  const allAnalyzed=tierConfig?.enabled?rankedPool.flatMap(c=>{
+    const match=globalThis.OXTierFilters.resolve(c,tierConfig,cryptoFrameTier);
+    if(!match)return [];
+    // All requested frames must agree with the selected setup's direction.
+    const directional=globalThis.OXTierFilters.resolve(c,tierConfig,cryptoFrameTier,match.value.side);
+    return directional?[{...c,...directional.value,reasons:[`${directional.frame} 時間組合`,...(directional.value.reasons||[])]}]:[];
+  }):rankedPool;
   const pickRanked = (pool, fitKey, formalTier, taken = new Set()) => {
     const tierLimit = tierLimits[formalTier];
     const formal = pool
@@ -230,7 +260,7 @@ function rebuildTierLists() {
       if (result.length >= tierLimit) break;
       result.push({ ...c, displayTier: formalTier, rankStatus: formalTier === "t1" ? "CONFIRMED" : formalTier === "t2" ? "READY" : "EARLY" });
     }
-    if (formalTier === "t1") return result; // Never promote non-T1 candidates to fill slots.
+    if (formalTier === "t1" || tierConfig?.enabled) return result; // Never promote non-T1 candidates to fill slots.
     const used = new Set(result.map(x => x.symbol));
     const fallback = pool
       .filter(c => !used.has(c.symbol) && !taken.has(c.symbol))
@@ -403,3 +433,8 @@ function renderCurrentTab() {
     </div>`;
   }).join('');
 }
+
+if(typeof document!=='undefined')document.addEventListener('ox:timeframe-tier-change',event=>{
+ if(event.detail.market!=='crypto')return;
+ state.scanIndex=0;rebuildTierLists();if(state.activeMarket==='crypto'&&state.activeView==='radar')renderCurrentTab();
+});

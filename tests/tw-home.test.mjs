@@ -84,7 +84,7 @@ test('browser manual refresh makes three uncached API acquisitions, preserves ne
   return {ok:true,json:async()=>({data:{section,data:seed[section],checkedAt:new Date().toISOString(),status:'ok',refreshed:url.includes('refresh=1')}})};
  };
  try{
-  const {twProvider}=await import('../src/markets/tw/api.js?v=20261001-loading1');twProvider.configure({apiBase:'https://test.invalid/api'});
+  const {twProvider}=await import('../src/markets/tw/api.js?v=20261001-tiercomb1');twProvider.configure({apiBase:'https://test.invalid/api'});
   const {loadHome,savedHome}=await import('../src/markets/tw/home-data.js?test-cache');
   await loadHome();assert.equal(savedHome().core.savedAt,recent.savedAt);
   requests.length=0;const progress=[];await loadHome({force:true,onChange:(_,count)=>progress.push(count.done)});assert.deepEqual(progress,[1,2,3]);assert.equal(requests.length,3);assert(requests.every(url=>url.includes('refresh=1&t=')));assert.equal(savedHome().core.savedAt,recent.savedAt);

@@ -6,10 +6,11 @@ export function subscribeBundle(listener){listeners.add(listener);return()=>list
 const emit=()=>{for(const listener of listeners)listener(bundleState());};
 export function bundleState(){return {date:manifest?.date,total:manifest?.total||0,expected:manifest?.classified||0,dates:manifest?.dates||[],classified:entries.size,unavailable:manifest?.unavailable||[],stocks:manifest?.stocks||[],failed,loading:!!pending};}
 export function bundleEntry(symbol,frame='1D',date){const base=entries.get(symbol+':1D');if(!base||date&&base.data.dataDate!==date)return null;if(frame==='1D')return base;const prepared=base.frames?.[frame];if(!prepared)return null;return {key:symbol+':'+frame,data:{...base.data,frame,candles:aggregateCandles(base.data.candles,frame,base.data.dataDate)},matches:prepared.matches};}
+export function bundleClassification(symbol,frame='1D',date){const base=entries.get(symbol+':1D');if(!base||date&&base.data.dataDate!==date)return null;const matches=frame==='1D'?base.matches:base.frames?.[frame]?.matches;return matches?{data:base.data,matches}:null;}
 export function bundleEntries(frames=['1D'],date){return [...entries.values()].filter(e=>frames.includes(e.data.frame)&&(!date||e.data.dataDate===date));}
 export async function preloadBundle({force=false}={}){
  if(pending)return pending;if(!force&&manifest&&Date.now()-checkedAt<300000)return bundleState();
- const loading=globalThis.OXLoading?.begin('tw','載入台股標的');
+ const loading=globalThis.OXLoading?.begin('tw','載入台股標的',{views:['radar','strength']});
  pending=(async()=>{
   const response=await fetch(manifestURL,{cache:'no-cache'});if(!response.ok)throw Error('全市場分類索引更新中');
   const next=await response.json();if(next.algorithmVersion!==5||!Array.isArray(next.chunks)||!next.date)throw Error('分類索引版本不符');
