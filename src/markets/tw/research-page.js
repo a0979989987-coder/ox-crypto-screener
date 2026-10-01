@@ -1,5 +1,5 @@
 import {savedHome,loadHome} from './home-data.js';
-import {coreContent,briefingContent} from './home-content.js';
+import {coreContent,briefingContent,mountBriefingLayout} from './home-content.js';
 import { savedResearch, loadResearch, selectSectors, readWatchlist, quadrant } from './research-data.js?v=20261001-loading1';
 import { escape, number, pct, money, direction, segments, mountResearch, stockRows } from './research-ui.js';
 import { bubbleChart, bubblePoints } from './research-bubbles.js?v=20261001-loading1';
@@ -36,7 +36,7 @@ async function submitOutlook(s, side) {
   } catch (e) { outlook.status = e.message === '交易日已更新，請再投一次' ? e.message : '送出失敗，請稍後再試'; outlook.pending = false; outlook.checkedAt = 0; }
   if (current(s)) paint(s);
 }
-export function stopResearch() { if (session?.replayTimer) clearInterval(session.replayTimer); session?.controller.abort(); session = null; closeResearchDetails(); }
+export function stopResearch() { session?.briefingLayout?.(); if (session?.replayTimer) clearInterval(session.replayTimer); session?.controller.abort(); session = null; closeResearchDetails(); }
 const current = s => session === s && document.body.dataset.market === 'tw' && s.root.querySelector(`[data-twx-view="${s.view}"]`);
 function homeContent(state) {
   const stocks = data?.stocks || [];
@@ -106,8 +106,10 @@ function indicatorContent() {
 }
 function paint(s) {
   if (session !== s) return;
+  s.briefingLayout?.();
   const content = s.view === 'home' ? homeContent(s.state) : indicatorContent();
   s.root.innerHTML = `<div class="twx" data-twx-view="${s.view}">${error && !data ? '<div class="twx-empty" role="status">資料暫時無法載入，請重新整理頁面。</div>' : ''}${content}</div>`;
+  s.briefingLayout=s.view==='home'?mountBriefingLayout(s.root):null;
 }
 async function refresh(s, force) {
   if (loading) return;

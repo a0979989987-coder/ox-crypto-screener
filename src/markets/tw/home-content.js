@@ -1,5 +1,18 @@
 import {escape,number,direction} from './research-ui.js';
 import {HOME_GROUPS} from './home-model.js';
+export function mountBriefingLayout(root){
+ const grid=root.querySelector('.twx-briefing-grid');if(!grid)return()=>{};
+ const cards=[...grid.children];let frame=0;
+ const layout=()=>{
+  frame=0;if(!grid.isConnected)return;
+  if(!matchMedia('(min-width:641px)').matches){grid.classList.remove('is-packed');for(const card of cards)card.style.gridRowEnd='';return;}
+  for(const card of cards){const span=`span ${Math.ceil(card.getBoundingClientRect().height+14)}`;if(card.style.gridRowEnd!==span)card.style.gridRowEnd=span;}
+  grid.classList.add('is-packed');
+ };
+ const observer=new ResizeObserver(()=>{if(!frame)frame=requestAnimationFrame(layout);});
+ layout();observer.observe(grid);for(const card of cards)observer.observe(card);
+ return()=>{observer.disconnect();if(frame)cancelAnimationFrame(frame);};
+}
 const finite=n=>typeof n==='number'&&Number.isFinite(n);
 const signed=(n,digits=2)=>finite(n)?(n>0?'+':'')+number(n,digits):'—';
 const pct=n=>finite(n)?signed(n)+'%':'—';
