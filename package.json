@@ -12,6 +12,7 @@
     "verify:extraction": "node scripts/verify-extraction.mjs"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.5.8",
     "playwright": "^1.63.0"
   },
   "dependencies": {

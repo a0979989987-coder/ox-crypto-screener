@@ -17,7 +17,7 @@ const browser = await chromium.launch({ headless: true, ...(executablePath ? { e
 try {
   const page = await browser.newPage();
   const calls = [], errors = [];
-  let configured = true, user = null;
+  let configured = true, user = null, link = null, linkRevision = null, linkAvailable = true;
   page.on('pageerror', error => errors.push(error.message));
   await page.route('https://ox.test/**', async route => {
     const request = route.request(), path = new URL(request.url()).pathname;
@@ -25,6 +25,15 @@ try {
     if (['/auth.js', '/session.js', '/account.js'].includes(path)) return route.fulfill({ contentType: 'text/javascript', body: readFileSync(resolve(root, 'src/components/account', path.slice(1)), 'utf8') });
     const endpoint = path.split('/').at(-1);
     calls.push({ endpoint, method: request.method(), body: request.postDataJSON() });
+    if (endpoint === 'bitget-link') {
+      if (!linkAvailable) return route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ ok: false, message: 'UID 連結儲存服務尚未就緒。' }) });
+      if (request.method() === 'POST') {
+        const body = request.postDataJSON();
+        link = body.action === 'remove' ? null : { uid: body.uid, revision: '00000000-0000-4000-8000-000000000003', ownershipStatus: 'pending', ownershipVerified: false };
+        linkRevision = link?.revision ?? '00000000-0000-4000-8000-000000000004';
+      }
+      return route.fulfill({ contentType: 'application/json', body: JSON.stringify({ ok: true, link, revision: linkRevision, accessPolicyChanged: false }) });
+    }
     const result = endpoint === 'config' ? { configured } : endpoint === 'session' ? { ok: true, user } : endpoint === 'email' ? { ok: true, message: '登入連結已寄出' } : endpoint === 'logout' ? { ok: true } : { ok: false, message: '服務暫時無法使用' };
     await route.fulfill({ contentType: 'application/json', body: JSON.stringify(result) });
   });
@@ -49,12 +58,22 @@ try {
   assert.equal(await page.locator('#ox-account-center').isVisible(), true);
   assert.equal(await page.locator('#ox-account-profile img').count(), 0);
   assert.match(await page.locator('#ox-account-profile').innerText(), /會員資料已儲存/);
+  await page.locator('#ox-bitget-link-save').waitFor({ state: 'visible' });
+  await page.waitForFunction(() => !document.querySelector('#ox-bitget-link-save').disabled);
+  await page.locator('#ox-bitget-uid').fill('12345678901234567890');
+  await page.locator('#ox-bitget-link-save').click();
+  await page.locator('#ox-bitget-link-status').filter({ hasText: '持有權待驗證' }).waitFor();
+  assert.equal(calls.filter(call => call.endpoint === 'bitget-link' && call.method === 'POST').at(-1).body.uid, '12345678901234567890');
+  assert.match(await page.locator('#ox-bitget-link-summary').innerText(), /待驗證/);
   await page.setViewportSize({ width: 390, height: 844 });
   const bounds = await page.locator('.ox-account-shell').boundingBox();
   assert.ok(bounds.x >= 0 && bounds.x + bounds.width <= 391, 'Mobile account shell must fit viewport');
   assert.equal(await page.locator('#ox-account-profile').evaluate(el => el.scrollWidth <= el.clientWidth + 1), true);
+  if (process.env.OX_ACCOUNT_UI_SCREENSHOT) await page.screenshot({ path: process.env.OX_ACCOUNT_UI_SCREENSHOT });
   await page.locator('#ox-account-signout').click();
   await page.waitForFunction(() => window.OXAuth.user === null);
+  assert.equal(await page.locator('#ox-bitget-uid').inputValue(), '');
+  assert.equal(await page.locator('#ox-bitget-link-section').isVisible(), false);
   user = null;
   await page.goto('https://ox.test/?ox_auth=error&ox_auth_reason=provider_callback_error&ox_auth_provider=unexpected_failure');
   await page.waitForFunction(() => !location.search.includes('ox_auth'));
@@ -62,6 +81,7 @@ try {
   assert.match(await page.locator('#ox-account-auth-status').innerText(), /provider_callback_error \/ unexpected_failure/);
   await page.goto('https://ox.test/?ox_auth=error&ox_auth_reason=provider_callback_error&ox_auth_provider=synthetic-private-detail');
   await page.waitForFunction(() => !location.search.includes('ox_auth') && document.querySelector('#ox-account-auth-status')?.textContent.includes('unclassified'));
+  await page.locator('#ox-account-auth-status').filter({ hasText: 'unclassified' }).waitFor({ state: 'visible' });
   assert.match(await page.locator('#ox-account-auth-status').innerText(), /unclassified/);
   assert.doesNotMatch(await page.locator('#ox-account-auth-status').innerText(), /synthetic-private-detail/);
   await page.goto('https://ox.test/?ox_auth=error&ox_auth_reason=exchange_failed');
@@ -75,6 +95,21 @@ try {
   await page.goto('https://ox.test/?ox_auth=error&ox_auth_reason=flow_missing');
   await page.waitForFunction(() => window.OXAuth?.user?.id === 'fixture-member' && !location.search.includes('ox_auth'));
   assert.equal(await page.locator('#ox-account-overlay').isVisible(), false);
+  await page.locator('[data-ox-account-open]').click();
+  await page.waitForFunction(() => document.querySelector('#ox-bitget-uid')?.value === '12345678901234567890');
+  await page.locator('#ox-bitget-link-remove').click();
+  await page.locator('#ox-bitget-link-status').filter({ hasText: '尚未填寫 UID' }).waitFor();
+  assert.equal(link, null);
+  await page.locator('#ox-bitget-uid').fill('888');
+  await page.locator('#ox-bitget-link-save').click();
+  await page.locator('#ox-bitget-link-status').filter({ hasText: '持有權待驗證' }).waitFor();
+  assert.equal(calls.filter(call => call.endpoint === 'bitget-link' && call.method === 'POST').at(-1).body.revision, '00000000-0000-4000-8000-000000000004');
+  linkAvailable = false;
+  await page.reload();
+  await page.waitForFunction(() => window.OXAuth?.user?.id === 'fixture-member');
+  await page.locator('[data-ox-account-open]').click();
+  await page.locator('#ox-bitget-link-status').filter({ hasText: '尚未就緒' }).waitFor();
+  assert.equal(await page.locator('#ox-bitget-link-save').isEnabled(), false);
   user = null;
   configured = false; calls.length = 0;
   await page.reload();
