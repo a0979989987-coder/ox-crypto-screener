@@ -18,7 +18,7 @@ const server = spawn(process.execPath, ['scripts/dev-server.mjs','--port',String
     const {handleUS2} = await import('../server/markets/us/service.js');
     browser = await chromium.launch({headless:true,args:['--no-sandbox'],executablePath:process.env.OX_BROWSER_PATH});
     mkdirSync(output,{recursive:true}); const report=[];
-    for (const width of [390,430,1366]) {
+    for (const width of (process.env.OX_DEVICE_WIDTHS || '390,430,1366').split(',').map(Number)) {
       const context = await browser.newContext({viewport:{width,height:932},hasTouch:true,isMobile:width<720});
       const {page} = await preparePage(context,{width,height:932}); const errors=[]; let apiCalls=0, uploads=0;
       page.on('pageerror', error=>errors.push(error.message));
@@ -41,6 +41,9 @@ const server = spawn(process.execPath, ['scripts/dev-server.mjs','--port',String
       assert.equal(await page.locator('iframe[src*="tradingview"]').count(),0);
       assert.equal(await page.locator('.us2-tier').isDisabled(),false);
       assert.ok(await page.locator('.us2-radar-list .us2-stock-row').count()>0);
+      assert.equal(await page.locator('.us2-radar-list .coin-symbol-mobile').first().isVisible(),true);
+      assert.equal(await page.locator('.us2-radar-list .coin-change').first().isVisible(),true);
+      assert.equal(await page.locator('.us2-radar-list .watch-star-mobile').first().isVisible(),true);
       assert.match(await page.locator('.us2-quote-value').innerText(),/762\.63/);
       const options=await page.evaluate(()=>window.__deviceSeries.options());
       assert.equal(options.upColor,'#00b8d4'); assert.equal(options.downColor,'#ff3078');
