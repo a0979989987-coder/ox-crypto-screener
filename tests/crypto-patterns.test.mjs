@@ -208,3 +208,16 @@ test('canvas reuses current native candle observations without requesting them a
   assert.equal(series.candles.length,40);assert.equal(requests,0);assert.equal(series.candles.at(-1).quoteVolume,1010);
  }finally{globalThis.fetch=originalFetch;if(previous===undefined)delete globalThis.BitgetAPI;else globalThis.BitgetAPI=previous;}
 });
+
+test('automatic trend drawings use the correct candle side and never rising overhead resistance',()=>{
+ const rising=cleanRisingSupport(),falling=shortBars(rising);
+ for(const [bars,id,side] of [[rising,'trend-up','SHORT'],[falling,'trend-down','LONG']]){
+  const match=matchCandles(bars,{id});assert.ok(match);assert.equal(match.classicSignal.side,side);
+  const line=match.classicSignal.pressure;
+  assert.equal(line.state,'valid');assert.ok(id==='trend-up'?line.slope>0:line.slope<0);
+  assert.ok(id==='trend-up'?line.level<=bars.at(-1).close:line.level>=bars.at(-1).close);
+ }
+ const risingHighs=preparation().map((c,i)=>({...c,open:c.open+.04*i,high:c.high+.04*i,low:c.low+.04*i,close:c.close+.04*i}));
+ const signal=evaluateClassic(risingHighs);
+ assert.ok(signal.levels.filter(p=>p.kind==='diagonal').every(p=>p.slope<0));
+});

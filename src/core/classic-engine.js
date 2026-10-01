@@ -4,7 +4,7 @@
  */
 (function (root) {
   'use strict';
-  const CLASSIC_VERSION = 9;
+  const CLASSIC_VERSION = 10;
   const CLASSIC_TIER_LIMITS = Object.freeze({ T1: 10, T2: 15, T3: 15 });
   // Initial, centralized defaults in ATR/bar units. These are implementation
   // thresholds, not claims of calibration or performance from trade screenshots.
@@ -76,6 +76,9 @@
       const start = touches[0].index, formed = touches[rules.minimumTouches - 1].index + rules.pivotRadius;
       if (formed >= n) return;
       const level = line.slope * (n - 1) + line.intercept;
+      // A short, old sloping segment must not become an indefinitely projected
+      // ceiling. Horizontal levels retain their lifecycle until consumed.
+      if (kind === 'diagonal' && n-1-touches.at(-1).index > touches.at(-1).index-start) return;
       const key = kind + ':' + Math.round(level / (a * 0.15)) + ':' + start;
       if (seen.has(key)) return; seen.add(key);
       let breakIndex = null, consumedAt = null, cutBeforeFormation = false;
@@ -101,7 +104,10 @@
       const first = points[i], last = points[j], span = last.index - first.index;
       if (span < rules.minimumSpan) continue;
       const slope = (last.price - first.price) / span;
-      if (Math.abs(slope) < a * 0.015 || Math.abs(slope) > a * 0.25) continue;
+      // In mirrored coordinates this is always descending resistance.
+      // Mirroring back gives rising support for SHORT. Rising high channels
+      // are not descending resistance, and cannot supply a breakout score.
+      if (slope > -a * 0.015 || Math.abs(slope) > a * 0.25) continue;
       consider({ slope, intercept: first.price - slope * first.index }, 'diagonal', points.slice(i));
     }
     return candidates;
@@ -210,15 +216,39 @@
     const volume = volumeEvidence(bars, a, rules), levels = pressureLevels(bars, features, a, rules);
     const last = bars.at(-1), observedPrice = observed.close * dir, n = bars.length;
     const reversal=reversalEvidence(bars,features,{...observed,open:observed.open*dir,close:observedPrice},a,volume,rules);
-    const ahead = levels.filter(p => p.state === 'valid' && p.level >= last.close - a * 0.15)
-      .sort((x, y) => x.level - y.level || y.touches.length - x.touches.length || x.error - y.error);
-    const pressure = ahead[0] || null, gap = pressure ? (pressure.level - last.close) / a : null;
-    const near = pressure && gap >= -0.15 && gap <= rules.nearATR;
-    const broken = levels.filter(p => p.state === 'broken' && n - 1 - p.breakIndex <= rules.recentBreakBars &&
-      last.close >= p.level - a * 0.15).sort((x, y) => y.breakIndex - x.breakIndex)[0] || null;
+    const projected = p => p.level + p.slope * (observed.provisional ? 1 : 0);
+    const ahead = levels.filter(p => p.state === 'valid' && projected(p) >= observedPrice - a * .15)
+      .sort((x,y) => projected(x)-projected(y) || y.touches.length-x.touches.length);
+    // Prefer a tested horizontal ceiling inside the same actionable area.
+    // A candle moving toward the NEXT ceiling must not stay attached to an old
+    // lower swing. Live proximity is observation evidence, never a closed break.
+    const horizontal = ahead.find(p => p.kind === 'horizontal' && projected(p)-observedPrice <= rules.nearATR*a);
+    const oldAhead = levels.filter(p => p.state === 'valid' && p.level >= last.close-a*.15)
+      .sort((x,y)=>Number(y.kind==='horizontal')-Number(x.kind==='horizontal') || x.level-y.level);
+    const crossedLive = observed.provisional && oldAhead.find(p => last.close <= p.level+a*.15 &&
+      observedPrice > projected(p)+a*rules.holdATR && (p.level-last.close)/a <= rules.nearATR);
+    const pressure = horizontal || (crossedLive?.kind==='horizontal'?crossedLive:null) ||
+      ahead.find(p=>projected(p)-observedPrice<=rules.nearATR*a) || crossedLive || ahead[0] || null;
+    const gap = pressure ? (projected(pressure)-observedPrice)/a : null;
+    const near = !!pressure && (gap >= -.15 && gap <= rules.nearATR || pressure===crossedLive);
+    const closedNear = pressure && (pressure.level-last.close)/a <= rules.nearATR;
+    // A confirmed reversal establishes a new volume regime. Old selloff volume
+    // must not veto a newly recovered swing attacking a separately tested
+    // horizontal ceiling. Keep the full-window evidence for auditability.
+    if(near && pressure.kind==='horizontal' && direction.confirmed && reversal.confirmed &&
+       reversal.candidate && n-1-reversal.low.index>=2 && !volume.distribution && !volume.supported){
+      volume.previousUpwardShare=volume.upwardShare;
+      volume.upwardShare=reversal.upwardShare;
+      volume.supported=true;
+      volume.window='confirmed-recovery';
+      volume.windowStart=bars[reversal.low.index+1].time;
+    }
+    const broken = levels.filter(p => p.state === 'broken' && n-1-p.breakIndex <= rules.recentBreakBars &&
+      last.close >= p.level-a*.15).sort((x,y)=>
+        Number(y.kind==='horizontal')-Number(x.kind==='horizontal') || y.breakIndex-x.breakIndex)[0] || null;
     const failed = levels.some(p => p.state === 'consumed' && p.consumedAt !== null &&
       n - 1 - p.consumedAt <= 5 && last.close < p.level - a * 0.25);
-    const stop = direction.invalidation, risk = (last.close - stop.price) / a;
+    const stop = direction.invalidation, risk = (last.close - stop.price) / a, liveRisk=(observedPrice-stop.price)/a;
     const liveFailure = observedPrice < stop.price - a * 0.2 ||
       observed.provisional && observedPrice < last.close - a * 0.9;
     const lastRange = Math.max(last.high - last.low, a * 0.1);
@@ -229,16 +259,41 @@
     const chase = !near && broken && breakoutDistance > 2;
     // Activation must originate from a verified multi-test liquidity level.
     // Momentum alone, without that origin, is not an OX classic opportunity.
-    let phase = near ? observed.provisional && observedPrice > pressure.level + a * rules.holdATR ? 'probe' : 'prebreakout' :
+    let phase = near ? observed.provisional && observedPrice > projected(pressure) + a * rules.holdATR ? 'probe' : 'prebreakout' :
       broken ? 'breakout' : 'watch';
     const trigger = near ? pressure : broken;
-    const target=ahead.find(p=>p!==trigger&&p.level+p.slope*(observed.provisional?1:0)>observedPrice+a*.15)||null;
-    const space = target ? (target.level+target.slope*(observed.provisional?1:0)-observedPrice) / a : null;
+    // Lines in the trigger zone describe confluence, not separate obstacles.
+    // Rising diagonal projections above ALL their observed tests are not a
+    // historical objective. Keep them as patterns, not invented price targets.
+    const zoneEdge = trigger ? projected(trigger) : observedPrice;
+    const target = ahead.find(p => p!==trigger && projected(p)>zoneEdge+a*.65 && projected(p)>observedPrice+a*.15 &&
+      (p.kind==='horizontal' || projected(p)<=Math.max(...p.touches.map(t=>t.price))+a*.35)) || null;
+    let publicTarget = publicLevel(target,bars,dir), targetPrice = target ? projected(target) : null;
+    let contextVolume = null;
+    if(options.contextBars?.length) {
+      const context=mirror(normalize(options.contextBars,now).filter(c=>!c.provisional&&c.closed!==false).slice(-rules.historyBars),dir);
+      if(context.length>=rules.minimumBars){
+        const ca=trueRange(context), cf=pivots(context,rules.pivotRadius);
+        contextVolume=volumeEvidence(context,ca,rules);
+        // Actual higher-frame swing highs are historical references, not a
+        // promise of supply or a replacement for a closer valid obstacle.
+        const points=cf.highs.filter(p=>p.price>zoneEdge+a*.65 &&
+          !context.slice(p.index+1).some(c=>c.close>p.price+ca*rules.holdATR)).sort((x,y)=>x.price-y.price);
+        const cp=points[0];
+        if(cp && (targetPrice===null||cp.price<targetPrice)){
+          targetPrice=cp.price;
+          publicTarget={kind:'historical-swing',state:'reference',level:dir*cp.price,slope:0,touches:1,
+            frame:options.contextFrame,formedAt:cp.confirmedAt,testedAt:cp.time,brokenAt:null,consumedAt:null,
+            points:[{time:cp.time,index:cp.index,price:dir*cp.price}]};
+        }
+      }
+    }
+    const space = targetPrice===null ? null : (targetPrice-observedPrice)/a;
     const spaceOK = space === null || space >= 0.65;
     // A nearby historical objective cannot justify a near-perfect score when
     // the same structure needs substantially more room to its invalidation.
-    const roomRisk = space === null ? null : space / Math.max(risk, .01);
-    const structureReady = phase !== 'watch' && direction.confirmed && !failed && !liveFailure && !exhausted && !chase &&
+    const roomRisk = space === null ? null : space / Math.max(liveRisk, .01);
+    const structureReady = phase !== 'watch' && (!near || closedNear) && direction.confirmed && !failed && !liveFailure && !exhausted && !chase &&
       risk > 0 && spaceOK;
     // T2/T3 are directional observations, not miniature copies of the strict
     // entry gate. Missing activation/impulse alone must not empty those lists.
@@ -270,9 +325,15 @@
       volume.impulseRatio >= 2 && volume.upwardShare >= .75 ? 6 : 0;
     let qualityScore = Math.round(clamp(40 + testedLevel + trendQuality + volumeQuality + activationQuality +
       (broken && phase === 'breakout' ? 5 : 0) + confirmedBreakoutQuality + pressureReadyQuality +
-      (target && spaceOK ? 4 : 0), 0, 100));
-    if(roomRisk!==null&&roomRisk<1)qualityScore=Math.max(0,qualityScore-7-Math.round((1-roomRisk)*10));
-    if(!target)qualityScore=Math.min(84,qualityScore);
+      (publicTarget && spaceOK ? 4 : 0), 0, 100));
+    const horizontalReady=trigger?.kind==='horizontal' && volume.supported &&
+      (near || phase==='breakout'&&breakoutDistance<=1.2);
+    const locationAdjustment=(horizontalReady?8+({'1H':0,'4H':2,'1D':4,'1W':6}[options.frame]||0):0) +
+      (roomRisk!==null&&roomRisk>=1.5&&contextVolume?.supported?4:0) -
+      (roomRisk!==null&&roomRisk<1?7+Math.round((1-roomRisk)*10):0) -
+      (breakoutDistance>1.2&&!near&&!reversal.candidate?Math.min(14,Math.round((breakoutDistance-1.2)*7)):0);
+    qualityScore=Math.max(0,qualityScore+locationAdjustment);
+    if(!publicTarget)qualityScore=Math.min(84,qualityScore);
     if(volume.sustainedBars<2)qualityScore=Math.min(84,qualityScore);
     // An unfinished crossing has not held at a close and cannot enter T1.
     if (phase === 'probe') qualityScore = Math.min(79, qualityScore - 6 - Math.min(10,
@@ -289,7 +350,7 @@
     if (exhausted) rejectionReasons.push(wickRecovered&&risk<=rules.maximumRiskATR?'最新價格已收復前一根回落，等待收 K':'上攻回落或已走離可觀察位置');
     if (!spaceOK) rejectionReasons.push('下一個目標空間不足');
     if (phase === 'probe') rejectionReasons.push('最新突破試探尚未收 K');
-    const useReversal=reversal.candidate&&!structureReady;
+    const useReversal=reversal.candidate&&!structureReady&&!near;
     if(useReversal)phase=reversal.confirmed?'reversal':'reversal-probe';
     const publicPressure = useReversal?{kind:'swing',state:reversal.confirmed?'broken':'valid',level:dir*reversal.level,
       slope:0,touches:1,formedAt:reversal.high.confirmedAt,testedAt:reversal.high.time,
@@ -300,15 +361,22 @@
       (side === 'LONG' ? '壓力' : '支撐') + ' · ' + publicPressure.touches + ' 次獨立測試 · ' +
       (publicPressure.state === 'valid' ? '尚未有效突破' : '已收 K 越過'));
     if (gap !== null && near) reasons.push('距觸發 ' + Math.max(0, gap).toFixed(2) + ' ATR');
+    if(volume.window==='confirmed-recovery')reasons.push('已確認反轉後量能 · 原八根同向量 '+(volume.previousUpwardShare*100).toFixed(0)+'%');
     if (volume.complete) reasons.push((side === 'LONG' ? '上攻' : '下攻') + '量比 ' + volume.impulseRatio.toFixed(2) +
       'x · 同向量 ' + (volume.upwardShare * 100).toFixed(0) + '%');
-    if (!target) reasons.push('下一個歷史目標尚未辨識');
+    if(horizontalReady)reasons.push('有效水平流動性啟動 · 優先觀察');
+    if(publicTarget?.frame)reasons.push(publicTarget.frame+' 歷史價格參考 · '+publicTarget.level);
+    if (!publicTarget) reasons.push('下一個歷史目標尚未辨識 · 不假設無限空間');
     else if(roomRisk<1)reasons.push('目標空間僅為結構失效距離 '+roomRisk.toFixed(2)+' 倍 · 分數折減');
     // Observations display the features that actually earned their place,
     // alongside missing confirmations. A distant valid level is still evidence,
     // but it must not be described as an imminent, volume-confirmed breakout.
     const framePrefix=options.frame ? options.frame+' ' : '';
     const matchedReasons=[];
+    if(volume.window==='confirmed-recovery')matchedReasons.push(framePrefix+'已確認反轉後同向量 '+(volume.upwardShare*100).toFixed(0)+'% · 原八根 '+(volume.previousUpwardShare*100).toFixed(0)+'%');
+    if(horizontalReady)matchedReasons.push(framePrefix+'有效水平流動性啟動 · 優先觀察');
+    if(publicTarget?.frame)matchedReasons.push(publicTarget.frame+' 歷史價格參考 · '+publicTarget.level);
+    if(!publicTarget)matchedReasons.push('下一個歷史目標尚未辨識 · 不假設無限空間');
     if (observationDirection) matchedReasons.push(framePrefix+(direction.advance>0 ?
       (side==='LONG'?'價格向上推進':'價格向下推進') :
       (side==='LONG'?'低點墊高，當下未轉弱':'高點降低，當下未轉強')));
@@ -327,20 +395,24 @@
     const strictEligible=structureReady && volume.supported && phase !== 'probe';
     let completenessScore=strictEligible?qualityScore:qualityScore-(volume.supported?0:12)-(direction.confirmed?0:8)-(near?0:8);
     if(useReversal)completenessScore=Math.round(Math.max(completenessScore,55+Math.min(12,reversal.impulseRatio*3)+(reversal.confirmed?8:4)+(reversal.upwardShare>=.7?6:0)));
-    const signal = { ...base, riskATR:risk, roomRisk, wickRecovered, qualityScore:completenessScore, atr: a, direction, volume, reversal, structureReady, observationEligible, observationEvidence, distanceATR: gap,
-      invalidation: { level: dir * stop.price, time: stop.time }, target: publicLevel(target, bars, dir),
+    const signal = { ...base, riskATR:risk, roomRisk, locationAdjustment, horizontalReady, contextVolume, breakoutDistanceATR:breakoutDistance, wickRecovered, qualityScore:completenessScore, atr: a, direction, volume, reversal, structureReady, observationEligible, observationEvidence, distanceATR: gap,
+      invalidation: { level: dir * stop.price, time: stop.time }, target: publicTarget,
       levels: levels.map(p => publicLevel(p, bars, dir)), matchedReasons, rejectionReasons,
       priority: phase === 'prebreakout' || phase === 'probe' ? 0 : 1 };
     return finish(signal, strictEligible, phase, publicPressure, reasons);
   }
-  function evaluateFrames(frames, { side = 'long', setupFrame, triggerFrame, confirmationFrame, now = Date.now(), rules } = {}) {
-    const setup = evaluateClassic(frames[setupFrame] || [], { side, frame: setupFrame, now, rules });
+  function evaluateFrames(frames, { side = 'long', setupFrame, triggerFrame, confirmationFrame, contextFrame, now = Date.now(), rules } = {}) {
+    contextFrame ||= ({'1H':'4H','4H':'1D','1D':'1W'})[setupFrame];
+    const setup = evaluateClassic(frames[setupFrame] || [], { side, frame: setupFrame, now, rules,
+      contextFrame,contextBars:frames[contextFrame] });
     if (!triggerFrame || triggerFrame === setupFrame) return setup;
     const trigger = evaluateClassic(frames[triggerFrame] || [], { side, frame: triggerFrame, now, rules });
     // The trigger frame need not have its own nearby ceiling, but failures,
     // distribution and exhaustion may never be waived by a larger frame.
     const triggerVeto = ['最新價格已破壞結構', '近期突破失敗，壓力已上下貫穿', '上攻回落或已走離可觀察位置'];
-    const triggerSpaceBlocked = trigger.rejectionReasons.includes('下一個目標空間不足');
+    const sameTriggerZone=setup.pressure&&trigger.target&&
+      Math.abs(setup.pressure.level-trigger.target.level)<=Math.max(setup.atr,trigger.atr)*.65;
+    const triggerSpaceBlocked = !sameTriggerZone && trigger.rejectionReasons.includes('下一個目標空間不足');
     const confirmation = confirmationFrame && confirmationFrame !== triggerFrame && confirmationFrame !== setupFrame &&
       frames[confirmationFrame]?.length ? evaluateClassic(frames[confirmationFrame], { side, frame:confirmationFrame, now, rules }) : null;
     const confirmationBlocked = !!(confirmation?.volume?.distribution || confirmation?.direction?.falling);
@@ -372,7 +444,7 @@
       (trigger.direction?.confirmed?7:0)+(trigger.volume?.supported?6:0)+
       (trigger.direction?.position>=0.75?3:0)+reversalBonus+
       Math.min(4,Math.log2(Math.max(1,trigger.volume?.impulseRatio||1)))-
-      (triggerSpaceBlocked?8:0)-(confirmationBlocked?8:0),0,79));
+      (triggerSpaceBlocked?8:0)-(confirmationBlocked?8:0)+(setup.locationAdjustment||0),0,79));
     const signal = { ...setup, observationEligible:!!observationEligible,
       qualityScore:eligible?setup.qualityScore:observationScore,
       triggerFrame, triggerClosedAt: trigger.closedAt, triggerVolume: trigger.volume,

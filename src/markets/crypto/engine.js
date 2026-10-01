@@ -21,7 +21,7 @@ const OXEngine = {
       triggerActive: signal.eligible && ['breakout', 'continuation'].includes(signal.phase),
       triggerType: signal.phase === 'breakout' ? '有效突破' : signal.phase === 'continuation' ? '強勢延續' : '',
       reasons: signal.eligible ? signal.reasons : [...(signal.matchedReasons||[]),...signal.rejectionReasons],
-      flowScore: volume.supported ? Math.round(Math.min(100, 60 + volume.impulseRatio * 10)) : 0,
+      flowScore: volume.supported ? Math.round(Math.min(100, 45 + 7*Math.log2(Math.max(1,volume.recentRatio||1)) + 7*(volume.sustainedBars||0) + 15*(volume.upwardShare||0))) : 0,
       structScore: direction.confirmed ? score : 0, setupScore: signal.structureReady ? score : 0,
       volRatio1h: volume.ratio ?? null, volRatio4h: volume.recentRatio ?? null,
       isSurge: signal.eligible && volume.supported,
