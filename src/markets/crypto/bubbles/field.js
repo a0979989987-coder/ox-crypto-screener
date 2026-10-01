@@ -1,4 +1,4 @@
-import { radiusTargets, metricText, canonical } from './model.js?v=20261001-bubbles2';
+import { radiusTargets, metricText, canonical } from './model.js?v=20261001-bubbles3';
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const hash=s=>[...s].reduce((v,c)=>(v*31+c.charCodeAt(0))>>>0,7);
 export class BubbleField {

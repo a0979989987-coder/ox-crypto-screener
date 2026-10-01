@@ -55,7 +55,7 @@ if (section) {
     pending = true; const token = ++generation;
     try {
       if(selected==='bubbles'){
-        const { mountCryptoBubbles } = await import('../bubbles/view.js?v=20261001-bubbles2');
+        const { mountCryptoBubbles } = await import('../bubbles/view.js?v=20261001-bubbles3');
         if(token!==generation||!active())return;
         instance=mountCryptoBubbles(host);
         return;

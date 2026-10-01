@@ -29,7 +29,14 @@ let browser;
  await tab('bubbles').click();
  const canvas=page.locator('canvas');await canvas.waitFor();await page.waitForFunction(()=>document.querySelector('#ox-crypto-tools-inline>div')?.shadowRoot?.querySelector('canvas')?.dataset.coins==='50');
  await canvas.waitFor({state:'visible'});assert.ok(await page.evaluate(()=>oxField.nodes.every(n=>Number.isFinite(n.x)&&Number.isFinite(n.y))),'cold stylesheet load preserves finite bubble positions');
- const metric=id=>page.locator(`[data-bubble-metric="${id}"]`).click();
+ const menuToggle=page.locator('[data-action="metric-menu"]'),menu=page.getByRole('menu');
+ const metric=async id=>{await menuToggle.click();await page.locator(`[data-bubble-metric="${id}"]`).click();assert.equal(await menuToggle.getAttribute('aria-expanded'),'false');assert.equal(await page.locator(`[data-bubble-metric="${id}"]`).getAttribute('aria-checked'),'true');};
+ assert.equal(await page.locator('.oxb-footer,summary,details').count(),0);
+ assert.equal(await page.locator('.oxb-assets [data-asset]').count(),50);assert.equal(await page.locator('.oxb .oxb-assets').count(),0);assert.equal(await page.locator('.oxb-shell>section').count(),2);
+ assert.equal(await page.locator('[data-action="direction"]').innerText(),'↕');
+ await menuToggle.click();assert.equal(await page.getByRole('menuitemradio').count(),5);await page.keyboard.press('Escape');assert.equal(await menuToggle.getAttribute('aria-expanded'),'false');assert.ok(await menuToggle.evaluate(e=>e.getRootNode().activeElement===e));
+ await menuToggle.press('ArrowDown');await page.keyboard.press('ArrowDown');await page.keyboard.press('Enter');assert.equal(await canvas.getAttribute('data-metric'),'volume');
+ await menuToggle.click();await page.locator('[data-action="scope"]').click();assert.equal(await menuToggle.getAttribute('aria-expanded'),'false');assert.equal(await page.locator('.oxb-assets [data-asset]').count(),1);await page.locator('[data-action="scope"]').click();
  await metric('volume');assert.equal(await canvas.getAttribute('data-metric'),'volume');
  await metric('cap');assert.ok(Number(await canvas.getAttribute('data-coins'))>0);
  await metric('score');assert.equal(await canvas.getAttribute('data-metric'),'score');assert.equal(await canvas.getAttribute('data-coins'),'50');
@@ -38,18 +45,19 @@ let browser;
  assert.equal(await page.locator('[data-action="scope"]').count(),1);
  await page.locator('[data-action="scope"]').click();assert.equal(await canvas.getAttribute('data-coins'),'1');assert.equal(await page.locator('[data-action="scope"]').getAttribute('data-scope'),'watch');
  await page.locator('[data-action="scope"]').click();assert.equal(await page.locator('[data-action="scope"]').getAttribute('data-scope'),'all');
- for(const direction of ['long','short','both']){await page.locator('[data-action="direction"]').click();assert.equal(await canvas.getAttribute('data-direction'),direction);assert.ok(await page.evaluate(d=>oxField.nodes.every(n=>d==='both'||(d==='long'?n.change>0:n.change<0)),direction));}
+ for(const direction of ['long','short','both']){await page.locator('[data-action="direction"]').click();assert.equal(await canvas.getAttribute('data-direction'),direction);assert.equal(await page.locator('[data-action="direction"]').innerText(),({long:'↑',short:'↓',both:'↕'})[direction]);assert.ok(await page.evaluate(d=>oxField.nodes.every(n=>d==='both'||(d==='long'?n.change>0:n.change<0)),direction));assert.equal(await page.locator('.oxb-assets [data-asset]').count(),Number(await canvas.getAttribute('data-coins')));}
  await page.locator('select').selectOption('100');assert.equal(await canvas.getAttribute('data-coins'),'100');await page.locator('select').selectOption('30');
  await metric('flow');await page.waitForFunction(()=>document.querySelector('#ox-crypto-tools-inline>div').shadowRoot.querySelector('canvas').dataset.coins==='30',{},{timeout:20000});assert.ok(flowRequests>=30);
  for(const direction of ['long','short','both']){await page.locator('[data-action="direction"]').click();assert.equal(await canvas.getAttribute('data-direction'),direction);assert.ok(await page.evaluate(d=>oxField.nodes.every(n=>d==='both'||(d==='long'?n.value>0:n.value<0)),direction));}
  await metric('change');await page.locator('select').selectOption('50');
  const shotDir=process.env.OX_BUBBLE_SHOTS;if(shotDir){mkdirSync(shotDir,{recursive:true});await page.waitForTimeout(700);await page.screenshot({path:shotDir+'/desktop.png',fullPage:true});}
- await page.locator('summary').click();await page.locator('[data-asset]').first().click();assert.equal(await page.locator('.oxb-dialog[open]').count(),1);
+ await page.locator('[data-asset]').first().evaluate(e=>window.firstAssetButton=e);await page.waitForTimeout(2100);assert.ok(await page.locator('[data-asset]').first().evaluate(e=>window.firstAssetButton===e),'periodic price refresh preserves list buttons');
+ await page.locator('[data-asset]').first().click();assert.equal(await page.locator('.oxb-dialog[open]').count(),1);
  const symbol=await page.locator('[data-asset]').first().getAttribute('data-asset');await page.locator('[data-action="radar"]').click();assert.equal(await page.evaluate(()=>window.openedRadar),symbol);
- await page.locator('summary').click();
- for(const width of [320,390,768,1440]){await page.setViewportSize({width,height:844});await page.waitForTimeout(100);assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'page overflow '+width);const scopeBox=await page.locator('[data-action="scope"]').boundingBox(),directionBox=await page.locator('[data-action="direction"]').boundingBox(),metricBox=await page.locator('[data-bubble-metric="change"]').boundingBox();assert.ok(Math.abs(scopeBox.y-directionBox.y)<2&&Math.abs(scopeBox.y-metricBox.y)<6,'one control row '+width);}
+ for(const width of [320,390,768,1440]){await page.setViewportSize({width,height:844});await page.waitForTimeout(100);assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'page overflow '+width);const scopeBox=await page.locator('[data-action="scope"]').boundingBox(),directionBox=await page.locator('[data-action="direction"]').boundingBox(),metricBox=await menuToggle.boundingBox();assert.ok(Math.abs(scopeBox.y-directionBox.y)<2&&Math.abs(scopeBox.y-metricBox.y)<2,'one control row '+width);const beforeBox=await canvas.boundingBox();await menuToggle.click();const menuBox=await menu.boundingBox();assert.ok(menuBox.x>=0&&menuBox.x+menuBox.width<=width,'popup fits '+width);assert.deepEqual(await canvas.boundingBox(),beforeBox,'popup does not shift canvas');await page.keyboard.press('Escape');}
  await page.setViewportSize({width:390,height:844});await page.waitForTimeout(500);
- if(shotDir)await page.screenshot({path:shotDir+'/mobile.png',fullPage:true});assert.ok(await page.evaluate(()=>Math.max(0,...oxField.nodes.flatMap((a,i)=>oxField.nodes.slice(i+1).map(b=>a.r+b.r-Math.hypot(a.x-b.x,a.y-b.y))))<2),'resize preserves bubble spacing'); 
+ if(shotDir){await page.screenshot({path:shotDir+'/mobile.png',fullPage:true});await menuToggle.click();await page.screenshot({path:shotDir+'/mobile-menu.png',fullPage:true});await page.keyboard.press('Escape');}assert.ok(await page.evaluate(()=>Math.max(0,...oxField.nodes.flatMap((a,i)=>oxField.nodes.slice(i+1).map(b=>a.r+b.r-Math.hypot(a.x-b.x,a.y-b.y))))<2),'resize preserves bubble spacing');
+ await page.locator('.oxb-asset-grid').evaluate(e=>e.scrollTop=e.scrollHeight);assert.ok(await page.locator('.oxb-asset-grid').evaluate(e=>e.scrollTop>0),'independent coin list scrolls');await page.locator('.oxb-asset-grid').evaluate(e=>e.scrollTop=0);
  const cdp=await page.context().newCDPSession(page),box=await canvas.boundingBox();
  await page.evaluate(()=>{oxField.paused=true;oxField.run();});
  const before=await canvas.evaluate(c=>c.toDataURL());
@@ -69,5 +77,5 @@ let browser;
  await page.evaluate(()=>{testField.setRows(testField.nodes.map((n,i)=>({...n,value:i===0?100000:1})),'cap');if(!testField.nodes.every(n=>n.r===n.target))throw Error('paused/reduced radii did not update');testField.destroy();if(testField.frame!==0)throw Error('rAF not cleared');});
  for(const market of ['tw','us','forex','crypto']){await page.evaluate(m=>{state.activeMarket=m;document.body.dataset.market=m;document.dispatchEvent(new CustomEvent('ox:marketchange'));},market);assert.equal(await page.locator('#ox-crypto-tools-inline').isVisible(),market==='crypto');}
  await tab('strength').click();assert.equal(await page.locator('#ox-crypto-tools-inline canvas').count(),0);await tab('bubbles').click();await page.locator('#ox-crypto-tools-inline canvas').waitFor();
- assert.deepEqual(errors,[]);console.log('PASS: compact single control row, removed utilities, scope toggle, long/short filtering, five metrics/30–100 coins, detail/radar, 320–1440px, touch drag/pinch/reset, differentiated sizes/physics, reduced motion and market teardown.');
+ assert.deepEqual(errors,[]);console.log('PASS: radar arrow direction control, compact filter popup with keyboard/outside dismissal, independent default-visible scrolling coin list, no footer/accordion, five metrics/30–100 coins, detail/radar, 320–1440px, touch drag/pinch/reset, differentiated sizes/physics, reduced motion and market teardown.');
 })().catch(e=>{console.error(e);process.exitCode=1;}).finally(async()=>{await browser?.close();server.kill();});
