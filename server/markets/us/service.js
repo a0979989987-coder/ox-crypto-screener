@@ -8,6 +8,7 @@ import {
 } from "../../../src/markets/us/model.js";
 import { INTERVALS, sessionAt } from "../../../src/markets/us/calendar.js";
 import { FREE_US_DISPLAY } from "../../../src/markets/us/widget-config.js";
+import { financeQueryRequest, financeFrames, financeCandles, financeQuote } from "./finance-query.js";
 const intervalMap = {
   "1m": "1min",
   "5m": "5min",
@@ -20,6 +21,14 @@ const intervalMap = {
   "1M": "1month",
 };
 export function capabilities() {
+  if (process.env.US_DATA_PROVIDER === "finance-query")
+    return { source: "finance-query", chartMode: "native", rawDataAvailable: true,
+      feed: "Finance Query / Yahoo", delaySeconds: null,
+      volumeScope: "資料源回傳成交量；交易所涵蓋與延遲尚未確認",
+      externalDisplayConfirmed: process.env.US_EXTERNAL_DISPLAY_CONFIRMED === "true",
+      extendedHours: false, intervals: Object.keys(financeFrames),
+      update: "OHLCV 輪詢", pollMs: Math.max(60000, Number(process.env.US_CHART_POLL_MS) || 60000),
+      depth: false, trades: false, calendarYears: [2025, 2028] };
   if (process.env.US_DATA_PROVIDER !== "twelve-data")
     return { ...FREE_US_DISPLAY, intervals: INTERVALS, calendarYears: [2025, 2028] };
   return {
@@ -80,7 +89,7 @@ export async function snapshot(readSnapshot = async () => JSON.parse(await readF
     return { ...empty, error: "共用掃描快照尚未建立，暫無分析結果。" };
   }
 }
-export async function handleUS2(endpoint, query, upstream) {
+export async function handleUS2(endpoint, query, upstream, financeUpstream = financeQueryRequest) {
   if (endpoint === "capabilities")
     return { ...capabilities(), session: sessionAt() };
   if (endpoint === "directory") return publicDirectory();
@@ -113,11 +122,15 @@ export async function handleUS2(endpoint, query, upstream) {
   }
   if (endpoint === "quote-v2") {
     const saved = await cachedRequest(
-      `quote:${symbol}`,
-      () => withinBudget(1, () => upstream("/quote", { symbol })),
+      `quote:${cap.source}:${symbol}`,
+      () => withinBudget(1, () => cap.source === "finance-query"
+        ? financeUpstream(`/quote/${encodeURIComponent(symbol)}`)
+        : upstream("/quote", { symbol })),
       { ttl: 60000, stale: 86400000, withMetadata: true },
     );
-    const q = normalizeQuote(saved.value, saved.cache.fetchedAt, cap);
+    const q = cap.source === "finance-query"
+      ? financeQuote(saved.value, symbol, saved.cache.fetchedAt, cap)
+      : normalizeQuote(saved.value, saved.cache.fetchedAt, cap);
     if (!q) {
       const e = Error("資料源沒有有效報價或此代號已失效。");
       e.code = 404;
@@ -127,7 +140,7 @@ export async function handleUS2(endpoint, query, upstream) {
   }
   const interval = query.interval || "1D",
     extended = query.extendedHours === "true";
-  if (!INTERVALS.includes(interval)) {
+  if (!cap.intervals.includes(interval)) {
     const e = Error("不支援這個時間級別。");
     e.code = 400;
     throw e;
@@ -164,7 +177,28 @@ export async function handleUS2(endpoint, query, upstream) {
     e.code = 400;
     throw e;
   }
-  const key = `bars:${symbol}:${interval}:${extended}:${cacheLimit}:${query.to || ""}`;
+  const key = `bars:${cap.source}:${symbol}:${interval}:${extended}:${cacheLimit}:${query.to || ""}`;
+  if (cap.source === "finance-query") {
+    const [sourceInterval, range] = financeFrames[interval];
+    // Absolute-date requests have returned a different frame upstream. Fetch
+    // the verified range and filter locally; never label daily data as minutes.
+    const saved = await cachedRequest(`finance-chart:${symbol}:${sourceInterval}:${range}`,
+      () => withinBudget(1, async () => {
+        const raw = await financeUpstream(`/chart/${encodeURIComponent(symbol)}`, { interval: sourceInterval, range });
+        financeCandles(raw, symbol, interval); // Validate before caching.
+        return raw;
+      }), { ttl: 60000, stale: 86400000, withMetadata: true });
+    let bars = financeCandles(saved.value, symbol, interval);
+    if (query.to) {
+      const before = Date.parse(query.to.replace(" ", "T") + (query.to.length > 10 ? "Z" : "T00:00:00Z")) / 1000;
+      bars = bars.filter(bar => bar.time < before);
+    }
+    return { symbol, interval, bars: bars.slice(-limit), source: cap.source,
+      feed: cap.feed, receivedAt: saved.cache.fetchedAt, stale: saved.cache.stale,
+      cache: saved.cache, delaySeconds: null, adjustment: "unknown", session: "regular",
+      volumeScope: cap.volumeScope, historyExhausted: bars.length <= limit,
+      historyRange: range, capabilities: cap };
+  }
   const saved = await cachedRequest(
     key,
     () => withinBudget(1, () => upstream("/time_series", params)),

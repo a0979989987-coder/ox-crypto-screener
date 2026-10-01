@@ -523,6 +523,11 @@ async function handleHealth(req, res) {
     apiKeyRequired: false, apiKeyConfigured: false, rawDataAvailable: false,
     timestamp: new Date().toISOString(),
   });
+  if (capabilities().source === "finance-query") return ok(res, {
+    service: "ox-us-market-data", status: capabilities().externalDisplayConfirmed ? "ready" : "display-unconfirmed",
+    provider: "finance-query", apiKeyRequired: false, apiKeyConfigured: false,
+    rawDataAvailable: capabilities().externalDisplayConfirmed, timestamp: new Date().toISOString(),
+  });
   const configured = Boolean(getApiKey());
 
   return ok(res, {
@@ -602,8 +607,8 @@ export default async function handler(req, res) {
       return ok(res, v2, { provider: capabilities().source, contract: 2 });
     }
     // Old price routes must not continue consuming Twelve Data after switching.
-    if (capabilities().chartMode === "widget" &&
-        ["quote", "quotes", "candles", "market-pulse"].includes(endpoint))
+    if (capabilities().source !== "twelve-data" &&
+        ["quote", "quotes", "candles", "market-pulse", "search"].includes(endpoint))
       return fail(res, 503, "US_RAW_DATA_UNAVAILABLE", "免費行情請使用頁面內圖表；此模式不提供原始行情 API。");
     switch (endpoint) {
       case "health":
