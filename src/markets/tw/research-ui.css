@@ -1,5 +1,4 @@
 /* Isolated TW Home / Indicators. No global palette or navigation overrides. */
-.twx .twx-home-grid>section.twx-secondary{grid-column:1/-1}
 /* Close/contribution summary and source-dated briefing share the OX glass. */
 .twx-core-head,.twx-briefing-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}
 .twx-refresh{border:1px solid #ffffff40;border-radius:22px;background:linear-gradient(135deg,#ffffff17,#ffffff04);padding:6px 14px;white-space:nowrap;font-size:11px!important}
@@ -21,9 +20,6 @@
 .twx-contribution-list>div{display:grid;grid-template-columns:minmax(120px,1fr) 105px 95px;gap:10px;align-items:center;padding:7px 0;border-bottom:1px solid #ffffff0b}
 .twx-contribution-list button{border:0;background:none;text-align:left;padding:0;font-size:11px}
 .twx-contribution-list b{text-align:right;font-weight:500;white-space:nowrap}
-.twx-home-grid>.twx-secondary{grid-column:1/-1;display:grid;grid-template-columns:minmax(220px,1fr) 2fr;gap:24px;align-items:center;padding:12px 18px}
-.twx-secondary-index{display:flex;flex-wrap:wrap;align-items:center;gap:7px 12px;font-size:12px}
-.twx-secondary .twx-breadth{margin:0}.twx-secondary .twx-breadth>div:first-child{gap:9px;flex-wrap:wrap}
 .twx-briefing{margin-top:26px}.twx-briefing-head h2{margin:0 0 4px;font-size:16px;font-weight:600}.twx-briefing-head>small{text-align:right}
 .twx-briefing-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;align-items:start}
 .twx-night{grid-column:1/-1}
@@ -38,9 +34,9 @@
 .twx-briefing-name,.twx-briefing-value{display:flex;flex-direction:column;gap:3px}.twx-briefing-name b{font-weight:500;font-size:12px}.twx-briefing-name small{font-size:10px}
 .twx-briefing-value{text-align:right}.twx-briefing-value strong{font-size:14px;font-weight:500;overflow-wrap:anywhere}.twx-briefing-value span{font-size:11px}
 .twx-quote-time{grid-column:1/-1}.twx-briefing-note{display:block;margin:14px 0;font-size:10px!important}
-@media(min-width:900px){.twx-home-grid>.twx-glass:not(.twx-market,.twx-outlook,.twx-secondary){grid-column:span 2}}
+@media(min-width:900px){.twx-home-grid>.twx-glass:not(.twx-market,.twx-outlook){grid-column:span 2}}
 @media(max-width:899px){.twx-core-metrics strong{font-size:25px}.twx-home-grid{grid-template-columns:1fr!important}.twx-home-grid>section{grid-column:1/-1!important}}
-@media(max-width:640px){.twx-briefing-grid{grid-template-columns:1fr}.twx-home-grid>.twx-secondary{grid-template-columns:1fr;gap:12px}.twx-core-metrics{grid-template-columns:1fr;gap:13px}.twx-core-metrics>div+div{border-left:0;border-top:1px solid #ffffff12;padding:11px 0 0}.twx-core-metrics strong{font-size:30px}.twx-contribution-totals{gap:12px}.twx-contribution-totals>div{align-items:flex-start;flex-direction:column}.twx-briefing-head{align-items:flex-start;flex-wrap:wrap}.twx-briefing-head>small{text-align:left}.twx-night .twx-section-head{align-items:flex-start;flex-wrap:wrap}.twx-night-dates{flex-direction:column;gap:4px}.twx-contribution-list>div{grid-template-columns:minmax(100px,1fr) 85px 85px;gap:4px}.twx-night-close strong{font-size:29px}}
+@media(max-width:640px){.twx-briefing-grid{grid-template-columns:1fr}.twx-core-metrics{grid-template-columns:1fr;gap:13px}.twx-core-metrics>div+div{border-left:0;border-top:1px solid #ffffff12;padding:11px 0 0}.twx-core-metrics strong{font-size:30px}.twx-contribution-totals{gap:12px}.twx-contribution-totals>div{align-items:flex-start;flex-direction:column}.twx-briefing-head{align-items:flex-start;flex-wrap:wrap}.twx-briefing-head>small{text-align:left}.twx-night .twx-section-head{align-items:flex-start;flex-wrap:wrap}.twx-night-dates{flex-direction:column;gap:4px}.twx-contribution-list>div{grid-template-columns:minmax(100px,1fr) 85px 85px;gap:4px}.twx-night-close strong{font-size:29px}}
 body[data-market="tw"] #market-unavailable-card:is(.tw-home-root,.tw-indicator-root){display:block!important;min-width:0;padding:0!important;margin:12px 0 0!important;border:0!important;box-shadow:none!important;background:none!important;backdrop-filter:none!important;border-radius:0!important}
 .twx,.twx-dialog{--tx-ink:#eeede7;--tx-muted:#919491;--tx-up:#f06c77;--tx-down:#47bc99;--tx-line:rgba(255,255,255,.16);color:var(--tx-ink);font-family:inherit;font-size:13px;font-variant-numeric:tabular-nums;line-height:1.5;text-align:left}
 .twx{padding:0 0 100px;max-width:1360px;margin:auto;animation:twx-in 240ms cubic-bezier(.22,1,.36,1)}
