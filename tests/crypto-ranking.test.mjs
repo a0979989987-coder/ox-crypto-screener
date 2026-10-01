@@ -80,6 +80,15 @@ test('nearby quality uses current directional strength to break scan-order ties'
  ];
  assert.deepEqual(rank(rows).t1.map(r=>r.symbol),['CAPUSDT','DEXEUSDT']);
 });
+test('turnover and sustained volume outrank an equally graded thin fast spike',()=>{
+ const rich=rankingSignal('T2'),thin=rankingSignal('T2');
+ rich.volume={recentRatio:2,sustainedBars:3};thin.volume={recentRatio:3,sustainedBars:1};
+ const rows=[
+  {symbol:'THINUSDT',side:'LONG',tier:'t2',classicSignal:thin,classic:{long:thin},change24h:.2,quoteVol:200000},
+  {symbol:'FUNDEDUSDT',side:'LONG',tier:'t2',classicSignal:rich,classic:{long:rich},change24h:.03,quoteVol:15000000}
+ ];
+ assert.equal(rank(rows).t2[0].symbol,'FUNDEDUSDT');
+});
 test('a 1H level with volume and matching 4H trend enters observations, never T1',()=>{
  const frames={'1H':preparation(),'4H':preparation()};
  const context={OXClassic:OXClassicForTests};
@@ -91,6 +100,15 @@ test('a 1H level with volume and matching 4H trend enters observations, never T1
  const contrary=runInNewContext(`${scanner}\nintradayClassicObservation(frames,'long')`,
   {...context,frames:{...frames,'4H':shortBars(preparation())}});
  assert.equal(contrary,null);
+});
+test('a slow 4H grind cannot promote an isolated 1H observation',()=>{
+ const bars=preparation(),fast=OXClassicForTests.evaluateClassic(bars,{frame:'1H'});
+ const anchor={...OXClassicForTests.evaluateClassic(bars,{frame:'4H'}),
+  direction:{confirmed:true,advance:.4,position:.65},pressure:null,volume:{complete:true,recentRatio:1}};
+ const fake={evaluateClassic:(_bars,{frame})=>frame==='4H'?anchor:fast};
+ const signal=runInNewContext(`${scanner}\nintradayClassicObservation(frames,'long')`,
+  {OXClassic:fake,frames:{'1H':bars,'4H':bars}});
+ assert.equal(signal,null);
 });
 test('both directions are independently ranked even when the cached primary direction is opposite',()=>{
   const long=rankingSignal('T1','long'),short=rankingSignal('T1','short');

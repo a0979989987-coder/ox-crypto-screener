@@ -22,6 +22,17 @@ test('same nearby pressure rewards directional volume without granting a weak te
  assert.ok(stronger.qualityScore>=weak.qualityScore+6);
  assert.ok(weak.qualityScore<82);
 });
+test('a single oversized volume bar does not outscore sustained buying or erase poor target room',()=>{
+ const spike=preparation(),steady=preparation();
+ for(let i=64;i<72;i++){spike[i].volume=1000;steady[i].volume=4000;}
+ spike.at(-1).volume=15000;
+ const one=evaluateClassic(spike),many=evaluateClassic(steady);
+ assert.equal(one.volume.sustainedBars,1);assert.equal(many.volume.sustainedBars,4);
+ assert.ok(one.volume.impulseRatio>many.volume.impulseRatio);
+ assert.ok(one.qualityScore<many.qualityScore);
+ assert.ok(one.roomRisk<1&&many.roomRisk<1);
+ assert.ok(one.reasons.some(r=>r.includes('目標空間僅為結構失效距離')));
+});
 test('price scale and market labels do not change qualification or quality tier', () => {
   const a = evaluateClassic(preparation(), { market: 'crypto' });
   for (const scale of [0.0001, 10, 10000]) {

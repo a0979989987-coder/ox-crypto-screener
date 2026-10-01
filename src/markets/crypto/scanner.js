@@ -1,7 +1,7 @@
 const WATCH_STAR_SVG = '<svg class="watch-star-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 2.78 5.63L21 9.54l-4.5 4.39 1.06 6.2L12 17.2l-5.56 2.93 1.06-6.2L3 9.54l6.22-.91Z"/></svg>';
 
 const RADAR_RETAIN_MS=2*60*60*1000;
-const RADAR_SNAPSHOT_KEY = 'ox-radar-snapshot-v6-classic9';
+const RADAR_SNAPSHOT_KEY = 'ox-radar-snapshot-v7-classic10';
 function restoreRadarSnapshot() {
   if (state.radarSnapshotChecked) return;
   state.radarSnapshotChecked = true;
@@ -51,13 +51,16 @@ function classifyTierFrame(candles,frame) {
 function intradayClassicObservation(frames,side) {
  const fast=OXClassic.evaluateClassic(frames['1H'],{side,frame:'1H'});
  const anchor=OXClassic.evaluateClassic(frames['4H'],{side,frame:'4H'});
+ const active4H=anchor.direction?.advance>=1.5 && anchor.direction?.position>=.7;
+ const forming4H=anchor.pressure?.state==='valid'&&anchor.pressure.touches>=2&&
+   anchor.distanceATR!==null&&anchor.distanceATR<=.8&&anchor.volume?.recentRatio>=1.1;
  if(!(fast.eligible||fast.observationEligible)||!fast.volume?.supported||
     !anchor.direction?.confirmed||!anchor.volume?.complete||anchor.volume.distribution||
-    fast.direction?.falling||fast.direction?.position<.6)return null;
+    !active4H&&!forming4H||fast.direction?.falling||fast.direction?.position<.6)return null;
  return {...fast,eligible:false,tier:null,observationEligible:true,
    qualityScore:Math.min(74,fast.qualityScore),triggerFrame:'4H',
-   stage:'短線帶量觀察 · 4H 同向確認',
-   matchedReasons:['1H 有效壓力／支撐與同向放量','4H 同向結構已確認',...(fast.matchedReasons||[])]};
+   stage:'短線帶量觀察 · 4H '+(active4H?'資金推進':'新型態確認'),
+   matchedReasons:['1H 有效壓力／支撐與同向放量',active4H?'4H 近期明顯推進':'4H 新壓力／支撐形成',...(fast.matchedReasons||[])]};
 }
 function cryptoFrameTier(row,frame,side) {
  const data=row.timeframeTiers?.[frame];
@@ -273,17 +276,20 @@ function rebuildTierLists() {
     return [selected];
   }):rankedPool;
   const buildTierSet = pool => {
-    // The shared pattern score remains the main signal. Bounded current
-    // movement and turnover distinguish equal/near-equal setups; a strong
-    // recent advance should not lose every tie to the earlier scan result.
+    // Money and actual directional candles break nearby setup scores. Daily
+    // price change is supporting context, never a replacement for volume.
     const evidence = row => {
       const dir=row.side==='SHORT'?-1:1;
       const daily=dir*(Number(row.change24h)||0)*100;
       const recent=dir*(Number(row.ret4h)||0)*100;
       const turnover=Number(row.quoteVol)||0;
-      return Math.max(-5,Math.min(5,daily*.22))+
+      const volume=row.classicSignal.triggerVolume||row.classicSignal.volume;
+      const sustained=Number(volume?.sustainedBars)||0;
+      const activeVolume=Number(volume?.recentRatio)||0;
+      return Math.max(-2,Math.min(2,daily*.08))+
         Math.max(-3,Math.min(3,recent*.3))+
-        Math.max(-2,Math.min(2,Math.log10(Math.max(1,turnover)/1e6)));
+        Math.max(-6,Math.min(8,5*Math.log10(Math.max(1,turnover)/1e6)))+
+        Math.max(-3,Math.min(4,(sustained-1)*2+Math.log2(Math.max(.5,activeVolume))));
     };
     const ranked = OXClassic.rankClassicTiers(pool, { compare: (a,b) =>
       (b.classicSignal.qualityScore+evidence(b))-(a.classicSignal.qualityScore+evidence(a)) ||
