@@ -5,7 +5,7 @@ import { capabilities, handleUS2 } from '../server/markets/us/service.js';
 import handler from '../api/v1/us/[endpoint].js';
 
 test('free display does not claim raw OHLCV, redistribution rights or complete-market realtime',()=>{
-  assert.equal(capabilities().chartMode,'widget');
+  assert.equal(capabilities().chartMode,'native');
   assert.equal(FREE_US_DISPLAY.externalDisplayConfirmed,false);
   assert.equal(FREE_US_DISPLAY.rawDataAvailable,false);
   assert.equal(FREE_US_DISPLAY.delaySeconds,null);
@@ -36,10 +36,10 @@ test('normal charts have one OX toolbar; provider tools remain explicitly availa
 });
 test('widget mode never falls through to the previous supplier or its private snapshot',async()=>{
   for(const endpoint of ['quote-v2','chart-v2'])
-    await assert.rejects(handleUS2(endpoint,{symbol:'SPY'},()=>{throw Error('forbidden upstream');}),e=>e.code==='RAW_DATA_UNAVAILABLE');
+    await assert.rejects(handleUS2(endpoint,{symbol:'SPY'},()=>{throw Error('forbidden upstream');}),e=>e.code==='LICENSE_NOT_CONFIRMED');
   const s=await handleUS2('snapshot',{},()=>{throw Error('forbidden upstream');});
   assert.equal(s.counts.scanned,0);assert.deepEqual(s.quotes,[]);
-  assert.equal(s.errorCode,'RAW_DATA_UNAVAILABLE');
+  assert.equal(s.mode,'eod');
 });
 test('health is honest and old price routes do not use a Twelve Data key',async()=>{
   const call=async endpoint=>{
@@ -49,10 +49,10 @@ test('health is honest and old price routes do not use a Twelve Data key',async(
     return {status,body};
   };
   const health=await call('health');assert.equal(health.status,200);
-  assert.equal(health.body.data.provider,'tradingview-widget');
+  assert.equal(health.body.data.provider,'finance-query-eod');
   assert.equal(health.body.data.apiKeyRequired,false);
   for(const endpoint of ['quote','quotes','candles','market-pulse']){
-    const r=await call(endpoint);assert.equal(r.status,503);
-    assert.equal(r.body.error.code,'US_RAW_DATA_UNAVAILABLE');
+    const r=await call(endpoint);assert.equal(r.status,410);
+    assert.equal(r.body.error.code,'US_INTRADAY_DISABLED');
   }
 });

@@ -1,8 +1,8 @@
-name: Update licensed US market snapshot
+name: Update licensed US closing snapshot
 on:
   workflow_dispatch:
   schedule:
-    - cron: "20 5 * * 2-6"
+    - cron: "0 23 * * 1-5"
 permissions:
   contents: write
 concurrency:
@@ -10,12 +10,11 @@ concurrency:
   cancel-in-progress: false
 jobs:
   collect:
-    if: vars.US_DATA_PROVIDER == 'twelve-data' && vars.US_EXTERNAL_DISPLAY_CONFIRMED == 'true' && vars.US_API_CREDITS_PER_MINUTE != '' && vars.US_COLLECT_CREDIT_BUDGET != ''
+    if: vars.US_DATA_PROVIDER == 'finance-query' && vars.US_EXTERNAL_DISPLAY_CONFIRMED == 'true' && vars.US_API_CREDITS_PER_MINUTE != '' && vars.US_COLLECT_CREDIT_BUDGET != ''
     runs-on: ubuntu-latest
     timeout-minutes: 110
     env:
-      US_DATA_PROVIDER: twelve-data
-      TWELVE_DATA_API_KEY: ${{ secrets.TWELVE_DATA_API_KEY }}
+      US_DATA_PROVIDER: finance-query
       US_EXTERNAL_DISPLAY_CONFIRMED: ${{ vars.US_EXTERNAL_DISPLAY_CONFIRMED }}
       US_API_CREDITS_PER_MINUTE: ${{ vars.US_API_CREDITS_PER_MINUTE }}
       US_COLLECT_CREDIT_BUDGET: ${{ vars.US_COLLECT_CREDIT_BUDGET }}
@@ -28,11 +27,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-      - run: node --test tests/us2-model.test.mjs tests/us2-service.test.mjs
-      - run: node scripts/collect-us.mjs
+      - run: node --test tests/us-eod.test.mjs
+      - run: node scripts/collect-us-eod.mjs
       - name: Persist verified shared snapshot
         run: |
-          git add data/us-directory.json data/us-snapshot.json
+          git add data/us-eod.json
           if git diff --cached --quiet; then exit 0; fi
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'

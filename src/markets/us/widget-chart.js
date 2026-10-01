@@ -1,6 +1,6 @@
-import { icon, openDialog, closeDialog, positionTimeframe } from "./ui.js?v=20261001-loading1";
-import { INTERVALS } from "./calendar.js?v=20261001-loading1";
-import { chartWidgetSettings, widgetSymbol } from "./widget-config.js?v=20261001-loading1";
+import { icon, openDialog, closeDialog, positionTimeframe } from "./ui.js?v=20261001-us-eod1";
+import { INTERVALS } from "./calendar.js?v=20261001-us-eod1";
+import { chartWidgetSettings, widgetSymbol } from "./widget-config.js?v=20261001-us-eod1";
 
 // Keep mounted provider frames across OX page switches. No polling or DOM rebuild
 // occurs when the provider updates prices. Bounded cache is cleared on page unload.
@@ -9,7 +9,7 @@ export class USWidgetChart {
   constructor(root, {symbol="SPY", interval="1D", capabilities={}, asset={}, onState=()=>{}, onInterval=()=>{}, onCollapse=null}={}) {
     Object.assign(this, {root,symbol,interval,capabilities,asset,onState,onInterval,onCollapse,bars:[],disposed:false});
     root.classList.add("us2-widget-chart");
-    root.innerHTML = `<div class="chart-controls us2-chart-toolbar"><div class="ctrl-group chart-timeframe-group"><div class="chart-timeframe-strip us2-timeframes" aria-label="圖表時間級別"><span class="tf-glass-indicator" aria-hidden="true"></span>${INTERVALS.map(tf=>`<button class="btn-tf ${tf===interval?'active':''}" data-tf="${tf}" aria-pressed="${tf===interval}">${tf}</button>`).join('')}</div></div><div class="ctrl-group chart-tool-actions"><button class="chart-tool-icon" data-widget-info aria-label="圖表工具與資料來源">${icon('settings')}</button>${onCollapse?`<button class="chart-tool-icon us2-list-toggle" data-collapse aria-label="收起／展開雷達清單">${icon('collapse')}</button>`:''}<button class="chart-tool-icon us2-expand-control" data-expand aria-label="展開圖表">${icon('expand')}</button></div></div><button class="us2-focus-exit chart-tool-icon" data-exit-focus aria-label="收合圖表" hidden>${icon('expand')}</button><div class="us2-widget-stage"></div><dialog class="chart-tools-dialog us2-widget-info" aria-label="圖表工具與資料來源"><header><b>圖表工具與資料來源</b><button data-close-widget-info aria-label="關閉">${icon('close')}</button></header><p>指標、繪圖、成交量與時段，使用圖表內工具。美股為 Cboe One 延遲來源；行情時間以圖表標示為準，成交量不保證全市場口徑。</p><p>免費圖表不提供原始 OHLCV 給 OX；OX 經典與型態畫板不會讀取或假造它的資料。</p><p>畫線由 TradingView 管理；免費圖表不保證切頁或重新整理後保留畫線。</p><a href="https://www.tradingview.com/widget-docs/" target="_blank" rel="noopener">TradingView 官方圖表說明 ↗</a></dialog>`;
+    root.innerHTML = `<div class="chart-controls us2-chart-toolbar"><div class="ctrl-group chart-timeframe-group"><div class="chart-timeframe-strip us2-timeframes" aria-label="圖表時間級別"><span class="tf-glass-indicator" aria-hidden="true"></span>${INTERVALS.map(tf=>`<button class="btn-tf ${tf===interval?'active':''}" data-tf="${tf}" aria-pressed="${tf===interval}">${tf}</button>`).join('')}</div></div><div class="ctrl-group chart-tool-actions"><button class="chart-tool-icon us2-indicator-open" data-widget-info aria-label="圖表工具與資料來源">${icon('settings')}</button>${onCollapse?`<button class="chart-tool-icon us2-list-toggle" data-collapse aria-label="收起／展開雷達清單">${icon('collapse')}</button>`:''}<button class="chart-tool-icon ox-chart-expand-dot us2-expand-control" data-expand aria-label="展開圖表">${icon('expand')}</button></div></div><button class="us2-focus-exit chart-tool-icon" data-exit-focus aria-label="收合圖表" hidden>${icon('expand')}</button><div class="us2-widget-stage chart-container"></div><dialog class="chart-tools-dialog us2-widget-info" aria-label="圖表工具與資料來源"><header><b>圖表工具與資料來源</b><button data-close-widget-info aria-label="關閉">${icon('close')}</button></header><p>指標、繪圖、成交量與時段，使用圖表內工具。美股為 Cboe One 延遲來源；行情時間以圖表標示為準，成交量不保證全市場口徑。</p><p>免費圖表不提供原始 OHLCV 給 OX；OX 經典與型態畫板不會讀取或假造它的資料。</p><p>畫線由 TradingView 管理；免費圖表不保證切頁或重新整理後保留畫線。</p><a href="https://www.tradingview.com/widget-docs/" target="_blank" rel="noopener">TradingView 官方圖表說明 ↗</a></dialog>`;
     this.stage=root.querySelector('.us2-widget-stage');
     this.tools=false;
     const toolsButton=document.createElement('button');
@@ -56,7 +56,7 @@ export class USWidgetChart {
       const credit=document.createElement('div');credit.className='tradingview-widget-copyright';
       const link=document.createElement('a');link.href=`https://www.tradingview.com/chart/?symbol=${encodeURIComponent(settings.symbol)}`;link.target='_blank';link.rel='noopener';link.textContent=`${this.symbol} 圖表由 TradingView 提供`;credit.append(link);
       const status=document.createElement('div');status.className='us2-widget-status';status.setAttribute('role','status');
-      const text=document.createElement('span');text.innerHTML=window.OXLoading?.markup(`${this.symbol} 圖表連線中`,0,1)||`連線 ${this.symbol} 圖表…`;
+      const text=document.createElement('span');text.textContent=`連線 ${this.symbol} 圖表…`;
       const retry=document.createElement('button');retry.type='button';retry.textContent='重新連線';retry.hidden=true;
       const external=document.createElement('a');external.href=link.href;external.target='_blank';external.rel='noopener';external.textContent='開啟圖表 ↗';external.hidden=true;
       status.append(text,retry,external);element.append(host,credit,status);

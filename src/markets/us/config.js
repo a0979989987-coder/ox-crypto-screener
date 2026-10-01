@@ -1,1 +1,1 @@
-export const US_MODULE_CONFIG = Object.freeze({ id: "us", label: "美股", status: "partial", provider: "tradingview-widget" });
+export const US_MODULE_CONFIG = Object.freeze({ id: "us", label: "美股", status: "partial", provider: "finance-query-eod", mode: "eod" });

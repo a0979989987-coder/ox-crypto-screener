@@ -1,3 +1,4 @@
+throw Error('Twelve Data 與盤中收集已停用；請使用 scripts/collect-us-eod.mjs。');
 /** Shared collector: only this process scans the pool; visitors read its snapshot.
  * No provider key is ever placed in output. Complete data replaces prior valid data.
  */

@@ -16,6 +16,19 @@ export const price = (n) =>
 export const pct = (n) =>
   n === null || n === undefined ? "—" : `${n >= 0 ? "+" : ""}${n.toFixed(2)}%`;
 export const tone = (n) => (n >= 0 ? "us2-up" : "us2-down");
+// Private validation never marks public redistribution rights as confirmed.
+export const nativeAllowed = cap => cap.externalDisplayConfirmed !== false || cap.legacy ||
+  (cap.privateValidation === true && typeof location !== 'undefined' &&
+    ['127.0.0.1', 'localhost', '[::1]'].includes(location.hostname));
+export const sourceInfo = source => ({
+  'finance-query-eod': { label: 'Finance Query / Yahoo · 盤後', url: 'https://verdenroz.github.io/finance-query/' },
+  'finance-query-eod-private': { label: 'Finance Query / Yahoo · 私人盤後驗證', url: 'https://verdenroz.github.io/finance-query/' },
+  'twelve-data': { label: 'Twelve Data', url: 'https://twelvedata.com/' },
+  'finmind-private-eod': { label: 'FinMind · 私人日線驗證', url: 'https://finmind.github.io/' },
+  'finance-query': { label: 'Finance Query / Yahoo', url: 'https://verdenroz.github.io/finance-query/' },
+  'finance-query-private': { label: 'Finance Query / Yahoo · 私人驗證', url: 'https://verdenroz.github.io/finance-query/' },
+  'tradingview-widget': { label: 'TradingView', url: 'https://www.tradingview.com/' },
+}[source] || { label: source || '來源未確認', url: null });
 export const compact = (n) =>
   n === null || n === undefined
     ? "—"

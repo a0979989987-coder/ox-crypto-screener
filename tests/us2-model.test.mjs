@@ -18,7 +18,7 @@ import {
   closedCandles,
 } from "../src/markets/us/model.js";
 import { aggregate4H } from "../src/markets/us/aggregate.js";
-import { tierResults, resamplePath } from "../src/markets/us/analysis.js";
+import { tierResults, resamplePath, analyzeStock, analyzeStockPool } from "../src/markets/us/analysis.js";
 test("NY timezone changes with DST, and calendar includes holidays and early closes", () => {
   assert.equal(
     nyEpoch("2026-03-06", 570),
@@ -187,6 +187,26 @@ test("4H is anchored at 09:30 and last normal-session bucket is only 150 minutes
     1,
   );
 });
+test("hourly 4H aggregation preserves OHLCV, short sessions and source gaps", () => {
+  const make = (date, minute, i) => ({ time: nyEpoch(date, minute), date,
+    open: 100 + i, high: 102 + i, low: 99 + i, close: 101 + i, volume: 100 });
+  const half = Array.from({ length: 13 }, (_, i) => make("2026-09-29", 570 + i * 30, i));
+  const hour = Array.from({ length: 7 }, (_, i) => {
+    const pair = half.slice(i * 2, i * 2 + 2);
+    return { ...pair[0], high: Math.max(...pair.map(c => c.high)),
+      low: Math.min(...pair.map(c => c.low)), close: pair.at(-1).close,
+      volume: pair.reduce((sum, c) => sum + c.volume, 0) };
+  });
+  const now = nyEpoch("2026-09-30", 1000) * 1000;
+  const values = rows => rows.map(({ components, ...bar }) => bar);
+  assert.deepEqual(values(aggregate4H(hour, now, 60)), values(aggregate4H(half, now)));
+  assert.equal(aggregate4H(hour.filter((_, i) => i !== 2), now, 60).length, 1);
+  const early = Array.from({ length: 4 }, (_, i) => make("2026-11-27", 570 + i * 60, i));
+  assert.equal(aggregate4H(early, nyEpoch("2026-11-27", 900) * 1000, 60)[0].volume, 400);
+  assert.equal(aggregate4H(early.slice(0, 3), nyEpoch("2026-11-27", 900) * 1000, 60).length, 0);
+  assert.equal(aggregate4H(hour.slice(0, 2), nyEpoch("2026-09-29", 640) * 1000, 60).length, 1);
+  assert.throws(() => aggregate4H(hour, now, 15), /30m or 1H/);
+});
 test("relative strength requires common dates rather than comparing mismatched periods", () => {
   const stock = [
     { date: "a", close: 100 },
@@ -213,6 +233,25 @@ test("relative strength requires common dates rather than comparing mismatched p
     ).toFixed(2),
     "5.00",
   );
+});
+test("pool analysis reuses the closed benchmark without including future daily candles", () => {
+  const dates = Array.from({ length: 100 }, (_, i) => new Date(Date.UTC(2026, 5, 1 + i)).toISOString().slice(0, 10))
+    .filter(date => tradingDay(date).open);
+  const bars = dates.map((date, i) => ({ date, time: nyEpoch(date), open: 100 + i,
+    high: 102 + i, low: 99 + i, close: 101 + i, volume: 1000 }));
+  const benchmark = bars.map((bar, i) => ({ ...bar, open: 200 + i, high: 202 + i, low: 199 + i, close: 201 + i }));
+  const now = nyEpoch("2026-10-01", 600) * 1000;
+  const future = { ...bars.at(-1), date: "2026-10-01", time: nyEpoch("2026-10-01"), close: 999999, high: 999999 };
+  const histories = { AAPL: [...bars, future], MSFT: bars.slice(0, -2) };
+  const items = [{ symbol: "AAPL", type: "stock" }, { symbol: "MSFT", type: "stock" }];
+  const sourceBenchmark = [...benchmark, future];
+  const result = analyzeStockPool(items, histories, sourceBenchmark, "1D", now);
+  assert.deepEqual(result, items.map(item => analyzeStock(item, histories[item.symbol], sourceBenchmark, "1D", now)));
+  assert.equal(result[0].price, bars.at(-1).close);
+  const end = bars.at(-1), start = bars.at(-21), spyEnd = benchmark.at(-1), spyStart = benchmark.at(-21);
+  assert.equal(result[0].rs, (end.close / start.close - spyEnd.close / spyStart.close) * 100);
+  assert.equal(result[1].marketTime, bars.at(-3).time);
+  assert.equal(analyzeStock(items[0], [], undefined, "1D", now), null);
 });
 test("T1 rewards a nearby untriggered pattern, results cannot be filled to 30 artificially", () => {
   const base = {
