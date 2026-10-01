@@ -59,6 +59,19 @@ const MAX_MONTHS =
 const REQUEST_CONCURRENCY =
   3;
 
+// The exchanges publish daily OHLC from these dates. Completion means the
+// published range has been checked, not that pre-publication prices exist.
+export const TW_HISTORY_START = Object.freeze({TWSE:'2010-01-01',TPEX:'1994-01-01'});
+const monthCache=new Map();
+async function cachedMonth(market,symbol,month,loader){
+ const key=`${market}:${symbol}:${formatISODate(month)}`,cached=monthCache.get(key);
+ if(cached&&cached.expires>Date.now())return cached.promise;
+ const expires=Date.now()+(month.getUTCFullYear()===new Date().getUTCFullYear()&&month.getUTCMonth()===new Date().getUTCMonth()?300000:43200000);
+ const promise=loader().catch(error=>{if(monthCache.get(key)?.promise===promise)monthCache.delete(key);throw error;});
+ monthCache.delete(key);monthCache.set(key,{expires,promise});if(monthCache.size>2048)monthCache.delete(monthCache.keys().next().value);
+ return promise;
+}
+
 
 /* ========================================================================== */
 /* Error                                                                      */
@@ -1053,8 +1066,8 @@ async function fetchTWSEMonth(
     payload?.stat !==
       "OK"
   ) {
-
-    return [];
+    if(typeof payload?.stat==='string'&&/沒有符合條件|查無資料/.test(payload.stat))return [];
+    throw new TWCandleProviderError('TWSE historical response is unavailable.',{code:'TW_CANDLES_INVALID_RESPONSE',source:'TWSE',symbol});
   }
 
 
@@ -1188,6 +1201,7 @@ async function fetchTPEXMonth(
 
   const rows = payload?.tables?.find(table => Array.isArray(table.data))?.data ?? payload?.aaData;
   if (!Array.isArray(rows)) {
+    if(payload?.stat==='ok'&&Array.isArray(payload.tables)&&payload.tables.length===0)return [];
     throw new TWCandleProviderError("TPEx historical response is unavailable.", {
       code: "TW_CANDLES_INVALID_RESPONSE", source: "TPEX", symbol
     });
@@ -1320,7 +1334,8 @@ async function fetchTPEXMonth(
 
 async function runMonthBatch(
   months,
-  loader
+  loader,
+  {concurrency=REQUEST_CONCURRENCY,paceMs=0}={}
 ) {
 
   const candles =
@@ -1337,14 +1352,14 @@ async function runMonthBatch(
     index <
       months.length;
     index +=
-      REQUEST_CONCURRENCY
+      concurrency
   ) {
 
     const batch =
       months.slice(
         index,
         index +
-        REQUEST_CONCURRENCY
+        concurrency
       );
 
 
@@ -1411,6 +1426,7 @@ async function runMonthBatch(
         }
       }
     );
+    if(paceMs&&index+concurrency<months.length)await new Promise(resolve=>setTimeout(resolve,paceMs));
   }
 
 
@@ -1466,7 +1482,9 @@ export async function getOfficialTWCandles(
       null,
 
     adjusted =
-      true
+      true,
+
+    history = false
   } = {}
 ) {
 
@@ -1534,6 +1552,12 @@ export async function getOfficialTWCandles(
       }
     );
 
+  if(history){
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(from)||!/^\d{4}-\d{2}-\d{2}$/.test(to)||!dateOnly(from)||!dateOnly(to)||formatISODate(dateOnly(from))!==from||formatISODate(dateOnly(to))!==to)throw new TWCandleProviderError('History pages require valid from and to dates.',{code:'TW_CANDLES_INVALID_RANGE'});
+    const floor=dateOnly(TW_HISTORY_START[market]);if(resolved.start<floor)resolved.start=floor;
+    if(resolved.end<resolved.start||buildMonths(resolved.start,resolved.end).length>6)throw new TWCandleProviderError('History pages support up to six calendar months.',{code:'TW_CANDLES_INVALID_RANGE'});
+  }
+
 
   const months =
     buildMonths(
@@ -1560,7 +1584,8 @@ export async function getOfficialTWCandles(
   let candles =
     await runMonthBatch(
       months,
-      loader
+      month => cachedMonth(market,normalizedSymbol,month,()=>loader(month)),
+      history?{concurrency:1,paceMs:250}:{}
     );
 
 
@@ -1645,7 +1670,7 @@ export async function getOfficialTWCandles(
 
 
   if (
-    !candles.length
+    !candles.length && !history
   ) {
 
     throw new TWCandleProviderError(
@@ -1751,7 +1776,10 @@ export async function getOfficialTWCandles(
           ]),
 
         maximumMonthsPerRequest:
-          MAX_MONTHS
+          MAX_MONTHS,
+
+        historyPage: history,
+        earliestAvailableDate: TW_HISTORY_START[market]
 
       })
 

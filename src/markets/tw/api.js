@@ -815,7 +815,7 @@ function unwrapPayload(
 /* ========================================================================== */
 
 function request(endpoint, options = {}) {
-  return retryTWRequest(() => requestOnce(endpoint, options), { signal: options.signal });
+  return retryTWRequest(() => requestOnce(endpoint, options), { signal: options.signal, ...(options.params?.history ? {delays:[2000,5000,10000]} : {}) });
 }
 
 async function requestOnce(
@@ -1251,6 +1251,8 @@ function getCandles(
     adjusted =
       true,
 
+    history = false,
+
     signal =
       null,
 
@@ -1282,7 +1284,8 @@ function getCandles(
 
         limit,
 
-        adjusted
+        adjusted,
+        history
       }
     }
   );

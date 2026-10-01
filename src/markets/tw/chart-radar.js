@@ -3,9 +3,9 @@ import { escapeTW as esc } from './radar-card.js';
 import { savedResearch } from './research-data.js';
 import { bundleState, bundleEntry, subscribeBundle, preloadBundle } from './patterns/bundle.js';
 import { fetchSeries } from './patterns/source.js';
-import { CHART_FRAMES, isIntraday, stockDetails, chartTickFormatter } from './chart-data.js';
+import { CHART_FRAMES, aggregateChartCandles, stockDetails, chartTickFormatter } from './chart-data.js';
 import { cryptoRadarPart, attachCryptoRadarStyles } from '../../components/radar/market-workspace.js';
-import { externalIntradayChart } from './intraday-display.js';
+import { chartHistory, loadHistoryPage, preserveHistoryViewport } from './chart-history.js';
 const UP='#f16a70',DOWN='#48b78e';
 const num=n=>Number.isFinite(n)?n.toLocaleString('zh-TW',{maximumFractionDigits:2}):'—';
 const change=n=>Number.isFinite(n)?`${n>=0?'+':''}${n.toFixed(2)}%`:'—';
@@ -16,6 +16,7 @@ export function mountTWChartRadar(host,{state:marketState,watchlist=new Set()}={
  const life=new AbortController(),$=s=>host.querySelector(s),listen=(el,type,fn,options={})=>el?.addEventListener(type,fn,{...options,signal:life.signal});
  let tab='all',tier='all',side='long',query='',symbol='',frame='1D',focus=false,folded=false,serial=0,controller=null,drawings,gestures,holdTimer,held=false,levelLines=[];
  const state={symbol:'',period:frame,candleData:[],chart:null,candleSeries:null,chartPriceViewport:null};
+ let historyRecord=null,historyJob=null,fitAll=false;
  host.innerHTML='<div class="tw-chart-radar"></div>';
  const surface=$('.tw-chart-radar');
  const summary=cryptoRadarPart('.compact-summary');
@@ -49,7 +50,7 @@ export function mountTWChartRadar(host,{state:marketState,watchlist=new Set()}={
  controls.querySelector('[id$="-scanner-toggle"]').dataset.action='fold';
  controls.querySelector('[id$="-fullscreen"]').dataset.action='focus';
  chartBox.insertAdjacentHTML('beforeend','<div id="tw-radar-chart" class="chart-container" aria-label="台股 K 線圖"><div class="twcr-status chart-loading-overlay" role="status"></div></div><button type="button" class="twcr-exit chart-tool-icon" data-action="exit" aria-label="退出全螢幕" hidden>'+glyph('close')+'</button>');
- chartBox.querySelector('#tw-radar-chart').insertAdjacentHTML('beforeend','<section class="twcr-intraday-empty" aria-label="分時資料狀態" hidden><strong data-intraday-title></strong><p>等待盤中資料接入</p><small>目前資料來源僅提供日 K，尚無本站分時 K 線。</small><div><a data-intraday-link target="_blank" rel="noopener noreferrer">開啟外部分時圖 ↗</a><button type="button" data-action="daily">返回日 K</button></div></section>');
+ controls.insertAdjacentHTML('afterend','<div class="twcr-history-bar"><span data-history-status role="status"></span><div><button type="button" data-action="history-all">全部歷史</button><button type="button" data-action="history-recent">近期</button><button type="button" data-action="history-retry" hidden>重試</button></div></div>');
  const scanner=workspace.querySelector('aside');
  scanner.classList.add('twcr-scanner');
  scanner.querySelectorAll(':scope > :not(.scanner-tabs)').forEach(n=>n.remove());
@@ -81,7 +82,7 @@ export function mountTWChartRadar(host,{state:marketState,watchlist=new Set()}={
  const releaseStyles=attachCryptoRadarStyles(surface,{summaryColumns:3});
  $('.twcr-tier-menu').id='tw-radar-radar-tier-menu';
  const root=$('.tw-chart-radar'),box=$('.chart-box'),el=$('#tw-radar-chart');
- const scannerSize=new ResizeObserver(()=>{$('.twcr-scanner').style.height=`${el.clientHeight+box.querySelector('.chart-controls').offsetHeight+2}px`;marker();});scannerSize.observe(el);
+ const scannerSize=new ResizeObserver(()=>{$('.twcr-scanner').style.height=`${el.clientHeight+box.querySelector('.chart-controls').offsetHeight+$('.twcr-history-bar').offsetHeight+2}px`;marker();});scannerSize.observe(el);scannerSize.observe($('.twcr-history-bar'));
  const snapshot=()=>{const b=bundleState();return b.stocks.length?{date:b.date,stocks:b.stocks}:savedResearch();};
  const universe=()=>chartUniverse(marketState,snapshot());
  function status(message){const node=$('.twcr-status');node.textContent=message;node.classList.toggle('show',!!message);}
@@ -157,28 +158,42 @@ export function mountTWChartRadar(host,{state:marketState,watchlist=new Set()}={
   drawings=window.OXChartDrawings?.({box,chartEl:el,state,market:'tw',isExpanded:()=>focus});return true;
  }
  function levels(){for(const line of levelLines)state.candleSeries?.removePriceLine(line);levelLines=[];if(!$('[data-levels]').checked||!state.candleData.length)return;const prior=state.candleData.slice(-61,-1);if(!prior.length)return;for(const [title,price,color]of [['前高',Math.max(...prior.map(c=>c.high)),'#f7bd52'],['前低',Math.min(...prior.map(c=>c.low)),'#5ca5ff']])levelLines.push(state.candleSeries.createPriceLine({title,price,color,lineStyle:2,lineWidth:1,axisLabelVisible:true}));}
+ function renderHistory(initial=false){
+  const record=historyRecord;if(!record)return;
+  const previous=state.candleData,range=state.chart.timeScale().getVisibleLogicalRange(),candles=aggregateChartCandles(record.daily,frame,record.asOf,{coverageStart:record.coverageStart});
+  state.candleData=candles;state.candleSeries.setData(candles);state.volumeSeries.setData(candles.map(c=>({time:c.time,value:c.volume,color:c.close>=c.open?'#f16a7035':'#48b78e35'})));
+  if(fitAll||initial)state.chart.timeScale().fitContent();else if(range)state.chart.timeScale().setVisibleLogicalRange(preserveHistoryViewport(previous,candles,range));
+  refreshRange();levels();drawings?.sync();
+  const span=candles.length?`${candles[0].date} ～ ${candles.at(-1).lastDate||candles.at(-1).date}`:'尚無已完成 K 線';
+  $('[data-series-note]').textContent=`${CHART_FRAMES[frame]} K · ${candles.length} 根${frame==='1D'?'':'已完成 K 線'} · ${span} · 未復權`;
+  $('[data-history-status]').textContent=record.error?'歷史載入暫停，已載入資料保留':record.complete?'官方可取得歷史已全部載入':`正在補載歷史 · 已查至 ${record.coverageStart}`;
+  $('[data-history-status]').title=record.error?.message||'';
+  $('[data-action="history-retry"]').hidden=!record.error;
+  status(candles.length?'':record.complete?'官方來源沒有此級別的已完成 K 線':'正在載入更早的官方 K 線');
+ }
+ async function fillHistory(){
+  const run=serial,record=historyRecord,signal=controller.signal;if(!record||record.complete)return;
+  if(historyJob?.run===run)return historyJob.promise;
+  const promise=(async()=>{try{while(!record.complete){await loadHistoryPage(record,signal);if(run!==serial||life.signal.aborted)return;renderHistory();}}
+   catch(error){if(run===serial&&!life.signal.aborted&&error.name!=='AbortError')renderHistory();}
+   finally{if(historyJob?.run===run)historyJob=null;}
+  })();historyJob={run,promise};return promise;
+ }
  async function openSymbol(next){
   if(!/^\d{4}$/.test(next)||life.signal.aborted)return;
   if(next===state.symbol&&frame===state.period&&state.candleData.length){renderList();return;}
-  if(state.candleData.length)viewports.set(`${state.symbol}:${state.period}`,{logical:state.chart.timeScale().getVisibleLogicalRange(),price:state.chartPriceViewport});
-  symbol=next;state.symbol=next;state.period=frame;state.chartPriceViewport=null;const run=++serial;controller?.abort();controller=new AbortController();
+  if(state.candleData.length){const logical=state.chart.timeScale().getVisibleLogicalRange(),anchor=Math.min(state.candleData.length-1,Math.max(0,Math.floor(logical?.from||0)));viewports.set(`${state.symbol}:${state.period}`,{logical,anchorTime:state.candleData[anchor].time,anchorIndex:anchor,price:state.chartPriceViewport});}
+  symbol=next;state.symbol=next;state.period=frame;state.chartPriceViewport=null;const run=++serial;controller?.abort();controller=new AbortController();historyRecord=null;historyJob=null;fitAll=false;
   renderQuote();$('[data-series-note]').textContent='';
-  $('.twcr-intraday-empty').hidden=!isIntraday(frame);
-  box.classList.toggle('is-intraday',isIntraday(frame));
+  $('[data-history-status]').textContent='歷史 K 線載入中';$('[data-action="history-retry"]').hidden=true;
   status('官方 K 線載入中');renderList();if(!ensureChart())return;
-  state.chart.applyOptions({timeScale:{timeVisible:isIntraday(frame),tickMarkFormatter:chartTickFormatter(frame)}});
+  state.chart.applyOptions({timeScale:{timeVisible:false,tickMarkFormatter:chartTickFormatter(frame)}});
   state.candleData=[];state.candleSeries.setData([]);state.volumeSeries.setData([]);levels();
-  if(isIntraday(frame)){
-   const url=externalIntradayChart(next,frame,universe().find(r=>r.symbol===next)?.market),link=$('[data-intraday-link]');
-   link.hidden=!url;if(url)link.href=url;else link.removeAttribute('href');
-   $('[data-intraday-title]').textContent=`${next} · ${CHART_FRAMES[frame]} K`;
-   status('');$('[data-series-note]').textContent=CHART_FRAMES[frame]+' K · 等待盤中資料，本站尚未提供分時 K 線';return;
-  }
-  try{if(!bundleEntry(next,'1D',snapshot()?.date))await preloadBundle().catch(()=>{});if(run!==serial||life.signal.aborted)return;const data=await fetchSeries(next,frame,controller.signal,snapshot()?.date,{minimum:1});if(run!==serial||life.signal.aborted)return;
-   state.candleData=data.candles;state.candleSeries.setData(data.candles);state.volumeSeries.setData(data.candles.map(c=>({time:c.time,value:c.volume,color:c.close>=c.open?'#f16a7035':'#48b78e35'})));const viewport=viewports.get(`${next}:${frame}`);if(viewport?.logical){state.chart.timeScale().setVisibleLogicalRange(viewport.logical);state.chartPriceViewport=viewport.price;}else state.chart.timeScale().fitContent();refreshRange();levels();drawings?.sync();
-   $('[data-series-note]').textContent=frame==='1D'?`日 K · ${data.candles.length} 根 · 未復權`:`${CHART_FRAMES[frame]} K · ${data.candles.length} 根已完成 K 線 · 截至 ${data.candles.at(-1)?.lastDate||data.candles.at(-1)?.date||'—'} · 未復權`;
-   status(data.candles.length?'':'目前沒有此股票的歷史 K 線');
-  }catch(error){if(run===serial&&!life.signal.aborted&&error.name!=='AbortError')status('官方 K 線暫時無法取得，請稍後重試');}
+  try{if(!bundleEntry(next,'1D',snapshot()?.date))await preloadBundle().catch(()=>{});if(run!==serial||life.signal.aborted)return;const data=await fetchSeries(next,'1D',controller.signal,snapshot()?.date,{minimum:1});if(run!==serial||life.signal.aborted)return;
+   const record=await chartHistory(next,universe().find(r=>r.symbol===next)?.market,snapshot()?.date,data.candles,controller.signal);if(run!==serial||life.signal.aborted)return;
+   historyRecord=record;renderHistory(true);const viewport=viewports.get(`${next}:${frame}`);if(viewport?.logical){const index=state.candleData.findIndex(c=>c.time===viewport.anchorTime),shift=index<0?0:index-viewport.anchorIndex;state.chart.timeScale().setVisibleLogicalRange({from:viewport.logical.from+shift,to:viewport.logical.to+shift});state.chartPriceViewport=viewport.price;refreshRange();}
+   fillHistory();
+  }catch(error){if(run===serial&&!life.signal.aborted&&error.name!=='AbortError'){status('官方 K 線暫時無法取得，請稍後重試');$('[data-history-status]').textContent='歷史資料暫時無法取得';$('[data-action="history-retry"]').hidden=false;}}
  }
  function setFocus(value){focus=value;document.body.classList.toggle('tw-chart-focus',value);root.classList.toggle('is-focused',value);$('[data-action="exit"]').hidden=!value;$('[data-action="focus"]').hidden=value;drawings?.sync();requestAnimationFrame(()=>{if(!life.signal.aborted)state.chart?.resize(el.clientWidth,el.clientHeight);});}
  const all=$('[data-twcr-tab="all"]');const menu=value=>{const m=$('.twcr-tier-menu'),r=all.getBoundingClientRect();m.style.left=`${Math.min(r.left,innerWidth-110)}px`;m.style.top=`${r.bottom+5}px`;m.hidden=!value;all.setAttribute('aria-expanded',String(value));};
@@ -207,10 +222,13 @@ export function mountTWChartRadar(host,{state:marketState,watchlist=new Set()}={
   if(b.dataset.twcrTab){if(b.dataset.twcrTab==='all'){if(held){held=false;return;}if(tab==='all'){const options=['all','T1','T2','T3'];tier=options[(options.indexOf(tier)+1)%options.length];}tab='all';}else tab=b.dataset.twcrTab;menu(false);renderList();return;}
   if(b.dataset.symbol){openSymbol(b.dataset.symbol);return;}
   if(b.dataset.favorite){const value=b.dataset.favorite;watchlist.has(value)?watchlist.delete(value):watchlist.add(value);try{localStorage.setItem('ox-tw-radar-watchlist-v1',JSON.stringify([...watchlist]));}catch{}renderList();return;}
-  if(b.dataset.action==='daily'){$('.chart-timeframe-strip [data-twcr-frame="1D"]').click();return;}
+  if(b.dataset.action==='history-all'){fitAll=true;state.chartPriceViewport=null;if(historyRecord){renderHistory();fillHistory();}return;}
+  if(b.dataset.action==='history-recent'){fitAll=false;state.chartPriceViewport=null;refreshRange();const count=state.candleData.length;state.chart?.timeScale().setVisibleLogicalRange({from:Math.max(0,count-160),to:count+5});return;}
+  if(b.dataset.action==='history-retry'){if(historyRecord){historyRecord.error=null;historyJob=null;renderHistory();fillHistory();}else if(symbol)openSymbol(symbol);return;}
   switch(b.dataset.action){case 'search':{renderSearch();$('.twcr-search-dialog').showModal();b.setAttribute('aria-expanded','true');$('.twcr-search-dialog input').focus();break;}case 'search-close':closeSearch();break;case 'indicators':tools('indicators');break;case 'tools-close':closeTools();break;case 'frames-save':{const checked=[...host.querySelectorAll('.chart-timeframe-preferences input:checked')].map(n=>n.value);host.querySelectorAll('[data-twcr-frame]').forEach(n=>n.hidden=!checked.includes(n.dataset.twcrFrame)&&n.dataset.twcrFrame!==frame);closeTools();marker();break;}case 'side':side=side==='long'?'short':'long';renderList();break;case 'fold':folded=!folded;root.classList.toggle('is-folded',folded);b.setAttribute('aria-expanded',String(!folded));b.setAttribute('aria-label',folded?'展開候選列表':'收合候選列表');break;case 'focus':setFocus(true);break;case 'native-fullscreen':closeTools();setFocus(true);box.requestFullscreen?.().catch(()=>{});break;case 'exit':if(document.fullscreenElement===box)document.exitFullscreen();setFocus(false);break;case 'reset':state.chartPriceViewport=null;refreshRange();state.chart?.timeScale().fitContent();break;}
  });
  listen($('[data-levels]'),'change',levels);
+ listen(el,'pointerdown',()=>{fitAll=false;},{passive:true});listen(el,'wheel',()=>{fitAll=false;},{passive:true});
  listen($('[data-volume]'),'change',event=>state.volumeSeries?.applyOptions({visible:event.target.checked}));
  listen(host,'keydown',event=>{if((event.key==='Enter'||event.key===' ')&&event.target.matches('[data-stock]')){event.preventDefault();openSymbol(event.target.dataset.stock);}if(event.key==='Tab'&&$('.twcr-tools').classList.contains('is-open')){const nodes=[...$('.chart-tools-dialog').querySelectorAll('button,input')].filter(n=>!n.closest('[hidden]'));if(event.shiftKey&&document.activeElement===nodes[0]){event.preventDefault();nodes.at(-1).focus();}else if(!event.shiftKey&&document.activeElement===nodes.at(-1)){event.preventDefault();nodes[0].focus();}}});
  listen($('.twcr-search-dialog input'),'input',renderSearch);

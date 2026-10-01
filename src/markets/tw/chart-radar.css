@@ -22,11 +22,8 @@
 .tw-chart-radar .market-line-price label{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:default}
 .tw-chart-radar .market-line-item strong{font-variant-numeric:tabular-nums}
 .twcr-status{pointer-events:none}.twcr-status:empty{display:none}
-.twcr-intraday-empty{position:absolute;inset:0;z-index:25;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:9px;padding:24px;text-align:center;background:var(--bg,#101216);color:var(--ink,#eeece7);font:13px/1.6 system-ui}
-.twcr-intraday-empty strong{font-size:16px}.twcr-intraday-empty p{margin:0;font:13px/1.6 system-ui;color:var(--ink,#eeece7)}.twcr-intraday-empty small{color:var(--muted,#aaa);font:11px/1.6 system-ui}
-.twcr-intraday-empty>div{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:10px}
-.twcr-intraday-empty a,.twcr-intraday-empty button{border:1px solid var(--line,#ffffff36);border-radius:8px;padding:8px 12px;background:var(--panel,#1c1f23);color:inherit;font:inherit;text-decoration:none;cursor:pointer}
-.twcr-chart-box.is-intraday :is(.chart-drawing-layer,.chart-drawing-tools,.chart-axis-hit){display:none!important}
+.twcr-history-bar{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;padding:6px 10px;min-height:30px;box-sizing:border-box;border-bottom:1px solid var(--line,#ffffff26);color:var(--muted,#aaa);font:10px/1.4 system-ui}
+.twcr-history-bar>div{display:flex;gap:6px}.twcr-history-bar button{border:1px solid var(--line,#ffffff36);border-radius:5px;padding:3px 7px;background:transparent;color:var(--ink,#eeece7);font:10px/1.4 system-ui;cursor:pointer}
 .twcr-pool-info{flex:none;padding:5px 8px;color:var(--muted);font:10px/1.4 system-ui}
 .twcr-scanner{display:flex;flex-direction:column;min-height:0}
 .twcr-results{flex:1 1 0;min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin}

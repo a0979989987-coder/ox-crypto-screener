@@ -1324,8 +1324,8 @@ async function handleCandles(
           null,
 
         limit,
-
-        adjusted
+        adjusted,
+        history: booleanParam(req.query.history,false)
       }
     );
 
@@ -1626,7 +1626,8 @@ export default async function handler(
 
         message:
           error?.message ||
-          "Unknown error"
+          "Unknown error",
+        failedMonths: error?.details?.failures?.map(({month,code})=>({month,code}))
 
       }
     );
