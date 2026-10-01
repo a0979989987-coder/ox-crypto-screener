@@ -13,7 +13,7 @@ import {
   patterns,
   sectorETF,
 } from "./view-utils.js?v=20261001-loading1";
-import { toolsViews } from "./tools.js?v=20261001-loading1";
+import { toolsViews } from "./tools.js?v=20261001-twbubbles1";
 import { newsViews } from "./news.js?v=20261001-loading1";
 import { USAdapter, fetchJSON } from "./provider.js?v=20261001-loading1";
 import { USChart } from "./chart.js?v=20261001-loading1";

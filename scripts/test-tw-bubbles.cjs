@@ -1,0 +1,41 @@
+const {chromium}=require('playwright'),{spawn}=require('node:child_process'),{readFileSync,mkdirSync}=require('node:fs'),assert=require('node:assert/strict');
+const root=require('node:path').join(__dirname,'..'),port=4191,base=`http://127.0.0.1:${port}`,snapshot=JSON.parse(readFileSync(root+'/data/tw-research.json'));
+const server=spawn(process.execPath,['scripts/dev-server.mjs','--port',String(port)],{cwd:root});let browser;
+(async()=>{
+ await new Promise(r=>server.stdout.once('data',r));browser=await chromium.launch({executablePath:process.env.OX_BROWSER_PATH,headless:true,args:['--no-sandbox']});
+ const page=await browser.newPage({viewport:{width:390,height:844},hasTouch:true}),errors=[],cryptoRequests=[];page.on('pageerror',e=>errors.push(e.message));
+ await page.route(base+'/__tw-bubbles',r=>r.fulfill({contentType:'text/html',body:'<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1"><script src="/src/components/loading-state.js"></script><style>body{margin:0;padding:12px;background:#101216;color:#eee}#market-unavailable-card{display:block}</style><body data-market="tw" data-view="strength"><div id="market-unavailable-card"></div></body>'}));
+ await page.route('**/v1/tw/research*',r=>r.fulfill({json:{data:snapshot}}));
+ await page.route('**/api.bitget.com/**',r=>{cryptoRequests.push(r.request().url());return r.abort();});await page.route('**/api.coingecko.com/**',r=>{cryptoRequests.push(r.request().url());return r.abort();});
+ await page.route('**/bubbles/field.js*',r=>r.fulfill({contentType:'text/javascript',body:readFileSync(root+'/src/markets/crypto/bubbles/field.js','utf8').replace('this.canvas=canvas;','window.twField=this;this.canvas=canvas;')}));
+ await page.route('**/tw-patterns/daily-*',async r=>{await new Promise(resolve=>setTimeout(resolve,70));await r.continue();});
+ await page.goto(base+'/__tw-bubbles');
+ await page.evaluate(async()=>{const tw=await import('/src/markets/tw/strength.js');document.dispatchEvent(new CustomEvent('ox:tw-tool',{detail:{tool:'bubbles'}}));tw.renderTWStrength({status:'ready'});window.stopTW=tw.stopTWStrength;});
+ await page.locator('[data-tw-tool="bubbles"]').waitFor({state:'visible'});const bubble=page.locator('#ox-tw-patterns'),canvas=bubble.locator('canvas');await canvas.waitFor({state:'visible'});
+ await page.waitForFunction(()=>window.twField?.nodes.length>0);
+ assert.equal(await page.locator('.ox-data-loading').count(),0);
+ const load=bubble.locator('.oxb-loading .ox-loading-ring');await load.waitFor({state:'visible'});await load.evaluate(e=>window.savedRing=e);
+ await page.waitForTimeout(160);assert.equal(await load.evaluate(e=>e===window.savedRing),true);
+ await bubble.locator('.oxb-loading').waitFor({state:'hidden',timeout:90000});
+ assert.equal(await canvas.getAttribute('data-coins'),'50');
+ const choose=async id=>{await bubble.locator('[data-action="metric-menu"]').click();await bubble.locator(`[data-bubble-metric="${id}"]`).click();};
+ await choose('institution');assert.equal(await canvas.getAttribute('data-metric'),'institution');assert.match(await bubble.locator('.oxb-asset-grid').innerText(),/張/);
+ await bubble.locator('[data-action="direction"]').click();assert.equal(await canvas.getAttribute('data-direction'),'long');assert(await page.evaluate(()=>twField.nodes.every(n=>n.netShares>0)));
+ await bubble.locator('[data-action="direction"]').click();assert(await page.evaluate(()=>twField.nodes.every(n=>n.netShares<0)));await bubble.locator('[data-action="direction"]').click();
+ await choose('volumeTrend');assert(Number(await canvas.getAttribute('data-coins'))>0);assert(await page.evaluate(()=>twField.nodes.every(n=>n.volumeBars.slice(1).every((b,i)=>b.volume>n.volumeBars[i].volume))));
+ await choose('volume');assert.match(await bubble.locator('.oxb-asset-grid').innerText(),/張/);await choose('change');
+ await page.evaluate(()=>localStorage.setItem('ox-tw-radar-watchlist-v1',JSON.stringify(['2330'])));await bubble.locator('[data-action="scope"]').click();assert.equal(await canvas.getAttribute('data-coins'),'1');assert.deepEqual(await page.evaluate(()=>twField.nodes.map(n=>n.symbol)),['2330']);await bubble.locator('[data-action="scope"]').click();
+ await bubble.locator('select').selectOption('100');assert.equal(await canvas.getAttribute('data-coins'),'100');await bubble.locator('select').selectOption('50');
+ await canvas.hover();await page.mouse.wheel(0,-600);assert(await page.evaluate(()=>twField.zoom>1));await bubble.locator('[data-action="reset"]').click();assert.equal(await page.evaluate(()=>twField.zoom),1);
+ const cdp=await page.context().newCDPSession(page),box=await canvas.boundingBox(),y=box.y+box.height*.5;
+ await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:box.x+90,y,id:1},{x:box.x+220,y,id:2}]});
+ await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:box.x+45,y,id:1},{x:box.x+270,y,id:2}]});await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});assert(await page.evaluate(()=>twField.zoom>1));assert.equal(await bubble.locator('dialog').evaluate(e=>e.open),false);
+ await bubble.locator('[data-action="reset"]').click();await bubble.locator('.oxb-asset-grid button').first().click();assert.equal(await bubble.locator('dialog').evaluate(e=>e.open),true);assert.match(await bubble.locator('[data-slot="detail"]').innerText(),/TWD/);assert(!/USDT|24H/.test(await bubble.locator('[data-slot="detail"]').innerText()));await bubble.locator('[data-action="close-asset"]').click();
+ mkdirSync('/tmp/ox-tw-bubbles-qa',{recursive:true});
+ for(const width of [360,390,430,1440]){await page.setViewportSize({width,height:width>600?950:844});await page.waitForTimeout(150);const widths=await page.locator('[data-tw-tool]').evaluateAll(es=>es.map(e=>e.getBoundingClientRect().width));assert.equal(widths.length,3);assert(Math.max(...widths)-Math.min(...widths)<2);assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));await page.screenshot({path:`/tmp/ox-tw-bubbles-qa/tw-${width}.png`,fullPage:true});}
+ // Frequent progress must preserve ring identity and its animation timeline.
+ await page.evaluate(()=>{window.owner=document.createElement('div');document.body.prepend(owner);window.job=OXLoading.begin('tw','載入測試標的',{target:owner,done:0,total:20,views:['strength']});});await page.locator('.ox-region-loading .ox-loading-ring').waitFor();
+ const result=await page.evaluate(async()=>{const ring=owner.querySelector('.ox-loading-ring'),animation=ring.getAnimations()[0],start=animation.currentTime;for(let n=1;n<=10;n++){job.update(n,20);await new Promise(r=>setTimeout(r,30));}return {same:ring===owner.querySelector('.ox-loading-ring'),elapsed:animation.currentTime-start,count:owner.querySelector('.ox-loading-count').textContent,position:getComputedStyle(owner.firstChild).position};});
+ assert(result.same);assert(result.elapsed>200);assert.equal(result.position,'static');await page.evaluate(()=>{job.finish();stopTW();});await page.waitForTimeout(150);assert.equal(await page.locator('.ox-region-loading').count(),0);
+ assert.deepEqual(cryptoRequests,[]);assert.deepEqual(errors,[]);console.log('PASS: Taiwan uses the shared animated bubble UI, 4 real-data filters, watch/direction/quantity/gestures/details, 3 equal tabs at mobile and desktop widths, stable local loading and no crypto requests.');
+})().catch(e=>{console.error(e);process.exitCode=1;}).finally(async()=>{await browser?.close();server.kill();});

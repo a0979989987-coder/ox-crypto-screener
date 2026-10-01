@@ -2,8 +2,8 @@ import { radiusTargets, metricText, canonical } from './model.js?v=20261001-bubb
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const hash=s=>[...s].reduce((v,c)=>(v*31+c.charCodeAt(0))>>>0,7);
 export class BubbleField {
-  constructor(canvas,{onSelect=()=>{},logo=()=>null}={}) {
-    this.canvas=canvas;this.ctx=canvas.getContext('2d');this.onSelect=onSelect;this.logo=logo;this.width=360;this.height=500;
+  constructor(canvas,{onSelect=()=>{},logo=()=>null,formatMetric=metricText,metricNames=METRIC_NAMES,assetName="幣種",palette=null}={}) {
+    this.canvas=canvas;this.ctx=canvas.getContext('2d');this.onSelect=onSelect;this.logo=logo;this.formatMetric=formatMetric;this.metricNames=metricNames;this.assetName=assetName;this.palette=palette;this.width=360;this.height=500;
     this.nodes=[];this.images=new Map();this.zoom=1;this.panX=0;this.panY=0;this.pointers=new Map();this.life=new AbortController();this.visible=true;this.paused=false;this.reduced=matchMedia('(prefers-reduced-motion:reduce)');
     this.resizeObserver=new ResizeObserver(()=>this.resize());this.resizeObserver.observe(canvas);
     this.intersection=new IntersectionObserver(entries=>{this.visible=entries[0].isIntersecting;this.run();},{threshold:.01});this.intersection.observe(canvas);
@@ -47,10 +47,10 @@ export class BubbleField {
       Object.assign(n,row,{target:radii[i],metric});if(layout||this.paused||this.reduced.matches)n.r=n.target;if(changed||!n.sprite)n.sprite=this.sprite(n);return n;
     });
     if(added||layout||this.paused||this.reduced.matches){for(let i=0;i<70;i++)this.resolveCollisions();}
-    this.canvas.dataset.coins=String(this.nodes.length);this.canvas.dataset.metric=metric;this.canvas.setAttribute('aria-label',`${METRIC_NAMES[metric]}動態泡泡圖，${this.nodes.length} 個幣種；可拖曳泡泡，雙指縮放`);this.paint();this.run();
+    this.canvas.dataset.coins=String(this.nodes.length);this.canvas.dataset.metric=metric;this.canvas.setAttribute('aria-label',`${this.metricNames[metric]}動態泡泡圖，${this.nodes.length} 個${this.assetName}；可拖曳泡泡，雙指縮放`);this.paint();this.run();
   }
   sprite(n){const r=n.target,scale=2,margin=8,side=(r*2+margin*2),c=document.createElement('canvas');c.width=Math.ceil(side*scale);c.height=Math.ceil(side*scale);const ctx=c.getContext('2d');ctx.scale(scale,scale);const center=side/2;
-    const direction=n.metric==='flow'?n.value:n.change,tone=direction>0?'#44bde7':direction<0?'#f15e7b':'#aeb6ba';n.tone=tone;
+    const direction=n.sign??(n.metric==='flow'?n.value:n.change),tone=direction>0?(this.palette?.up||'#44bde7'):direction<0?(this.palette?.down||'#f15e7b'):'#aeb6ba';n.tone=tone;
     const glow=ctx.createRadialGradient(center,center,r*.78,center,center,r+5);glow.addColorStop(0,tone+'00');glow.addColorStop(.74,tone+'55');glow.addColorStop(1,tone+'00');ctx.fillStyle=glow;ctx.fillRect(0,0,side,side);
     const fill=ctx.createRadialGradient(center-r*.3,center-r*.35,0,center,center,r);fill.addColorStop(0,'#242b30');fill.addColorStop(.65,'#151b1f');fill.addColorStop(1,tone+'42');ctx.fillStyle=fill;ctx.beginPath();ctx.arc(center,center,r,0,Math.PI*2);ctx.fill();ctx.strokeStyle=tone+'b0';ctx.lineWidth=1.4;ctx.stroke();
     const url=this.logo(canonical(n.base))||n.image;let img=url&&this.images.get(url);
@@ -58,7 +58,7 @@ export class BubbleField {
     const full=r>=23,logoSize=Math.min(25,r*.43);let nameY=center+(full?0:2);
     if(full){const ly=center-r*.58;ctx.save();ctx.beginPath();ctx.arc(center,ly,logoSize/2,0,Math.PI*2);ctx.clip();if(img?.complete&&img.naturalWidth)ctx.drawImage(img,center-logoSize/2,ly-logoSize/2,logoSize,logoSize);else{ctx.fillStyle=tone+'45';ctx.fillRect(center-logoSize/2,ly-logoSize/2,logoSize,logoSize);ctx.fillStyle='#fff';ctx.font=`600 ${logoSize*.48}px system-ui`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(n.base.slice(0,1),center,ly);}ctx.restore();}
     ctx.textAlign='center';ctx.textBaseline='middle';let font=Math.min(27,r*.48);ctx.font=`500 ${font}px Inter,system-ui`;const maxWidth=r*1.68;if(ctx.measureText(n.base).width>maxWidth){font*=maxWidth/ctx.measureText(n.base).width;ctx.font=`500 ${font}px Inter,system-ui`;}
-    ctx.fillStyle='#f1f1eb';ctx.fillText(n.base,center,nameY);if(r>=19){ctx.font=`500 ${Math.min(13,Math.max(8,r*.25))}px Inter,system-ui`;ctx.fillStyle='#e6e9e8';ctx.fillText(metricText(n.value,n.metric),center,nameY+Math.min(22,r*.39),r*1.73);}return c;
+    ctx.fillStyle='#f1f1eb';ctx.fillText(n.base,center,nameY);if(r>=19){ctx.font=`500 ${Math.min(13,Math.max(8,r*.25))}px Inter,system-ui`;ctx.fillStyle='#e6e9e8';ctx.fillText(this.formatMetric(n.value,n.metric),center,nameY+Math.min(22,r*.39),r*1.73);}return c;
   }
   resolveCollisions(){const nodes=this.nodes,held=this.drag?.moved?this.drag.node:null;
     for(let i=0;i<nodes.length;i++)for(let j=i+1;j<nodes.length;j++){const a=nodes[i],b=nodes[j];let dx=b.x-a.x,dy=b.y-a.y,dist=Math.hypot(dx,dy),min=a.r+b.r+2;if(dist>=min)continue;if(dist<.001){dx=.01;dy=.01;dist=Math.hypot(dx,dy);}const nx=dx/dist,ny=dy/dist,overlap=(min-dist)*.52;

@@ -116,7 +116,7 @@ function paint(s) {
 async function refresh(s, force) {
   if (loading) return;
   loading = true; error = null; paint(s);
-  const loadingTask=window.OXLoading?.begin('tw','台股產業資料載入中');
+  const loadingTask=window.OXLoading?.begin('tw','台股產業資料載入中',{signal:s.controller.signal,target:()=>s.view==='strength'?s.root.querySelector('.twx-chart-content'):s.root.querySelector('.twx-market')});
   const result = await loadResearch({ force, onCached(snapshot) { data = snapshot; if (current(s)) paint(s); } });
   loadingTask?.finish();
   loading = false; lastFetch = Date.now(); data = result.data; error = result.error;

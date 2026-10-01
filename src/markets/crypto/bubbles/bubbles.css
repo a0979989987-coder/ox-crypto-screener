@@ -60,3 +60,5 @@
 .oxb-radar{margin-top:18px;padding:10px 14px;background:#ffffff12;border:1px solid #ffffff7b;border-radius:20px;color:#f2f2eb;width:100%;box-shadow:0 0 5px #fff3;font-size:12px}
 @media(max-width:600px){.oxb-controls{gap:5px;padding:7px}.oxb-scope,.oxb-metric-toggle{min-height:35px;padding:0 8px}.oxb canvas{height:clamp(360px,calc(100dvh - 340px),620px)}.oxb-assets{padding:8px}.oxb-asset-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+
+.oxb-loading{margin-left:auto;min-width:24px}.oxb-loading[hidden]{display:none}.oxb-loading .ox-region-loading{padding:0}.oxb-loading .ox-loading-label{display:none}.oxb-loading .ox-loading{gap:2px}.oxb-loading .ox-loading-count{font-size:9px}.oxb-loading:not([hidden])+.oxb-direction{margin-left:0}:host([data-bubble-market=tw]){--oxb-up:#f16a70;--oxb-down:#48b78e}:host([data-bubble-market=tw]) .oxb-dialog .up,:host([data-bubble-market=tw]) .up b{color:var(--oxb-up)}:host([data-bubble-market=tw]) .oxb-dialog .down,:host([data-bubble-market=tw]) .down b{color:var(--oxb-down)}

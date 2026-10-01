@@ -1,4 +1,4 @@
-import { preloadBundle, bundleEntry, bundleEntries, bundleState } from './bundle.js?v=20261001-loading1';
+import { preloadBundle, bundleEntry, bundleEntries, bundleState } from './bundle.js?v=20261001-twbubbles1';
 import { twProvider } from '../api.js?v=20261001-loading1';
 import { createTWMarketState } from '../engine.js?v=20261001-loading1';
 import { savedResearch, loadResearch } from '../research-data.js?v=20261001-loading1';

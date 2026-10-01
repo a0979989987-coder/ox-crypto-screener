@@ -1,6 +1,6 @@
 import { US_MODULE_CONFIG } from "./config.js?v=20260930-us-compact2";
 import { createUSMarketState } from "./engine.js?v=20261001-loading1";
-import { USWorkspace } from "./workspace.js?v=20261001-loading1";
+import { USWorkspace } from "./workspace.js?v=20261001-twbubbles1";
 const workspace = new USWorkspace();
 let active = false,
   entered = false;

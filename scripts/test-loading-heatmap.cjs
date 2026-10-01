@@ -16,7 +16,7 @@ const server=spawn(process.execPath,['scripts/dev-server.mjs','--port',String(po
  await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});assert.ok(await canvas.evaluate(e=>Number(e.dataset.zoom)>1));assert.equal(await page.evaluate(()=>window.selected),undefined);
  for(const width of [320,390,768]){await page.setViewportSize({width,height:844});await canvas.evaluate((e,w)=>e.style.width=(w-20)+'px',width);await page.waitForTimeout(100);const view=await page.evaluate(()=>chart.viewport());assert.ok(Number.isFinite(view.x)&&Number.isFinite(view.y));}
  await page.evaluate(()=>chart.reset());await page.waitForTimeout(100);assert.equal(await canvas.getAttribute('data-zoom'),'1');
- await page.evaluate(()=>{window.loading=OXLoading.begin('crypto','載入標的',{done:2,total:30});});await page.locator('.ox-loading-count').filter({hasText:'2/30'}).waitFor();await page.evaluate(()=>loading.finish());await page.locator('.ox-data-loading').waitFor({state:'hidden'});
+ await page.evaluate(()=>{window.loading=OXLoading.begin('crypto','載入標的',{done:2,total:30,target:document.body});});await page.locator('.ox-loading-count').filter({hasText:'2/30'}).waitFor();await page.evaluate(()=>loading.finish());await page.locator('.ox-region-loading').waitFor({state:'detached'});
  // Cold CSS must cloak the entire menu, including before its styles arrive.
  await page.route('**/radar-ui.css*',async r=>{await new Promise(resolve=>setTimeout(resolve,700));await r.continue();});
  await page.evaluate(async()=>{const {createToolsRail}=await import('/src/components/strength/tools-rail.js?v=20261001-loading1');window.rail=createToolsRail({tabs:[['a','工具 A'],['b','工具 B']],selected:'a',label:'測試工具',onSelect(){}});document.body.append(rail.element);});
