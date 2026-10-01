@@ -1,6 +1,6 @@
 import { createHash, timingSafeEqual } from 'node:crypto';
-import { BitgetLookupError, createBitgetAffiliateClient } from '../../../server/integrations/bitget/affiliate.js';
-import { createTestHandler } from '../../../server/integrations/bitget/operator-handler.js';
+import { BitgetLookupError, createBitgetAffiliateClient } from './affiliate.js';
+import { createTestHandler } from './operator-handler.js';
 
 // Operator-only service endpoint until OX's real admin/session layer is connected.
 // Never embed OX_ACCOUNT_LOOKUP_TOKEN in frontend code or browser storage.

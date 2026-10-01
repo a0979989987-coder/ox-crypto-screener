@@ -12,3 +12,8 @@ body.ox-account-open{overflow:hidden}body.theme-light .ox-account-shell{backgrou
 @media(prefers-reduced-motion:reduce){.ox-account-overlay,.ox-account-shell,.ox-account-modal,.ox-account-trigger,.ox-account-google,.ox-account-submit{transition:none!important}.ox-account-lightwave{animation:none!important}}
 
 .ox-account-card>*{transition:opacity .22s ease,transform .28s ease}.ox-account-card.is-switching>*{opacity:.42;transform:translateY(5px)}.ox-account-overlay.is-register .ox-account-lightwave{transform:translateX(8%) scaleY(.82)}.ox-account-submit:focus-visible,.ox-account-google:focus-visible,.ox-account-tabs button:focus-visible,.ox-account-close:focus-visible,.ox-account-skip:focus-visible,.ox-account-trigger:focus-visible{outline:2px solid #e7ebe4;outline-offset:3px}
+#ox-account-profile { overflow-wrap:anywhere; }
+.ox-account-avatar { display:grid; place-items:center; width:44px; height:44px; border-radius:50%; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.2); }
+#ox-account-email-code { min-height:44px; width:100%; box-sizing:border-box; font:inherit; }
+.ox-account-card [aria-busy="true"] { opacity:.7; transition:opacity 200ms ease; }
+@media (prefers-reduced-motion:reduce) { .ox-account-card [aria-busy="true"] { transition:none; } }

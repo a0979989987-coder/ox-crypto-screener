@@ -1,4 +1,4 @@
-function currentLocalAccountEmail() { return ""; }
+function currentLocalAccountEmail() { return window.OXAuth?.user?.email || ""; }
 function watchStorageKey() { return "ox-watchlist"; }
 function getWatchlistRecords() { try { const v = JSON.parse(localStorage.getItem(watchStorageKey()) || "[]"); return Array.isArray(v) ? v.filter(x => x && x.symbol) : []; } catch { return []; } }
 function isWatchlisted(symbol) { return getWatchlistRecords().some(x => x.symbol === symbol); }

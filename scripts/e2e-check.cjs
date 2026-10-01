@@ -142,6 +142,12 @@ async function preparePage(context, viewport) {
     };
   });
   await page.route("https://unpkg.com/**", route => route.fulfill({ status: 200, contentType: "text/javascript", body: chartStub }));
+  // Static preview has no server functions. Model the unconfigured guest state;
+  // real auth handlers and configured account UI are tested separately.
+  await page.route("**/api/v1/account/config", route => route.fulfill({
+    status: 200, contentType: "application/json",
+    body: JSON.stringify({ configured: false, providerConnectionVerified: false, databaseConnected: false })
+  }));
   await page.route("https://api.frankfurter.app/**", route => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(rates) }));
   await page.route("https://api.frankfurter.dev/**", route => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(forexV2Rows) }));
   await page.route("https://api.bitget.com/**", route => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(bitgetBody(new URL(route.request().url()))) }));
@@ -266,10 +272,12 @@ async function desktopRegression(browser) {
   assert(await page.locator("#market-unavailable-card").isVisible(), "TW market placeholder did not display");
   await page.click("#ox-control-close");
   await page.locator('[data-twr-mode="chart"]').click();
-  await page.waitForSelector(".twcr-search input");
-  await page.fill(".twcr-search input", "2330");
-  await page.waitForSelector('.twcr-results [data-stock="2330"]');
-  assert((await page.locator('.twcr-results [data-stock="2330"]').innerText()).includes("123.5"), "TW radar did not retain official-shaped fixture data");
+  await page.locator('.twcr-search-open').click();
+  await page.waitForSelector(".twcr-search-dialog input");
+  await page.fill(".twcr-search-dialog input", "2330");
+  await page.waitForSelector('.twcr-search-results [data-search-symbol="2330"]');
+  assert((await page.locator('.twcr-search-results [data-search-symbol="2330"]').innerText()).includes("2330"), "TW stock search did not display the selected official snapshot symbol");
+  await page.locator('.twcr-search-dialog [data-action="search-close"]').click();
   await selectMarket(page, "crypto");
   assert(await page.locator("#view-radar").isVisible(), "Crypto market did not restore");
   await selectMarket(page, "forex");
@@ -383,10 +391,12 @@ async function mobileRegression(browser) {
   assert(await page.locator("#market-unavailable-card").isVisible(), "Mobile market switch to TW failed");
   await page.click("#ox-control-close");
   await page.locator('[data-twr-mode="chart"]').click();
-  await page.waitForSelector('.twcr-search input');
-  await page.fill('.twcr-search input', '2330');
-  await page.waitForSelector('.twcr-results [data-stock="2330"]');
+  await page.locator('.twcr-search-open').click();
+  await page.waitForSelector('.twcr-search-dialog input');
+  await page.fill('.twcr-search-dialog input', '2330');
+  await page.waitForSelector('.twcr-search-results [data-search-symbol="2330"]');
   assert(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth) <= 2, "Mobile TW chart radar overflowed");
+  await page.locator('.twcr-search-dialog [data-action="search-close"]').click();
   await selectMarket(page, "crypto");
   assert(await page.locator("#view-radar").isVisible(), "Mobile market switch back to Crypto failed");
   await selectMarket(page, "forex");
