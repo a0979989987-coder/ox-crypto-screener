@@ -16,6 +16,7 @@ function source(t,{date='2026-10-01',missingTpex=false}={}) {
 test('a closing snapshot requires both official exchange quote feeds',async t=>{
   source(t,{missingTpex:true});
   const {getOfficialTWRadar}=await import('../api/v1/tw/providers/radar.js?close-missing-market');
+  const individual=await getOfficialTWRadar();assert.equal(individual.meta.partial,true);
   await assert.rejects(getOfficialTWRadar({minimumDate:'2026-10-01'}),{code:'TW_RADAR_COMMON_DATE_NOT_FOUND'});
 });
 test('a stale quote cache cannot move the verified close backwards, including a warm provider cache',async t=>{

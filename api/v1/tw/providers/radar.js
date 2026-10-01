@@ -2933,7 +2933,7 @@ async function loadTPEXSnapshot(
 }
 
 
-async function loadFallbackMarket(industryMaps, snapshots = {}) {
+async function loadFallbackMarket(industryMaps, snapshots = {}, requireBoth = false) {
   const [twseResult, tpexResult] = await Promise.allSettled([
     loadTWSESnapshot(industryMaps.twse, snapshots.twse),
     loadTPEXSnapshot(industryMaps.tpex, snapshots.tpex)
@@ -2954,8 +2954,8 @@ async function loadFallbackMarket(industryMaps, snapshots = {}) {
 
 
   if (
-    !twse ||
-    !tpex
+    (!twse && !tpex) ||
+    (requireBoth && (!twse || !tpex))
   ) {
 
     throw new TWRadarProviderError(
@@ -3457,7 +3457,7 @@ let universeRequest = null;
 async function buildUniverse(minimumDate = null) {
   if (universeRequest) {
     const shared = await universeRequest;
-    if (!minimumDate || shared.dataDate >= minimumDate) return shared;
+    if (!minimumDate || (shared.dataDate >= minimumDate && !shared.meta.partial)) return shared;
   }
   universeRequest = buildUniverseSnapshot(minimumDate).finally(() => { universeRequest = null; });
   return universeRequest;
@@ -3470,7 +3470,7 @@ async function buildUniverseSnapshot(minimumDate = null) {
 
   if (
     universeCache.value &&
-    (!minimumDate || universeCache.value.dataDate >= minimumDate) &&
+    (!minimumDate || (universeCache.value.dataDate >= minimumDate && !universeCache.value.meta.partial)) &&
     universeCache.expiresAt >
       now
   ) {
@@ -3501,7 +3501,7 @@ async function buildUniverseSnapshot(minimumDate = null) {
   // The daily snapshots already carry the latest completed trading date.
   // Use them first; avoid serial holiday lookbacks before showing the Radar.
   try {
-    marketData = await loadFallbackMarket(industryMaps, { twse: twseSnapshot, tpex: tpexSnapshot });
+    marketData = await loadFallbackMarket(industryMaps, { twse: twseSnapshot, tpex: tpexSnapshot }, !!minimumDate);
     if (minimumDate && marketData.dataDate < minimumDate) {
       throw new TWRadarProviderError('Quote source is older than the verified close.', { code: 'TW_RADAR_OLDER_CLOSE' });
     }
