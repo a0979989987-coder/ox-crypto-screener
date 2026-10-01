@@ -109,4 +109,11 @@
 }
 @media(prefers-reduced-motion:reduce){.px-refresh-pill.is-scanning .px-refresh-glyph{animation:none}.px-pill-arc{transition:none}.px-mode-toggle{transition:none}}
 
-.px-local-loading{display:block}.px-local-loading[hidden]{display:none}.px-local-loading .ox-loading{display:grid;grid-template-columns:54px auto;grid-template-rows:18px 12px;gap:2px 8px}.px-local-loading .ox-loading-ring{grid-column:1;grid-row:1;justify-self:center}.px-local-loading .ox-loading-count{grid-column:1;grid-row:2}.px-local-loading .ox-loading-label{grid-column:2;grid-row:1/3;text-align:left}.px-local-loading .ox-region-loading{padding:4px}.px-local-loading .ox-loading-label{font-size:10px}
+/* Share the existing result-heading row; never insert another loading row. */
+.px-status-row{position:absolute;right:2px;top:0;z-index:1;width:58%;height:30px;display:flex;align-items:center;justify-content:flex-end;gap:5px;min-width:0;pointer-events:none}
+.px-status-row .px-status{position:static;flex:0 1 auto;width:auto;max-width:100%;min-width:0}
+.px-local-loading{display:inline-flex;flex:none}.px-local-loading[hidden]{display:none}
+.px-local-loading .ox-region-loading{display:flex;padding:0}
+.px-local-loading .ox-loading{display:flex;gap:0}
+.px-local-loading .ox-loading-ring{width:12px;height:12px;border-width:1.5px}
+.px-local-loading .ox-loading-count,.px-local-loading .ox-loading-label{display:none}

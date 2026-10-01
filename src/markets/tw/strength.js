@@ -1,11 +1,11 @@
 import { renderResearch, stopResearch } from './research-page.js?v=20261001-twbubbles1';
 import { mountResearch } from './research-ui.js';
-import { createToolsRail } from '../../components/strength/tools-rail.js?v=20261001-twbubbles1';
+import { createToolsRail } from '../../components/strength/tools-rail.js?v=20261001-twlayout1';
 import { createTWMarketState } from './engine.js?v=20261001-loading1';
 let selected = 'patterns', session = null, modules;
 export function preloadTWStrength() {
   return modules ??= Promise.all([
-    import('../crypto/patterns/view.js?v=20261001-twbubbles1'),
+    import('../crypto/patterns/view.js?v=20261001-twlayout1'),
     import('./patterns/source.js?v=20261001-twbubbles1'), import('./patterns/index-cache.js?v=20261001-twbubbles1'),import('./bubbles/view.js?v=20261001-twbubbles1')
   ]).catch(error => { modules = null; throw error; });
 }

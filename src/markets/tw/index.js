@@ -14,13 +14,13 @@ import {
 
 import {
   renderTWStrength
-} from "./strength.js?v=20261001-twbubbles1";
+} from "./strength.js?v=20261001-twlayout1";
 
 import {
   renderTWRadar, stopTWRadar
-} from "./radar.js?v=20261001-twbubbles1";
+} from "./radar.js?v=20261001-twlayout1";
 import { cancelTWLookup } from "./lookup.js?v=20261001-loading1";
-import { stopTWStrength, preloadTWStrength } from "./strength.js?v=20261001-twbubbles1";
+import { stopTWStrength, preloadTWStrength } from "./strength.js?v=20261001-twlayout1";
 import { createPreloader } from "./preload.js";
 import { preloadBundle } from "./patterns/bundle.js?v=20261001-twbubbles1";
 import { radarNeedsRecovery } from './recovery.js';

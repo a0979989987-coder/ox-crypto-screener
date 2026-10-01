@@ -174,10 +174,9 @@ export function mountTWChartRadar(host,{state:marketState,watchlist=new Set()}={
  async function fillHistory(){
   const run=serial,record=historyRecord,signal=controller.signal;if(!record||record.complete)return;
   if(historyJob?.run===run)return historyJob.promise;
-  const loading=window.OXLoading?.begin('tw',`${record.symbol} 歷史 K 線載入中`,{signal,done:0,total:1,views:['radar'],target:$('.twcr-history-bar')});
   const promise=(async()=>{try{while(!record.complete){await loadHistoryPage(record,signal);if(run!==serial||life.signal.aborted)return;renderHistory();}}
    catch(error){if(run===serial&&!life.signal.aborted&&error.name!=='AbortError')renderHistory();}
-   finally{loading?.finish();if(historyJob?.run===run)historyJob=null;}
+   finally{if(historyJob?.run===run)historyJob=null;}
   })();historyJob={run,promise};return promise;
  }
  async function openSymbol(next){

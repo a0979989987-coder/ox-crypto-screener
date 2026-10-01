@@ -1,4 +1,4 @@
-import { createToolsRail } from "../../../components/strength/tools-rail.js?v=20261001-twbubbles1";
+import { createToolsRail } from "../../../components/strength/tools-rail.js?v=20261001-twlayout1";
 // Crypto-only inline tools. Preserve the existing strength calculations and DOM.
 const section = document.querySelector('#view-strength .strength-page');
 if (section) {
@@ -61,7 +61,7 @@ if (section) {
         return;
       }
       if(selected==='patterns'){
-        const { mountPatternSearch } = await import('../patterns/view.js?v=20261001-twbubbles1');
+        const { mountPatternSearch } = await import('../patterns/view.js?v=20261001-twlayout1');
         if(token!==generation||!active())return;
         instance=mountPatternSearch(host);
         return;
