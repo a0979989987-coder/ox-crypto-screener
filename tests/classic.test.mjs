@@ -100,3 +100,27 @@ test('an empty strict T1 never borrows weaker candidates while T2 and T3 still f
  assert.ok(output.every(r=>r.classicSignal.eligible&&r.classicSignal.side==='LONG'));
  assert.equal(output.length,30);
 });
+
+test('a supported 1H impulse cannot replace missing 4H directional volume',()=>{
+ const s=evaluateFrames({'4H':preparation({volume:false}),'1H':preparation()}, {setupFrame:'4H',triggerFrame:'1H'});
+ assert.equal(s.eligible,false);assert.ok(s.rejectionReasons.includes('上攻量能不足'));
+});
+test('momentum without a tested liquidity origin is not a classic continuation',()=>{
+ const bars=Array.from({length:72},(_,i)=>({time:1700000000+i*3600,open:90+i*.4,close:90+i*.4+.3,high:90+i*.4+.4,low:90+i*.4-.1,volume:i>=64?2000:1000}));
+ const s=evaluateClassic(bars);assert.equal(s.direction.confirmed,true);assert.equal(s.volume.supported,true);
+ assert.equal(s.eligible,false);assert.equal(s.pressure,null);assert.equal(s.phase,'watch');
+});
+test('a weak bounce inside a larger decline and its mirrored pullback never change sides',()=>{
+ const bars=preparation().map((c,i)=>{const offset=i<56?(56-i)*.7:0;return {...c,open:c.open+offset,close:c.close+offset,high:c.high+offset,low:c.low+offset};});
+ for(const [input,side] of [[bars,'long'],[shortBars(bars),'short']]){
+  const s=evaluateClassic(input,{side});assert.equal(s.direction.opposingContext,true);assert.equal(s.eligible,false);
+ }
+});
+test('previous rule-version signals cannot reenter the current ranking',()=>{
+ assert.equal(rankClassicTiers([{symbol:'STALE',classicSignal:{...rankingSignal(),version:CLASSIC_VERSION-1}}]).length,0);
+});
+test('a previous decline does not ban a recovered, strong rebound attacking valid pressure',()=>{
+ const bars=preparation().map((c,i)=>{const offset=i<12?(12-i)*2:0;return {...c,open:c.open+offset,close:c.close+offset,high:c.high+offset,low:c.low+offset};});
+ const s=evaluateClassic(bars);assert.equal(s.eligible,true,JSON.stringify(s.rejectionReasons));
+ assert.equal(s.pressure.state,'valid');assert.equal(s.volume.supported,true);
+});

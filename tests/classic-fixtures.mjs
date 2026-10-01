@@ -1,3 +1,4 @@
+import { CLASSIC_VERSION } from '../src/core/classic.js';
 // Three independent ceiling tests, rising right-side lows and upward volume.
 export function preparation({ volume = true, scale = 1 } = {}) {
   const bars = [];
@@ -18,5 +19,5 @@ export const shortBars = bars => bars.map(c => ({ ...c, open: 200 - c.open, high
 // Ranking unit tests consume already qualified signals; synthetic tier/score
 // overrides isolate ordering and membership from the separately tested engine.
 export function rankingSignal(tier='T1', side='long') {
-  return {version:1,eligible:true,side:side.toUpperCase(),tier,qualityScore:{T1:90,T2:77,T3:65}[tier],priority:0,stage:'帶量逼近 · 尚未突破',atr:1,invalidation:{level:90},reasons:['已通過共同條件']};
+  return {version:CLASSIC_VERSION,eligible:true,side:side.toUpperCase(),tier,qualityScore:{T1:90,T2:77,T3:65}[tier],priority:0,stage:'帶量逼近 · 尚未突破',atr:1,invalidation:{level:90},reasons:['已通過共同條件']};
 }

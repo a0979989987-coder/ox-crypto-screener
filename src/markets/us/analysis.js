@@ -1,4 +1,4 @@
-import { evaluateClassic, qualifyClassicRow, compareClassic, compactClassic, CLASSIC_VERSION, CLASSIC_TIER_LIMITS, rankClassicTiers } from '../../core/classic.js?v=20261001-classic2';
+import { evaluateClassic, qualifyClassicRow, compareClassic, compactClassic, CLASSIC_VERSION, CLASSIC_TIER_LIMITS, rankClassicTiers } from '../../core/classic.js?v=20261001-classic3';
 import { closedCandles, relativeStrength } from "./model.js?v=20261001-us-eod1";
 const mean = (a) => a.reduce((s, x) => s + x, 0) / a.length;
 export function pivots(bars, radius = 3) {
