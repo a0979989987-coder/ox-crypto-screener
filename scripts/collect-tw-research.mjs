@@ -11,7 +11,7 @@ const [result,pulse] = await Promise.allSettled([getOfficialTWResearch(),getOffi
 if(result.status !== 'fulfilled') throw result.reason;
 const snapshot = result.value;
 console.log(JSON.stringify({date:snapshot.date, stocks:snapshot.stocks.length, sourceHealth:snapshot.sourceHealth, covered:snapshot.stocks.filter(s=>s.netTwd!==null).length}));
-if (!snapshot.stocks.length || !snapshot.stocks.some(s=>Number.isFinite(s.netTwd))) throw new Error('No verified institutional records; previous snapshot retained');
+if (!snapshot.stocks.length) throw new Error('No verified official quotes; previous snapshot retained');
 if(pulse.status==='fulfilled') snapshot.pulse = pulse.value.pulse;
 const companies = new Map(snapshot.stocks.map(s=>[`${s.market}:${s.symbol}`,s]));
 if (process.argv.includes('--backfill')) {

@@ -2,12 +2,12 @@ import {patternFrameTier} from './timeframe-tiers.js?v=20261001-tiercomb1';
 import {FRAME_LABELS} from './patterns/model.js';
 import { rankChartRows, chartUniverse } from './chart-radar-model.js?v=20261001-tiercomb1';
 import { escapeTW as esc } from './radar-card.js';
-import { savedResearch } from './research-data.js?v=20261001-tiercomb1';
-import { bundleState, bundleEntry, bundleClassification, subscribeBundle, preloadBundle } from './patterns/bundle.js?v=20261001-tiercomb1';
-import { fetchSeries } from './patterns/source.js?v=20261001-tiercomb1';
+import { savedResearch } from './research-data.js?v=20261001-twhome1';
+import { bundleState, bundleEntry, bundleClassification, subscribeBundle, preloadBundle } from './patterns/bundle.js?v=20261001-twhome1';
+import { fetchSeries } from './patterns/source.js?v=20261001-twhome1';
 import { CHART_FRAMES, aggregateChartCandles, stockDetails, chartTickFormatter } from './chart-data.js?v=20261001-loading1';
 import { cryptoRadarPart, attachCryptoRadarStyles } from '../../components/radar/market-workspace.js';
-import { chartHistory, loadHistoryPage, preserveHistoryViewport } from './chart-history.js?v=20261001-tiercomb1';
+import { chartHistory, loadHistoryPage, preserveHistoryViewport, mergeDailyHistory } from './chart-history.js?v=20261001-tiercomb1';
 const UP='#f16a70',DOWN='#48b78e';
 const num=n=>Number.isFinite(n)?n.toLocaleString('zh-TW',{maximumFractionDigits:2}):'—';
 const change=n=>Number.isFinite(n)?`${n>=0?'+':''}${n.toFixed(2)}%`:'—';
@@ -84,8 +84,14 @@ export function mountTWChartRadar(host,{state:marketState,watchlist=new Set()}={
  $('.twcr-tier-menu').id='tw-radar-radar-tier-menu';
  const root=$('.tw-chart-radar'),box=$('.chart-box'),el=$('#tw-radar-chart');
  const scannerSize=new ResizeObserver(()=>{$('.twcr-scanner').style.height=`${el.clientHeight+box.querySelector('.chart-controls').offsetHeight+2}px`;marker();});scannerSize.observe(el);scannerSize.observe(controls);
- const snapshot=()=>{const b=bundleState();return b.stocks.length?{date:b.date,stocks:b.stocks}:savedResearch();};
+ const snapshot=()=>{const b=bundleState();return [{date:b.date,stocks:b.stocks},savedResearch(),{date:marketState?.data?.radarDataDate,stocks:marketState?.data?.radar}].filter(r=>r?.date&&r.stocks?.length).sort((a,b)=>b.date.localeCompare(a.date))[0];};
  const universe=()=>chartUniverse(marketState,snapshot());
+ function latestDaily(row){
+  const liveDate=row?.dataDate||marketState?.data?.radarDataDate,indexed=bundleEntry(row?.symbol,'1D',bundleState().date)?.data;
+  const live=liveDate?mergeDailyHistory([],[{...row?.currentCandle,date:liveDate,volume:row?.volume,turnoverTwd:row?.turnoverTwd}],liveDate):[];
+  if(live.at(-1)?.date===liveDate&&(!indexed?.dataDate||liveDate>=indexed.dataDate))return {asOf:liveDate,daily:live};
+  return indexed?{asOf:indexed.dataDate,daily:indexed.candles}:null;
+ }
  function status(message){const node=$('.twcr-status');if(/載入中|正在載入/.test(message)&&window.OXLoading)OXLoading.render(node,message,0,1);else node.textContent=message;node.classList.toggle('show',!!message);}
  const tierFilters=window.OXTierFilters?.mount($('[data-tw-tier-filter]'),{market:'tw',frames:Object.entries(FRAME_LABELS).map(([id,label])=>({id,label})),signal:life.signal});
  listen(document,'ox:timeframe-tier-change',event=>{if(event.detail.market==='tw'){renderList();preloadBundle().catch(()=>{});}});
@@ -194,11 +200,25 @@ export function mountTWChartRadar(host,{state:marketState,watchlist=new Set()}={
   status('官方 K 線載入中');renderList();if(!ensureChart())return;
   state.chart.applyOptions({timeScale:{timeVisible:false,tickMarkFormatter:chartTickFormatter(frame)}});
   state.candleData=[];state.candleSeries.setData([]);state.volumeSeries.setData([]);levels();
-  try{if(!bundleEntry(next,'1D',snapshot()?.date))await preloadBundle().catch(()=>{});if(run!==serial||life.signal.aborted)return;const data=await fetchSeries(next,'1D',controller.signal,snapshot()?.date,{minimum:1});if(run!==serial||life.signal.aborted)return;
+  try{if(!bundleEntry(next,'1D',snapshot()?.date))await preloadBundle().catch(()=>{});if(run!==serial||life.signal.aborted)return;
+   const row=universe().find(r=>r.symbol===next),latest=latestDaily(row),base=bundleEntry(next,'1D',bundleState().date)?.data,asOf=snapshot()?.date;
+   const data=base&&latest?.asOf===asOf?{...base,dataDate:asOf,candles:mergeDailyHistory(base.candles,latest.daily,asOf)}:await fetchSeries(next,'1D',controller.signal,asOf,{minimum:1});if(run!==serial||life.signal.aborted)return;
    const record=await chartHistory(next,universe().find(r=>r.symbol===next)?.market,snapshot()?.date,data.candles,controller.signal);if(run!==serial||life.signal.aborted)return;
    historyRecord=record;renderHistory(true);const viewport=viewports.get(`${next}:${frame}`);if(viewport?.logical){fitAll=false;const index=state.candleData.findIndex(c=>c.time===viewport.anchorTime),shift=index<0?0:index-viewport.anchorIndex;state.chart.timeScale().setVisibleLogicalRange({from:viewport.logical.from+shift,to:viewport.logical.to+shift});state.chartPriceViewport=viewport.price;refreshRange();}
-   fillHistory();
+   fillHistory();refreshSelectedCandle().catch(()=>{});
   }catch(error){if(run===serial&&!life.signal.aborted&&error.name!=='AbortError'){status('官方 K 線暫時無法取得，請稍後重試');$('[data-history-status]').textContent='歷史資料暫時無法取得';$('[data-action="history-retry"]').hidden=false;}}
+ }
+ async function refreshSelectedCandle(){
+  const old=historyRecord,run=serial;if(!symbol||!old||life.signal.aborted)return;
+  const row=universe().find(r=>r.symbol===symbol),latest=latestDaily(row),asOf=latest?.asOf;
+  if(!asOf||asOf<old.asOf)return;
+  const daily=mergeDailyHistory([],latest.daily,asOf),last=daily.at(-1),previous=old.daily.at(-1);
+  if(last?.date!==asOf||last.date===previous?.date&&['open','high','low','close','volume'].every(k=>last[k]===previous[k]))return;
+  const record=await chartHistory(symbol,row?.market,asOf,[...old.daily,...daily],controller.signal);
+  if(run!==serial||life.signal.aborted)return;
+  if(old.coverageStart<record.coverageStart){record.coverageStart=old.coverageStart;record.cursor=old.cursor;record.complete=old.complete;}
+  serial++;controller.abort();controller=new AbortController();historyJob=null;historyRecord=record;
+  renderHistory();fillHistory();
  }
  function setFocus(value){focus=value;document.body.classList.toggle('tw-chart-focus',value);root.classList.toggle('is-focused',value);$('[data-action="exit"]').hidden=!value;$('[data-action="focus"]').hidden=value;drawings?.sync();requestAnimationFrame(()=>{if(!life.signal.aborted)state.chart?.resize(el.clientWidth,el.clientHeight);});}
  const all=$('[data-twcr-tab="all"]');const menu=value=>{const m=$('.twcr-tier-menu'),r=all.getBoundingClientRect();m.style.left=`${Math.min(r.left,innerWidth-110)}px`;m.style.top=`${r.bottom+5}px`;m.hidden=!value;all.setAttribute('aria-expanded',String(value));};
@@ -239,7 +259,8 @@ export function mountTWChartRadar(host,{state:marketState,watchlist=new Set()}={
  listen($('.twcr-search-dialog'),'click',event=>{if(event.target===$('.twcr-search-dialog')){const r=event.target.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)closeSearch();}});
  listen($('.twcr-search-dialog'),'close',()=>{$('[data-action="search"]').setAttribute('aria-expanded','false');$('[data-action="search"]').focus({preventScroll:true});});
  listen(document,'keydown',event=>{if(event.key==='Escape'){if($('.twcr-search-dialog').open){closeSearch();return;}menu(false);closeTools();if(focus)setFocus(false);}});
- const unsubscribe=subscribeBundle(()=>{renderList();if(!symbol){const first=rankChartRows(universe(),{side})[0]||universe()[0];if(first)openSymbol(first.symbol);}});
+ listen(document,'ox:tw-close-refresh',()=>{renderList();refreshSelectedCandle().catch(()=>{});});
+ const unsubscribe=subscribeBundle(()=>{renderList();if(symbol)refreshSelectedCandle().catch(()=>{});else{const first=rankChartRows(universe(),{side})[0]||universe()[0];if(first)openSymbol(first.symbol);}});
  renderList();const initial=rankChartRows(universe(),{side})[0]||universe()[0];if(initial)openSymbol(initial.symbol);else preloadBundle().catch(()=>{});
- return {openSymbol,update(next){marketState=next;renderList();if(!symbol){const first=rankChartRows(universe(),{side})[0]||universe()[0];if(first)openSymbol(first.symbol);}},destroy(){tierFilters?.destroy();life.abort();serial++;controller?.abort();clearTimeout(holdTimer);unsubscribe();scannerSize.disconnect();releaseStyles();document.body.classList.remove('tw-chart-focus');gestures?.destroy();drawings?.destroy();state.chart?.remove();host.textContent='';}};
+ return {openSymbol,update(next){marketState=next;renderList();if(symbol)refreshSelectedCandle().catch(()=>{});else{const first=rankChartRows(universe(),{side})[0]||universe()[0];if(first)openSymbol(first.symbol);}},destroy(){tierFilters?.destroy();life.abort();serial++;controller?.abort();clearTimeout(holdTimer);unsubscribe();scannerSize.disconnect();releaseStyles();document.body.classList.remove('tw-chart-focus');gestures?.destroy();drawings?.destroy();state.chart?.remove();host.textContent='';}};
 }

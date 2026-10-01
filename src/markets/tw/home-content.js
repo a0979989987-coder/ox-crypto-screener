@@ -1,18 +1,5 @@
 import {escape,number,direction} from './research-ui.js';
 import {HOME_GROUPS} from './home-model.js';
-export function mountBriefingLayout(root){
- const grid=root.querySelector('.twx-briefing-grid');if(!grid)return()=>{};
- const cards=[...grid.children];let frame=0;
- const layout=()=>{
-  frame=0;if(!grid.isConnected)return;
-  if(!matchMedia('(min-width:641px)').matches){grid.classList.remove('is-packed');for(const card of cards)card.style.gridRowEnd='';return;}
-  for(const card of cards){const span=`span ${Math.ceil(card.getBoundingClientRect().height+14)}`;if(card.style.gridRowEnd!==span)card.style.gridRowEnd=span;}
-  grid.classList.add('is-packed');
- };
- const observer=new ResizeObserver(()=>{if(!frame)frame=requestAnimationFrame(layout);});
- layout();observer.observe(grid);for(const card of cards)observer.observe(card);
- return()=>{observer.disconnect();if(frame)cancelAnimationFrame(frame);};
-}
 const finite=n=>typeof n==='number'&&Number.isFinite(n);
 const signed=(n,digits=2)=>finite(n)?(n>0?'+':'')+number(n,digits):'—';
 const pct=n=>finite(n)?signed(n)+'%':'—';
@@ -41,6 +28,6 @@ export function institutionContent(home){
  const r=home.core?.institutional,markets=r?.markets||{};
  const parts=[['上市＋上櫃',r?.total],['上市',markets.TWSE?.total],['上櫃',markets.TPEX?.total]];
  const cell=(label,value)=>`<div><small>${label}</small><b class="${direction(value)}">${signed(finite(value)?value/1e8:null)}</b></div>`;
- const details=['TWSE','TPEX'].map(key=>`<div class="twx-institution-market"><b>${key==='TWSE'?'上市':'上櫃'}</b>${[['外資',markets[key]?.foreign],['投信',markets[key]?.trust],['自營',markets[key]?.dealer]].map(([name,value])=>cell(name,value)).join('')}<div><small>其中 ETF</small><b>—</b></div><div><small>法人成交比重</small><b>—</b></div></div>`).join('');
- return '<section class="twx-glass twx-institution" aria-label="三大法人市場買賣超"><div class="twx-section-head"><span>三大法人買賣超</span><small title="官方有價證券彙總，包含 ETF、ETN 與權證；與個股收盤價估算法不同">官方彙總 · 億元</small></div><div class="twx-institution-metrics">'+parts.map(([name,value])=>'<div><small>'+name+'</small><strong class="'+direction(value)+'">'+signed(finite(value)?value/1e8:null)+'</strong></div>').join('')+'</div><div class="twx-institution-details">'+details+'</div><small class="twx-institution-foot">ETF 分項／成交比重：來源尚未提供'+(Object.values(markets).some(m=>m.status==='stale')?' · 上次有效資料':'')+'</small></section>';
+ const details=['TWSE','TPEX'].map(key=>`<div class="twx-institution-market"><b>${key==='TWSE'?'上市':'上櫃'}</b>${[['外資',markets[key]?.foreign],['投信',markets[key]?.trust],['自營',markets[key]?.dealer]].map(([name,value])=>cell(name,value)).join('')}</div>`).join('');
+ return '<section class="twx-glass twx-institution" aria-label="三大法人市場買賣超"><div class="twx-section-head"><span>三大法人買賣超</span><small title="官方有價證券彙總，包含 ETF、ETN 與權證；與個股收盤價估算法不同">官方彙總 · 億元</small></div><div class="twx-institution-metrics">'+parts.map(([name,value],i)=>'<div><small>'+name+'</small><strong class="'+(i===0?'flat':direction(value))+'">'+signed(finite(value)?value/1e8:null)+'</strong></div>').join('')+'</div><div class="twx-institution-details">'+details+'</div>'+(Object.values(markets).some(m=>m.status==='stale')?'<small class="twx-home-status">上次有效資料</small>':'')+'</section>';
 }

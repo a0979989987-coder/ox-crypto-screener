@@ -1,6 +1,8 @@
 import { getTWApiBase } from './api.js?v=20261001-tiercomb1';
 const KEY = 'ox-tw-research-v1';
 let value, pending, lastSuccess = 0;
+const listeners=new Set();
+export function subscribeResearch(listener){listeners.add(listener);return()=>listeners.delete(listener);}
 export function savedResearch() {
   if (value) return value;
   try { const saved = JSON.parse(localStorage.getItem(KEY)); if (Array.isArray(saved?.stocks)) value = saved; } catch {}
@@ -8,9 +10,10 @@ export function savedResearch() {
 }
 function accept(data) {
   if (!Array.isArray(data?.stocks) || !data.date) throw new Error('台股資料格式異常');
-  if (!value || data.date >= value.date) {
+  if (!value || data.date > value.date || data.date === value.date && Date.parse(data.updatedAt||0)>=Date.parse(value.updatedAt||0)) {
     value = data;
     try { localStorage.setItem(KEY, JSON.stringify(data)); } catch {}
+    for(const listener of listeners)listener(value);
   }
   return value;
 }
@@ -20,14 +23,14 @@ export async function loadResearch({ force = false, onCached } = {}) {
   if (pending) return pending;
   if (!force && value && Date.now() - lastSuccess < 300000) return { data: value, error: null };
   pending = (async () => {
-    if (!force) {
+    {
       try {
-        const response = await fetch(new URL('../../../data/tw-research.json', import.meta.url), { signal: AbortSignal.timeout(6000) });
+        const response = await fetch(new URL('../../../data/tw-research.json', import.meta.url), { cache:'no-store', signal: AbortSignal.timeout(6000) });
         if (response.ok) { accept(await response.json()); onCached?.(value); }
       } catch {}
     }
     try {
-      const response = await fetch(`${getTWApiBase()}/v1/tw/research`, { signal: AbortSignal.timeout(30000) });
+      const response = await fetch(`${getTWApiBase()}/v1/tw/research${force?'?refresh=1&t='+Date.now():''}`, { cache:'no-store', signal: AbortSignal.timeout(30000) });
       if (!response.ok) throw new Error('官方資料暫時無法更新');
       const payload = await response.json();
       const data = accept(payload.data); lastSuccess = Date.now();

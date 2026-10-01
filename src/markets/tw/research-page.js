@@ -1,18 +1,18 @@
-import {savedHome,loadHome} from './home-data.js?v=20261001-tiercomb1';
-import {coreContent,briefingContent,institutionContent,mountBriefingLayout} from './home-content.js';
-import { savedResearch, loadResearch, selectSectors, readWatchlist, quadrant } from './research-data.js?v=20261001-tiercomb1';
+import {savedHome,loadHome} from './home-data.js?v=20261001-twhome1';
+import {coreContent,briefingContent,institutionContent} from './home-content.js?v=20261001-twhome1';
+import { savedResearch, loadResearch, selectSectors, readWatchlist, quadrant } from './research-data.js?v=20261001-twhome1';
 import { escape, number, pct, money, direction, segments, mountResearch, stockRows } from './research-ui.js';
-import { bubbleChart, bubblePoints } from './research-bubbles.js?v=20261001-tiercomb1';
-import { closeResearchDetails, showSector, showStock, watchClick } from './research-detail.js?v=20261001-tiercomb1';
+import { bubbleChart, bubblePoints } from './research-bubbles.js?v=20261001-twhome1';
+import { closeResearchDetails, showSector, showStock, watchClick } from './research-detail.js?v=20261001-twhome1';
 const prefs = { tab: 'bubble', scope: 'all', market: 'ALL', mode: 'auto', density: 'top', zoom: 1, panX: 0, panY: 0, sort: 'buy', query: '', quadrant: null, help: false, replayIndex: null };
 let session, data = savedResearch(), loading = false, error = null, lastFetch = 0;
 let home=savedHome(),homeLoading=false,homeFetched=0,homeSession='after';
 async function refreshHome(s,force=false){
- if(homeLoading)return;homeLoading=true;if(current(s))paint(s);
+ if(homeLoading)return;homeLoading=true;if(s&&current(s))paint(s);
  try{home=await loadHome({force,onChange(snapshot){home=snapshot;if(session?.view==='home'&&current(session))paint(session);}});}
  finally{homeLoading=false;homeFetched=Date.now();if(session?.view==='home'&&current(session))paint(session);}
 }
-export function stopResearch() { session?.briefingLayout?.(); if (session?.replayTimer) clearInterval(session.replayTimer); session?.controller.abort(); session = null; closeResearchDetails(); }
+export function stopResearch() { if (session?.replayTimer) clearInterval(session.replayTimer); session?.controller.abort(); session = null; closeResearchDetails(); }
 const current = s => session === s && document.body.dataset.market === 'tw' && s.root.querySelector(`[data-twx-view="${s.view}"]`);
 function homeContent(state) {
   const stocks = data?.stocks || [];
@@ -82,10 +82,8 @@ function indicatorContent() {
 }
 function paint(s) {
   if (session !== s) return;
-  s.briefingLayout?.();
   const content = s.view === 'home' ? homeContent(s.state) : indicatorContent();
   s.root.innerHTML = `<div class="twx" data-twx-view="${s.view}">${error && !data ? '<div class="twx-empty" role="status">資料暫時無法載入，請重新整理頁面。</div>' : ''}${content}</div>`;
-  s.briefingLayout=s.view==='home'?mountBriefingLayout(s.root):null;
 }
 async function refresh(s, force) {
   if (loading) return;
@@ -96,11 +94,14 @@ async function refresh(s, force) {
   loading = false; lastFetch = Date.now(); data = result.data; error = result.error;
   if (session && current(session)) paint(session);
 }
-export async function preloadResearch() {
-  const result = await loadResearch({ onCached(snapshot) { data = snapshot; if (session && current(session)) paint(session); } });
+export async function preloadResearch({force=false}={}) {
+  const result = await loadResearch({ force, onCached(snapshot) { data = snapshot; if (session && current(session)) paint(session); } });
   data = result.data; error = result.error; lastFetch = Date.now();
   if (session && current(session)) paint(session);
   return result;
+}
+export async function refreshTWResearch() {
+  return Promise.allSettled([refreshHome(session,true),preloadResearch({force:true})]);
 }
 export function renderResearch(view, state, { host } = {}) {
   const outer = mountResearch(view); if (!outer) return null;

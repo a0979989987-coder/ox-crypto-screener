@@ -5,7 +5,12 @@ on:
     branches: [main]
     paths: ['server/markets/tw/research*.js', 'server/markets/tw/pattern-snapshot.js', 'src/markets/tw/patterns/model.js', 'src/markets/crypto/patterns/matcher.js', 'scripts/collect-tw-patterns.mjs', 'scripts/collect-tw-research.mjs', 'scripts/collect-tw-radar.mjs', 'server/markets/tw/surveillance.js', 'api/v1/tw/providers/radar.js', '.github/workflows/update-tw-research.yml']
   schedule:
+    # UTC -> Taipei: 13:35, 14:10, 15:40, 18:35, 20:35.
+    - cron: '35 5 * * 1-5'
+    - cron: '10 6 * * 1-5'
+    - cron: '40 7 * * 1-5'
     - cron: '35 10 * * 1-5'
+    - cron: '35 12 * * 1-5'
 permissions:
   contents: write
 concurrency:
@@ -21,9 +26,16 @@ jobs:
         with:
           node-version: '22'
       - run: node --test tests/tw-research.test.mjs
-      - run: node scripts/collect-tw-research.mjs --backfill
-      - run: node scripts/collect-tw-patterns.mjs --curl
       - run: node scripts/collect-tw-radar.mjs
+        id: radar
+        continue-on-error: true
+      - run: node scripts/collect-tw-research.mjs --backfill
+        id: research
+        continue-on-error: true
+      - run: node scripts/collect-tw-patterns.mjs --curl
+        id: patterns
+        if: steps.research.outcome == 'success'
+        continue-on-error: true
       - name: Save verified snapshot
         run: |
           git add data/tw-radar.json data/tw-research.json data/tw-research-history.json data/tw-patterns
@@ -33,3 +45,6 @@ jobs:
           git commit -m "data(tw): update official research snapshot"
           git pull --rebase origin "${GITHUB_REF_NAME}"
           git push origin "HEAD:${GITHUB_REF_NAME}"
+      - name: Report incomplete sources after preserving successful data
+        if: steps.radar.outcome == 'failure' || steps.research.outcome == 'failure' || steps.patterns.outcome == 'failure'
+        run: exit 1

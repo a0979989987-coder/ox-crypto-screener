@@ -1,5 +1,5 @@
 import {riskDetailContent} from './risk-detail.js?v=20261001-tiercomb1';
-import {savedResearch} from './research-data.js?v=20261001-tiercomb1';
+import {savedResearch} from './research-data.js?v=20261001-twhome1';
 import { twProvider } from "./api.js?v=20261001-tiercomb1";
 import { renderTWCurrentCandle } from "./radar-card.js";
 

@@ -1,4 +1,5 @@
-import { stopResearch, preloadResearch } from "./research-page.js?v=20261001-tiercomb1";
+import { stopResearch, preloadResearch, refreshTWResearch } from "./research-page.js?v=20261001-twhome1";
+import { createAfterCloseRefresh } from './after-close.js?v=20261001-twhome1';
 import {
   TW_MODULE_CONFIG
 } from "./config.js";
@@ -10,19 +11,19 @@ import {
 
 import {
   renderTWHome
-} from "./home.js?v=20261001-tiercomb1";
+} from "./home.js?v=20261001-twhome1";
 
 import {
   renderTWStrength
-} from "./strength.js?v=20261001-tiercomb1";
+} from "./strength.js?v=20261001-twhome1";
 
 import {
   renderTWRadar, stopTWRadar
-} from "./radar.js?v=20261001-tiercomb1";
+} from "./radar.js?v=20261001-twhome1";
 import { cancelTWLookup } from "./lookup.js?v=20261001-tiercomb1";
-import { stopTWStrength, preloadTWStrength } from "./strength.js?v=20261001-tiercomb1";
-import { createPreloader } from "./preload.js";
-import { preloadBundle } from "./patterns/bundle.js?v=20261001-tiercomb1";
+import { stopTWStrength, preloadTWStrength } from "./strength.js?v=20261001-twhome1";
+import { createPreloader } from "./preload.js?v=20261001-twhome1";
+import { preloadBundle } from "./patterns/bundle.js?v=20261001-twhome1";
 import {savedRadarSnapshot,saveRadarSnapshot,bundledRadarSnapshot} from './radar-snapshot.js?v=20261001-tiercomb1';
 import { radarNeedsRecovery } from './recovery.js?v=20261001-tiercomb1';
 
@@ -371,9 +372,9 @@ function render(
 /* Request lifecycle                                                         */
 /* ========================================================================== */
 
-const ensureMarketData = createPreloader(async () => {
+const ensureMarketData = createPreloader(async ({silent=false}={}) => {
   const controller = new AbortController();
-  const loading=window.OXLoading?.begin('tw','台股資料載入中',{views:['radar']});
+  const loading=silent?null:window.OXLoading?.begin('tw','台股資料載入中',{views:['radar']});
   try {
   const state = await refreshTWMarketState({
     signal: controller.signal,
@@ -398,6 +399,10 @@ function loadMarketData(options = {}) {
   return pending;
 }
 
+const closeRefresh=createAfterCloseRefresh(async()=>{
+  await Promise.allSettled([loadMarketData({force:true,silent:true}),refreshTWResearch(),preloadBundle({force:true,silent:true})]);
+  if(isActive)document.dispatchEvent(new CustomEvent('ox:tw-close-refresh'));
+},{active:()=>isActive,visible:()=>!document.hidden,online:()=>navigator.onLine!==false});
 let lastRecoveryAt = -Infinity;
 function recoverMarketData(force = false) {
   if (!isActive || typeof document === 'undefined' || document.hidden
@@ -407,6 +412,9 @@ function recoverMarketData(force = false) {
   return loadMarketData({ force: true });
 }
 if (typeof window !== 'undefined') {
+  window.addEventListener('online', () => closeRefresh.check());
+  window.addEventListener('focus', () => closeRefresh.check());
+  document.addEventListener('visibilitychange', () => closeRefresh.check());
   window.addEventListener('online', () => recoverMarketData());
   window.addEventListener('focus', () => recoverMarketData());
   document.addEventListener('visibilitychange', () => recoverMarketData());
@@ -494,7 +502,9 @@ export const twModule =
        *
        * without crashing.
        */
-      return loadMarketData();
+      const pending=loadMarketData();
+      closeRefresh.start();
+      return pending;
     },
 
 
@@ -518,6 +528,7 @@ export const twModule =
       isActive =
         false;
       clearTimeout(recoveryTimer);
+      closeRefresh.stop();
 
       stopTWStrength();
       stopTWRadar();

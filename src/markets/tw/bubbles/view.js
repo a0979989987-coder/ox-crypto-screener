@@ -1,6 +1,6 @@
 import { mountBubbles } from '../../crypto/bubbles/view.js?v=20261001-twbubbles1';
-import { savedResearch, loadResearch, readWatchlist } from '../research-data.js?v=20261001-tiercomb1';
-import { bundleEntry, bundleState, subscribeBundle, preloadBundle } from '../patterns/bundle.js?v=20261001-tiercomb1';
+import { savedResearch, loadResearch, readWatchlist, subscribeResearch } from '../research-data.js?v=20261001-twhome1';
+import { bundleEntry, bundleState, subscribeBundle, preloadBundle } from '../patterns/bundle.js?v=20261001-twhome1';
 import { TW_BUBBLE_METRICS, twBubbleRows, twBubbleText } from './model.js?v=20261001-twbubbles1';
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const shares=n=>Number.isFinite(n)?`${(n/1000).toLocaleString('zh-TW',{maximumFractionDigits:1})} 張`:'—';
@@ -17,7 +17,8 @@ export function mountTWBubbles(host,{onOpenRadar}={}){
   detail(r){return `<strong class="oxb-price">${r.price.toLocaleString('zh-TW',{maximumFractionDigits:2})}<small> TWD</small></strong><dl><div><dt>當日漲跌</dt><dd class="${r.change>=0?'up':'down'}">${twBubbleText(r.change,'change')}</dd></div><div><dt>成交量</dt><dd>${shares(r.volume)}</dd></div><div><dt>三大法人淨買賣超</dt><dd class="${r.netShares>=0?'up':'down'}">${twBubbleText(r.netShares===null?null:r.netShares/1000,'institution')}</dd></div>${[["外資",r.foreignTwd],["投信",r.trustTwd],["自營商",r.dealerTwd]].map(([label,n])=>`<div><dt>${label}</dt><dd>${shares(Number.isFinite(n)?Math.round(n/r.price):null)}</dd></div>`).join('')}<div><dt>成交額</dt><dd>${amount(r.turnoverTwd)} TWD</dd></div>${r.volumeBars?.map(b=>`<div><dt>${esc(b.date)} 成交量</dt><dd>${shares(b.volume)}</dd></div>`).join('')||''}</dl><small class="oxb-note">資料日 ${esc(r.dataDate)} · ${esc(r.market)} · ${esc(r.industry)}<br>官方日資料；法人買賣超為股數統計。三日連增需最近三個交易日各自高於前一日。</small>`;},
   start({onChange,signal,target:node}){changed=onChange;life=signal;target=node;
    const stop=subscribeBundle(b=>{loading?.update(b.classified+b.failed,b.expected||b.total);if(!signal.aborted)changed();});
-   refresh();const timer=setInterval(refresh,300000);return ()=>{clearInterval(timer);stop();loading?.finish();};
+   const stopResearch=subscribeResearch(data=>{if(!signal.aborted){snapshot=data;changed();}});
+   refresh();const timer=setInterval(()=>{if(!document.hidden)refresh();},300000);return ()=>{clearInterval(timer);stop();stopResearch();loading?.finish();};
   },refresh
  };
  async function refresh(){if(busy||life?.aborted)return;busy=true;error='';const b=bundleState();loading=globalThis.OXLoading?.begin('tw','載入股票',{target,signal:life,views:['strength'],done:b.classified,total:b.expected||b.total});changed();

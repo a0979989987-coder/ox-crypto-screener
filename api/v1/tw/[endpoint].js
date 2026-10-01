@@ -1504,8 +1504,9 @@ export default async function handler(
 
 
       case "research": {
-        const data = await getOfficialTWResearch();
-        setShortCache(res, 300);
+        const refresh=booleanParam(req.query.refresh,false);
+        const data = await getOfficialTWResearch({refresh});
+        if(refresh)res.setHeader('Cache-Control','no-store');else setShortCache(res, 300);
         return ok(res, data, { realtime: false, provider: "official-tw" });
       }
 

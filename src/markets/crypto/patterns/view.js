@@ -223,5 +223,5 @@ export function mountPatternSearch(host,options={}){
   const syncPill=()=>q('.px-refresh-pill').classList.toggle('is-compact',!!dock?.classList.contains('ox-dock-compact'));
   const dockObserver=dock?new MutationObserver(syncPill):null;dockObserver?.observe(dock,{attributes:true,attributeFilter:['class']});syncPill();
   labels();scheduleBoard();scan();
-  return {closeInner:closeDialogs,destroy(){disposed=true;queryVersion++;preferences();stop();resetWorker();life.abort();resize.disconnect();dockObserver?.disconnect();clearCharts();moreObserver?.disconnect();detailChart?.destroy();closeDialogs(true);clearInterval(timer);clearTimeout(drawTimer);cancelAnimationFrame(boardRAF);shadow.replaceChildren();}};
+  return {closeInner:closeDialogs,refresh(){universe=null;scan();},destroy(){disposed=true;queryVersion++;preferences();stop();resetWorker();life.abort();resize.disconnect();dockObserver?.disconnect();clearCharts();moreObserver?.disconnect();detailChart?.destroy();closeDialogs(true);clearInterval(timer);clearTimeout(drawTimer);cancelAnimationFrame(boardRAF);shadow.replaceChildren();}};
 }

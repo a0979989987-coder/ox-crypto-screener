@@ -20,7 +20,7 @@ function accept(section,data){
 export async function loadHome({force=false,onChange}={}){
  savedHome();if(job)return job;
  job=(async()=>{
-  if(!force)try{const response=await fetch(new URL('../../../data/tw-home.json',import.meta.url),{cache:'no-store',signal:AbortSignal.timeout(6000)});if(response.ok){const raw=await response.json();for(const section of sections)try{accept(section,raw[section]);}catch{}onChange?.(value);}}catch{}
+  try{const response=await fetch(new URL('../../../data/tw-home.json',import.meta.url),{cache:'no-store',signal:AbortSignal.timeout(6000)});if(response.ok){const raw=await response.json();for(const section of sections)try{accept(section,raw[section]);}catch{}onChange?.(value);}}catch{}
   let completed=0;await Promise.all(sections.map(async section=>{
    try{
     const url=`${getTWApiBase()}/v1/tw/home?section=${section}${force?'&refresh=1&t='+Date.now():''}`;

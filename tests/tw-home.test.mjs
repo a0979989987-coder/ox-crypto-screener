@@ -87,7 +87,7 @@ test('browser manual refresh makes three uncached API acquisitions, preserves ne
   const {twProvider}=await import('../src/markets/tw/api.js?v=20261001-tiercomb1');twProvider.configure({apiBase:'https://test.invalid/api'});
   const {loadHome,savedHome}=await import('../src/markets/tw/home-data.js?test-cache');
   await loadHome();assert.equal(savedHome().core.savedAt,recent.savedAt);
-  requests.length=0;const progress=[];await loadHome({force:true,onChange:(_,count)=>progress.push(count.done)});assert.deepEqual(progress,[1,2,3]);assert.equal(requests.length,3);assert(requests.every(url=>url.includes('refresh=1&t=')));assert.equal(savedHome().core.savedAt,recent.savedAt);
+  requests.length=0;const progress=[];await loadHome({force:true,onChange:(_,count)=>count&&progress.push(count.done)});assert.deepEqual(progress,[1,2,3]);assert.equal(requests.length,4);assert(requests.filter(url=>!url.includes('data/tw-home.json')).every(url=>url.includes('refresh=1&t=')));assert.equal(savedHome().core.savedAt,recent.savedAt);
   fail=true;await loadHome({force:true});assert.equal(savedHome().core.savedAt,recent.savedAt);assert.equal(savedHome().coreStatus.status,'stale');assert(savedHome().coreStatus.checkedAt);assert(savedHome().coreStatus.error);
  }finally{global.fetch=nativeFetch;global.localStorage=nativeStorage;}
 });

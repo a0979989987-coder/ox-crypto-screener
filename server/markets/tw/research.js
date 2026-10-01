@@ -67,6 +67,22 @@ export function aggregateSectors(stocks) {
       leader: [...flows].sort((a, b) => b.netTwd - a.netTwd)[0]?.symbol || null };
   });
 }
+// A temporary outage may retain verified flows only for the same trading date.
+// Newly completed price bars do not have to wait for institutional publication.
+export function retainResearchFlows(snapshot, previous) {
+  if(previous?.date!==snapshot.date)return snapshot;
+  const rows=new Map((previous.stocks||[]).map(s=>[s.market+':'+s.symbol,s]));
+  const fields=['netTwd','foreignTwd','trustTwd','dealerTwd'];
+  snapshot.stocks=snapshot.stocks.map(stock=>{
+    const old=rows.get(stock.market+':'+stock.symbol);
+    if(snapshot.sourceHealth?.[stock.market]?.ok || !old)return stock;
+    const retained={...stock};let preserved=false;
+    for(const field of fields)if(!Number.isFinite(stock[field])&&Number.isFinite(old[field])){retained[field]=old[field];preserved=true;}
+    if(preserved)snapshot.sourceHealth[stock.market]={...snapshot.sourceHealth[stock.market],stale:true};
+    return retained;
+  });
+  return snapshot;
+}
 export function enrichResearch(snapshot, history = []) {
   const dates = [...new Map([...history.filter(h => h.date <= snapshot.date), snapshot].map(h => [h.date, h])).values()].sort((a, b) => a.date.localeCompare(b.date));
   const sectors = aggregateSectors(snapshot.stocks);
