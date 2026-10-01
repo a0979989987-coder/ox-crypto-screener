@@ -109,8 +109,29 @@
   });
   window.OXAccount = Object.freeze({open,close, get sessionStatus(){return window.OXSession.status;}});
   window.OXAuth.initialize().then(config => {
-    const failedCallback = new URL(location.href).searchParams.get('ox_auth') === 'error';
-    status.textContent = failedCallback ? '登入連結已失效或不是在同一個瀏覽器開啟，請重新取得登入連結。' : config.configured ? '使用電子郵件登入連結，不需要設定密碼。' : '正式登入服務尚未設定，訪客功能可正常使用。';
+    const landing = new URL(location.href);
+    const failedCallback = landing.searchParams.get('ox_auth') === 'error' && !window.OXAuth.user;
+    const reason = landing.searchParams.get('ox_auth_reason');
+    const messages = {
+      flow_missing: '登入驗證 Cookie 未收到。請重新點選登入；若仍發生，請回報原因：flow_missing。',
+      flow_invalid: '登入驗證 Cookie 已失效或無法驗證。請重新點選登入；原因：flow_invalid。',
+      code_missing: '登入回呼未收到授權碼。請重新點選登入；原因：code_missing。',
+      provider_denied: 'Google 登入已取消或未同意。可重新點選 Google 登入。',
+      provider_callback_error: '登入提供者未完成回呼。請回報原因：provider_callback_error。',
+      pkce_missing: '登入驗證資料未完整還原。請回報原因：pkce_missing。',
+      pkce_mismatch: '登入驗證資料與回呼不符。請重新登入；原因：pkce_mismatch。',
+      authorization_expired: '本次授權碼已過期。請重新登入；原因：authorization_expired。',
+      authorization_invalid: '本次授權碼已使用或無法確認。請重新登入；原因：authorization_invalid。',
+      exchange_failed: '登入提供者未能完成授權交換。請回報原因：exchange_failed。',
+      response_invalid: '登入提供者沒有回傳完整登入資料。請回報原因：response_invalid。',
+      callback_unavailable: '登入回呼暫時無法完成。請回報原因：callback_unavailable。'
+    };
+    status.textContent = failedCallback ? (Object.hasOwn(messages, reason) ? messages[reason] : '登入回呼未完成。請重新點選 Google 或 Email 登入。') : config.configured ? '使用電子郵件登入連結，不需要設定密碼。' : '正式登入服務尚未設定，訪客功能可正常使用。';
+    // Remove transient errors before another attempt; never collect their URL.
+    if (landing.searchParams.has('ox_auth')) {
+      landing.searchParams.delete('ox_auth'); landing.searchParams.delete('ox_auth_reason');
+      history.replaceState(null, '', landing.pathname + landing.search + landing.hash);
+    }
     if (failedCallback) open();
   });
 })();

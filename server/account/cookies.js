@@ -27,5 +27,11 @@ export function readCookie(req, kind) {
 export function safeReturn(value) {
   if (typeof value !== 'string' || value.length > 2048 || !value.startsWith('/') || value.startsWith('//') || /[\\\r\n]/.test(value)) return '/';
   const parsed = new URL(value, 'https://ox.invalid');
-  return parsed.origin === 'https://ox.invalid' && !parsed.pathname.startsWith('/api/') ? value : '/';
+  if (parsed.origin !== 'https://ox.invalid' || parsed.pathname.startsWith('/api/')) return '/';
+  // A retry must not carry a previous failure or OAuth artifacts back into a
+  // successful landing page. Keep ordinary market query and fragment state.
+  for (const key of ['ox_auth', 'ox_auth_reason', 'code', 'state', 'sb_flow_id', 'error', 'error_code', 'error_description', 'access_token', 'refresh_token', 'id_token', 'provider_token', 'provider_refresh_token']) parsed.searchParams.delete(key);
+  const fragment = new URLSearchParams(parsed.hash.slice(1));
+  if (['access_token', 'refresh_token', 'id_token', 'provider_token', 'provider_refresh_token'].some(key => fragment.has(key))) parsed.hash = '';
+  return parsed.pathname + parsed.search + parsed.hash;
 }
