@@ -2,8 +2,17 @@ import { getUSApiBase } from "./api.js?v=20261001-us-eod1";
 import { mergeCandles } from "./model.js?v=20261001-us-eod1";
 import { aggregate4H, aggregateMonthly } from "./aggregate.js?v=20261001-us-eod1";
 import { EOD_CAPABILITIES } from "./eod.js";
+import { DeviceEOD } from "./device-eod.js?v=20261001-us-device1";
+import { deviceRecord } from "./device-storage.js?v=20261001-us-device1";
 const cache = new Map();
 const quoteCache = new Map();
+let directoryCache;
+const validDirectory = value => {
+  if (value?.schemaVersion !== 2 || !Array.isArray(value.items) || !value.items.length ||
+    value.items.some(item => !item || typeof item.symbol !== 'string' || typeof item.name !== 'string'))
+    throw Error('股票目錄格式錯誤。');
+  return value;
+};
 const temporaryFailure = e => !e.status || e.status === 429 || e.status >= 500;
 const previousData = (hit, error) => hit && Date.now() - hit.receivedAt < 86400000 && temporaryFailure(error)
   ? { ...hit, stale: true, cache: { ...(hit.cache || {}), stale: true, reason: error.status === 429 ? "RATE_LIMITED" : "UPDATE_FAILED" } }
@@ -37,19 +46,38 @@ async function endpoint(path, params = {}, options = {}) {
   return fetchJSON(url, options);
 }
 export const USAdapter = {
+  deviceReady() { return DeviceEOD.restore(); },
   async directory(options) {
-    const j = await fetchJSON("data/us-directory.json", options);
-    if (j.schemaVersion !== 2 || !Array.isArray(j.items))
-      throw Error("股票目錄格式錯誤。");
-    return j;
+    if (DeviceEOD.active) return { schemaVersion:2, items:DeviceEOD.active.packet.directory, receivedAt:Date.parse(DeviceEOD.active.packet.collectedAt) };
+    if (directoryCache) return directoryCache;
+    let saved;
+    try { saved = await deviceRecord('directory'); if (saved) validDirectory(saved); } catch { saved = null; }
+    options?.signal?.throwIfAborted();
+    if (saved && Date.now() - saved.cachedAt < 7 * 86400000) return directoryCache = saved;
+    let value;
+    try { value = validDirectory(await fetchJSON(new URL('../../../data/us-directory.json', import.meta.url), { ...options, timeout:30000 })); }
+    catch (error) {
+      if (options?.signal?.aborted) throw error;
+      try { value = validDirectory(await endpoint('directory', {}, { ...options, timeout:30000 })); }
+      catch (fallbackError) {
+        if (options?.signal?.aborted || !saved) throw fallbackError;
+        return directoryCache = { ...saved, stale:true };
+      }
+    }
+    options?.signal?.throwIfAborted();
+    directoryCache = { ...value, cachedAt:Date.now() };
+    deviceRecord('directory', directoryCache).catch(() => {});
+    return directoryCache;
   },
   async snapshot(options) {
+    if (DeviceEOD.active) return DeviceEOD.active.snapshot;
     const j = await endpoint("snapshot", {}, options);
     if (j.schemaVersion !== 2 || !Array.isArray(j.analyses))
       throw Error("掃描快照格式錯誤。");
     return j;
   },
   async capabilities(options) {
+    if (DeviceEOD.active) return DeviceEOD.active.capabilities;
     try {
       return await endpoint("capabilities", {}, options);
     } catch (e) {
@@ -58,6 +86,8 @@ export const USAdapter = {
     }
   },
   async quote(symbol, options = {}) {
+    if (DeviceEOD.active) return DeviceEOD.quote(symbol);
+    if (options.capabilities?.dataScope === 'device') throw Error('本機盤後資料已移除，請重新選擇盤後檔。');
     const key = `${options.capabilities?.source || 'finance-query-eod'}:${symbol}`;
     try {
       const j = await endpoint("quote-v2", { symbol }, options);
@@ -84,6 +114,8 @@ export const USAdapter = {
       capabilities = {},
     } = {},
   ) {
+    if (DeviceEOD.active) return DeviceEOD.candles(symbol, { interval, extendedHours, limit, to });
+    if (capabilities.dataScope === 'device') throw Error('本機盤後資料已移除，請重新選擇盤後檔。');
     const key = `${capabilities.source || "finance-query-eod"}:${capabilities.sessionDate || "pending"}:${symbol}:${interval}:${extendedHours}:${to || ""}`,
       hit = cache.get(key);
     if (hit && !force && Date.now() - hit.receivedAt < 86400000 &&

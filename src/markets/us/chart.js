@@ -1,8 +1,8 @@
-import { USAdapter } from "./provider.js?v=20261001-us-eod1";
+import { USAdapter } from "./provider.js?v=20261001-us-device1";
 import { INTERVALS, countdown, sessionAt, nyParts } from "./calendar.js?v=20261001-us-eod1";
 import { mergeCandles, movingAverage, vwap } from "./model.js?v=20261001-us-eod1";
 import { icon, positionTimeframe, openDialog, closeDialog } from "./ui.js?v=20261001-us-eod1";
-import { sourceInfo, nativeAllowed } from "./view-utils.js?v=20261001-us-eod1";
+import { sourceInfo, nativeAllowed } from "./view-utils.js?v=20261001-us-device1";
 const UP = "#00b8d4",
   DOWN = "#ff3078";
 const esc = (s) =>
