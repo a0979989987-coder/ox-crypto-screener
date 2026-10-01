@@ -3,7 +3,7 @@
 begin;
 create table public.ox_bitget_links (
   account_id uuid primary key default auth.uid() references public.ox_accounts(id) on delete cascade,
-  uid text not null check (uid ~ '^[1-9][0-9]{0,19}$'),
+  uid text check (uid ~ '^[1-9][0-9]{0,19}$'),
   ownership_status text not null default 'pending' check (ownership_status = 'pending'),
   revision uuid not null default gen_random_uuid(),
   created_at timestamptz not null default now(),
@@ -13,16 +13,13 @@ create table public.ox_bitget_links (
 -- A future proved-ownership record MUST enforce unique UID before granting ownership.
 alter table public.ox_bitget_links enable row level security;
 revoke all on public.ox_bitget_links from public, anon, authenticated;
-grant select, delete on public.ox_bitget_links to authenticated;
-grant insert(uid) on public.ox_bitget_links to authenticated;
-grant update(uid, revision, updated_at) on public.ox_bitget_links to authenticated;
+grant select on public.ox_bitget_links to authenticated;
 create policy ox_bitget_link_self_read on public.ox_bitget_links for select to authenticated using ((select auth.uid()) = account_id);
-create policy ox_bitget_link_self_insert on public.ox_bitget_links for insert to authenticated with check ((select auth.uid()) = account_id);
-create policy ox_bitget_link_self_update on public.ox_bitget_links for update to authenticated using ((select auth.uid()) = account_id) with check ((select auth.uid()) = account_id);
-create policy ox_bitget_link_self_delete on public.ox_bitget_links for delete to authenticated using ((select auth.uid()) = account_id);
 
 create function public.ox_set_pending_bitget_link(p_action text, p_uid text, p_revision uuid) returns jsonb
-language plpgsql security invoker set search_path = '' as $$
+-- Definer must be the trusted migration/table owner. No caller-supplied member ID,
+-- dynamic SQL or direct member DML grants; every mutation is scoped by auth.uid().
+language plpgsql security definer set search_path = '' as $$
 declare
   member_id uuid := auth.uid();
   current_link public.ox_bitget_links%rowtype;
@@ -39,10 +36,17 @@ begin
     return pg_catalog.jsonb_build_object('code', 'REVISION_CONFLICT');
   end if;
   if p_action = 'remove' then
-    delete from public.ox_bitget_links where account_id = member_id;
-    return pg_catalog.jsonb_build_object('code', 'OK', 'link', null);
-  end if;
-  if current_link.account_id is null then
+    if current_link.account_id is null then
+      return pg_catalog.jsonb_build_object('code', 'OK', 'link', null);
+    elsif current_link.uid is null then
+      next_link := current_link;
+    else
+      -- Remove the UID but retain a fresh revision (no old UID/history), so a
+      -- stale first-time page cannot overwrite a link after its removal.
+      update public.ox_bitget_links set uid = null, revision = gen_random_uuid(), updated_at = now()
+        where account_id = member_id returning * into next_link;
+    end if;
+  elsif current_link.account_id is null then
     insert into public.ox_bitget_links(uid) values (p_uid) returning * into next_link;
   elsif current_link.uid = p_uid then
     next_link := current_link;

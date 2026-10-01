@@ -32,21 +32,25 @@ test('pending UID migration enforces RLS, no ownership escalation, and revision-
       await as(b); second = await mutate('save', first.link.uid, null); assert.equal(second.code, 'OK');
       const rows = (await db.query('select account_id,uid from public.ox_bitget_links')).rows;
       assert.equal(rows.length, 1); assert.equal(rows[0].account_id, b);
-      const foreign = await db.query('delete from public.ox_bitget_links where account_id = $1 returning account_id', [a]);
-      assert.equal(foreign.rows.length, 0);
+      await assert.rejects(db.query('delete from public.ox_bitget_links where account_id = $1', [a]), error => error.code === '42501');
     });
     await t.test('cannot set account ID or verified ownership through direct database writes', async () => {
       await as(b);
       await assert.rejects(db.query('update public.ox_bitget_links set ownership_status = $1', ['verified']), error => error.code === '42501');
       await assert.rejects(db.query('update public.ox_bitget_links set account_id = $1', [a]), error => error.code === '42501');
       await assert.rejects(db.query('insert into public.ox_bitget_links(account_id,uid) values ($1,$2)', [a, '999']), error => error.code === '42501');
+      await assert.rejects(db.query('update public.ox_bitget_links set uid = $1', ['999']), error => error.code === '42501');
+      await assert.rejects(db.query('insert into public.ox_bitget_links(uid) values ($1)', ['999']), error => error.code === '42501');
     });
     await t.test('rebinding rotates revision; stale tabs cannot overwrite or remove it', async () => {
       await as(a); const updated = await mutate('save', '888', first.link.revision);
       assert.equal(updated.code, 'OK'); assert.notEqual(updated.link.revision, first.link.revision);
       assert.equal((await mutate('save', '999', first.link.revision)).code, 'REVISION_CONFLICT');
       assert.equal((await mutate('remove', null, first.link.revision)).code, 'REVISION_CONFLICT');
-      const removed = await mutate('remove', null, updated.link.revision); assert.equal(removed.code, 'OK'); assert.equal(removed.link, null);
+      const removed = await mutate('remove', null, updated.link.revision); assert.equal(removed.code, 'OK'); assert.equal(removed.link.uid, null);
+      assert.notEqual(removed.link.revision, updated.link.revision);
+      assert.equal((await mutate('save', '999', null)).code, 'REVISION_CONFLICT');
+      const restored = await mutate('save', '888', removed.link.revision); assert.equal(restored.code, 'OK'); assert.equal(restored.link.uid, '888');
       await as(b); assert.equal((await db.query('select uid from public.ox_bitget_links')).rows[0].uid, second.link.uid);
     });
     await t.test('anonymous role cannot read or call the mutation; missing authenticated identity is rejected', async () => {
@@ -59,6 +63,18 @@ test('pending UID migration enforces RLS, no ownership escalation, and revision-
       await as(a);
       for (const uid of ['0', '001', '1e9', '123456789012345678901', '', null]) await assert.rejects(mutate('save', uid, null), error => error.code === '22023');
       await assert.rejects(mutate('verify', '123', null), error => error.code === '22023');
+    });
+    await t.test('non-destructive rollback disables reads/mutations and preserves records for recovery', async () => {
+      await db.exec('reset role');
+      const before = (await db.query('select count(*)::int as n from public.ox_bitget_links')).rows[0].n;
+      await db.exec(readFileSync(new URL('../server/account/migrations/001_pending_bitget_links.disable.sql', import.meta.url), 'utf8'));
+      await as(b);
+      await assert.rejects(db.query('select * from public.ox_bitget_links'), error => error.code === '42501');
+      await assert.rejects(mutate('save', '111', null), error => error.code === '42501');
+      await db.exec('reset role');
+      assert.equal((await db.query('select count(*)::int as n from public.ox_bitget_links')).rows[0].n, before);
+      await db.exec('grant select on public.ox_bitget_links to authenticated; grant execute on function public.ox_set_pending_bitget_link(text,text,uuid) to authenticated');
+      await as(b); assert.equal((await db.query('select uid from public.ox_bitget_links')).rows[0].uid, second.link.uid);
     });
   } finally { await db.close(); }
 });

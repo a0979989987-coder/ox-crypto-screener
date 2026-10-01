@@ -22,8 +22,8 @@
     $('#ox-bitget-link-form')?.setAttribute('aria-busy', String(value));
     for (const id of ['#ox-bitget-link-save', '#ox-bitget-link-remove', '#ox-bitget-uid']) if ($(id)) $(id).disabled = value;
   }
-  function showLink(link) {
-    linkRevision = link?.revision ?? null;
+  function showLink(link, revision = null) {
+    linkRevision = link?.revision ?? revision;
     $('#ox-bitget-uid').value = link?.uid ?? '';
     $('#ox-bitget-link-remove').hidden = !link;
     $('#ox-bitget-link-status').textContent = link ? 'UID 已儲存，持有權待驗證。代理關係、KYC 與子代理狀態尚未確認；未授予資格。' : '尚未填寫 UID。';
@@ -42,14 +42,14 @@
     $('#ox-bitget-link-status').textContent = '正在讀取 UID 連結…';
     const result = await window.OXAuth.getBitgetLink();
     if (epoch !== linkEpoch || window.OXAuth.user?.id !== user.id) return;
-    if (result.ok) { showLink(result.link); linkBusy(false); }
+    if (result.ok) { showLink(result.link, result.revision); linkBusy(false); }
     else { $('#ox-bitget-link-status').textContent = result.message; if ($('#ox-bitget-link-summary')) $('#ox-bitget-link-summary').textContent = '狀態尚未確認'; }
   }
   async function mutateLink(action) {
     if ($('#ox-bitget-link-form')?.getAttribute('aria-busy') === 'true') return;
     const epoch = linkEpoch; linkBusy(true);
     const result = await action(); if (epoch !== linkEpoch || !window.OXAuth.user) return;
-    if (result.ok) { showLink(result.link); linkBusy(false); }
+    if (result.ok) { showLink(result.link, result.revision); linkBusy(false); }
     else {
       await loadLink(window.OXAuth.user);
       if (window.OXAuth.user) $('#ox-bitget-link-status').textContent = result.message;

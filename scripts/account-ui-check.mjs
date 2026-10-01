@@ -17,7 +17,7 @@ const browser = await chromium.launch({ headless: true, ...(executablePath ? { e
 try {
   const page = await browser.newPage();
   const calls = [], errors = [];
-  let configured = true, user = null, link = null, linkAvailable = true;
+  let configured = true, user = null, link = null, linkRevision = null, linkAvailable = true;
   page.on('pageerror', error => errors.push(error.message));
   await page.route('https://ox.test/**', async route => {
     const request = route.request(), path = new URL(request.url()).pathname;
@@ -30,8 +30,9 @@ try {
       if (request.method() === 'POST') {
         const body = request.postDataJSON();
         link = body.action === 'remove' ? null : { uid: body.uid, revision: '00000000-0000-4000-8000-000000000003', ownershipStatus: 'pending', ownershipVerified: false };
+        linkRevision = link?.revision ?? '00000000-0000-4000-8000-000000000004';
       }
-      return route.fulfill({ contentType: 'application/json', body: JSON.stringify({ ok: true, link, accessPolicyChanged: false }) });
+      return route.fulfill({ contentType: 'application/json', body: JSON.stringify({ ok: true, link, revision: linkRevision, accessPolicyChanged: false }) });
     }
     const result = endpoint === 'config' ? { configured } : endpoint === 'session' ? { ok: true, user } : endpoint === 'email' ? { ok: true, message: '登入連結已寄出' } : endpoint === 'logout' ? { ok: true } : { ok: false, message: '服務暫時無法使用' };
     await route.fulfill({ contentType: 'application/json', body: JSON.stringify(result) });
@@ -99,6 +100,10 @@ try {
   await page.locator('#ox-bitget-link-remove').click();
   await page.locator('#ox-bitget-link-status').filter({ hasText: '尚未填寫 UID' }).waitFor();
   assert.equal(link, null);
+  await page.locator('#ox-bitget-uid').fill('888');
+  await page.locator('#ox-bitget-link-save').click();
+  await page.locator('#ox-bitget-link-status').filter({ hasText: '持有權待驗證' }).waitFor();
+  assert.equal(calls.filter(call => call.endpoint === 'bitget-link' && call.method === 'POST').at(-1).body.revision, '00000000-0000-4000-8000-000000000004');
   linkAvailable = false;
   await page.reload();
   await page.waitForFunction(() => window.OXAuth?.user?.id === 'fixture-member');

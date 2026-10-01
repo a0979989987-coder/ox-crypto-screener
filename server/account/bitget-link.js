@@ -11,8 +11,9 @@ export function parseLinkMutation(body) {
 
 export function publicPendingLink(row) {
   if (!row) return null;
-  validateUid(row.uid);
   if (row.ownership_status !== 'pending' || !uuid.test(row.revision || '')) throw new Error('Invalid pending link');
+  if (row.uid === null) return null;
+  validateUid(row.uid);
   return { uid: row.uid, revision: row.revision, ownershipStatus: 'pending', ownershipVerified: false, affiliateStatus: 'not_checked', kycStatus: 'not_checked', subAffiliateStatus: 'unknown', eligibility: 'unverified', accessPolicyChanged: false };
 }
 
@@ -33,7 +34,7 @@ export async function handleBitgetLink({ req, res, reader, memberId }) {
       if (result.data?.code !== 'OK') throw new Error('Invalid link response');
       row = result.data.link;
     }
-    return reply(200, { ok: true, link: publicPendingLink(row), accessPolicyChanged: false });
+    return reply(200, { ok: true, link: publicPendingLink(row), revision: row?.revision ?? null, accessPolicyChanged: false });
   } catch {
     // No upstream database details, personal information or keys are reflected.
     return reply(503, { ok: false, code: 'LINK_STORAGE_UNAVAILABLE', message: 'UID 連結儲存服務尚未就緒或暫時無法使用。' });
