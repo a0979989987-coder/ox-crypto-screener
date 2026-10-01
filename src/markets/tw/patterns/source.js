@@ -2,7 +2,8 @@ import { preloadBundle, bundleEntry, bundleEntries, bundleState } from './bundle
 import { twProvider } from '../api.js';
 import { createTWMarketState } from '../engine.js';
 import { savedResearch, loadResearch } from '../research-data.js';
-import { TIMEFRAMES, selectUniverse, dailyCandles, aggregateCandles } from './model.js';
+import { TIMEFRAMES, selectUniverse, dailyCandles } from './model.js';
+import { aggregateChartCandles } from '../chart-data.js';
 export { TIMEFRAMES };
 export const detailStamp = row => `${row.frame!=='1D'?'已完成合併 K · 截至':'資料日'} ${row.candles.at(-1).lastDate || row.candles.at(-1).date}`;
 export const id = 'tw', label = '台股 · TWSE／TPEx', asset = '股票', currency = '元', period = '當日', defaultFrames = ['1D'], defaultLimit = 0;
@@ -28,18 +29,18 @@ export async function fetchUniverse(signal, limit = 0) {
   return { tickers, allTickers: eligible, dataDate: snapshot.date, serverTime: Date.now() };
 }
 export function primeCandleCache(data) {
-  if (TIMEFRAMES[data?.frame] && data.candles?.length >= 1) cache.set(data.symbol + ':' + data.frame, data);
+  if ((TIMEFRAMES[data?.frame] || data?.frame==='1Q') && data.candles?.length >= 1) cache.set(data.symbol + ':' + data.frame, data);
 }
 export async function fetchSeries(symbol, frame, signal, asOf = dataDate(), {minimum=35}={}) {
-  if (!TIMEFRAMES[frame] || !asOf) throw Error('台股時間級別或資料日期尚未取得');
+  if ((!TIMEFRAMES[frame] && frame!=='1Q') || !asOf) throw Error('台股時間級別或資料日期尚未取得');
   const indexed=bundleEntry(symbol,frame,asOf);if(indexed)return {...indexed.data,oxScore:createTWMarketState()?.data?.radar?.find(r=>r.symbol===symbol)?.oxScore??null,preclassified:indexed.matches};
-  if(minimum===1){const base=bundleEntry(symbol,'1D',asOf);if(base){const candles=aggregateCandles(base.data.candles,frame,asOf);if(candles.length)return {...base.data,frame,candles};}}
+  if(minimum===1){const base=bundleEntry(symbol,'1D',asOf);if(base){const candles=aggregateChartCandles(base.data.candles,frame,asOf);if(candles.length)return {...base.data,frame,candles};}}
   const key = symbol + ':' + frame, cached = cache.get(key);
   if (cached?.dataDate === asOf && cached.candles.length>=minimum) return cached;
-  const payload = await twProvider.getCandles(symbol, { interval: '1D', range: frame === '1M' ? '3Y' : frame==='1D'?'3M':'2Y', to: asOf, adjusted: false, signal, timeoutMs: 45000 });
+  const payload = await twProvider.getCandles(symbol, { interval: '1D', range: ['1M','1Q'].includes(frame) ? '3Y' : frame==='1D'?'3M':'2Y', to: asOf, adjusted: false, signal, timeoutMs: 45000 });
   const daily = dailyCandles(payload?.candles || [], asOf);
   if (daily.at(-1)?.date !== asOf) throw Error(`${symbol} 官方日線缺少資料日，已跳過`);
-  const candles = aggregateCandles(daily,frame,asOf).slice(-200);
+  const candles = aggregateChartCandles(daily,frame,asOf).slice(-200);
   if (candles.length < minimum) throw Error(`${symbol} ${frame} 官方 K 線不足`);
   const quote = savedResearch()?.stocks?.find(row => row.symbol === symbol);
   const radar = createTWMarketState()?.data?.radar?.find(row => row.symbol === symbol);

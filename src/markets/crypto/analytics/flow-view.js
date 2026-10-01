@@ -3,6 +3,7 @@ import { buildRotation, heatmapRows, derivativeRows, orderFlow, ROTATION_STATES,
 import { createFlowChart } from './flow-chart.js?v=crypto-live2-20260928';
 import { createToolChart } from './tools-charts.js';
 import { refreshFlow } from './flow-source.js';
+import { revealStyledShadow } from '../../../components/style-ready.js';
 import { refreshMarket } from './market-live.js';
 const escape=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const paths={close:'<path d="m6 6 12 12M18 6 6 18"/>',back:'<path d="m10 5-7 7 7 7M3 12h18"/>',expand:'<path d="M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5"/>',reset:'<path d="M3 4v6h6M4 10a8 8 0 1 1 1 8"/>',info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-10v1"/>',search:'<circle cx="10" cy="10" r="6"/><path d="m15 15 5 5"/>',arrow:'<path d="M5 12h14m-6-6 6 6-6 6"/>',play:'<path d="m8 4 12 8-12 8Z"/>',pause:'<path d="M8 4v16M16 4v16"/>',plus:'<path d="M5 12h14M12 5v14"/>',minus:'<path d="M5 12h14"/>'};
@@ -42,6 +43,7 @@ export function mountCryptoFlow(host,{onExit=()=>{},snapshot=null,marketSnapshot
  const pressureSnapshot=()=>pressureSnapshots.get(state.period)||flowSnapshot;
  const watched=new Set();try{for(const s of JSON.parse(localStorage.getItem('ox-crypto-sector-watch')||'[]'))watched.add(s);}catch{}
  shadow.innerHTML=`<link rel="stylesheet" href="${cssURL.href}"><main class="cfx"><header class="cfx-top"><button class="cfx-icon cfx-back" data-action="exit" aria-label="返回指標">${icon('back')}</button><span class="cfx-brand">OX<span>CRYPTO</span></span><span class="cfx-source-badge">BITGET · USDT 永續</span><div class="cfx-top-actions"><button class="cfx-icon" data-action="help" aria-label="資料與計算說明">${icon('info')}</button><button class="cfx-exit" data-action="fullscreen">${icon('expand')}<span data-slot="exit-label">全螢幕</span></button></div></header><nav class="cfx-tabs" aria-label="Crypto 工具">${TABS.map(([id,label])=>`<button data-tab="${id}" aria-pressed="${id===state.tab}">${label}</button>`).join('')}</nav><section class="cfx-content" aria-label="工具內容"></section><footer class="cfx-status" role="status"><span data-slot="source">讀取來源資料…</span><span data-slot="period"></span></footer><div class="cfx-notice" role="status" hidden></div><dialog class="cfx-dialog" aria-label="資料與計算說明"><div class="cfx-dialog-head"><span>資料與計算</span><button class="cfx-close" data-action="close-help" aria-label="關閉說明">${icon('close')}</button></div><div data-slot="help"></div></dialog><dialog class="cfx-asset-dialog" aria-label="標的詳情"><div class="cfx-dialog-head"><span data-slot="asset-title"></span><button class="cfx-close" data-action="close-asset" aria-label="關閉標的詳情">${icon('close')}</button></div><div data-slot="asset"></div></dialog></main>`;
+ revealStyledShadow(shadow,life.signal);
  const q=s=>shadow.querySelector(s),qa=s=>[...shadow.querySelectorAll(s)];
  const notice=text=>{q('.cfx-notice').textContent=text;q('.cfx-notice').hidden=!text;};
  function cleanup(){request?.abort();plot?.destroy();otherPlot?.destroy();plot=otherPlot=null;stopReplay();if(ws){ws.close();ws=null;}clearInterval(ping);}

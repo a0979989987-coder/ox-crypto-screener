@@ -40,10 +40,10 @@ function scheduleMarketView() {
       } catch (error) { onFailure(error); }
     }
   };
-  // The US workspace replaces the temporary market placeholder with its own
+  // US and Taiwan replace the temporary market placeholder with their own
   // stable shell before awaiting data. Mount it in the same task as the market
   // switch so mobile users never land on the centered architecture screen.
-  if (document.body.dataset.market === "us") activate();
+  if (["us", "tw"].includes(document.body.dataset.market)) activate();
   else requestAnimationFrame(() => requestAnimationFrame(activate));
 }
 
