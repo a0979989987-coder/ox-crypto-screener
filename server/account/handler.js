@@ -36,7 +36,8 @@ export function createAccountHandler({ env = process.env, clientFactory = create
       if (!body || typeof body !== 'object' || Array.isArray(body) || Buffer.byteLength(JSON.stringify(body)) > 4096) return json(400, { ok: false });
       if (!limiter(String(req.headers['x-vercel-forwarded-for'] || req.socket?.remoteAddress || 'unknown') + ':' + endpoint)) return json(429, { ok: false, message: '操作太頻繁，請稍後再試。' });
     }
-    const flow = unseal(readCookie(req, 'flow'), secret, 'flow');
+    const rawFlow = readCookie(req, 'flow');
+    const flow = unseal(rawFlow, secret, 'flow');
     const storageMap = new Map(Object.entries(flow?.storage || {}));
     const storage = { getItem: key => storageMap.get(key) ?? null, setItem: (key, value) => storageMap.set(key, value), removeItem: key => storageMap.delete(key) };
     let client;
@@ -45,19 +46,33 @@ export function createAccountHandler({ env = process.env, clientFactory = create
       res.setHeader('Set-Cookie', [cookie('access', seal(session.access_token, secret, 'access')), cookie('refresh', seal(session.refresh_token, secret, 'refresh')), cookie('flow', '')]);
     };
     const redirect = path => { res.setHeader('Location', path); return res.status(303).end(); };
+    const callbackFailure = reason => {
+      // Fixed, non-sensitive categories only. Never return/log the auth code,
+      // verifier, cookie, token, user data, or raw upstream exception.
+      res.setHeader('Set-Cookie', cookie('flow', ''));
+      return redirect(`/?ox_auth=error&ox_auth_reason=${reason}`);
+    };
     try {
       client = clientFactory(url, key, { auth: { flowType: 'pkce', persistSession: true, autoRefreshToken: false, detectSessionInUrl: false, storage } });
       if (endpoint === 'google') {
         const returnTo = safeReturn(body.returnTo);
         const { data, error } = await client.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: origin + '/api/v1/account/callback', skipBrowserRedirect: true } });
         if (error || !data.url || new URL(data.url).origin !== new URL(url).origin) throw new Error('OAuth failed');
-        res.setHeader('Set-Cookie', cookie('flow', seal({ storage: Object.fromEntries(storageMap), returnTo }, secret, 'flow', 600), 600));
+        const flowId = typeof data.flowId === 'string' && /^[a-zA-Z0-9_-]{8,64}$/.test(data.flowId) ? data.flowId : undefined;
+        res.setHeader('Set-Cookie', cookie('flow', seal({ storage: Object.fromEntries(storageMap), returnTo, ...(flowId ? { flowId } : {}) }, secret, 'flow', 600), 600));
         return json(200, { ok: true, url: data.url });
       }
       if (endpoint === 'callback') {
-        if (!flow || typeof req.query.code !== 'string' || !req.query.code || req.query.code.length > 2048) { clear(); return redirect('/?ox_auth=error'); }
-        const { data, error } = await client.auth.exchangeCodeForSession(req.query.code);
-        if (error || !data.user) { clear(); return redirect('/?ox_auth=error'); }
+        if (req.query.error) return callbackFailure(req.query.error === 'access_denied' ? 'provider_denied' : 'provider_callback_error');
+        if (!flow) return callbackFailure(rawFlow ? 'flow_invalid' : 'flow_missing');
+        if (typeof req.query.code !== 'string' || !req.query.code || req.query.code.length > 2048) return callbackFailure('code_missing');
+        const options = flow.flowId ? { flowId: flow.flowId } : undefined;
+        const { data, error } = await client.auth.exchangeCodeForSession(req.query.code, options);
+        if (error) {
+          const reason = error.name === 'AuthPKCECodeVerifierMissingError' ? 'pkce_missing' : error.code === 'bad_code_verifier' ? 'pkce_mismatch' : ['flow_state_expired', 'otp_expired'].includes(error.code) ? 'authorization_expired' : error.code === 'flow_state_not_found' ? 'authorization_invalid' : 'exchange_failed';
+          return callbackFailure(reason);
+        }
+        if (!data?.user || !data.session?.access_token || !data.session?.refresh_token) return callbackFailure('response_invalid');
         saveSession(data.session); return redirect(safeReturn(flow.returnTo));
       }
       if (endpoint === 'email' || endpoint === 'verify') {
@@ -114,6 +129,7 @@ export function createAccountHandler({ env = process.env, clientFactory = create
       return json(404, { ok: false });
     } catch {
       if (endpoint === 'logout') { clear(); return json(200, { ok: true }); }
+      if (endpoint === 'callback') return callbackFailure('callback_unavailable');
       return json(503, { ok: false, message: '登入服務暫時無法使用，請稍後再試。' });
     }
   };

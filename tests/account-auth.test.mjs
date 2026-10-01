@@ -41,7 +41,7 @@ test('OAuth callback without matching PKCE flow is rejected', async () => {
   let calls=0;
   const handler=createAccountHandler({env,clientFactory:()=>({auth:{exchangeCodeForSession:async()=>{ calls++; }}})});
   const r=res(); await handler({method:'GET',query:{endpoint:'callback',code:'code'},headers:{}},r);
-  assert.equal(calls,0); assert.equal(r.statusCode,303); assert.equal(r.headers.Location,'/?ox_auth=error');
+  assert.equal(calls,0); assert.equal(r.statusCode,303); assert.equal(r.headers.Location,'/?ox_auth=error&ox_auth_reason=flow_missing');
 });
 test('SDK generates PKCE flow bound to encrypted cookie and callback preserves page', async () => {
   let capturedStorage;
