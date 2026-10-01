@@ -28,6 +28,8 @@ test('combination direction rejects opposite setups, and Crypto excludes unfinis
  assert.equal(runInNewContext("closedTierCandles(bars,'1H',now).length",context),1);
  context.bars=[{time:Date.parse('2026-09-01T00:00:00Z')/1000},{time:Date.parse('2026-10-01T00:00:00Z')/1000}];
  assert.equal(runInNewContext("closedTierCandles(bars,'1M',now).length",context),1);
+ context.bars=[{time:Date.parse('2026-09-30T16:00:00Z')/1000}];
+ assert.equal(runInNewContext("closedTierCandles(bars,'1M',now).length",context),0,'Bitget UTC+8 October candle is still forming after UTC midnight');
 });
 test('TW frame grades use validated pattern direction and retain exact groups without WATCH promotion',()=>{
  const entry={data:{candles:[{}]},matches:{w:{tier:2,similarity:90,label:'W'},hs:{tier:1,similarity:99,label:'HS'}}};

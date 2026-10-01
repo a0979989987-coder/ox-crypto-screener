@@ -23,7 +23,8 @@ function saveRadarSnapshot() {
 function closedTierCandles(candles,frame,now=Date.now()) {
  const duration=({m:60,H:3600,D:86400,W:604800})[frame.slice(-1)]*Number(frame.slice(0,-1));
  return candles.filter(c=>{
-  const end=frame.endsWith('M')?Date.UTC(new Date(c.time*1000).getUTCFullYear(),new Date(c.time*1000).getUTCMonth()+Number(frame.slice(0,-1)),1)/1000:c.time+duration;
+  const local=new Date(c.time*1000+8*3600000);
+  const end=frame.endsWith('M')?Date.UTC(local.getUTCFullYear(),local.getUTCMonth()+Number(frame.slice(0,-1)),1)/1000-8*3600:c.time+duration;
   return Number.isFinite(end)&&end<=now/1000;
  });
 }
