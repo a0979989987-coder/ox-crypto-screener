@@ -3,19 +3,18 @@ import { escapeTW as esc } from './radar-card.js';
 import { savedResearch } from './research-data.js';
 import { bundleState, bundleEntry, subscribeBundle, preloadBundle } from './patterns/bundle.js';
 import { fetchSeries } from './patterns/source.js';
-import { TIMEFRAMES, FRAME_LABELS } from './patterns/model.js';
+import { CHART_FRAMES, isIntraday, INTRADAY_MESSAGE, stockDetails } from './chart-data.js';
 import { cryptoRadarPart, attachCryptoRadarStyles } from '../../components/radar/market-workspace.js';
 const UP='#f16a70',DOWN='#48b78e';
 const num=n=>Number.isFinite(n)?n.toLocaleString('zh-TW',{maximumFractionDigits:2}):'—';
 const change=n=>Number.isFinite(n)?`${n>=0?'+':''}${n.toFixed(2)}%`:'—';
 const money=n=>Number.isFinite(n)?`${(n/1e8).toFixed(2)} 億`:'—';
 const viewports=new Map();
-const glyph=type=>`<svg viewBox="0 0 24 24" aria-hidden="true">${({radar:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><path d="m12 12 7-7M12 3v9"/>',fire:'<path d="M13 3c1 5-4 6-3 10 2-1 3-3 3-3 4 3 5 5 4 8-1 3-7 4-10 0-3-5 2-8 6-15Z"/>',star:'<path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9Z"/>',expand:'<path d="M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5"/>',close:'<path d="m6 6 12 12M6 18 18 6"/>',fold:'<path d="m15 6-6 6 6 6M3 3v18"/>'})[type]}</svg>`;
+const glyph=type=>`<svg viewBox="0 0 24 24" aria-hidden="true">${({search:'<circle cx="10" cy="10" r="6"/><path d="m15 15 5 5"/>',radar:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><path d="m12 12 7-7M12 3v9"/>',fire:'<path d="M13 3c1 5-4 6-3 10 2-1 3-3 3-3 4 3 5 5 4 8-1 3-7 4-10 0-3-5 2-8 6-15Z"/>',star:'<path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9Z"/>',expand:'<path d="M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5"/>',close:'<path d="m6 6 12 12M6 18 18 6"/>',fold:'<path d="m15 6-6 6 6 6M3 3v18"/>'})[type]}</svg>`;
 export function mountTWChartRadar(host,{state:marketState,watchlist=new Set()}={}) {
  const life=new AbortController(),$=s=>host.querySelector(s),listen=(el,type,fn,options={})=>el?.addEventListener(type,fn,{...options,signal:life.signal});
  let tab='all',tier='all',side='long',query='',symbol='',frame='1D',focus=false,folded=false,serial=0,controller=null,drawings,gestures,holdTimer,held=false,levelLines=[];
  const state={symbol:'',period:frame,candleData:[],chart:null,candleSeries:null,chartPriceViewport:null};
- if(!document.querySelector('[data-tw-chart-style]')){const link=document.createElement('link');link.rel='stylesheet';link.href=new URL('./chart-radar.css?v=20260930-ux2',import.meta.url);link.dataset.twChartStyle='';document.head.append(link);}
  host.innerHTML='<div class="tw-chart-radar"></div>';
  const surface=$('.tw-chart-radar');
  const summary=cryptoRadarPart('.compact-summary');
@@ -23,7 +22,11 @@ export function mountTWChartRadar(host,{state:marketState,watchlist=new Set()}={
  summary.classList.add('twcr-quote');
  summary.querySelector('[id$="-ticker-pair"]').removeAttribute('role');
  summary.querySelector('[id$="-ticker-pair"]').removeAttribute('aria-label');
- summary.querySelector('[id$="-ticker-pair"]').dataset.quoteName='';
+ const nameNode=summary.querySelector('[id$="-ticker-pair"]');nameNode.dataset.quoteName='';nameNode.textContent='選擇股票';
+ nameNode.removeAttribute('tabindex');nameNode.removeAttribute('data-provider-bound');
+ // Discard the cloned Crypto picker, including any runtime-injected control.
+ summary.querySelector('.market-line-price').querySelectorAll('button').forEach(n=>n.remove());
+ summary.querySelector('.market-line-price').insertAdjacentHTML('beforeend','<button class="twcr-search-open" type="button" data-action="search" aria-label="搜尋股票" aria-haspopup="dialog" aria-expanded="false">'+glyph('search')+'</button>');
  summary.querySelector('[id$="-price"]').dataset.quotePrice='';
  summary.querySelector('[id$="-change"]').dataset.quoteChange='';
  summary.querySelector('[id$="-change"]').classList.remove('positive','negative');
@@ -40,7 +43,7 @@ export function mountTWChartRadar(host,{state:marketState,watchlist=new Set()}={
  chartBox.querySelectorAll(':scope > :not(.chart-controls)').forEach(n=>n.remove());
  const controls=chartBox.querySelector('.chart-controls');
  const strip=controls.querySelector('.chart-timeframe-strip');
- strip.innerHTML=Object.keys(TIMEFRAMES).map(f=>`<button class="btn-tf ${f===frame?'active':''}" type="button" data-twcr-frame="${f}" aria-pressed="${f===frame}">${FRAME_LABELS[f]}${f==='1M'?'<span class="tf-hint">▾</span>':''}</button>`).join('')+'<span class="tf-glass-indicator" aria-hidden="true"></span>';
+ strip.innerHTML=Object.keys(CHART_FRAMES).map(f=>`<button class="btn-tf ${f===frame?'active':''}" type="button" data-twcr-frame="${f}" aria-pressed="${f===frame}">${CHART_FRAMES[f]}${f==='1Q'?'<span class="tf-hint">▾</span>':''}</button>`).join('')+'<span class="tf-glass-indicator" aria-hidden="true"></span>';
  controls.querySelector('[id$="-indicator-open"]').dataset.action='indicators';
  controls.querySelector('[id$="-scanner-toggle"]').dataset.action='fold';
  controls.querySelector('[id$="-fullscreen"]').dataset.action='focus';
@@ -59,12 +62,13 @@ export function mountTWChartRadar(host,{state:marketState,watchlist=new Set()}={
  direction.dataset.action='side';
  direction.setAttribute('aria-label','切換當日上漲或下跌股票池');
  scanner.insertAdjacentHTML('beforeend','<div class="twcr-pool-info"></div><div id="tw-radar-screener-list" class="twcr-results" role="list"></div>');
+ chartBox.insertAdjacentHTML('afterend','<section class="twcr-details" aria-label="目前股票資訊"><header><strong data-details-title>股票資訊</strong><small>官方日行情 · 非即時</small></header><p class="twcr-series-note" data-series-note></p><dl data-details></dl></section>');
  surface.append(summary,workspace);
  surface.insertAdjacentHTML('beforeend',`<div class="twcr-tier-menu" role="menu" hidden>${['all','T1','T2','T3'].map(t=>`<button type="button" role="menuitemradio" data-twcr-tier="${t}" aria-checked="${t===tier}">${t==='all'?'全部':t}</button>`).join('')}</div>
  <div class="chart-tools-overlay twcr-tools" aria-hidden="true"><section class="chart-tools-dialog" role="dialog" aria-modal="true" aria-label="台股圖表設定" tabindex="-1">
  <div class="chart-tools-panel" data-tw-panel="indicators"><h3>指標</h3><div class="chart-indicator-options"><label class="chart-indicator-option"><input type="checkbox" data-volume checked><span>成交量</span></label><label class="chart-indicator-option"><input type="checkbox" data-levels><span>前高前低</span></label></div><button class="chart-tools-save" data-action="reset">重設圖表縮放</button><button class="chart-tools-save" data-action="native-fullscreen">全螢幕圖表</button></div>
- <div class="chart-tools-panel" data-tw-panel="timeframes" hidden><div class="chart-timeframe-preferences">${Object.keys(TIMEFRAMES).map(f=>`<label><input type="checkbox" value="${f}" checked><span>${FRAME_LABELS[f]}</span></label>`).join('')}</div><button class="chart-tools-save" data-action="frames-save">儲存時間級別</button></div><button class="chart-tools-close" data-action="tools-close" aria-label="關閉圖表設定">×</button></section></div>
- <label class="twcr-search"><input type="search" list="twcr-stocks" placeholder="搜尋股票名稱或代號" aria-label="搜尋台股圖表標的"><datalist id="twcr-stocks"></datalist></label>`);
+ <div class="chart-tools-panel" data-tw-panel="timeframes" hidden><div class="chart-timeframe-preferences">${Object.keys(CHART_FRAMES).map(f=>`<label><input type="checkbox" value="${f}" checked><span>${CHART_FRAMES[f]}</span></label>`).join('')}</div><button class="chart-tools-save" data-action="frames-save">儲存時間級別</button></div><button class="chart-tools-close" data-action="tools-close" aria-label="關閉圖表設定">×</button></section></div>
+ <dialog class="twcr-search-dialog" aria-label="搜尋台股股票"><header><strong>搜尋股票</strong><button type="button" data-action="search-close" aria-label="關閉股票搜尋">${glyph('close')}</button></header><input type="search" placeholder="股票名稱或代號" aria-label="搜尋台股圖表標的" autocomplete="off"><div class="twcr-search-results" aria-label="股票搜尋結果"></div><small data-search-count role="status"></small></dialog>`);
  const releaseStyles=attachCryptoRadarStyles(surface,{summaryColumns:3});
  $('.twcr-tier-menu').id='tw-radar-radar-tier-menu';
  const root=$('.tw-chart-radar'),box=$('.chart-box'),el=$('#tw-radar-chart');
@@ -72,7 +76,20 @@ export function mountTWChartRadar(host,{state:marketState,watchlist=new Set()}={
  const snapshot=()=>{const b=bundleState();return b.stocks.length?{date:b.date,stocks:b.stocks}:savedResearch();};
  const universe=()=>chartUniverse(marketState,snapshot());
  function status(message){const node=$('.twcr-status');node.textContent=message;node.classList.toggle('show',!!message);}
- const cardNodes=new Map(); let universeKey='';
+ const cardNodes=new Map();
+ function renderSearch(){
+  const value=$('.twcr-search-dialog input').value.trim().toLowerCase(),stocks=universe().filter(r=>`${r.symbol} ${r.name}`.toLowerCase().includes(value)),rows=stocks.slice(0,60);
+  $('.twcr-search-results').innerHTML=rows.map(r=>`<button type="button" data-search-symbol="${esc(r.symbol)}"><span><b>${esc(r.symbol)}</b> ${esc(r.name)}</span><small>${num(r.price)}</small></button>`).join('')||'<p>沒有符合的股票</p>';
+  $('[data-search-count]').textContent=stocks.length>60?`符合 ${stocks.length} 檔，請輸入更多文字縮小範圍`:`符合 ${stocks.length} 檔`;
+ }
+ function closeSearch(){const dialog=$('.twcr-search-dialog');if(!dialog.open)return;dialog.close();$('[data-action="search"]').setAttribute('aria-expanded','false');}
+ function renderQuote(){
+  const row=universe().find(r=>r.symbol===symbol);$('[data-quote-name]').textContent=`${symbol} ${row?.name||''}`;$('[data-quote-name]').title=`${symbol} ${row?.name||''}`;$('[data-quote-price]').textContent=num(row?.price);$('[data-quote-change]').textContent=change(row?.changePct);$('[data-quote-change]').style.color=row?.changePct>=0?UP:DOWN;$('[data-quote-turnover]').textContent=money(row?.turnoverTwd);
+  $('[data-details-title]').textContent=`${symbol} ${row?.name||''} · 股票資訊`;
+  const asOf=snapshot()?.date,latest=bundleEntry(symbol,'1D',asOf)?.data?.candles?.at(-1),candle={...row?.currentCandle};
+  if(latest?.date===asOf)for(const key of ['open','high','low','volume'])if(!Number.isFinite(candle[key]))candle[key]=latest[key];
+  $('[data-details]').innerHTML=stockDetails({...row,currentCandle:candle},asOf).map(([label,value])=>`<div><dt>${esc(label)}</dt><dd>${esc(value)}</dd></div>`).join('');
+ }
  function renderList(){
   if(life.signal.aborted)return;
   const stocks=universe(),rows=rankChartRows(stocks,{tab,tier,side,watchlist,query});
@@ -89,8 +106,7 @@ export function mountTWChartRadar(host,{state:marketState,watchlist=new Set()}={
   direction.title=side==='long'?'當日上漲股票池':'當日下跌股票池';
   $('.twcr-pool-info').textContent=tab==='all'?`${side==='long'?'當日上漲':'當日下跌'} · ${rows.length} 檔 · 含觀察候選`:tab==='surge'?`當日成交額前 ${rows.length} 檔`:`自選 ${rows.length} 檔`;
   $('.twcr-date').textContent=snapshot()?.date?`資料日 ${snapshot().date}`:'官方資料載入中';
-  const key=stocks.map(r=>r.symbol+r.name).join('|');
-  if(key!==universeKey){universeKey=key;$('#twcr-stocks').innerHTML=stocks.map(r=>`<option value="${esc(r.symbol)}">${esc(r.name)}</option>`).join('');}
+  if(symbol)renderQuote();if($('.twcr-search-dialog').open)renderSearch();
   const list=$('.twcr-results'),top=list.scrollTop,wanted=new Set(rows.map(r=>r.symbol));
   list.querySelector('.twcr-empty')?.remove();
   for(const child of [...list.children])if(!wanted.has(child.dataset.stock))child.remove();
@@ -131,11 +147,14 @@ export function mountTWChartRadar(host,{state:marketState,watchlist=new Set()}={
   if(next===state.symbol&&frame===state.period&&state.candleData.length){renderList();return;}
   if(state.candleData.length)viewports.set(`${state.symbol}:${state.period}`,{logical:state.chart.timeScale().getVisibleLogicalRange(),price:state.chartPriceViewport});
   symbol=next;state.symbol=next;state.period=frame;state.chartPriceViewport=null;const run=++serial;controller?.abort();controller=new AbortController();
-  const row=universe().find(r=>r.symbol===symbol);$('[data-quote-name]').textContent=`${symbol} ${row?.name||''}`;$('[data-quote-name]').title=`${symbol} ${row?.name||''}`;$('[data-quote-price]').textContent=num(row?.price);$('[data-quote-change]').textContent=change(row?.changePct);$('[data-quote-change]').style.color=row?.changePct>=0?UP:DOWN;$('[data-quote-turnover]').textContent=money(row?.turnoverTwd);
+  renderQuote();$('[data-series-note]').textContent='';
   status('官方 K 線載入中');renderList();if(!ensureChart())return;
+  state.chart.applyOptions({timeScale:{timeVisible:isIntraday(frame),tickMarkFormatter:frame==='1Q'?time=>{const d=new Date(time*1000+8*3600000);return `${d.getUTCFullYear()} Q${Math.floor(d.getUTCMonth()/3)+1}`;}:null}});
   state.candleData=[];state.candleSeries.setData([]);state.volumeSeries.setData([]);levels();
+  if(isIntraday(frame)){status(INTRADAY_MESSAGE);$('[data-series-note]').textContent=CHART_FRAMES[frame]+' · 等待盤中資料';return;}
   try{if(!bundleEntry(next,'1D',snapshot()?.date))await preloadBundle().catch(()=>{});if(run!==serial||life.signal.aborted)return;const data=await fetchSeries(next,frame,controller.signal,snapshot()?.date,{minimum:1});if(run!==serial||life.signal.aborted)return;
    state.candleData=data.candles;state.candleSeries.setData(data.candles);state.volumeSeries.setData(data.candles.map(c=>({time:c.time,value:c.volume,color:c.close>=c.open?'#f16a7035':'#48b78e35'})));const viewport=viewports.get(`${next}:${frame}`);if(viewport?.logical){state.chart.timeScale().setVisibleLogicalRange(viewport.logical);state.chartPriceViewport=viewport.price;}else state.chart.timeScale().fitContent();refreshRange();levels();drawings?.sync();
+   $('[data-series-note]').textContent=frame==='1D'?`日 K · ${data.candles.length} 根 · 未復權`:`${CHART_FRAMES[frame]} K · ${data.candles.length} 根已完成 K 線 · 截至 ${data.candles.at(-1)?.lastDate||data.candles.at(-1)?.date||'—'} · 未復權`;
    status(data.candles.length?'':'目前沒有此股票的歷史 K 線');
   }catch(error){if(run===serial&&!life.signal.aborted&&error.name!=='AbortError')status('官方 K 線暫時無法取得，請稍後重試');}
  }
@@ -160,20 +179,22 @@ export function mountTWChartRadar(host,{state:marketState,watchlist=new Set()}={
   const favorite=event.target.closest('[data-favorite]');
   const card=event.target.closest('[data-stock]');if(card&&!favorite){openSymbol(card.dataset.stock);return;}
   const b=event.target.closest('button');if(!b)return;
+  if(b.dataset.searchSymbol){closeSearch();openSymbol(b.dataset.searchSymbol);return;}
   if(b.dataset.twcrFrame){if(b.dataset.twcrFrame===frame&&b===host.querySelector('[data-twcr-frame]:last-of-type')){tools('timeframes');return;}frame=b.dataset.twcrFrame;host.querySelectorAll('[data-twcr-frame]').forEach(n=>{n.setAttribute('aria-pressed',String(n===b));n.classList.toggle('active',n===b);});marker();if(symbol)openSymbol(symbol);return;}
   if(b.dataset.twcrTier){tier=b.dataset.twcrTier;tab='all';menu(false);renderList();return;}
   if(b.dataset.twcrTab){if(b.dataset.twcrTab==='all'){if(held){held=false;return;}if(tab==='all'){const options=['all','T1','T2','T3'];tier=options[(options.indexOf(tier)+1)%options.length];}tab='all';}else tab=b.dataset.twcrTab;menu(false);renderList();return;}
   if(b.dataset.symbol){openSymbol(b.dataset.symbol);return;}
   if(b.dataset.favorite){const value=b.dataset.favorite;watchlist.has(value)?watchlist.delete(value):watchlist.add(value);try{localStorage.setItem('ox-tw-radar-watchlist-v1',JSON.stringify([...watchlist]));}catch{}renderList();return;}
-  switch(b.dataset.action){case 'indicators':tools('indicators');break;case 'tools-close':closeTools();break;case 'frames-save':{const checked=[...host.querySelectorAll('.chart-timeframe-preferences input:checked')].map(n=>n.value);host.querySelectorAll('[data-twcr-frame]').forEach(n=>n.hidden=!checked.includes(n.dataset.twcrFrame)&&n.dataset.twcrFrame!==frame);closeTools();marker();break;}case 'side':side=side==='long'?'short':'long';renderList();break;case 'fold':folded=!folded;root.classList.toggle('is-folded',folded);b.setAttribute('aria-expanded',String(!folded));b.setAttribute('aria-label',folded?'展開候選列表':'收合候選列表');break;case 'focus':setFocus(true);break;case 'native-fullscreen':closeTools();setFocus(true);box.requestFullscreen?.().catch(()=>{});break;case 'exit':if(document.fullscreenElement===box)document.exitFullscreen();setFocus(false);break;case 'reset':state.chartPriceViewport=null;refreshRange();state.chart?.timeScale().fitContent();break;}
+  switch(b.dataset.action){case 'search':{renderSearch();$('.twcr-search-dialog').showModal();b.setAttribute('aria-expanded','true');$('.twcr-search-dialog input').focus();break;}case 'search-close':closeSearch();break;case 'indicators':tools('indicators');break;case 'tools-close':closeTools();break;case 'frames-save':{const checked=[...host.querySelectorAll('.chart-timeframe-preferences input:checked')].map(n=>n.value);host.querySelectorAll('[data-twcr-frame]').forEach(n=>n.hidden=!checked.includes(n.dataset.twcrFrame)&&n.dataset.twcrFrame!==frame);closeTools();marker();break;}case 'side':side=side==='long'?'short':'long';renderList();break;case 'fold':folded=!folded;root.classList.toggle('is-folded',folded);b.setAttribute('aria-expanded',String(!folded));b.setAttribute('aria-label',folded?'展開候選列表':'收合候選列表');break;case 'focus':setFocus(true);break;case 'native-fullscreen':closeTools();setFocus(true);box.requestFullscreen?.().catch(()=>{});break;case 'exit':if(document.fullscreenElement===box)document.exitFullscreen();setFocus(false);break;case 'reset':state.chartPriceViewport=null;refreshRange();state.chart?.timeScale().fitContent();break;}
  });
  listen($('[data-levels]'),'change',levels);
  listen($('[data-volume]'),'change',event=>state.volumeSeries?.applyOptions({visible:event.target.checked}));
  listen(host,'keydown',event=>{if((event.key==='Enter'||event.key===' ')&&event.target.matches('[data-stock]')){event.preventDefault();openSymbol(event.target.dataset.stock);}if(event.key==='Tab'&&$('.twcr-tools').classList.contains('is-open')){const nodes=[...$('.chart-tools-dialog').querySelectorAll('button,input')].filter(n=>!n.closest('[hidden]'));if(event.shiftKey&&document.activeElement===nodes[0]){event.preventDefault();nodes.at(-1).focus();}else if(!event.shiftKey&&document.activeElement===nodes.at(-1)){event.preventDefault();nodes[0].focus();}}});
- listen($('.twcr-search input'),'input',event=>{query=event.target.value;renderList();});
- listen($('.twcr-search input'),'change',event=>{const value=event.target.value.trim(),row=universe().find(r=>r.symbol===value||r.name===value);if(row)openSymbol(row.symbol);});
- listen($('.twcr-search input'),'keydown',event=>{if(event.key==='Enter'){const row=universe().find(r=>`${r.symbol} ${r.name}`.includes(event.target.value.trim()));if(row)openSymbol(row.symbol);}});
- listen(document,'keydown',event=>{if(event.key==='Escape'){menu(false);closeTools();if(focus)setFocus(false);}});
+ listen($('.twcr-search-dialog input'),'input',renderSearch);
+ listen($('.twcr-search-dialog input'),'keydown',event=>{if(event.key==='Enter'){const first=$('.twcr-search-results button');if(first){closeSearch();openSymbol(first.dataset.searchSymbol);}}});
+ listen($('.twcr-search-dialog'),'click',event=>{if(event.target===$('.twcr-search-dialog')){const r=event.target.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)closeSearch();}});
+ listen($('.twcr-search-dialog'),'close',()=>{$('[data-action="search"]').setAttribute('aria-expanded','false');$('[data-action="search"]').focus({preventScroll:true});});
+ listen(document,'keydown',event=>{if(event.key==='Escape'){if($('.twcr-search-dialog').open){closeSearch();return;}menu(false);closeTools();if(focus)setFocus(false);}});
  const unsubscribe=subscribeBundle(()=>{renderList();if(!symbol){const first=rankChartRows(universe(),{side})[0]||universe()[0];if(first)openSymbol(first.symbol);}});
  renderList();const initial=rankChartRows(universe(),{side})[0]||universe()[0];if(initial)openSymbol(initial.symbol);else preloadBundle().catch(()=>{});
  return {openSymbol,update(next){marketState=next;renderList();if(!symbol){const first=rankChartRows(universe(),{side})[0]||universe()[0];if(first)openSymbol(first.symbol);}},destroy(){life.abort();serial++;controller?.abort();clearTimeout(holdTimer);unsubscribe();scannerSize.disconnect();releaseStyles();document.body.classList.remove('tw-chart-focus');gestures?.destroy();drawings?.destroy();state.chart?.remove();host.textContent='';}};

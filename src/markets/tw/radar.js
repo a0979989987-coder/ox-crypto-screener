@@ -2434,7 +2434,9 @@ function ensureStyles() {
   document.head.appendChild(
     style
   );
+  if (document.getElementById('ox-tw-radar-css')) return;
   const ui = document.createElement("link");
+  ui.id = 'ox-tw-radar-css';
   ui.rel = "stylesheet";
   ui.href = "src/markets/tw/radar-ui.css?v=20260927i";
   document.head.appendChild(ui);
