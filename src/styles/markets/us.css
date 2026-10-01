@@ -68,7 +68,10 @@ body[data-market="us"] #market-unavailable-card.us2-root[hidden],.us2-root [hidd
 .us2-ticker-name {display:block;font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted);margin-top:3px;max-width:100%}
 .us2-row-name {display:block;min-width:0;font-size:10px;line-height:1.45;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin:3px 0;color:var(--muted)}
 .us2-directory-row .us2-row-name {white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.us2-directory-row .coin-top {display:flex;align-items:center;justify-content:space-between;gap:6px}
+.us2-directory-row {display:block!important}
+.us2-directory-top {display:flex;align-items:center;justify-content:space-between;gap:6px}
+.us2-directory-symbol {display:block;font-size:12px;color:var(--ink)}
+.us2-radar-layout.is-unavailable>.us2-scanner {min-height:360px}
 .us2-directory-row .us2-star {flex:0 0 26px;width:26px;height:28px;font-size:18px;padding:0}
 .us2-directory-meta {display:block;font-size:9px;color:var(--muted)}
 .us2-catalogue-note {font-size:10px;line-height:1.5;padding:8px 4px;color:var(--ink);border-bottom:1px solid var(--line);margin-bottom:6px}

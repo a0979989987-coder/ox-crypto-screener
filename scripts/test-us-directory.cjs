@@ -12,7 +12,7 @@ const server=spawn(process.execPath,['scripts/dev-server.mjs','--port',String(po
   await new Promise((resolve,reject)=>{const timeout=setTimeout(()=>reject(Error('server timed out')),10000);server.stdout.once('data',()=>{clearTimeout(timeout);resolve();});server.once('exit',code=>reject(Error(`server exit ${code}`)));});
   const {handleUS2}=await import('../server/markets/us/service.js');
   browser=await chromium.launch({headless:true,args:['--no-sandbox'],executablePath:process.env.OX_BROWSER_PATH});
-  for(const width of [390,430]) {
+  for(const width of [390,430,1363]) {
    const context=await browser.newContext({viewport:{width,height:932},isMobile:true,hasTouch:true});
    const {page}=await preparePage(context,{width,height:932});const errors=[];page.on('pageerror',error=>errors.push(error.message));
    let marketDataCalls=0;
@@ -25,6 +25,8 @@ const server=spawn(process.execPath,['scripts/dev-server.mjs','--port',String(po
    await page.goto(base);await selectView(page,'radar');await selectMarket(page,'us');await page.click('#ox-control-close');
    await page.waitForSelector('.us2-directory-row');
    assert.equal(await page.locator('.us2-directory-row').count(),50);
+   assert.equal(await page.locator('.us2-directory-row[data-symbol="NVDA"] .us2-directory-symbol').isVisible(),true);
+   assert.ok((await page.locator('.us2-scanner').boundingBox()).height>=360);
    assert.match(await page.locator('.us2-ticker-name').innerText(),/標普500.*State Street/);
    assert.match(await page.locator('.us2-directory-row[data-symbol="NVDA"] .us2-row-name').innerText(),/輝達.*NVIDIA/);
    assert.equal(await page.locator('.us2-tier').isDisabled(),true);
