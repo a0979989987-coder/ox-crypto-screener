@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { runInNewContext } from 'node:vm';
-import { evaluateClassic } from '../src/core/classic.js';
+import { evaluateClassic, CLASSIC_VERSION } from '../src/core/classic.js';
 import { tierResults, matchPath } from '../src/markets/us/analysis.js';
 import { USWorkspace } from '../src/markets/us/workspace.js';
 import { classicTWRow, classifyTWSeries } from '../src/markets/tw/classic.js';
@@ -29,7 +29,7 @@ test('old classic versions cannot grant US membership without actual bars to rec
  const row={symbol:'OLD',type:'stock',interval:'1D',classic:{long:old},path:bars.slice(-40).map(c=>c.close)};
  assert.deepEqual(tierResults([row]),[]);
  assert.deepEqual(matchPath([row],[{x:0,y:1},{x:1,y:0}]),[]);
- assert.equal(tierResults([{...row,bars}])[0].classicSignal.version,1);
+ assert.equal(tierResults([{...row,bars}])[0].classicSignal.version,CLASSIC_VERSION);
 });
 test('US automatic guides require eligibility and leave pressure to the shared engine',()=>{
  const bars=preparation(),classic={long:evaluateClassic(bars)},patterns={long:[

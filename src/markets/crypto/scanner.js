@@ -1,6 +1,6 @@
 const WATCH_STAR_SVG = '<svg class="watch-star-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 2.78 5.63L21 9.54l-4.5 4.39 1.06 6.2L12 17.2l-5.56 2.93 1.06-6.2L3 9.54l6.22-.91Z"/></svg>';
 
-const RADAR_SNAPSHOT_KEY = 'ox-radar-snapshot-v3-classic1';
+const RADAR_SNAPSHOT_KEY = 'ox-radar-snapshot-v3-classic3';
 function restoreRadarSnapshot() {
   if (state.radarSnapshotChecked) return;
   state.radarSnapshotChecked = true;
@@ -170,7 +170,7 @@ async function runScanQueueLoop() {
           ...row,timeframeTiers,symbol,ticker,at:Date.now(),lastPrice:candles.at(-1)?.close,
           signalFrame:'4H',triggerFrame:'1H',sparkline:candles.slice(-24).map(c=>c.close),
           liqScore:liq.score,rsScore:rs.score,quoteVol:liq.quoteVol,liqPercentile:liq.percentileStr,
-          reasons:['4H 結構＋1H 上攻確認',...row.reasons],
+          reasons:row.reasons,
           change24h:num(ticker.change24h),ret1h:candleReturn(candles,1),ret4h:candleReturn(candles,4),
           ret24h:candleReturn(candles,24),
         });

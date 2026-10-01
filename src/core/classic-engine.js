@@ -4,7 +4,7 @@
  */
 (function (root) {
   'use strict';
-  const CLASSIC_VERSION = 1;
+  const CLASSIC_VERSION = 2;
   const CLASSIC_TIER_LIMITS = Object.freeze({ T1: 10, T2: 15, T3: 15 });
   // Initial, centralized defaults in ATR/bar units. These are implementation
   // thresholds, not claims of calibration or performance from trade screenshots.
@@ -140,13 +140,22 @@
     const recentHigh = features.highs.filter(p => p.index >= n - 18).at(-1);
     const reclaim = !!(recentHigh && last.close > recentHigh.price + a * 0.2 && advance >= 1);
     const falling = lateMove < -0.9 || last.close < bars.at(-2).low - a * 0.3;
+    // Local momentum must not relabel a rebound inside a larger decline (or,
+    // after mirroring, a pullback inside a larger advance).
+    const context = bars.slice(-36), previousContext = context.slice(0, -12);
+    const contextAdvance = (last.close - context[0].close) / a;
+    const contextMean = mean(previousContext.map(c => c.close));
+    const contextCeiling = Math.max(...previousContext.map(c => c.high));
+    const contextReclaimed = last.close > contextCeiling + a * 0.2 ||
+      higherLows && higherHighs && recentHigh && last.close > recentHigh.price + a * 0.2;
+    const opposingContext = contextAdvance < -1 && last.close < contextMean - a * 0.5 && !contextReclaimed;
     // A lone bounce at the bottom of an ongoing decline is not a reversal.
-    const confirmed = !falling && (higherLows && advance >= 0.25 && position >= 0.55 ||
+    const confirmed = !falling && !opposingContext && (higherLows && advance >= 0.25 && position >= 0.55 ||
       advance >= 1 && position >= 0.72 && (!lowerLows || reclaim) || reclaim);
     const invalidation = low2 && low2.index >= n - 20 ? low2 : {
       price: Math.min(...bars.slice(-8).map(c => c.low)), index: n - 8, time: bars[Math.max(0, n - 8)].time
     };
-    return { confirmed, falling, higherLows, higherHighs, lowerLows, reclaim, advance, lateMove, position, invalidation };
+    return { confirmed, falling, opposingContext, contextAdvance, contextReclaimed, higherLows, higherHighs, lowerLows, reclaim, advance, lateMove, position, invalidation };
   }
   function publicLevel(level, bars, dir) {
     if (!level) return null;
@@ -196,12 +205,16 @@
     const exhausted = (last.high - last.close) / lastRange > 0.55 && last.high - last.close > a * 0.7 ||
       risk > rules.maximumRiskATR;
     const next = ahead.find(p => !pressure || p.level > pressure.level + a * 0.5) || null;
+    const breakoutDistance = broken ? (observedPrice - broken.level) / a : null;
+    const chase = !near && broken && breakoutDistance > 2;
+    // Activation must originate from a verified multi-test liquidity level.
+    // Momentum alone, without that origin, is not an OX classic opportunity.
     const phase = near ? observed.provisional && observedPrice > pressure.level + a * rules.holdATR ? 'probe' : 'prebreakout' :
-      broken ? 'breakout' : direction.advance >= 2 && direction.position >= 0.78 ? 'continuation' : 'watch';
+      broken ? 'breakout' : 'watch';
     const trigger = near ? pressure : broken, target = near ? next : ahead[0] || null;
     const space = target ? (target.level - observedPrice) / a : null;
     const spaceOK = space === null || space >= 0.65;
-    const structureReady = phase !== 'watch' && direction.confirmed && !failed && !liveFailure && !exhausted &&
+    const structureReady = phase !== 'watch' && direction.confirmed && !failed && !liveFailure && !exhausted && !chase &&
       risk > 0 && spaceOK;
     const qualityScore = Math.round(clamp(55 + (trigger ? Math.min(4, trigger.touches.length) * 4 : 0) +
       (direction.higherLows ? 7 : 0) + (direction.higherHighs ? 4 : 0) +
@@ -209,6 +222,8 @@
       (near ? Math.max(0, 8 - Math.max(0, gap) * 5) : 2) + (target && spaceOK ? 4 : 0), 0, 100));
     const rejectionReasons = [];
     if (!direction.confirmed) rejectionReasons.push(direction.falling ? '當下結構轉跌' : '右側上攻結構不足');
+    if (direction.opposingContext) rejectionReasons.push('較大結構仍逆向，局部反彈／回檔不算轉向');
+    if (chase) rejectionReasons.push('突破後已離開流動性，禁止追高／追空');
     if (!volume.complete) rejectionReasons.push('成交量歷史不足');
     else if (!volume.supported) rejectionReasons.push(volume.distribution ? '下跌放量／派發' : '上攻量能不足');
     if (phase === 'watch') rejectionReasons.push('沒有接近有效壓力或強勢啟動');
@@ -240,10 +255,10 @@
     const triggerVeto = ['最新價格已破壞結構', '近期突破失敗，壓力已上下貫穿', '上攻回落或已走離可觀察位置'];
     const triggerOK = trigger.direction?.confirmed && trigger.volume?.supported &&
       !trigger.volume.distribution && !triggerVeto.some(reason => trigger.rejectionReasons.includes(reason));
-    const eligible = setup.structureReady && triggerOK && setup.volume?.complete;
+    const eligible = setup.eligible && triggerOK;
     const reasons = [setupFrame + ' 結構＋' + triggerFrame + (setup.side === 'LONG' ? ' 上攻確認' : ' 下攻確認'), ...setup.reasons.filter(r => !r.includes('量比')),
       ...trigger.reasons.filter(r => r.includes('量比'))];
-    const signal = { ...setup, qualityScore: eligible ? Math.min(100, setup.qualityScore + (setup.volume.supported ? 0 : 10)) : setup.qualityScore,
+    const signal = { ...setup,
       triggerFrame, triggerClosedAt: trigger.closedAt, triggerVolume: trigger.volume,
       rejectionReasons: eligible ? [] : [...setup.rejectionReasons, ...(triggerOK ? [] : [triggerFrame + ' 當下方向或上攻量能未確認'])] };
     return finish(signal, !!eligible, setup.phase, setup.pressure, reasons);
