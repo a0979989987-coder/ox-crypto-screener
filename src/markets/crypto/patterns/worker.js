@@ -1,4 +1,4 @@
-import { prepareCandles, indexPrepared, matchPrepared } from './matcher.js?v=20261001-progress1';
+import { prepareCandles, indexPrepared, matchPrepared } from './matcher.js?v=20261001-resume1';
 const index=new Map();
 self.onmessage=({data})=>{
   try{

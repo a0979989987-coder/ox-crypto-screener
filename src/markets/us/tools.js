@@ -11,7 +11,7 @@ import {
   sectorETF,
 } from "./view-utils.js?v=20261001-us-eod1";
 import { USBubbles, bindPatternBoard } from "./visuals.js?v=20261001-us-eod1";
-import { tierResults, matchPath } from "./analysis.js?v=20261001-progress1";
+import { tierResults, matchPath } from "./analysis.js?v=20261001-resume1";
 import { createToolsRail } from "../../components/strength/tools-rail.js?v=20261001-tiercomb1";
 import { candleChart } from "../crypto/patterns/charts.js";
 import { createToolChart } from "../crypto/analytics/tools-charts.js";
@@ -209,7 +209,7 @@ export const toolsViews = {
       let result;
       if (typeof Worker === "function") {
         if (!this.worker) {
-          this.worker = new Worker(new URL("./worker.js?v=20261001-progress1", import.meta.url), {
+          this.worker = new Worker(new URL("./worker.js?v=20261001-resume1", import.meta.url), {
             type: "module",
           });
           this.worker.onmessage = (ev) => {

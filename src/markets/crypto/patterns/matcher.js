@@ -1,4 +1,4 @@
-import { evaluateClassic, compareClassic, compactClassic, rankClassicTiers } from '../../../core/classic.js?v=20261001-progress1';
+import { evaluateClassic, compareClassic, compactClassic, rankClassicTiers } from '../../../core/classic.js?v=20261001-resume1';
 import { PATTERNS, patternById } from './catalog.js?v=patterns5d-20260929';
 const clamp = (x, a=0, b=1) => Math.max(a, Math.min(b, x));
 const mean = a => a.reduce((s,x)=>s+x,0)/a.length;
