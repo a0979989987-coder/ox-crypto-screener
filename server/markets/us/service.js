@@ -20,12 +20,12 @@ const intervalMap = {
   "1W": "1week",
   "1M": "1month",
 };
-export function capabilities() {
-  if (process.env.US_DATA_PROVIDER === "finance-query")
-    return { source: "finance-query", chartMode: "native", rawDataAvailable: true,
-      feed: "Finance Query / Yahoo", delaySeconds: null,
+export function capabilities({ privateValidation = false } = {}) {
+  if (privateValidation || process.env.US_DATA_PROVIDER === "finance-query")
+    return { source: privateValidation ? "finance-query-private" : "finance-query", chartMode: "native", rawDataAvailable: true,
+      privateValidation, feed: privateValidation ? "Finance Query / Yahoo · 私人驗證" : "Finance Query / Yahoo", delaySeconds: null,
       volumeScope: "資料源回傳成交量；交易所涵蓋與延遲尚未確認",
-      externalDisplayConfirmed: process.env.US_EXTERNAL_DISPLAY_CONFIRMED === "true",
+      externalDisplayConfirmed: !privateValidation && process.env.US_EXTERNAL_DISPLAY_CONFIRMED === "true",
       extendedHours: false, intervals: Object.keys(financeFrames),
       update: "OHLCV 輪詢", pollMs: Math.max(60000, Number(process.env.US_CHART_POLL_MS) || 60000),
       depth: false, trades: false, calendarYears: [2025, 2028] };
@@ -89,13 +89,14 @@ export async function snapshot(readSnapshot = async () => JSON.parse(await readF
     return { ...empty, error: "共用掃描快照尚未建立，暫無分析結果。" };
   }
 }
-export async function handleUS2(endpoint, query, upstream, financeUpstream = financeQueryRequest) {
+export async function handleUS2(endpoint, query, upstream, financeUpstream = financeQueryRequest, options = {}) {
+  const cap = capabilities(options);
   if (endpoint === "capabilities")
-    return { ...capabilities(), session: sessionAt() };
+    return { ...cap, session: sessionAt() };
   if (endpoint === "directory") return publicDirectory();
   if (endpoint === "snapshot") return snapshot();
   if (!["chart-v2", "quote-v2"].includes(endpoint)) return null;
-  if (capabilities().chartMode === "widget") {
+  if (cap.chartMode === "widget") {
     const error = Error("TradingView 免費圖表不提供原始行情 API；請使用頁面內圖表。");
     error.code = "RAW_DATA_UNAVAILABLE";
     error.status = 503;
@@ -113,8 +114,7 @@ export async function handleUS2(endpoint, query, upstream, financeUpstream = fin
     e.code = 404;
     throw e;
   }
-  const cap = capabilities();
-  if (!cap.externalDisplayConfirmed && process.env.NODE_ENV !== "test") {
+  if (!cap.externalDisplayConfirmed && !options.privateValidation && process.env.NODE_ENV !== "test") {
     const error = Error("美股對外展示授權尚未確認。");
     error.code = "LICENSE_NOT_CONFIRMED";
     error.status = 403;
@@ -123,12 +123,12 @@ export async function handleUS2(endpoint, query, upstream, financeUpstream = fin
   if (endpoint === "quote-v2") {
     const saved = await cachedRequest(
       `quote:${cap.source}:${symbol}`,
-      () => withinBudget(1, () => cap.source === "finance-query"
+      () => withinBudget(1, () => cap.source.startsWith("finance-query")
         ? financeUpstream(`/quote/${encodeURIComponent(symbol)}`)
         : upstream("/quote", { symbol })),
       { ttl: 60000, stale: 86400000, withMetadata: true },
     );
-    const q = cap.source === "finance-query"
+    const q = cap.source.startsWith("finance-query")
       ? financeQuote(saved.value, symbol, saved.cache.fetchedAt, cap)
       : normalizeQuote(saved.value, saved.cache.fetchedAt, cap);
     if (!q) {
@@ -178,11 +178,11 @@ export async function handleUS2(endpoint, query, upstream, financeUpstream = fin
     throw e;
   }
   const key = `bars:${cap.source}:${symbol}:${interval}:${extended}:${cacheLimit}:${query.to || ""}`;
-  if (cap.source === "finance-query") {
+  if (cap.source.startsWith("finance-query")) {
     const [sourceInterval, range] = financeFrames[interval];
     // Absolute-date requests have returned a different frame upstream. Fetch
     // the verified range and filter locally; never label daily data as minutes.
-    const saved = await cachedRequest(`finance-chart:${symbol}:${sourceInterval}:${range}`,
+    const saved = await cachedRequest(`finance-chart:${cap.source}:${symbol}:${sourceInterval}:${range}`,
       () => withinBudget(1, async () => {
         const raw = await financeUpstream(`/chart/${encodeURIComponent(symbol)}`, { interval: sourceInterval, range });
         financeCandles(raw, symbol, interval); // Validate before caching.

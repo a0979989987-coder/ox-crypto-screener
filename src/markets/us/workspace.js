@@ -13,6 +13,7 @@ import {
   patterns,
   sectorETF,
   sourceInfo,
+  nativeAllowed,
 } from "./view-utils.js?v=20261001-us-native5";
 import { toolsViews } from "./tools.js?v=20261001-us-native5";
 import { newsViews } from "./news.js?v=20261001-us-native5";
@@ -91,6 +92,9 @@ export class USWorkspace {
         if(signal.aborted)return;
         const changedMode = this.cap.chartMode !== c.chartMode;
         this.cap = c;
+        this.root?.querySelectorAll('[data-us-home-tf]').forEach(button => {
+          button.hidden = Boolean(c.intervals && !c.intervals.includes(button.dataset.usHomeTf));
+        });
         if (changedMode && this.chart) {
           const old=this.chart,root=old.root,symbol=old.symbol,interval=old.interval;
           old.destroy();this.chartIn(root,symbol,interval);
@@ -213,7 +217,7 @@ export class USWorkspace {
         live.textContent=`美股 · ${sessionAt().label} · TradingView 免費延遲行情 · 來源依圖表標示`;
         live.title=live.textContent;live.dataset.usText=live.textContent;return;
       }
-      if ((this.cap.externalDisplayConfirmed === false && !this.cap.legacy) || this.chartErrorCode === "US_DATA_DISPLAY_RIGHTS_REQUIRED") {
+      if (!nativeAllowed(this.cap) || this.chartErrorCode === "US_DATA_DISPLAY_RIGHTS_REQUIRED") {
         live.textContent = "美股 · 行情展示未開通 · 股票搜尋與收藏可用";
         live.title = live.textContent;
         live.dataset.usText = live.textContent;
@@ -222,7 +226,7 @@ export class USWorkspace {
       const benchmarks = ["SPY", "QQQ", "IWM"]
         .map((s) => this.quotes.get(s))
         .filter(Boolean);
-      live.textContent = `美股 · ${sessionAt().label} · ${benchmarks.map((q) => `${q.symbol} ETF ${price(q.price)} ${pct(q.changePct)}`).join("　｜　") || "選擇股票查看真實 OHLCV"} · ${this.snapshot?.asOf ? "共用掃描 " + fmt(this.snapshot.asOf) : "掃描快照未取得"}`;
+      live.textContent = `美股${this.cap.privateValidation ? ' · 私人驗證' : ''} · ${sessionAt().label} · ${benchmarks.map((q) => `${q.symbol} ETF ${price(q.price)} ${pct(q.changePct)}`).join("　｜　") || "選擇股票查看真實 OHLCV"} · ${this.snapshot?.asOf ? "共用掃描 " + fmt(this.snapshot.asOf) : "掃描快照未取得"}`;
       live.title = live.textContent;
       live.dataset.usText = live.textContent;
     }
@@ -234,7 +238,7 @@ export class USWorkspace {
   openData(opener) { this.updateDataBrief(); openDialog(this.root.querySelector(".us2-data-dialog"),opener); }
   updateDataBrief() {
     const error=this.chartError || this.quoteError;
-    const label=this.cap.chartMode === "widget" ? "延遲行情" : ((this.cap.externalDisplayConfirmed === false && !this.cap.legacy) || this.chartErrorCode === "US_DATA_DISPLAY_RIGHTS_REQUIRED")?"行情未開通":error?.includes("授權")?"授權未確認":error?"資料異常":sessionAt().label;
+    const label=this.cap.chartMode === "widget" ? "延遲行情" : (!nativeAllowed(this.cap) || this.chartErrorCode === "US_DATA_DISPLAY_RIGHTS_REQUIRED")?"行情未開通":error?.includes("授權")?"授權未確認":error?"資料異常":this.cap.privateValidation?"私人驗證":sessionAt().label;
     this.root?.querySelectorAll("[data-data-open]").forEach(node=>{node.textContent=label;node.title=error||"查看行情時間、來源、股票資料與掃描狀態";});
     const symbol=this.state.view==="home"?this.state.homeSymbol:this.state.symbol;
     const item=this.directory.find(x=>x.symbol===symbol),q=this.quotes.get(symbol);
@@ -312,7 +316,7 @@ export class USWorkspace {
   async lookupQuote(symbol) {
     this.quoteController?.abort();
     if (this.cap.chartMode === "widget") {this.quoteError=null;this.updateIdentity();return;}
-    if (this.cap.externalDisplayConfirmed === false && !this.cap.legacy) {
+    if (!nativeAllowed(this.cap)) {
       this.quoteError = "美股行情尚未開通對外展示。";
       this.updateDataBrief();
       return;
@@ -320,7 +324,7 @@ export class USWorkspace {
     const c = new AbortController();
     this.quoteController = c;
     try {
-      const q = await USAdapter.quote(symbol, { signal: c.signal });
+      const q = await USAdapter.quote(symbol, { signal: c.signal, capabilities: this.cap });
       if (c.signal.aborted || !this.active) return;
       this.quoteError = null;
       this.quotes.set(symbol, q);
@@ -632,7 +636,7 @@ export class USWorkspace {
             return this.rowHTML(row, {reasons:true, tierStart, tierEnd: row.tier && rows[i + 1]?.tier !== row.tier});
           })
           .join("")
-      : `<div class="us2-empty">${this.state.watchOnly ? "自選尚無標的。搜尋股票並點星星收藏。" : this.snapshot?.analyses?.length ? "目前沒有符合條件的候選，請切換策略或多空。" : this.cap.chartMode === "widget" ? "免費圖表可看盤。OX 經典掃描需另接原始 K 線；目前沒有掃描結果。" : ((this.cap.externalDisplayConfirmed === false && !this.cap.legacy) || this.chartErrorCode === "US_DATA_DISPLAY_RIGHTS_REQUIRED") ? "行情與掃描尚未開通。可先搜尋股票、建立自選。" : "共用掃描資料尚未取得，暫無分析結果。"}</div>`;
+      : `<div class="us2-empty">${this.state.watchOnly ? "自選尚無標的。搜尋股票並點星星收藏。" : this.snapshot?.analyses?.length ? "目前沒有符合條件的候選，請切換策略或多空。" : this.cap.chartMode === "widget" ? "免費圖表可看盤。OX 經典掃描需另接原始 K 線；目前沒有掃描結果。" : (!nativeAllowed(this.cap) || this.chartErrorCode === "US_DATA_DISPLAY_RIGHTS_REQUIRED") ? "行情與掃描尚未開通。可先搜尋股票、建立自選。" : "共用掃描資料尚未取得，暫無分析結果。"}</div>`;
     list.scrollTop = y;
     this.bindRows(list);
     const control = this.root.querySelector(".us2-tier .radar-tier-current");
@@ -651,7 +655,10 @@ export class USWorkspace {
       this.state.homeInterval,
     );
     main.querySelector('.us2-chart-toolbar').hidden=true;
-    main.querySelectorAll('[data-us-home-tf]').forEach(b=>b.onclick=()=>this.chart.change({interval:b.dataset.usHomeTf}));
+    main.querySelectorAll('[data-us-home-tf]').forEach(b=>{
+      b.hidden = Boolean(this.cap.intervals && !this.cap.intervals.includes(b.dataset.usHomeTf));
+      b.onclick=()=>this.chart.change({interval:b.dataset.usHomeTf});
+    });
     const analyze=main.querySelector("[data-home-analyze]");
     analyze.setAttribute("aria-label","在雷達分析目前 ETF");
     analyze.onclick=()=>this.openStock(this.state.homeSymbol,{interval:this.state.homeInterval,collapse:true});

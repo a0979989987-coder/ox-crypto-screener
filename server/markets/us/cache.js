@@ -17,6 +17,7 @@ export async function cachedRequest(key, load, {
     if (previous) return previous;
     const error = Error("行情供應商限流，請稍後重試。");
     error.code = 429;
+    error.retryAfter = Math.max(1, Math.ceil((backoffUntil - now) / 1000));
     throw error;
   }
   if (!pending.has(key)) {
@@ -27,7 +28,7 @@ export async function cachedRequest(key, load, {
       return entry;
     }).catch(error => {
       if (Number(error.code) === 429 || error.status === 429)
-        backoffUntil = Date.now() + 60000;
+        backoffUntil = Math.max(backoffUntil, Date.now() + Math.max(60, Number(error.retryAfter) || 60) * 1000);
       throw error;
     }).finally(() => pending.delete(key));
     pending.set(key, request);

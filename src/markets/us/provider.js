@@ -63,14 +63,15 @@ export const USAdapter = {
     }
   },
   async quote(symbol, options = {}) {
+    const key = `${options.capabilities?.source || 'twelve-data'}:${symbol}`;
     try {
       const j = await endpoint("quote-v2", { symbol }, options);
-      quoteCache.set(symbol, j.quote);
+      quoteCache.set(key, j.quote);
       while (quoteCache.size > 100) quoteCache.delete(quoteCache.keys().next().value);
       return j.quote;
     } catch (e) {
       if (!options.signal?.aborted) {
-        const previous = previousData(quoteCache.get(symbol), e);
+        const previous = previousData(quoteCache.get(key), e);
         if (previous) return previous;
       }
       if (options.signal?.aborted || e.status !== 404 || !localValidation())

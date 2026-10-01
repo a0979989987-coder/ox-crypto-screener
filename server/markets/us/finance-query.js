@@ -7,8 +7,21 @@ import { confirmedChart } from '../../../scripts/lib/finance-query-validation.mj
 export async function financeQueryRequest(path, params = {}) {
   const url = new URL(`https://finance-query.com/v2${path}`);
   for (const [key, value] of Object.entries(params)) url.searchParams.set(key, value);
-  const response = await fetch(url, { signal: AbortSignal.timeout(10000) });
-  if (!response.ok) throw Object.assign(Error('Finance Query 資料請求失敗。'), { status: response.status });
+  let response;
+  try {
+    response = await fetch(url, { signal: AbortSignal.timeout(10000) });
+  } catch (error) {
+    throw Object.assign(Error(error.name === 'TimeoutError'
+      ? 'Finance Query 回應逾時，請稍後重試。' : 'Finance Query 連線失敗，請稍後重試。'),
+      { status: error.name === 'TimeoutError' ? 504 : 502 });
+  }
+  if (!response.ok) {
+    const header = response.headers.get('retry-after');
+    const seconds = Number(header) || Math.ceil((Date.parse(header) - Date.now()) / 1000);
+    throw Object.assign(Error('Finance Query 資料請求失敗。'), {
+      status: response.status, ...(response.status === 429 ? { retryAfter: Math.max(60, seconds || 60) } : {}),
+    });
+  }
   const data = await response.json();
   if (data.error || data.status === 'error')
     throw Object.assign(Error('Finance Query 資料源回傳錯誤。'), {

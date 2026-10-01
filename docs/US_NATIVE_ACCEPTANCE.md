@@ -148,3 +148,18 @@ CDN 及 request coalescing 能減少重複讀取，不能把有限供應商額�
 - 後端快取隔離供應商；同一來源 1H／4H 及初次／尾端更新共用上游結果。429 保持退避，不更換身分或繞過限流。
 - 歷史續載僅在來源已驗證的 range 內本地篩選；來源曾將絕對日期分線要求回傳為日線，因此不使用此方式，也不保證無限歷史。
 - 舊版 Twelve Data 行情及搜尋路由在新來源模式停用，避免切換後仍消耗舊供應商額度。
+
+### 真正後端 API 的私人原生驗收入口
+
+執行 `US_PRIVATE_INPUT=/tmp/ox-us-private-frames/evaluation.json npm run dev -- --us-private --port 4186`。
+若不指定 `US_PRIVATE_INPUT`，原生圖表仍直接讀取新來源，掃描列表則明確顯示尚未指定快照。
+
+- 僅綁定 `127.0.0.1`，拒絕外部 socket、Host、Origin 與 cross-site API 請求；私有 API 全部 `no-store`，未啟用 CORS。
+- 明確回傳 `privateValidation=true` 與 `externalDisplayConfirmed=false`。本機頁面可驗收；公開網域不因 private flag 解鎖。
+- 私人 API 使用與正式 adapter 相同的報價、級別驗證、正常盤過濾、4H 聚合、快取、限流與錯誤處理。Vercel handler 不啟用這個入口。
+- `scripts/test-us-native-live.cjs` 在 390／430 手機尺寸逐根比對七種級別的真實後端 OHLC；不攔截美股 API，也不以 fixture 代替美股資料。其他市場仍使用既有 UI 測試隔離資料。
+- 級別選單及首頁週期依 capability 限縮；換來源或原級別不再支援時清除舊圖表資料再載入，避免新標籤配舊 K 線。
+- 供應商提供較長 `Retry-After` 時保留原退避時間；私人驗收遇到 429 等候後最多重試一次，不更換供應商身分。驗收腳本若遇超過 60 秒的要求則停止，不縮短要求。
+- 此入口不等於公開成品連結；不能用公開部署、reverse proxy 或 tunnel 將私人原始資料轉為公開展示。
+- 本輪真正後端驗收：Chromium 與 WebKit，各 390／430 寬度，七種級別全部逐根 OHLC 相符；首頁正常載入，無 JavaScript 例外或橫向溢出。一般回傳尾段 400 根；30m 為來源提供的 273 根，不補造資料。
+- WebKit 初次完整驗收遇到本機每分鐘 8 次額度保護，等候後又遇上游日線逾時；重跑最後通過，保留 429 與逾時問題紀錄，不代表來源持續穩定或無限額度。測試共 189 項通過。

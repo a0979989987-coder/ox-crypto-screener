@@ -16,6 +16,10 @@ export const price = (n) =>
 export const pct = (n) =>
   n === null || n === undefined ? "—" : `${n >= 0 ? "+" : ""}${n.toFixed(2)}%`;
 export const tone = (n) => (n >= 0 ? "us2-up" : "us2-down");
+// Private validation never marks public redistribution rights as confirmed.
+export const nativeAllowed = cap => cap.externalDisplayConfirmed !== false || cap.legacy ||
+  (cap.privateValidation === true && typeof location !== 'undefined' &&
+    ['127.0.0.1', 'localhost', '[::1]'].includes(location.hostname));
 export const sourceInfo = source => ({
   'twelve-data': { label: 'Twelve Data', url: 'https://twelvedata.com/' },
   'finmind-private-eod': { label: 'FinMind · 私人日線驗證', url: 'https://finmind.github.io/' },

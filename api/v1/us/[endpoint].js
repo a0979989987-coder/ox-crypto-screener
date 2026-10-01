@@ -693,7 +693,7 @@ export default async function handler(req, res) {
         "美股對外展示授權尚未確認。",
       );
     const code = Number(error?.code) || error?.status;
-    if (code === 429) res.setHeader("Retry-After", "60");
+    if (code === 429) res.setHeader("Retry-After", String(Math.max(1, Number(error.retryAfter) || 60)));
     if ([400, 403, 404, 429].includes(code))
       return fail(
         res,
