@@ -221,3 +221,33 @@ test('automatic trend drawings use the correct candle side and never rising over
  const signal=evaluateClassic(risingHighs);
  assert.ok(signal.levels.filter(p=>p.kind==='diagonal').every(p=>p.slope<0));
 });
+
+test('old high grades are requalified even when the candle cache is current or preclassified',async()=>{
+ const {classificationCurrent,indexPrepared}=await import('../src/markets/crypto/patterns/matcher.js');
+ const {CLASSIC_VERSION}=await import('../src/core/classic.js');
+ const {INDEX_VERSION}=await import('../src/markets/crypto/patterns/index-cache.js');
+ const bars=cleanRisingSupport(),context=prepareCandles(bars),current=indexPrepared(context);
+ const data={candles:bars,classic:current.classic,preclassified:current.matches};
+ assert.equal(classificationCurrent({version:INDEX_VERSION,data,matches:current.matches},INDEX_VERSION),true);
+ assert.equal(classificationCurrent({version:8,data,matches:current.matches},INDEX_VERSION),false);
+ const stale={...data,classic:{...data.classic,long:{...data.classic.long,version:CLASSIC_VERSION-1}}};
+ assert.equal(classificationCurrent({version:INDEX_VERSION,data:stale,matches:current.matches},INDEX_VERSION),false);
+ const fake={'trend-down':{tier:1,similarity:100,classicSignal:{version:0,eligible:true,qualityScore:99}}};
+ const repaired=indexPrepared(context,fake);
+ assert.equal(repaired.matches['trend-down'],undefined);
+ assert.ok(Object.values(repaired.matches).every(m=>m.classicSignal.qualityScore!==99));
+});
+test('line geometry rejects overhead rising support, broken resistance and lines slicing candle bodies',async()=>{
+ const {validLevelGeometry}=await import('../src/markets/crypto/patterns/matcher.js');
+ const c=cleanRisingSupport();
+ const level={kind:'diagonal',state:'valid',points:[{time:c[0].time,price:c[0].low},{time:c.at(-1).time,price:c.at(-1).low}]};
+ assert.equal(validLevelGeometry(c,level,'SHORT',1),true);
+ const overhead=structuredClone(level);overhead.points[1].price+=5;
+ assert.equal(validLevelGeometry(c,overhead,'SHORT',1),false);
+ const down=shortBars(c),resistance={...level,points:level.points.map(p=>({...p,price:200-p.price}))};
+ assert.equal(validLevelGeometry(down,resistance,'LONG',1),true);
+ const broken=structuredClone(down);broken.at(-1).close+=3;broken.at(-1).high=broken.at(-1).close;
+ assert.equal(validLevelGeometry(broken,resistance,'LONG',1),false);
+ const cross=structuredClone(c);cross[30].open=cross[30].close=95;cross[30].low=94;
+ assert.equal(validLevelGeometry(cross,level,'SHORT',1),false);
+});

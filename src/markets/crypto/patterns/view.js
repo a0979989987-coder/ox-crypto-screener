@@ -1,8 +1,8 @@
 import { PATTERNS, patternById, TIMEFRAMES as CRYPTO_TIMEFRAMES } from './catalog.js?v=patterns5d-20260929';
 import { revealStyledShadow } from '../../../components/style-ready.js?v=20261001-loading1';
-import { queryFromStrokes, normalize, sortMatches, patternCounts, prepareCandles, indexPrepared, matchPrepared, rankPatternMatches, browsePatternEntries } from './matcher.js?v=20261002-rank6';
-import * as cryptoSource from './source.js?v=20261002-rank6';
-import * as cryptoCache from './index-cache.js?v=20261002-rank6';
+import { queryFromStrokes, normalize, sortMatches, patternCounts, prepareCandles, indexPrepared, matchPrepared, rankPatternMatches, browsePatternEntries, classificationCurrent } from './matcher.js?v=20261002-rank7';
+import * as cryptoSource from './source.js?v=20261002-rank7';
+import * as cryptoCache from './index-cache.js?v=20261002-rank7';
 import { candleChart } from './charts.js?v=patterns-tw-20260930';
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const icons={down:'<path d="m6 9 6 6 6-6"/>',close:'<path d="m6 6 12 12M18 6 6 18"/>',undo:'<path d="m9 5-5 5 5 5M4 10h10a5 5 0 1 1 0 10"/>',refresh:'<path d="M4 4v6h6M4 10a8 8 0 1 1 1 8"/>',scan:'<circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="1.5"/><path d="M12 12 17 7M12 2v2M22 12h-2M12 22v-2M2 12h2"/>',expand:'<path d="M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5"/>'};
@@ -58,7 +58,7 @@ export function mountPatternSearch(host,options={}){
   const scheduleBoard=()=>{if(!boardRAF)boardRAF=requestAnimationFrame(drawBoard);};const resize=new ResizeObserver(scheduleBoard);resize.observe(board);
   function resetWorker(){worker?.terminate();worker=null;for(const j of jobs.values())j.reject(new DOMException('Aborted','AbortError'));jobs.clear();fallback.clear();hydrated.clear();}
   function compute(message){
-    if(!worker){try{worker=new Worker(new URL('./worker.js?v=20261002-rank6',import.meta.url),{type:'module'});worker.onmessage=({data})=>{const job=jobs.get(data.id);jobs.delete(data.id);if(job)data.error?job.reject(Error(data.error)):job.resolve(data.result);};worker.onerror=()=>{for(const j of jobs.values())j.reject(Error('型態計算失敗'));jobs.clear();worker?.terminate();worker=null;hydrated.clear();};}catch{}}
+    if(!worker){try{worker=new Worker(new URL('./worker.js?v=20261002-rank7',import.meta.url),{type:'module'});worker.onmessage=({data})=>{const job=jobs.get(data.id);jobs.delete(data.id);if(job)data.error?job.reject(Error(data.error)):job.resolve(data.result);};worker.onerror=()=>{for(const j of jobs.values())j.reject(Error('型態計算失敗'));jobs.clear();worker?.terminate();worker=null;hydrated.clear();};}catch{}}
     if(!worker)return new Promise(resolve=>setTimeout(()=>{
       if(message.type==='index'){const context=prepareCandles(message.candles);fallback.set(message.key,context);resolve(indexPrepared(context,message.matches));}
       else if(message.type==='prepare'){for(const entry of message.entries)fallback.set(entry.key,prepareCandles(entry.candles));resolve(true);}
@@ -140,7 +140,7 @@ export function mountPatternSearch(host,options={}){
   function status(text){q('.px-status').textContent=text;}
   function stop(){version++;controller?.abort();controller=null;busy=false;clearTimeout(paintTimer);paintTimer=0;clearTimeout(scanFinishTimer);q('.px-board').classList.remove('is-scanning');q('.px-refresh-pill').classList.remove('is-scanning','is-complete');}
   async function hydrate(entry){
-    if(!entry.data.preclassified&&entry.version!==INDEX_VERSION){
+    if(!classificationCurrent(entry,INDEX_VERSION)){
       const indexed=await compute({type:'index',key:entry.key,candles:entry.data.candles});
       entry={...entry,version:INDEX_VERSION,matches:indexed.matches,data:{...entry.data,classic:indexed.classic}};
       hydrated.add(entry.key);saveIndex(entry.data,entry.matches);
@@ -153,14 +153,15 @@ export function mountPatternSearch(host,options={}){
     q('.px-pill-arc').style.strokeDashoffset='107';q('.px-board').classList.add('is-scanning');q('.px-refresh-pill').classList.add('is-scanning');updateStatus();
     try{
       const cached=entries.size?[]:await readIndex(frames);if(run!==version)return;
-      for(let i=0;i<cached.length;i++){if(run!==version)return;await hydrate(cached[i]);if(i%40===39)await new Promise(resolve=>setTimeout(resolve,0));}
+      for(let i=0;i<cached.length;i++){if(run!==version)return;await hydrate(cached[i]);if(i%20===19){search();await new Promise(resolve=>setTimeout(resolve,0));}}
       search();
       if(!universe||market==='tw'||market!=='tw'&&(Date.now()-universe.serverTime>60000||frames.some(f=>Math.floor(Date.now()/1000/TIMEFRAMES[f])!==Math.floor(universe.serverTime/1000/TIMEFRAMES[f]))))universe=await fetchUniverse(signal,limit);
       if(run!==version)return;const pool=universe;progress.total=pool.tickers.length*frames.length;progress.coinsTotal=pool.tickers.length;loading?.update(0,progress.coinsTotal);updateStatus();
       await scanUniverse(pool,frames,{signal,onSeries:async data=>{
         if(run!==version)return;const key=data.symbol+':'+data.frame,existing=entries.get(key),same=existing&&entryCurrent(existing,data.serverTime)&&existing.data.candles.at(-1).time===data.candles.at(-1).time&&(!data.candles.at(-1).provisional||existing.data.serverTime===data.serverTime);
-        const reuse=same&&existing.version===INDEX_VERSION;
-        const indexed=data.preclassified?{matches:data.preclassified,classic:data.classic}:reuse?
+        const reuse=same&&classificationCurrent(existing,INDEX_VERSION);
+        const preclassified=data.preclassified&&classificationCurrent({version:INDEX_VERSION,data,matches:data.preclassified},INDEX_VERSION);
+        const indexed=preclassified?{matches:data.preclassified,classic:data.classic}:reuse?
           {matches:existing.matches,classic:existing.data.classic}:await compute({type:'index',key,candles:data.candles});
         if(run!==version)return;if(!data.preclassified&&!reuse)hydrated.add(key);
         const fresh={...data,classic:indexed.classic},entry={key,data:fresh,matches:indexed.matches,version:INDEX_VERSION};

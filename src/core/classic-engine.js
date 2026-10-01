@@ -4,7 +4,7 @@
  */
 (function (root) {
   'use strict';
-  const CLASSIC_VERSION = 10;
+  const CLASSIC_VERSION = 11;
   const CLASSIC_TIER_LIMITS = Object.freeze({ T1: 10, T2: 15, T3: 15 });
   // Initial, centralized defaults in ATR/bar units. These are implementation
   // thresholds, not claims of calibration or performance from trade screenshots.
@@ -246,7 +246,7 @@
     const broken = levels.filter(p => p.state === 'broken' && n-1-p.breakIndex <= rules.recentBreakBars &&
       last.close >= p.level-a*.15).sort((x,y)=>
         Number(y.kind==='horizontal')-Number(x.kind==='horizontal') || y.breakIndex-x.breakIndex)[0] || null;
-    const failed = levels.some(p => p.state === 'consumed' && p.consumedAt !== null &&
+    const failed = !near && !broken && !reversal.candidate && levels.some(p => p.state === 'consumed' && p.consumedAt !== null &&
       n - 1 - p.consumedAt <= 5 && last.close < p.level - a * 0.25);
     const stop = direction.invalidation, risk = (last.close - stop.price) / a, liveRisk=(observedPrice-stop.price)/a;
     const liveFailure = observedPrice < stop.price - a * 0.2 ||
@@ -426,9 +426,43 @@
       trigger.volume?.supported || trigger.observationEvidence?.directionalVolume ||
       trigger.direction.advance >= 0.65 && trigger.volume?.upwardShare >= 0.5 && trigger.volume?.recentRatio >= 0.8
     ) || trigger.reversal?.candidate;
-    const observationEligible = setup.observationEligible && triggerObservationReady && trigger.volume?.complete &&
+    // An intact, volume-supported setup can still be forming while the
+    // smaller frame is flat. Keep it as low-completeness observation; do not
+    // require the same trigger confirmation as a ready entry.
+    const formingSetup=(setup.eligible||setup.observationEligible) && setup.direction?.confirmed && setup.volume?.supported &&
+      setup.pressure?.state==='valid' && setup.pressure.touches>=2 &&
+      setup.distanceATR>=-.15 && setup.distanceATR<=1.2;
+    const quietTrigger=trigger.volume?.complete && trigger.direction?.advance>=-.25 &&
+      trigger.direction?.lateMove>=-.3 && trigger.direction?.position>=.4 &&
+      trigger.volume?.upwardShare>=.45 && trigger.volume?.recentRatio>=.6;
+    const triggerClear=!trigger.direction?.falling && !trigger.direction?.opposingContext &&
+      !trigger.volume?.distribution && !triggerVeto.some(reason=>trigger.rejectionReasons.includes(reason));
+    // A smaller-frame pullback does not invalidate the still-confirmed setup
+    // frame. It remains observation-only, with a low score and explicit reason.
+    const setupStillIntact=formingSetup && setup.volume.recentRatio>=.6 &&
+      trigger.volume?.complete && !trigger.direction?.opposingContext &&
+      trigger.direction?.position>=.35 && trigger.direction?.advance>=-.5;
+    const developingObservation=setupStillIntact && (!triggerObservationReady||!triggerClear) &&
+      (quietTrigger||trigger.direction?.advance>=0);
+    // Broader formation watch pool: a real, unconsumed boundary is mandatory.
+    // T3 may lack the final push/volume expansion; it must not reuse the T1 gate.
+    const formingBoundary=setup.pressure?.state==='valid' && setup.pressure.touches>=2 &&
+      setup.distanceATR>=-.15 && setup.distanceATR<=3 &&
+      setup.volume?.complete && !setup.volume.distribution && setup.volume.recentRatio>=.5 &&
+      setup.volume.upwardShare>=.4 && !setup.direction?.falling && !setup.direction?.opposingContext &&
+      setup.direction?.advance>=-.35 && setup.direction?.position>=.4 &&
+      !setup.rejectionReasons.some(r=>['最新價格已破壞結構','近期突破失敗，壓力已上下貫穿',
+       '突破後已離開流動性，禁止追高／追空','上攻回落或已走離可觀察位置'].includes(r));
+    const earlyObservation=!eligible && !developingObservation &&
+      !(setup.observationEligible&&triggerObservationReady&&triggerClear) && formingBoundary &&
+      trigger.volume?.complete && !trigger.volume.distribution && !trigger.direction?.falling &&
+      !trigger.direction?.opposingContext && trigger.direction?.advance>=-.35 &&
+      trigger.direction?.position>=.4 && trigger.volume?.upwardShare>=.4;
+    const partialObservation=developingObservation||earlyObservation;
+    const observationEligible = !confirmationBlocked && (partialObservation ||
+      setup.observationEligible && triggerObservationReady && trigger.volume?.complete &&
       !trigger.direction?.falling && (!trigger.direction?.opposingContext||trigger.reversal?.candidate) && !trigger.volume?.distribution &&
-      !triggerVeto.some(reason => trigger.rejectionReasons.includes(reason)) && !confirmationBlocked;
+      !triggerVeto.some(reason => trigger.rejectionReasons.includes(reason)));
     const reasons = [setupFrame + ' 結構＋' + triggerFrame + (setup.side === 'LONG' ? ' 上攻確認' : ' 下攻確認'), ...setup.reasons.filter(r => !r.includes('量比')),
       ...trigger.reasons.filter(r => r.includes('量比'))];
     // Score partial observations from current evidence. Capping a 100-point
@@ -446,13 +480,21 @@
       Math.min(4,Math.log2(Math.max(1,trigger.volume?.impulseRatio||1)))-
       (triggerSpaceBlocked?8:0)-(confirmationBlocked?8:0)+(setup.locationAdjustment||0),0,79));
     const signal = { ...setup, observationEligible:!!observationEligible,
-      qualityScore:eligible?setup.qualityScore:observationScore,
+      qualityScore:eligible?setup.qualityScore:developingObservation?Math.min(triggerClear?59:54,observationScore):earlyObservation?Math.round(
+        32+Math.min(6,setup.pressure.touches*1.5)+Math.max(0,6*(1-setup.distanceATR/3))+
+        (setup.volume.supported?4:0)+(trigger.direction.confirmed?3:0)+(trigger.volume.supported?3:0)):observationScore,
+      developingObservation:!!partialObservation,
+      observationClass:earlyObservation?'forming-boundary':developingObservation?'setup-awaits-trigger':null,
       triggerFrame, triggerClosedAt: trigger.closedAt, triggerVolume: trigger.volume,
       matchedReasons:[...(setup.matchedReasons||[]),
+        ...(earlyObservation?[setupFrame+' 有效邊界 · '+setup.pressure.touches+' 次獨立測試 · 距離 '+setup.distanceATR.toFixed(2)+' ATR']:[]),
+        ...(developingObservation?[setupFrame+' 型態與量能仍有效，'+triggerFrame+' 回落／確認不足，僅列低分觀察']:[]),
         ...(trigger.direction?.confirmed?[triggerFrame+' 同向結構已確認']:[]),
         ...(trigger.volume?.supported?[triggerFrame+' 同向放量已確認 · '+trigger.volume.impulseRatio.toFixed(2)+'x']:[])],
       rejectionReasons: eligible ? [] : [...setup.rejectionReasons,
         ...(triggerOK ? [] : [triggerFrame + ' 當下方向或上攻量能未確認']),
+        ...(earlyObservation?['型態觀察：尚缺接近臨界點、同向放量或小級別啟動確認']:[]),
+        ...(developingObservation?[triggerFrame+' '+(trigger.volume.distribution?'反向放量，等待重新上攻':triggerClear?'啟動尚未確認':'回落未完成，等待重新上攻')]:[]),
         ...(triggerSpaceBlocked ? [triggerFrame + ' 下一個目標空間不足'] : []),
         ...(confirmationBlocked ? [confirmationFrame + ' 短線方向或同向量能轉弱'] : [])] };
     return finish(signal, !!eligible, setup.phase, setup.pressure, reasons);
