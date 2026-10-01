@@ -1,4 +1,4 @@
-import { mountTWChartRadar } from './chart-radar.js?v=20261001-classic5';
+import { mountTWChartRadar } from './chart-radar.js?v=20261001-progress1';
 import { radarAvailability } from './recovery.js?v=20261001-tiercomb1';
 import { TW_RADAR_MODES, normalizeTWStockCard, rowsForTWMode, renderTWStockCard } from "./radar-card.js";
 import { observeTWMiniCandles, resetTWMiniCandles, openTWStockDetail } from "./radar-candles.js?v=20261001-twhome1";
@@ -3107,7 +3107,7 @@ function refreshRadarDataUI(
       const meta = state?.data?.radarModesMeta?.[activeMode];
       const loading = activeMode !== "watchlist" && availability.loading && !meta;
       if (loading) {
-        list.innerHTML = Array.from({ length: 4 }, () => '<div class="twr-loading-card" aria-label="官方名單載入中"><i></i><i></i><i></i></div>').join("");
+        list.innerHTML = '<div class="twr-empty" role="status">官方名單更新中，取得股票後即顯示。</div>';
       } else {
         const message = activeMode === "watchlist" ? "尚未收藏股票。點選股票卡片右上角的星星即可加入自選。"
           : availability.unavailable || meta?.status === "error" ? "台股資料暫時無法取得，請確認網路後重新載入。"

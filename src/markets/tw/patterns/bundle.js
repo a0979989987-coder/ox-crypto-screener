@@ -1,6 +1,6 @@
 import { aggregateCandles } from './model.js';
-import { classifyTWSeries } from '../classic.js?v=20261001-classic5';
-import { qualifyPatternMatches } from '../../crypto/patterns/matcher.js?v=20261001-classic5';
+import { classifyTWSeries } from '../classic.js?v=20261001-progress1';
+import { qualifyPatternMatches } from '../../crypto/patterns/matcher.js?v=20261001-progress1';
 // Official candles and named-pattern classifications are built once on the server.
 const manifestURL=new URL('../../../../data/tw-patterns/manifest.json',import.meta.url);
 const entries=new Map(),listeners=new Set();let manifest=null,pending=null,checkedAt=0,failed=0;
@@ -34,7 +34,7 @@ export async function preloadBundle({force=false,silent=false}={}){
       const daily=qualify(e.data.candles,'1D',e.matches);
       const frames=Object.fromEntries(Object.entries(e.frames||{}).map(([frame,prepared])=>[frame,qualify(aggregateCandles(e.data.candles,frame,next.date),frame,prepared.matches)]));
       entries.set(e.key,{...e,...daily,data:{...e.data,classic:daily.classic},frames});
-      if(index%30===29)await new Promise(resolve=>setTimeout(resolve,0));
+      if(index===0||index%30===29){loading?.update(entries.size+failed,next.classified);emit();await new Promise(resolve=>setTimeout(resolve,0));}
     }
    }catch{failed+=chunk.count;}loading?.update(entries.size+failed,next.classified);emit();
   }}));checkedAt=failed?0:Date.now();return bundleState();
