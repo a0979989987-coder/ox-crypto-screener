@@ -1700,7 +1700,10 @@ export async function refreshTWMarketState(
           ...(currentState.data || {}),
           radar: normalizeTWRadar(payload),
           radarModes: payload?.modes || {},
-          radarModesMeta: payload?.modesMeta || {}
+          radarModesMeta: payload?.modesMeta || {},
+          radarUpdatedAt: new Date().toISOString(),
+          usingCachedRadar: false,
+          meta: { ...(currentState.data?.meta || {}), sourceErrors: { ...(currentState.data?.meta?.sourceErrors || {}), radar: null } }
         }
       });
       emitState(partialState);
@@ -1871,7 +1874,7 @@ export async function refreshTWMarketState(
             normalizeTWRadar(
               resultValue(
                 radarResult,
-                []
+                currentState.data?.radar || []
               )
             );
 
@@ -1962,8 +1965,10 @@ export async function refreshTWMarketState(
               // Optional provider-curated lists. The client never derives
               // disposition status from ordinary price or volume fields.
               radarModes:
-                resultValue(radarResult, {})?.modes || {},
-              radarModesMeta: resultValue(radarResult, {})?.modesMeta || {},
+                resultValue(radarResult, { modes: currentState.data?.radarModes })?.modes || {},
+              radarModesMeta: resultValue(radarResult, { modesMeta: currentState.data?.radarModesMeta })?.modesMeta || {},
+              radarUpdatedAt: currentState.data?.radarUpdatedAt || null,
+              usingCachedRadar: radarResult.status === 'rejected' && !!currentState.data?.radarUpdatedAt,
 
               indicators,
 

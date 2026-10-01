@@ -128,3 +128,6 @@ body.ox-terminal #market-unavailable-card.tw-radar-root { margin-top: 16px !impo
   -webkit-backdrop-filter: none;
 }
 .tw-radar-root .twr-results-panel::before { display: none; }
+.tw-radar-root .twr-retry { margin: 6px 0 10px; padding: 7px 14px; border: 1px solid #ffffff50; border-radius: 9px; color: inherit; background: #ffffff12; font: inherit; font-size: 12px; cursor: pointer; }
+.tw-radar-root .twr-retry:disabled { opacity: .55; cursor: wait; }
+.tw-radar-root .twr-retry[hidden], .tw-radar-root .twr-source-notice[hidden] { display: none !important; }
