@@ -3,10 +3,17 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {evaluateClassic,evaluateFrames,rankClassicTiers} from '../src/core/classic.js';
 const fixture=JSON.parse(readFileSync(new URL('./fixtures/crypto-classic-reversals-20261001.json',import.meta.url)));
-function sample(symbol){
- const response=fixture.responses[symbol],now=Math.max(...Object.values(response).map(r=>r.requestTime));
- const frames=Object.fromEntries(Object.entries(response).map(([frame,r])=>[frame,r.data.map(v=>({time:+v[0]/1000,open:+v[1],high:+v[2],low:+v[3],close:+v[4],volume:+v[5],quoteVolume:+v[6],provisional:+v[0]+({'1H':3600,'4H':14400,'1D':86400})[frame]*1000>r.requestTime})).sort((a,b)=>a.time-b.time)]));
+const monFixture=JSON.parse(readFileSync(new URL('./fixtures/crypto-mon-20261001.json',import.meta.url)));
+const radarAudit=JSON.parse(readFileSync(new URL('./fixtures/crypto-radar-audit-20261001.json',import.meta.url)));
+function recordedFrames(response){
+ const now=Math.max(...Object.values(response).map(r=>Number(r.requestTime)));
+ const frames=Object.fromEntries(Object.entries(response).map(([frame,r])=>[frame,
+   r.data.map(v=>({time:+v[0]/1000,open:+v[1],high:+v[2],low:+v[3],close:+v[4],volume:+v[5],
+     provisional:+v[0]+({'1H':3600,'4H':14400,'1D':86400})[frame]*1000>r.requestTime})).sort((a,b)=>a.time-b.time)]));
  return {frames,now};
+}
+function sample(symbol){
+ return recordedFrames(fixture.responses[symbol]);
 }
 test('recorded CAP remains an observation when the current candle recovers a prior upper wick',()=>{
  const {frames,now}=sample('CAPUSDT'),s=evaluateFrames(frames,{now,setupFrame:'4H',triggerFrame:'1H'});
@@ -47,4 +54,38 @@ test('reversal observation needs complete actual volume and works symmetrically 
  assert.equal(bear.side,'SHORT');assert.equal(bear.observationEligible,true);assert.equal(bear.phase,'reversal-probe');
  frames['4H'].at(-12).volume=null;
  assert.equal(evaluateFrames(frames,{now,setupFrame:'4H',triggerFrame:'1H'}).observationEligible,false);
+});
+test('recorded MON unfinished daily probe cannot score 99 or bypass a nearby 4H ceiling and weak 1H tape',()=>{
+ const {frames,now}=recordedFrames(monFixture.responses);
+ const result=evaluateFrames(frames,{side:'long',setupFrame:'1D',triggerFrame:'4H',confirmationFrame:'1H',now});
+ assert.equal(result.phase,'probe');assert.equal(result.eligible,false);assert.equal(result.observationEligible,false);
+ assert.ok(result.qualityScore<=79);assert.ok(result.rejectionReasons.some(r=>r.includes('4H 下一個目標空間不足')));
+ assert.ok(result.rejectionReasons.some(r=>r.includes('1H 短線方向')));
+ assert.deepEqual(rankClassicTiers([{symbol:'MONUSDT',classicSignal:result}]),[]);
+});
+test('recorded flat SNX GRVT CVX 1000SATS JST and WOO cannot crowd fresh volume-backed reversals',()=>{
+ const rows=[];
+ for(const symbol of ['SNXUSDT','GRVTUSDT','CVXUSDT','1000SATSUSDT','JSTUSDT','WOOUSDT']){
+  const {frames,now}=recordedFrames(radarAudit.responses[symbol]);
+  const signals=[['4H','1H'],['1D','4H']].map(([setupFrame,triggerFrame])=>
+    evaluateFrames(frames,{setupFrame,triggerFrame,confirmationFrame:setupFrame==='1D'?'1H':undefined,now}));
+  assert.ok(signals.every(s=>!s.eligible&&!s.observationEligible),symbol+' is no current long candidate');
+  rows.push({symbol,classicSignal:signals[1]});
+ }
+ const reversal=sample('龙虾USDT'),s=evaluateFrames(reversal.frames,{setupFrame:'4H',triggerFrame:'1H',now:reversal.now});
+ assert.equal(s.observationEligible,true);rows.push({symbol:'龙虾USDT',classicSignal:s});
+ assert.deepEqual(rankClassicTiers(rows).map(row=>row.symbol),['龙虾USDT']);
+});
+test('recorded RE has no strict T1 while 4H target space and 1H distribution contradict its daily probe',()=>{
+ const {frames,now}=recordedFrames(radarAudit.responses.REUSDT),signal=evaluateFrames(frames,
+  {setupFrame:'1D',triggerFrame:'4H',confirmationFrame:'1H',now});
+ assert.equal(signal.phase,'probe');assert.equal(signal.eligible,false);assert.equal(signal.observationEligible,false);
+ assert.ok(signal.rejectionReasons.some(reason=>reason.includes('4H 下一個目標空間不足')));
+ assert.ok(signal.rejectionReasons.some(reason=>reason.includes('1H 短線方向')));
+});
+test('recorded CAP still enters a directional observation during strong volume-backed recovery',()=>{
+ const {frames,now}=recordedFrames(radarAudit.responses.CAPUSDT),signal=evaluateFrames(frames,
+  {setupFrame:'4H',triggerFrame:'1H',now});
+ assert.equal(signal.observationEligible,true);assert.equal(signal.eligible,false);
+ assert.ok(signal.qualityScore>=72);
 });

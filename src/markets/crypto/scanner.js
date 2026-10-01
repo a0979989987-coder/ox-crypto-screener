@@ -1,7 +1,7 @@
 const WATCH_STAR_SVG = '<svg class="watch-star-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 2.78 5.63L21 9.54l-4.5 4.39 1.06 6.2L12 17.2l-5.56 2.93 1.06-6.2L3 9.54l6.22-.91Z"/></svg>';
 
 const RADAR_RETAIN_MS=2*60*60*1000;
-const RADAR_SNAPSHOT_KEY = 'ox-radar-snapshot-v4-classic6';
+const RADAR_SNAPSHOT_KEY = 'ox-radar-snapshot-v4-classic7';
 function restoreRadarSnapshot() {
   if (state.radarSnapshotChecked) return;
   state.radarSnapshotChecked = true;
@@ -11,7 +11,8 @@ function restoreRadarSnapshot() {
     const tickers = new Map(state.tickers.map(t=>[t.symbol,t]));
     for (const row of snapshot.rows) {
       const ticker=tickers.get(row.symbol);
-      if (!ticker || !isCryptoSymbolAllowed(row.symbol) || !OXClassic.qualifyClassicRow(row, row.side,{observations:true})) continue;
+      if (!ticker || !isCryptoSymbolAllowed(row.symbol) || !['long','short'].some(side=>
+        OXClassic.qualifyClassicRow(row,side,{observations:true}))) continue;
       state.analyzedCache.set(row.symbol,{...row,ticker,change24h:num(ticker.change24h)});
     }
     state.radarSnapshotReady = state.analyzedCache.size > 0;
@@ -174,8 +175,13 @@ async function runScanQueueLoop() {
           BitgetAPI.fetchCandles(symbol,'1D',180).catch(()=>[])
         ]);
         const frames={'1H':cryptoClassicBars(candles,'1H'),'4H':cryptoClassicBars(contextBars,'4H'),'1D':cryptoClassicBars(dailyBars,'1D')};
+        // A rate-limit or malformed candle response must not replace a valid
+        // prior scan with a neutral row and make the symbol disappear.
+        if(frames['1H'].length<OXClassic.CLASSIC_RULES.minimumBars||
+           frames['4H'].length<OXClassic.CLASSIC_RULES.minimumBars)throw Error('核心級別 K 線不足');
         const classic=Object.fromEntries(['long','short'].map(side=>{
-          const signals=[['4H','1H'],['1D','4H']].map(([setupFrame,triggerFrame])=>OXClassic.evaluateFrames(frames,{side,setupFrame,triggerFrame}));
+          const signals=[['4H','1H'],['1D','4H']].map(([setupFrame,triggerFrame])=>OXClassic.evaluateFrames(frames,{side,setupFrame,triggerFrame,
+            ...(setupFrame==='1D'?{confirmationFrame:'1H'}:{})}));
           const qualified=signals.filter(s=>s.eligible||s.observationEligible).sort(OXClassic.compareClassic);
           return [side,qualified[0]||signals[0]];
         }));
@@ -205,6 +211,10 @@ async function runScanQueueLoop() {
     // their own analysis completes, even while another request is pending.
     if (completed) {
       initialScanLoading?.finish();initialScanLoading=null;
+      // Refresh the universe between full passes so newly listed contracts
+      // can enter the radar without a page reload.
+      state.scanQueue=state.tickers.filter(t=>num(t.usdtVolume)>0)
+        .sort((a,b)=>num(b.usdtVolume)-num(a.usdtVolume)).map(t=>t.symbol);
       state.scanIndex = 0;
       state.radarSnapshotReady = true;
       saveRadarSnapshot();
@@ -215,9 +225,20 @@ async function runScanQueueLoop() {
   }
 }
 
+function radarSideRows(row) {
+  return ['long','short'].flatMap(side=>{
+    const signal=OXClassic.qualifyClassicRow(row,side,{observations:true});
+    if(!signal)return [];
+    if(row.side===signal.side&&row.classicSignal?.frame===signal.frame)return [row];
+    const described=OXEngine.describe(signal,row.classic);
+    return [{...row,...described,side:signal.side,signalFrame:signal.frame,
+      triggerFrame:signal.triggerFrame,reasons:described.reasons}];
+  });
+}
 function rebuildTierLists() {
   const tierConfig=globalThis.OXTierFilters?.get('crypto');
-  const rankedPool=Array.from(state.analyzedCache.values()).filter(c=>{
+  const rankedPool=Array.from(state.analyzedCache.values())
+    .flatMap(c=>tierConfig?.enabled?[c]:radarSideRows(c)).filter(c=>{
     if(benchmarkSymbols.has(c.symbol)||(!tierConfig?.enabled&&!OXClassic.qualifyClassicRow(c,c.side,{observations:true})))return false;
     const signal=c.classicSignal,price=num(state.tickers.find(t=>t.symbol===c.symbol)?.lastPr)||c.lastPrice;
     if(!tierConfig?.enabled&&price&&signal?.invalidation?.level){const dir=c.side==='SHORT'?-1:1;

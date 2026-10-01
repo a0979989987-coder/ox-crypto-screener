@@ -59,22 +59,23 @@ function renderOxDetail() {
 
   const shownMap=state.tierMapBySide?.[state.directionFilter]||state.tierMap;
   const ranked = [...(shownMap.t1||[]), ...(shownMap.t2||[]), ...(shownMap.t3||[])].find(x => x.symbol === symbol);
-  const shownTier = ranked?.displayTier || scored.tier;
-  const status = ranked?.rankStatus || scored.classicSignal?.stage || '待確認';
-  const classic=scored.classicSignal;
+  const displayed=ranked||scored;
+  const shownTier = ranked?.displayTier || displayed.tier;
+  const status = ranked?.rankStatus || displayed.classicSignal?.stage || '待確認';
+  const classic=displayed.classicSignal;
   document.getElementById('detail-levels').textContent=`觸發 ${classic?.pressure?fmtPrice(classic.pressure.level):'—'} · 下一目標 ${classic?.target?fmtPrice(classic.target.level):'尚未辨識'} · 結構失效 ${classic?.invalidation?fmtPrice(classic.invalidation.level):'—'}`;
-  document.getElementById("detail-tier").textContent = isBenchmark ? "Benchmark" : `${shownTier.toUpperCase()} ${status}`;
-  document.getElementById("detail-ox").textContent = scored.oxScore;
-  document.getElementById("detail-liq").textContent = `${scored.liqScore} / 100`;
-  document.getElementById("detail-flow").textContent = `${scored.flowScore} / 100`;
-  document.getElementById("detail-structure").textContent = scored.structureLabel || scored.side;
-  document.getElementById("detail-rs").textContent = `${scored.rsScore} / 100`;
-  document.getElementById("detail-setup").textContent = scored.setupName;
-  document.getElementById("detail-side").textContent = scored.side;
-  document.getElementById("detail-progress-text").textContent = `${scored.setupProgress ?? 0}%`;
-  document.getElementById("detail-progress-bar").style.width = `${scored.setupProgress ?? 0}%`;
-  document.getElementById("detail-progress-bar").style.setProperty("--meter-color", (scored.setupProgress ?? 0) < 40 ? "var(--meter-weak)" : (scored.setupProgress ?? 0) < 70 ? "var(--meter-mid)" : "var(--meter-strong)");
-  document.getElementById("detail-confidence").textContent = `${scored.signalConfidence ?? 0}%`;
+  document.getElementById("detail-tier").textContent = isBenchmark ? "Benchmark" : `${shownTier.toUpperCase()} ${displayed.signalFrame||classic?.frame||'—'}＋${displayed.triggerFrame||classic?.triggerFrame||'—'} ${status}`;
+  document.getElementById("detail-ox").textContent = displayed.oxScore;
+  document.getElementById("detail-liq").textContent = `${displayed.liqScore} / 100`;
+  document.getElementById("detail-flow").textContent = `${displayed.flowScore} / 100`;
+  document.getElementById("detail-structure").textContent = displayed.structureLabel || displayed.side;
+  document.getElementById("detail-rs").textContent = `${displayed.rsScore} / 100`;
+  document.getElementById("detail-setup").textContent = displayed.setupName;
+  document.getElementById("detail-side").textContent = displayed.side;
+  document.getElementById("detail-progress-text").textContent = `${displayed.setupProgress ?? 0}%`;
+  document.getElementById("detail-progress-bar").style.width = `${displayed.setupProgress ?? 0}%`;
+  document.getElementById("detail-progress-bar").style.setProperty("--meter-color", (displayed.setupProgress ?? 0) < 40 ? "var(--meter-weak)" : (displayed.setupProgress ?? 0) < 70 ? "var(--meter-mid)" : "var(--meter-strong)");
+  document.getElementById("detail-confidence").textContent = classic?.eligible ? "完整條件" : "條件觀察";
   document.getElementById("detail-trigger").textContent = classic?.eligible ? classic.stage : "條件觀察 · 等待完整確認";
 
   const reasons = classic?.eligible ? (classic.reasons||[]).map(text=>({ok:true,text})) : [
@@ -127,7 +128,8 @@ function updateHeaderHUD() {
   document.getElementById("quote").textContent = `${fmtCryptoVolume(ticker.usdtVolume)} USDT`;
   document.getElementById("chart-head-title").children[0].textContent = `${ticker.symbol} 永續合約`;
 
-  const scored = state.analyzedCache.get(state.symbol);
+  const map=state.tierMapBySide?.[state.directionFilter];
+  const scored=[...(map?.t1||[]),...(map?.t2||[]),...(map?.t3||[])].find(row=>row.symbol===state.symbol)||state.analyzedCache.get(state.symbol);
   if (scored) {
     document.getElementById("ox-score").textContent = scored.oxScore;
     document.getElementById("ox-tier-label").textContent = `${scored.statusText} · 結構:${scored.structScore}`;
