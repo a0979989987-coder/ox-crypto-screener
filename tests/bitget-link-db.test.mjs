@@ -64,6 +64,14 @@ test('pending UID migration enforces RLS, no ownership escalation, and revision-
       for (const uid of ['0', '001', '1e9', '123456789012345678901', '', null]) await assert.rejects(mutate('save', uid, null), error => error.code === '22023');
       await assert.rejects(mutate('verify', '123', null), error => error.code === '22023');
     });
+    await t.test('read-only deployment verification SQL confirms effective privileges and fixed definer scope', async () => {
+      const results = await db.exec(readFileSync(new URL('../server/account/migrations/001_pending_bitget_links.verify.sql', import.meta.url), 'utf8'));
+      const meta = results[1].rows[0], permissions = results[2].rows[0];
+      assert.equal(meta.rls_enabled, true); assert.equal(meta.security_definer, true); assert.equal(meta.trusted_table_owner, meta.trusted_function_owner);
+      assert.ok(meta.fixed_search_path.includes('search_path=""'));
+      for (const [key, value] of Object.entries(permissions)) assert.equal(value, key.endsWith('_must_be_true'));
+      assert.equal(results[3].rows.length, 1); assert.equal(results[3].rows[0].cmd, 'SELECT');
+    });
     await t.test('non-destructive rollback disables reads/mutations and preserves records for recovery', async () => {
       await db.exec('reset role');
       const before = (await db.query('select count(*)::int as n from public.ox_bitget_links')).rows[0].n;

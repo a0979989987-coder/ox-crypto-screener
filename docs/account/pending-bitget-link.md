@@ -21,7 +21,7 @@
 
 ## 安全驗證與限制
 
-原 287 項針對當時 main `9b879ad`；最後整合 `405fc0c` 並修正安全審查問題後，`npm test`: 291/291 通過。`node scripts/check-build.mjs`: 93 assets、171 IDs。`node scripts/account-ui-check.mjs`、桌面／390x844手機 e2e 通過。獨立 reviewer 的 UID HTTP＋DB 測試 14/14 通過；未發現新的跨人資料或資格升級漏洞。
+原 287 項針對當時 main `9b879ad`；最後整合 `405fc0c`、修正安全審查問題並實測唯讀部署驗證 SQL 後，`npm test`: 292/292 通過。`node scripts/check-build.mjs`: 93 assets、171 IDs。`node scripts/account-ui-check.mjs`、桌面／390x844手機 e2e 通過。獨立 reviewer 的 UID HTTP＋DB 測試 14/14 通過；未發現新的跨人資料或資格升級漏洞。
 
 `tests/bitget-link-db.test.mjs` 使用 dev-only PGlite（真正 PostgreSQL/WASM、本機記憶體）實際執行 migration，驗證 RLS、匿名拒絕、跨會員存取／寫入限制、不可升級持有權、重綁／移除版本衝突與格式檢查。不是正式 Supabase 測試。引擎只有單一連線，所以多客戶端同時 transaction 的 lock 行為仍需 staging PostgreSQL 驗收；已測 sequential stale-revision 衝突。API／UI 測試使用合成身份，不能當作真人 UID 保存成功。
 
