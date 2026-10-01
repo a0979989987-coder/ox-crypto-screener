@@ -59,7 +59,7 @@ function renderOxDetail() {
 
   const shownMap=state.tierMapBySide?.[state.directionFilter]||state.tierMap;
   const ranked = [...(shownMap.t1||[]), ...(shownMap.t2||[]), ...(shownMap.t3||[])].find(x => x.symbol === symbol);
-  const displayed=ranked||scored;
+  const displayed=ranked||OXEngine.withTurnover(scored,ticker?.usdtVolume??scored.quoteVol);
   const shownTier = ranked?.displayTier || displayed.tier;
   const status = ranked?.rankStatus || displayed.classicSignal?.stage || '待確認';
   const classic=displayed.classicSignal;
@@ -81,6 +81,7 @@ function renderOxDetail() {
   const reasons = classic?.eligible ? (classic.reasons||[]).map(text=>({ok:true,text})) : [
     ...(classic?.matchedReasons||[]).map(text=>({ok:true,text})),
     ...(classic?.rejectionReasons||[]).map(text=>({ok:false,text}))];
+  if(classic?.money?.reason)reasons.push({ok:false,text:classic.money.reason});
   document.getElementById("detail-reasons-list").innerHTML = reasons.map(r => `<div class="detail-reason ${r.ok ? 'ok' : 'wait'}">${r.ok ? '✓' : '△'} ${r.text}</div>`).join('');
   updateAlertButtons();
 }

@@ -1,4 +1,4 @@
-import { evaluateClassic, qualifyClassicRow, compactClassic } from '../../core/classic.js?v=20261002-rank7';
+import { evaluateClassic, qualifyClassicRow, compactClassic } from '../../core/classic.js?v=20261002-rank8';
 
 export function classifyTWSeries(candles, frame = '1D') {
   return Object.fromEntries(['long','short'].map(side => [side, compactClassic(evaluateClassic(candles, {side, frame}))]));

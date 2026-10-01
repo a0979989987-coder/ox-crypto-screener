@@ -1,5 +1,6 @@
 import { TIMEFRAMES, candleBoundary } from './catalog.js?v=patterns5d-20260929';
-import { evaluateClassic, compareClassic, compactClassic, CLASSIC_TIER_LIMITS } from '../../../core/classic.js?v=20261002-rank7';
+import '../liquidity-policy.js?v=20261002-rank8';
+import { evaluateClassic, compareClassic, compactClassic, CLASSIC_TIER_LIMITS } from '../../../core/classic.js?v=20261002-rank8';
 const BASE='https://api.bitget.com';
 const candleCache=new Map();let nextRequest=0;
 const abortError=()=>new DOMException('Aborted','AbortError');
@@ -98,7 +99,7 @@ export function primeCandleCache(data){
   if(data?.candles?.length>=35&&TIMEFRAMES[data.frame])candleCache.set(`${data.symbol}:${data.frame}`,data);
 }
 export function classicScore(ticker,candles,tickers){
-  const signals=['long','short'].map(side=>evaluateClassic(candles,{side}));
+  const signals=['long','short'].map(side=>globalThis.OXCryptoLiquidity.apply(evaluateClassic(candles,{side}),ticker?.usdtVolume));
   return signals.filter(s=>s.eligible).sort(compareClassic)[0]?.qualityScore ?? null;
 }
 export async function scanUniverse(universe,frames,{signal,onSeries,onProgress}){
@@ -108,7 +109,7 @@ export async function scanUniverse(universe,frames,{signal,onSeries,onProgress})
       if(signal.aborted)throw abortError();
       try{
         const data=await fetchSeries(ticker.symbol,frame,signal,universe.serverTime);
-        const classic=Object.fromEntries(['long','short'].map(side=>[side,compactClassic(evaluateClassic(data.candles,{side,frame,now:universe.serverTime}))]));
+        const classic=Object.fromEntries(['long','short'].map(side=>[side,compactClassic(globalThis.OXCryptoLiquidity.apply(evaluateClassic(data.candles,{side,frame,now:universe.serverTime}),ticker.usdtVolume))]));
         const chosen=Object.values(classic).filter(s=>s.eligible).sort(compareClassic)[0];
         await onSeries({...data,ticker,classic,oxScore:chosen?.qualityScore??null,quoteTime:universe.serverTime,turnover:Number(ticker.usdtVolume),change:Number(ticker.change24h)*100});
       }catch(e){if(signal.aborted)throw e;failed++;}

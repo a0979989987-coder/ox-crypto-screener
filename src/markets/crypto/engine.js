@@ -1,6 +1,11 @@
 // Compatibility boundary for the native OX runtime. Eligibility and tiers are
-// exclusively calculated by the shared OX 經典 engine.
+// calculated by the shared OX 經典 engine, then constrained by crypto turnover.
 const OXEngine = {
+  withTurnover(row, turnover) {
+    const classic=Object.fromEntries(Object.entries(row.classic||{}).map(([side,s])=>[side,OXCryptoLiquidity.apply(s,turnover)]));
+    const signal=OXCryptoLiquidity.apply(row.classicSignal,turnover);
+    return signal?{...row,...this.describe(signal,classic),quoteVol:signal.money.quoteVol}:row;
+  },
   analyzeCandles(candles, options = {}) {
     const classic = {
       long: OXClassic.evaluateClassic(candles, { ...options, side: 'long' }),

@@ -1,5 +1,6 @@
-import { CLASSIC_VERSION, evaluateClassic, compareClassic, compactClassic, rankClassicTiers } from '../../../core/classic.js?v=20261002-rank7';
+import { CLASSIC_VERSION, evaluateClassic, compareClassic, compactClassic, rankClassicTiers } from '../../../core/classic.js?v=20261002-rank8';
 import { PATTERNS, patternById } from './catalog.js?v=patterns5d-20260929';
+import '../liquidity-policy.js?v=20261002-rank8';
 const clamp = (x, a=0, b=1) => Math.max(a, Math.min(b, x));
 const mean = a => a.reduce((s,x)=>s+x,0)/a.length;
 export function normalize(points) {
@@ -314,8 +315,13 @@ export function queryFromStrokes(strokes) {
 }
 export function sortMatches(rows){return [...rows].sort((a,b)=>(a.displayTier??a.match?.tier??3)-(b.displayTier??b.match?.tier??3)||(b.rankPriority??-1)-(a.rankPriority??-1)||b.similarity-a.similarity||(b.oxScore??-1)-(a.oxScore??-1)||(b.turnover??0)-(a.turnover??0)||String(a.symbol??a.match?.label??'').localeCompare(String(b.symbol??b.match?.label??'')));}
 export function rankPatternMatches(matches){
- const candidates=matches.map(value=>({...value,symbol:value.entry.data.symbol,
-  classicSignal:value.match.classicSignal,similarity:value.match.similarity}));
+ const candidates=matches.map(value=>{
+  // Geometry remains searchable. Apply the crypto monetary grade only when
+  // displaying a real Bitget series; Taiwan/US series use their own units.
+  const signal=value.entry.data.source==='Bitget'?globalThis.OXCryptoLiquidity.apply(value.match.classicSignal,value.entry.data.turnover):value.match.classicSignal;
+  const match=signal?{...value.match,classicSignal:signal,...(signal.eligible?{tier:Number(signal.tier.slice(1))}:{})}:value.match;
+  return {...value,match,symbol:value.entry.data.symbol,classicSignal:signal,similarity:match.similarity};
+ });
  // The canvas discovers formations across the selected universe. Radar quotas
  // only apply to an explicitly supplied radar list, never to drawing searches.
  if(!matches.length||!matches.every(value=>value.match.radar)){

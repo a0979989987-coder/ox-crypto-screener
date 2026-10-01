@@ -1,4 +1,4 @@
-import { qualifyClassicRow } from '../../core/classic.js?v=20261002-rank7';
+import { qualifyClassicRow } from '../../core/classic.js?v=20261002-rank8';
 export function patternFrameTier(entry,side='long') {
  if(!entry?.data?.candles?.length)return null;
  const signal=qualifyClassicRow({classic:entry.classic||entry.data.classic},side);
