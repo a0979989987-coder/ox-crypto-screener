@@ -23,6 +23,7 @@ import { USWidgetChart } from "./widget-chart.js?v=20261001-us-eod1";
 import { EOD_CAPABILITIES, EOD_INTERVALS } from "./eod.js";
 import { searchDirectory, quoteStatus } from "./model.js?v=20261001-us-eod1";
 import { sessionAt, nyParts } from "./calendar.js?v=20261001-us-eod1";
+import { catalogueMode, cataloguePage, stockName } from "./directory-view.js?v=20261001-us-names1";
 
 import { tierResults } from "./analysis.js?v=20261001-us-eod1";
 import { icon, openDialog, closeDialog } from "./ui.js?v=20261001-us-eod1";
@@ -56,6 +57,7 @@ export class USWorkspace {
       ? storedWatch.map(item => typeof item === "string" ? item : item?.symbol)
         .filter(symbol => typeof symbol === "string" && /^[A-Z0-9.-]{1,15}$/.test(symbol)) : []);
     this.directory = [];
+    this.catalogueOffset = 0;
     this.snapshot = null;
     this.cap = { ...EOD_CAPABILITIES };
     this.quotes = new Map();
@@ -87,7 +89,8 @@ export class USWorkspace {
           {this.chart.asset=this.directory.find(x=>x.symbol===this.chart.symbol)||{};this.chart.mount();}
         this.updateCounts();
         this.updateIdentity();
-      }).catch(error=>{if(!signal.aborted){this.directoryError=error;this.updateCounts();}}),
+        this.paintList();
+      }).catch(error=>{if(!signal.aborted){this.directoryError=error;this.updateCounts();this.paintList();}}),
       USAdapter.capabilities({ signal }).then((c) => {
         if(signal.aborted)return;
         const changedMode = this.cap.chartMode !== c.chartMode;
@@ -205,7 +208,8 @@ export class USWorkspace {
     if(this.cap.chartMode === 'widget')node.textContent=`股票參考目錄 ${this.directory.length.toLocaleString()} · 行情由圖表更新 · OX 實際掃描 0`;
     node.title = `報價／分析數是上次共用收集實際通過驗證的數量。${this.directoryDate ? "目錄更新 " + fmt(this.directoryDate) : ""}`;
     const dateNode=this.root.querySelector('[data-eod-date]');
-    if(dateNode)dateNode.textContent=this.snapshot?.sessionDate ? `交易日 ${this.snapshot.sessionDate} · 已收盤` : this.snapshotError || '收盤快照尚未建立';
+    if(dateNode)dateNode.textContent=this.snapshot?.sessionDate ? `交易日 ${this.snapshot.sessionDate} · 已收盤` : this.directory.length ? `股票名錄 ${this.directory.length.toLocaleString()} 檔 · 收盤行情待開通` : this.snapshotError || '收盤快照尚未建立';
+    if(dateNode)dateNode.title=this.snapshotError || '';
     this.updateDataBrief();
     const selector = this.root.querySelector("[data-scan-interval]");
     if (selector)
@@ -363,9 +367,11 @@ export class USWorkspace {
         b.textContent = this.watch.has(symbol) ? "★" : "☆";
         b.setAttribute("aria-pressed", this.watch.has(symbol));
       }));
+    if(this.state.watchOnly && catalogueMode(this.snapshot))this.paintList();
   }
   rowHTML(row, { reasons = false, tierStart = false, tierEnd = false } = {}) {
-    if(this.state.view==="radar")return `<article class="coin-card us2-stock-row ${row.symbol===this.state.symbol?"selected":""} ${tierStart?"is-tier-start":""} ${tierEnd?"is-tier-end":""}" data-symbol="${e(row.symbol)}" data-interval="${e(row.interval||this.state.interval)}" tabindex="0" role="button" aria-label="開啟 ${e(row.symbol)} 圖表">${tierStart?`<span class="coin-tier-heading">${e(row.tier)}</span>`:""}<div class="coin-top"><div class="coin-title"><span class="coin-symbol-mobile" title="${e(row.alias||row.name||"")}">${e(row.symbol)}</span></div><div class="coin-top-right"><div class="coin-ox"><span class="coin-ox-label">USD</span><b class="coin-ox-value">${price(row.price)}</b></div></div></div><div class="coin-mid"><span class="mobile-coin-volume">${e(row.setup||row.type||"自選")} · ${e(row.interval||this.state.interval)}</span></div><div class="coin-mobile-bottom"><span class="coin-change ${tone(row.changePct)}">${pct(row.changePct)}</span><button class="watch-star watch-star-mobile us2-star ${this.watch.has(row.symbol)?"is-starred is-saved":""}" data-watch="${e(row.symbol)}" aria-label="收藏 ${e(row.symbol)}" aria-pressed="${this.watch.has(row.symbol)}">${this.watch.has(row.symbol)?"★":"☆"}</button></div></article>`;
+    const name=stockName({...this.directory.find(item=>item.symbol===row.symbol),...row});
+    if(this.state.view==="radar")return `<article class="coin-card us2-stock-row ${row.symbol===this.state.symbol?"selected":""} ${tierStart?"is-tier-start":""} ${tierEnd?"is-tier-end":""}" data-symbol="${e(row.symbol)}" data-interval="${e(row.interval||this.state.interval)}" tabindex="0" role="button" aria-label="開啟 ${e(row.symbol)} ${e(name)} 圖表">${tierStart?`<span class="coin-tier-heading">${e(row.tier)}</span>`:""}<div class="coin-top"><div class="coin-title"><span class="coin-symbol-mobile">${e(row.symbol)}</span></div><div class="coin-top-right"><div class="coin-ox"><span class="coin-ox-label">USD</span><b class="coin-ox-value">${price(row.price)}</b></div></div></div><small class="us2-row-name" title="${e(name)}">${e(name)}</small><div class="coin-mid"><span class="mobile-coin-volume">${e(row.setup||row.type||"自選")} · ${e(row.interval||this.state.interval)}</span></div><div class="coin-mobile-bottom"><span class="coin-change ${tone(row.changePct)}">${pct(row.changePct)}</span><button class="watch-star watch-star-mobile us2-star ${this.watch.has(row.symbol)?"is-starred is-saved":""}" data-watch="${e(row.symbol)}" aria-label="收藏 ${e(row.symbol)}" aria-pressed="${this.watch.has(row.symbol)}">${this.watch.has(row.symbol)?"★":"☆"}</button></div></article>`;
 
     return `<article class="us2-stock-row ${row.symbol === this.state.symbol ? "is-current" : ""} ${tierEnd ? "is-tier-end" : ""}"><button type="button" class="us2-stock-open" data-symbol="${e(row.symbol)}" data-interval="${e(row.interval || "1D")}"><span class="us2-stock-identity"><b>${e(row.symbol)}</b><small>${e(row.alias || row.name || "")}</small></span><span class="us2-stock-numbers"><b>${price(row.price)}</b><small class="${tone(row.changePct)}">${pct(row.changePct)}</small></span>${row.setup ? `<span class="us2-stock-setup">${tierStart ? `<strong class="us2-tier-inline">${e(row.tier)}</strong>` : ""}${e(row.setup)} · ${e(row.interval)}${row.forming ? " · 形成中" : ""}</span>` : ""}${reasons ? `<span class="us2-stock-reasons">${(row.reasons || []).map(e).join(" · ")}</span>` : ""}</button><button type="button" class="us2-star ${this.watch.has(row.symbol) ? "is-saved" : ""}" data-watch="${e(row.symbol)}" aria-label="收藏 ${e(row.symbol)}" aria-pressed="${this.watch.has(row.symbol)}">${this.watch.has(row.symbol) ? "★" : "☆"}</button></article>`;
   }
@@ -375,6 +381,13 @@ export class USWorkspace {
       if(card && ev.target === card && (ev.key === "Enter" || ev.key === " ")) {ev.preventDefault();this.openStock(card.dataset.symbol,{interval:card.dataset.interval,collapse});}
     };
     container.onclick = (ev) => {
+      const pageButton=ev.target.closest('[data-directory-page]');
+      if (pageButton) {
+        this.catalogueOffset += pageButton.dataset.directoryPage==='next'?50:-50;
+        this.paintList();
+        container.scrollTop=0;
+        return;
+      }
       const star = ev.target.closest("[data-watch]");
       if (star) {
         this.toggleWatch(star.dataset.watch);
@@ -555,6 +568,11 @@ export class USWorkspace {
       q = this.quotes.get(symbol);
     if (this.state.view === "home") {
       const ticker=main.querySelector(".us2-home-symbol");if(ticker)ticker.textContent=symbol;
+      if(ticker) {
+        let name=main.querySelector('.us2-home-name');
+        if(!name){name=document.createElement('small');name.className='us2-home-name';ticker.after(name);}
+        name.textContent=stockName(item || {symbol});name.title=name.textContent;
+      }
       main.querySelectorAll("[data-benchmark]").forEach((button) => {
         const quote = this.quotes.get(button.dataset.benchmark);
         const value = button.querySelector("span"), change = button.querySelector("em");
@@ -581,7 +599,7 @@ export class USWorkspace {
       const identityCell=ticker.querySelector('.market-line-price');
       let name=identityCell.querySelector('.us2-ticker-name');
       if(!name){name=document.createElement('span');name.className='us2-ticker-name';identityCell.append(name);}
-      name.hidden=!widget;name.textContent=item?.alias||item?.name||symbol;name.title=name.textContent;
+      name.hidden=false;name.textContent=stockName(item || {symbol});name.title=name.textContent;
       if(widget)identityCell.append(ticker.querySelector('[data-watch]'));
       else ticker.querySelector('.us2-volume-cell').append(ticker.querySelector('[data-watch]'));
       let reserved=card.querySelector('[data-native-summary]');
@@ -622,6 +640,26 @@ export class USWorkspace {
     const list = this.root?.querySelector(".us2-radar-list");
     if (!list) return;
     const y = list.scrollTop;
+    const referenceOnly = catalogueMode(this.snapshot);
+    const tierButton=this.root.querySelector('.us2-tier');
+    const sideButton=this.root.querySelector('[data-side]');
+    for(const control of [tierButton,sideButton,this.root.querySelector('[data-mode]'),this.root.querySelector('[data-scan-interval]')])
+      if(control)control.disabled=referenceOnly;
+    if(tierButton)tierButton.setAttribute('aria-label',referenceOnly?'股票名錄，未進行型態掃描':`雷達分組：${this.state.tier==='all'?'全部':this.state.tier}，短按循環，長按兩秒展開`);
+    if(referenceOnly) {
+      const key=`${this.state.type}:${this.state.watchOnly}`;
+      if(this.catalogueKey!==key){this.catalogueKey=key;this.catalogueOffset=0;}
+      const page=cataloguePage(this.directory,{...this.state,watch:this.watch,offset:this.catalogueOffset});
+      this.catalogueOffset=page.offset;
+      const typeLabel={stock:'股票',ADR:'ADR',ETF:'ETF'};
+      const pager=page.total>50?`<nav class="us2-directory-pages" aria-label="股票名錄分頁"><span>${page.offset+1}–${page.offset+page.items.length} / ${page.total.toLocaleString()}</span><button type="button" data-directory-page="prev" ${page.offset===0?'disabled':''}>上一批</button><button type="button" data-directory-page="next" ${page.offset+page.items.length>=page.total?'disabled':''}>下一批</button></nav>`:'';
+      list.innerHTML=page.items.length ? `<div class="us2-catalogue-note">股票名錄 · 未掃描<span>股名可瀏覽；價格及 K 線待開通</span></div>`+page.items.map(item=>`<article class="coin-card us2-stock-row us2-directory-row ${item.symbol===this.state.symbol?'selected':''}" data-symbol="${e(item.symbol)}" data-interval="1D" role="button" tabindex="0" aria-label="選擇 ${e(item.symbol)} ${e(stockName(item))}"><div class="coin-top"><b class="coin-symbol-mobile">${e(item.symbol)}</b><button class="watch-star us2-star ${this.watch.has(item.symbol)?'is-saved':''}" data-watch="${e(item.symbol)}" aria-label="收藏 ${e(item.symbol)}" aria-pressed="${this.watch.has(item.symbol)}">${this.watch.has(item.symbol)?'★':'☆'}</button></div><small class="us2-row-name" title="${e(stockName(item))}">${e(stockName(item))}</small><small class="us2-directory-meta">${e(item.exchange)} · ${typeLabel[item.type] || e(item.type)}</small></article>`).join('')+pager : `<div class="us2-empty">${this.directoryError?'股票名錄載入失敗，請重新整理。':this.directory.length?'自選尚無標的，可從搜尋或名錄收藏。':'股票名錄載入中…'}</div>`;
+      list.scrollTop=y;
+      this.bindRows(list);
+      const label=tierButton?.querySelector('.radar-tier-current');if(label)label.textContent='股名';
+      const note=this.root.querySelector('.us2-list-note');if(note)note.textContent=`名錄 ${page.total.toLocaleString()} 檔 · 非雷達分析結果`;
+      return;
+    }
     const analyses = (this.snapshot?.analyses || []).filter(
       (x) => x.interval === this.state.scanInterval,
     );
