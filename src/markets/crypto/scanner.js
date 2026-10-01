@@ -1,12 +1,13 @@
 const WATCH_STAR_SVG = '<svg class="watch-star-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 2.78 5.63L21 9.54l-4.5 4.39 1.06 6.2L12 17.2l-5.56 2.93 1.06-6.2L3 9.54l6.22-.91Z"/></svg>';
 
+const RADAR_RETAIN_MS=2*60*60*1000;
 const RADAR_SNAPSHOT_KEY = 'ox-radar-snapshot-v3-classic5';
 function restoreRadarSnapshot() {
   if (state.radarSnapshotChecked) return;
   state.radarSnapshotChecked = true;
   try {
     const snapshot = JSON.parse(localStorage.getItem(RADAR_SNAPSHOT_KEY));
-    if (!snapshot || Date.now()-snapshot.savedAt > 5*60*1000 || !Array.isArray(snapshot.rows)) return;
+    if (!snapshot || Date.now()-snapshot.savedAt > RADAR_RETAIN_MS || !Array.isArray(snapshot.rows)) return;
     const tickers = new Map(state.tickers.map(t=>[t.symbol,t]));
     for (const row of snapshot.rows) {
       const ticker=tickers.get(row.symbol);
@@ -45,7 +46,7 @@ function classifyTierFrame(candles,frame) {
 }
 function cryptoFrameTier(row,frame,side) {
  const data=row.timeframeTiers?.[frame];
- return data&&data.eligible&&Date.now()-data.at<=300000&&(!side||data.side?.toLowerCase()===side.toLowerCase())?data:null;
+ return data&&data.eligible&&Date.now()-data.at<=RADAR_RETAIN_MS&&(!side||data.side?.toLowerCase()===side.toLowerCase())?data:null;
 }
 async function refreshMarketTickers() {
   if (state.activeMarket && state.activeMarket !== "crypto") return;
@@ -214,7 +215,7 @@ function rebuildTierLists() {
     const signal=c.classicSignal,price=num(state.tickers.find(t=>t.symbol===c.symbol)?.lastPr)||c.lastPrice;
     if(!tierConfig?.enabled&&price&&signal?.invalidation?.level){const dir=c.side==='SHORT'?-1:1;
       if(dir*(price-signal.invalidation.level)<-.2*signal.atr||c.lastPrice&&dir*(price-c.lastPrice)<-.9*signal.atr)return false;}
-    return !c.at||Date.now()-c.at<=300000;
+    return !c.at||Date.now()-c.at<=RADAR_RETAIN_MS;
   });
   const allAnalyzed=tierConfig?.enabled?rankedPool.flatMap(c=>{
     const match=globalThis.OXTierFilters.resolve(c,tierConfig,cryptoFrameTier);
@@ -342,7 +343,7 @@ function renderCurrentTab() {
 
   container.innerHTML = list.map((c, idx) => {
     const displayTier = tab === "surge" ? (c.tier !== "none" ? c.tier : "t3") : (c.displayTier || c.tier || "t3");
-    const status = tab === "surge" ? "SURGE" : (c.rankStatus || c.statusText || "WATCH");
+    const status = c.at&&Date.now()-c.at>300000 ? "上次結果 · 更新中" : tab === "surge" ? "SURGE" : (c.rankStatus || c.statusText || "WATCH");
     const fit = displayTier === "t1" ? c.t1Fit : displayTier === "t2" ? c.t2Fit : c.t3Fit;
     const allowStar = combinedRadar || isTierTab;
     const starred = isWatchlisted(c.symbol);

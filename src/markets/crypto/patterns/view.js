@@ -1,8 +1,8 @@
 import { PATTERNS, patternById, TIMEFRAMES as CRYPTO_TIMEFRAMES } from './catalog.js?v=patterns5d-20260929';
 import { revealStyledShadow } from '../../../components/style-ready.js?v=20261001-loading1';
-import { queryFromStrokes, normalize, sortMatches, patternCounts, prepareCandles, indexPrepared, matchPrepared, rankPatternMatches, browsePatternEntries } from './matcher.js?v=20261001-progress1';
-import * as cryptoSource from './source.js?v=20261001-progress1';
-import * as cryptoCache from './index-cache.js?v=20261001-progress1';
+import { queryFromStrokes, normalize, sortMatches, patternCounts, prepareCandles, indexPrepared, matchPrepared, rankPatternMatches, browsePatternEntries } from './matcher.js?v=20261001-resume1';
+import * as cryptoSource from './source.js?v=20261001-resume1';
+import * as cryptoCache from './index-cache.js?v=20261001-resume1';
 import { candleChart } from './charts.js?v=patterns-tw-20260930';
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const icons={down:'<path d="m6 9 6 6 6-6"/>',close:'<path d="m6 6 12 12M18 6 6 18"/>',undo:'<path d="m9 5-5 5 5 5M4 10h10a5 5 0 1 1 0 10"/>',refresh:'<path d="M4 4v6h6M4 10a8 8 0 1 1 1 8"/>',scan:'<circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="1.5"/><path d="M12 12 17 7M12 2v2M22 12h-2M12 22v-2M2 12h2"/>',expand:'<path d="M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5"/>'};
@@ -11,6 +11,7 @@ const volume=n=>!Number.isFinite(n)?'—':n>=1e8?(n/1e8).toFixed(2)+'億':n>=1e4
 const signed=n=>Number.isFinite(n)?`${n>=0?'+':''}${n.toFixed(2)}%`:'—';
 const stamp=ms=>new Date(ms).toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit',hour12:false});
 const preferencesByMarket=new Map();
+const sessionsByMarket=new Map();
 export function mountPatternSearch(host,options={}){
   const source=options.source||cryptoSource,cache=options.cache||cryptoCache;
   const {fetchUniverse,scanUniverse,primeCandleCache,fetchSeries}=source;
@@ -26,6 +27,9 @@ export function mountPatternSearch(host,options={}){
   let glowEnded=0,moreObserver=null;const reducedMotion=matchMedia('(prefers-reduced-motion:reduce)').matches;
   let entries=new Map(),queryVersion=0,searchRunning=false,searchPending=false,disposed=false,lastError='';
   const hydrated=new Set();
+  const session=market==='tw'?sessionsByMarket.get(market):null;
+  if(session){entries=new Map(session.entries);rows=new Map(session.rows);universe=session.universe;lastScan=session.lastScan;progress={...session.progress};shown=session.shown;tierFilter=session.tierFilter;}
+  let searchSignature=session?JSON.stringify([query,frames,limit]):'';
   shadow.innerHTML=`<link rel="stylesheet" href="${new URL('./patterns.css?v=20261001-twlayout1',import.meta.url)}"><main class="px"><section class="px-board" aria-label="型態畫板"><canvas tabindex="0" aria-label="在整個畫板由左向右畫走勢，完成後自動比對；亦可使用型態選單"></canvas><div class="px-controls"><button class="px-control" data-action="timeframes" aria-haspopup="dialog" aria-expanded="false"><span data-frame-label></span>${icon('down')}</button><button class="px-control" data-action="patterns" aria-haspopup="dialog" aria-expanded="false"><span data-pattern-label>型態</span>${icon('down')}</button></div><span class="px-hint">畫出走勢，或選擇型態</span><div class="px-board-bottom"><button class="px-mode-toggle" data-action="toggle-mode" hidden aria-label="切換搜尋模式" title="切換搜尋模式"><span class="px-mode-glyph" aria-hidden="true">⌁</span><span data-mode-label></span></button><button class="px-icon" data-action="undo" aria-label="清除上一筆" title="清除上一筆">${icon('undo')}</button><div class="px-tier-filters" role="group" aria-label="OX 品質分級"><button data-tier-filter="all" aria-pressed="true">全部</button><button data-tier-filter="1" aria-pressed="false">T1</button><button data-tier-filter="2" aria-pressed="false">T2</button><button data-tier-filter="3" aria-pressed="false">T3</button></div></div></section><button class="px-refresh-pill" data-action="refresh" aria-label="重新掃描" title="重新掃描"><svg class="px-pill-progress" viewBox="0 0 40 40" aria-hidden="true"><circle class="px-pill-track" cx="20" cy="20" r="17"/><circle class="px-pill-arc" cx="20" cy="20" r="17"/></svg><span class="px-refresh-glyph">${icon('scan')}</span></button><div class="px-results"><div class="px-status-row"><span class="px-local-loading" hidden></span><span class="px-status" role="status" aria-live="polite">${esc(source.label||'Bitget · USDT 永續')}</span></div><section class="px-grid" aria-label="依 T1 T2 T3 排列的${asset}"><div class="px-empty">等待畫入型態</div></section></div><button class="px-more" data-action="more" hidden>顯示更多</button><dialog class="px-dialog px-presets" aria-label="選擇型態"><div class="px-dialog-head"><span>型態</span><button class="px-icon" data-action="close" aria-label="關閉型態選單">${icon('close')}</button></div><div class="px-dialog-body"><input class="px-search" aria-label="搜尋型態" placeholder="搜尋型態"><div class="px-count-status" aria-live="polite"></div><div class="px-options"></div></div></dialog><dialog class="px-dialog px-settings" aria-label="時間級別"><div class="px-dialog-head"><span>時間級別</span><button class="px-icon" data-action="close" aria-label="關閉時間級別">${icon('close')}</button></div><div class="px-dialog-body"><div class="px-frames">${Object.keys(TIMEFRAMES).map(f=>`<button class="px-frame-option" data-frame="${f}">${f}</button>`).join('')}</div><label class="px-setting"><span>成交額觀察池</span><select data-limit aria-label="掃描${asset}數"><option value="80">前 80 ${asset}</option><option value="160">前 160 ${asset}</option><option value="0">全部合資格${asset}</option></select></label><details class="px-help"></details></div></dialog><dialog class="px-dialog px-detail" aria-label="型態 K 線詳情"><div class="px-dialog-head"><span class="px-detail-title"></span><div class="px-detail-tools"><button class="px-to-radar" data-action="open-radar" aria-label="在雷達查看這個${asset}">前往雷達</button><button class="px-icon" data-action="reset-chart" aria-label="重設圖表範圍">${icon('refresh')}</button><button class="px-icon" data-action="close" aria-label="關閉圖表">${icon('close')}</button></div></div><div class="px-detail-frames" role="group" aria-label="K 線時間級別">${Object.keys(TIMEFRAMES).map(f=>`<button data-detail-frame="${f}" aria-pressed="false">${f}</button>`).join('')}</div><div class="px-detail-stage"><canvas aria-label="可拖曳及雙指縮放的 K 線圖"></canvas><div class="px-detail-loading" role="status" hidden></div></div><div class="px-detail-footer"></div></dialog></main>`;
  revealStyledShadow(shadow,life.signal);
   const q=s=>shadow.querySelector(s),qa=s=>[...shadow.querySelectorAll(s)],board=q('.px-board canvas');
@@ -54,7 +58,7 @@ export function mountPatternSearch(host,options={}){
   const scheduleBoard=()=>{if(!boardRAF)boardRAF=requestAnimationFrame(drawBoard);};const resize=new ResizeObserver(scheduleBoard);resize.observe(board);
   function resetWorker(){worker?.terminate();worker=null;for(const j of jobs.values())j.reject(new DOMException('Aborted','AbortError'));jobs.clear();fallback.clear();hydrated.clear();}
   function compute(message){
-    if(!worker){try{worker=new Worker(new URL('./worker.js?v=20261001-progress1',import.meta.url),{type:'module'});worker.onmessage=({data})=>{const job=jobs.get(data.id);jobs.delete(data.id);if(job)data.error?job.reject(Error(data.error)):job.resolve(data.result);};worker.onerror=()=>{for(const j of jobs.values())j.reject(Error('型態計算失敗'));jobs.clear();worker?.terminate();worker=null;hydrated.clear();};}catch{}}
+    if(!worker){try{worker=new Worker(new URL('./worker.js?v=20261001-resume1',import.meta.url),{type:'module'});worker.onmessage=({data})=>{const job=jobs.get(data.id);jobs.delete(data.id);if(job)data.error?job.reject(Error(data.error)):job.resolve(data.result);};worker.onerror=()=>{for(const j of jobs.values())j.reject(Error('型態計算失敗'));jobs.clear();worker?.terminate();worker=null;hydrated.clear();};}catch{}}
     if(!worker)return new Promise(resolve=>setTimeout(()=>{
       if(message.type==='index'){const context=prepareCandles(message.candles);fallback.set(message.key,context);resolve(indexPrepared(context,message.matches));}
       else if(message.type==='prepare'){for(const entry of message.entries)fallback.set(entry.key,prepareCandles(entry.candles));resolve(true);}
@@ -86,7 +90,9 @@ export function mountPatternSearch(host,options={}){
   }
 
   async function search(){
-    if(disposed||document.hidden||activePointer!==null)return;queryVersion++;const run=queryVersion,target=query&&structuredClone(query),list=activeEntries();
+    if(disposed||document.hidden||activePointer!==null)return;
+    const signature=JSON.stringify([query,frames,limit]);if(signature!==searchSignature){searchSignature=signature;queryVersion++;rows.clear();}
+    const run=queryVersion,target=query&&structuredClone(query),list=activeEntries();
     if(!target){
       setRows(browsePatternEntries(list));return;
     }
@@ -94,11 +100,20 @@ export function mountPatternSearch(host,options={}){
     if(searchRunning){searchPending=true;return;}
     searchRunning=true;searchPending=false;
     try{
-      const missing=list.filter(e=>!hydrated.has(e.key));
-      for(let i=0;i<missing.length;i+=100){if(run!==queryVersion||disposed)return;const batch=missing.slice(i,i+100);await compute({type:'prepare',entries:batch.map(e=>({key:e.key,candles:e.data.candles}))});batch.forEach(e=>hydrated.add(e.key));}
-      const result=await compute({type:'search',keys:list.map(e=>e.key),query:target});
-      if(run!==queryVersion||disposed)return;
-      const byKey=new Map(list.map(e=>[e.key,e]));setRows(result.filter(r=>byKey.has(r.key)).map(r=>({entry:byKey.get(r.key),match:r.match})));
+      const matches=[];
+      for(let i=0;i<list.length;i+=25){
+        if(run!==queryVersion||disposed)return;
+        const batch=list.slice(i,i+25),missing=batch.filter(e=>!hydrated.has(e.key));
+        if(missing.length){await compute({type:'prepare',entries:missing.map(e=>({key:e.key,candles:e.data.candles}))});missing.forEach(e=>hydrated.add(e.key));}
+        const result=await compute({type:'search',keys:batch.map(e=>e.key),query:target});
+        if(run!==queryVersion||disposed)return;
+        const byKey=new Map(batch.map(e=>[e.key,e]));matches.push(...result.filter(r=>byKey.has(r.key)).map(r=>({entry:byKey.get(r.key),match:r.match})));
+        // Keep already matched cards while extending the same query's search.
+        const pendingKeys=new Set(list.slice(i+25).map(e=>e.key));
+        const retained=[...rows.values()].filter(r=>pendingKeys.has(r.symbol+':'+r.frame)).flatMap(r=>{const entry=entries.get(r.symbol+':'+r.frame);return entry?[{entry,match:r.match}]:[];});
+        setRows([...matches,...retained]);await new Promise(resolve=>setTimeout(resolve,0));
+      }
+      if(!list.length)setRows([]);
     }catch(e){if(!disposed&&e.name!=='AbortError')status(e.message);}
     finally{searchRunning=false;if(searchPending&&!disposed){searchPending=false;search();}}
   }
@@ -137,10 +152,10 @@ export function mountPatternSearch(host,options={}){
     resumePending=false;lastError='';const run=version;controller=new AbortController();const signal=controller.signal,loading=window.OXLoading?.begin(market,`掃描${asset}`,{signal,views:['strength'],target:q('.px-local-loading')});busy=true;progress={done:0,total:0,failed:0,coinsDone:0,coinsTotal:0};
     q('.px-pill-arc').style.strokeDashoffset='107';q('.px-board').classList.add('is-scanning');q('.px-refresh-pill').classList.add('is-scanning');updateStatus();
     try{
-      const cached=await readIndex(frames);if(run!==version)return;
+      const cached=entries.size?[]:await readIndex(frames);if(run!==version)return;
       for(let i=0;i<cached.length;i++){if(run!==version)return;await hydrate(cached[i]);if(i%40===39)await new Promise(resolve=>setTimeout(resolve,0));}
       search();
-      if(!universe||Date.now()-universe.serverTime>60000||frames.some(f=>Math.floor(Date.now()/1000/TIMEFRAMES[f])!==Math.floor(universe.serverTime/1000/TIMEFRAMES[f])))universe=await fetchUniverse(signal,limit);
+      if(!universe||market==='tw'||market!=='tw'&&(Date.now()-universe.serverTime>60000||frames.some(f=>Math.floor(Date.now()/1000/TIMEFRAMES[f])!==Math.floor(universe.serverTime/1000/TIMEFRAMES[f]))))universe=await fetchUniverse(signal,limit);
       if(run!==version)return;const pool=universe;progress.total=pool.tickers.length*frames.length;progress.coinsTotal=pool.tickers.length;loading?.update(0,progress.coinsTotal);updateStatus();
       await scanUniverse(pool,frames,{signal,onSeries:async data=>{
         if(run!==version)return;const key=data.symbol+':'+data.frame,existing=entries.get(key),same=existing&&entryCurrent(existing,data.serverTime)&&existing.data.candles.at(-1).time===data.candles.at(-1).time&&(!data.candles.at(-1).provisional||existing.data.serverTime===data.serverTime);
@@ -149,7 +164,7 @@ export function mountPatternSearch(host,options={}){
           {matches:existing.matches,classic:existing.data.classic}:await compute({type:'index',key,candles:data.candles});
         if(run!==version)return;if(!data.preclassified&&!reuse)hydrated.add(key);
         const fresh={...data,classic:indexed.classic},entry={key,data:fresh,matches:indexed.matches,version:INDEX_VERSION};
-        entries.set(key,entry);saveIndex(fresh,indexed.matches);queueRender();
+        if(data.preclassified)hydrated.delete(key);entries.set(key,entry);saveIndex(fresh,indexed.matches);queueRender();
       },onProgress:p=>{if(run!==version)return;progress=p;loading?.update(p.coinsDone,p.coinsTotal);updateStatus();}});
       if(run!==version)return;lastScan=Date.now();
       const keys=activeEntries().map(e=>e.key);worker?.postMessage({type:'retain',keys});for(const key of hydrated)if(!keys.includes(key))hydrated.delete(key);
@@ -218,11 +233,11 @@ export function mountPatternSearch(host,options={}){
   const finish=e=>{if(e.pointerId!==activePointer)return;activePointer=null;glowEnded=performance.now();q('.px-board').classList.remove('is-drawing');if(e.type==='pointercancel')strokes.pop();if(currentStroke?.length<2&&strokes.at(-1)===currentStroke)strokes.pop();currentStroke=null;query=queryFromStrokes(strokes);shown=24;labels();scheduleBoard();preferences();renderResults(true);status(query?'正在搜尋已分類資料…':'請由左向右畫一段走勢');clearTimeout(drawTimer);drawTimer=setTimeout(search,100);};
   document.addEventListener('pointerup',e=>{if(pendingControl?.pointerId===e.pointerId)pendingControl=null;finish(e);if(suppressControlClick)setTimeout(()=>{suppressControlClick=false;},0);},{signal:life.signal});document.addEventListener('pointercancel',e=>{if(pendingControl?.pointerId===e.pointerId)pendingControl=null;finish(e);suppressControlClick=false;},{signal:life.signal});
   board.addEventListener('keydown',e=>{if(e.key==='Delete'||e.key==='Backspace'){e.preventDefault();q('[data-action="undo"]').click();}},{signal:life.signal});
-  document.addEventListener('visibilitychange',()=>{if(document.hidden){queryVersion++;if(busy){resumePending=true;stop();status('已暫停 · 返回後重新掃描');}clearTimeout(drawTimer);}else if(resumePending||!lastScan||Date.now()-lastScan>60000)scan();},{signal:life.signal});
-  const timer=setInterval(()=>{const cadence=Math.min(300000,...frames.map(f=>TIMEFRAMES[f]*1000));if(!busy&&!document.hidden&&Date.now()-lastScan>=cadence)scan();},15000);
+  document.addEventListener('visibilitychange',()=>{if(document.hidden){queryVersion++;if(busy){resumePending=true;stop();status('已暫停 · 返回後重新掃描');}clearTimeout(drawTimer);}else if(resumePending||!lastScan||(source.scanCurrent?!source.scanCurrent(universe):Date.now()-lastScan>60000))scan();else search();},{signal:life.signal});
+  const timer=setInterval(()=>{const cadence=Math.min(300000,...frames.map(f=>TIMEFRAMES[f]*1000));if(!busy&&!document.hidden&&(source.scanCurrent?!source.scanCurrent(universe):Date.now()-lastScan>=cadence))scan();},15000);
   const dock=document.querySelector('.app-dock.glass-nav');
   const syncPill=()=>q('.px-refresh-pill').classList.toggle('is-compact',!!dock?.classList.contains('ox-dock-compact'));
   const dockObserver=dock?new MutationObserver(syncPill):null;dockObserver?.observe(dock,{attributes:true,attributeFilter:['class']});syncPill();
-  labels();scheduleBoard();scan();
-  return {closeInner:closeDialogs,refresh(){universe=null;scan();},destroy(){disposed=true;queryVersion++;preferences();stop();resetWorker();life.abort();resize.disconnect();dockObserver?.disconnect();clearCharts();moreObserver?.disconnect();detailChart?.destroy();closeDialogs(true);clearInterval(timer);clearTimeout(drawTimer);cancelAnimationFrame(boardRAF);shadow.replaceChildren();}};
+  labels();scheduleBoard();if(session){renderResults(true);updateStatus();}if(!session||!lastScan||progress.done!==progress.total||!source.scanCurrent?.(universe))scan();
+  return {closeInner:closeDialogs,refresh(){universe=null;scan();},destroy(){if(market==='tw')sessionsByMarket.set(market,{entries:new Map(entries),rows:new Map(rows),universe,lastScan,progress:{...progress},shown,tierFilter});disposed=true;queryVersion++;preferences();stop();resetWorker();life.abort();resize.disconnect();dockObserver?.disconnect();clearCharts();moreObserver?.disconnect();detailChart?.destroy();closeDialogs(true);clearInterval(timer);clearTimeout(drawTimer);cancelAnimationFrame(boardRAF);shadow.replaceChildren();}};
 }

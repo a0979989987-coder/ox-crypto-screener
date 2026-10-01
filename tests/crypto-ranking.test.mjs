@@ -77,5 +77,14 @@ test('radar snapshot uses current tickers and excludes expired or unavailable co
   assert.equal(current.analyzedCache.size,1);
   assert.equal(current.analyzedCache.get('SOLUSDT').change24h,.02);
   assert.equal(current.radarSnapshotReady,true);
-  assert.equal(restore(Date.now()-360000).analyzedCache.size,0);
+  assert.equal(restore(Date.now()-360000).analyzedCache.size,1);
+  assert.equal(restore(Date.now()-2*60*60*1000-1000).analyzedCache.size,0);
 });
+
+ test('returning radar retains a paused scan but never an invalidated price or unbounded result',()=>{
+ const row={symbol:'SOLUSDT',side:'LONG',tier:'t1',at:Date.now()-360000,lastPrice:100};
+ assert.equal(rank([row]).t1.length,1);
+ assert.equal(rank([{...row,at:Date.now()-7201000}]).t1.length,0);
+ const signal=rankingSignal('T1');
+ assert.equal(rank([row],{tickers:[{symbol:'SOLUSDT',lastPr:signal.invalidation.level-signal.atr}]}).t1.length,0);
+ });

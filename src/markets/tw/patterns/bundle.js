@@ -1,12 +1,24 @@
 import { aggregateCandles } from './model.js';
-import { classifyTWSeries } from '../classic.js?v=20261001-progress1';
-import { qualifyPatternMatches } from '../../crypto/patterns/matcher.js?v=20261001-progress1';
+import { classifyTWSeries } from '../classic.js?v=20261001-resume1';
+import { qualifyPatternMatches } from '../../crypto/patterns/matcher.js?v=20261001-resume1';
 // Official candles and named-pattern classifications are built once on the server.
 const manifestURL=new URL('../../../../data/tw-patterns/manifest.json',import.meta.url);
 const entries=new Map(),listeners=new Set();let manifest=null,pending=null,checkedAt=0,failed=0;
 export function subscribeBundle(listener){listeners.add(listener);return()=>listeners.delete(listener);}
 const emit=()=>{for(const listener of listeners)listener(bundleState());};
-export function bundleState(){return {date:manifest?.date,total:manifest?.total||0,expected:manifest?.classified||0,dates:manifest?.dates||[],classified:entries.size,unavailable:manifest?.unavailable||[],stocks:manifest?.stocks||[],failed,loading:!!pending};}
+export function bundleState(){return {date:manifest?.date,revision:manifest?.updatedAt,total:manifest?.total||0,expected:manifest?.classified||0,dates:manifest?.dates||[],classified:entries.size,unavailable:manifest?.unavailable||[],stocks:manifest?.stocks||[],failed,loading:!!pending};}
+export function awaitBundleManifest(signal){
+ if(signal?.aborted)return Promise.reject(new DOMException('Aborted','AbortError'));
+ const job=preloadBundle();
+ return new Promise((resolve,reject)=>{
+  let unsubscribe=()=>{};
+  const finish=(error)=>{unsubscribe();signal?.removeEventListener('abort',abort);error?reject(error):resolve(bundleState());};
+  const abort=()=>finish(new DOMException('Aborted','AbortError'));
+  const check=()=>{if(bundleState().date&&bundleState().stocks.length)finish();};
+  unsubscribe=subscribeBundle(check);signal?.addEventListener('abort',abort,{once:true});check();
+  job.then(()=>{if(bundleState().date&&bundleState().stocks.length)finish();else finish(Error('官方台股觀察池尚未取得'));},finish);
+ });
+}
 export function bundleEntry(symbol,frame='1D',date){const base=entries.get(symbol+':1D');if(!base||date&&base.data.dataDate!==date)return null;if(frame==='1D')return base;const prepared=base.frames?.[frame];if(!prepared)return null;return {key:symbol+':'+frame,data:{...base.data,frame,candles:aggregateCandles(base.data.candles,frame,base.data.dataDate),classic:prepared.classic},matches:prepared.matches,classic:prepared.classic};}
 export function bundleClassification(symbol,frame='1D',date){return bundleEntry(symbol,frame,date);}
 export function bundleEntries(frames=['1D'],date){return [...entries.values()].filter(e=>frames.includes(e.data.frame)&&(!date||e.data.dataDate===date));}
@@ -19,6 +31,7 @@ export async function preloadBundle({force=false,silent=false}={}){
   if(manifest?.date===next.date&&manifest?.updatedAt===next.updatedAt&&entries.size===next.classified){checkedAt=Date.now();return bundleState();}
   manifest=next;failed=0;
   for(const [key,e]of entries)if(e.data.dataDate!==next.date)entries.delete(key);
+  emit();
   loading?.update(entries.size,next.classified);
   let cursor=0;await Promise.all(Array.from({length:2},async()=>{while(cursor<next.chunks.length){
    const chunk=next.chunks[cursor++];try{
