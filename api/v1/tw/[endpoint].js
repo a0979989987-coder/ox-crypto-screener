@@ -1,4 +1,5 @@
 import { getOfficialTWResearch } from '../../../server/markets/tw/research-provider.js';
+import { getHomeSection } from '../../../server/markets/tw/home-provider.js';
 import { handleTWOutlook } from '../../../server/markets/tw/outlook.js';
 import {
   getOfficialTWMarketPulse
@@ -1506,6 +1507,14 @@ export default async function handler(
         const data = await getOfficialTWResearch();
         setShortCache(res, 300);
         return ok(res, data, { realtime: false, provider: "official-tw" });
+      }
+
+      case "home": {
+        const section=stringParam(req.query.section||'core');
+        if(!['core','briefing','night'].includes(section))return fail(res,400,'INVALID_SECTION','Unknown Taiwan home section.');
+        res.setHeader('Cache-Control','no-store');
+        const data=await getHomeSection(section,{refresh:booleanParam(req.query.refresh,false)});
+        return ok(res,data,{realtime:false,provider:'ox-tw-home',timezone:'Asia/Taipei'});
       }
 
       case "health":
