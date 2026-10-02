@@ -1,11 +1,35 @@
-import { rankingSignal } from './classic-fixtures.mjs';
+import { rankingSignal, preparation } from './classic-fixtures.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { rankChartRows } from '../src/markets/tw/chart-radar-model.js';
+import { rankChartRows, chartUniverse } from '../src/markets/tw/chart-radar-model.js';
+import { classicTWRow, classifyTWSeries } from '../src/markets/tw/classic.js';
 import { aggregateCandles, dailyCandles, selectUniverse } from '../src/markets/tw/patterns/model.js';
 import { parseMarketDay, buildPatternEntry } from '../server/markets/tw/pattern-snapshot.js';
 import { prepareCandles, classifyPrepared } from '../src/markets/crypto/patterns/matcher.js';
 const stock=(symbol,tier,changePct=1)=>({symbol,name:'公司'+symbol,tier,changePct,price:100,market:'TWSE',turnoverTwd:1e8,oxScore:80,classic:tier?{[changePct<0?'short':'long']:rankingSignal(tier,changePct<0?'short':'long')}:null});
+
+test('newer quotes preserve the last verified radar candidates without mixing report sessions',()=>{
+ const date='2026-10-01',bars=preparation().map(c=>({...c,date}));
+ const entry={data:{candles:bars,dataDate:date,frame:'1D'},classic:classifyTWSeries(bars)};
+ const verified={symbol:'2330',price:bars.at(-1).close,dataDate:date,changePct:1};
+ const state={data:{radar:[{...verified,price:200,dataDate:'2026-10-02'}]}};
+ const snapshot={date,stocks:[verified]};
+ const candidates=chartUniverse(state,snapshot,{asOf:date}).map(r=>classicTWRow(r,entry,date));
+ assert.equal(rankChartRows(candidates).length,1);
+ assert.equal(candidates[0].price,verified.price);assert.equal(candidates[0].dataDate,date);
+ const live=chartUniverse(state,snapshot)[0];assert.equal(live.price,200);assert.equal(live.dataDate,'2026-10-02');
+ assert.equal(classicTWRow(live,entry,'2026-10-02').tier,'','Old grades never attach to the new quote');
+});
+
+test('snapshot quotes reject older feed rows and only merge candidate quotes from the same session',()=>{
+ const snapshot={date:'2026-10-02',stocks:[{symbol:'2330',price:200,changePct:2}]};
+ const older={data:{radar:[{symbol:'2330',price:100,dataDate:'2026-10-01'}]}};
+ assert.equal(chartUniverse(older,snapshot)[0].price,200);
+ assert.equal(chartUniverse(older,snapshot,{asOf:snapshot.date})[0].price,200);
+ const same={data:{radarDataDate:snapshot.date,radar:[{symbol:'2330',price:201,changePct:null}]}};
+ assert.equal(chartUniverse(same,snapshot,{asOf:snapshot.date})[0].price,201);
+ assert.equal(chartUniverse(same,snapshot,{asOf:snapshot.date})[0].changePct,2);
+});
 test('TW chart radar uses strict T1 plus the next two ranked groups of 15 without duplicates',()=>{
  const rows=[...Array.from({length:16},(_,i)=>stock(String(1000+i),'T1')),...Array.from({length:20},(_,i)=>stock(String(2000+i),'T2')),...Array.from({length:20},(_,i)=>stock(String(3000+i),'T3')),stock('2330',null),stock('030001','T1')];rows.push(rows[0]);
  const out=rankChartRows(rows);assert.equal(out.length,40);assert.deepEqual(['T1','T2','T3'].map(t=>out.filter(r=>r.displayTier===t).length),[10,15,15]);assert.equal(new Set(out.map(r=>r.symbol)).size,40);assert.ok(out.every(r=>r.displayTier===r.tier));assert.equal(rankChartRows(rows,{tier:'T1'}).length,10);assert.equal(rankChartRows([stock('1234','T3')],{tier:'T1'}).length,0);

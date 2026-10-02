@@ -1,5 +1,6 @@
 import {escape,number,pct,money,direction} from './research-ui.js';
 import {taipeiTime} from './home-content.js';
+import {buildPremarketBriefing,buildAftermarketBriefing,homeBriefingInput} from './briefing-formatter.js?v=20261002-nav6';
 const finite=n=>typeof n==='number'&&Number.isFinite(n);
 const signed=(n,digits=2)=>finite(n)?`${n>0?'+':''}${number(n,digits)}`:'—';
 const sourceLink=url=>{try{const u=new URL(url);return u.protocol==='https:'&&!u.username&&!u.password?u.href:null;}catch{return null;}};
@@ -34,10 +35,12 @@ export function homeHighlights(home,phase='after',research=null){
    if(sectors.length)entries.push(entry('法人產業動向',`${buys.length?'買超集中：'+buys.map(s=>s.name+' '+money(s.flow)).join('、')+'。':''}${sells.length?'賣超集中：'+sells.map(s=>s.name+' '+money(s.flow)).join('、')+'。':''}`,{date:research.date,source:'官方股數 × 收盤價（估算）'}));
   }
  }
- return {title:before?'盤前重點':'盤後重點',date:before?home.briefing?.date:home.core?.date,updated:before?home.briefing?.collectedAt:home.core?.savedAt,entries};
+ const input=homeBriefingInput(home,phase,research),summary=before?buildPremarketBriefing(input):buildAftermarketBriefing(input);
+ return {title:before?'盤前重點':'盤後重點',date:before?home.briefing?.date:home.core?.date,updated:before?home.briefing?.collectedAt:home.core?.savedAt,entries,summary};
 }
 export function highlightsContent(home,phase,research){
  const report=homeHighlights(home,phase,research);
+ const brief=report.summary,summary=`<article class="twx-highlight twx-highlight-summary"><h3>【${escape(brief.title)}】</h3><p>${escape(brief.text)}</p>${brief.missing.length?`<small>缺項：${escape(brief.missing.join('、'))}</small>`:''}<footer><span>${escape(brief.date||'日期待確認')}</span><small>${escape(brief.basis)}</small></footer></article>`;
  const rows=report.entries.map(item=>`<article class="twx-highlight"><h3 class="${item.tone}">${escape(item.title)}</h3><p>${escape(item.text)}</p><footer><span>${escape(item.date||'日期待公布')}${item.stale?' · 上次有效資料':''}</span>${sourceLink(item.url)?`<a href="${escape(sourceLink(item.url))}" target="_blank" rel="noopener noreferrer">${escape(item.source||'資料來源')} ↗</a>`:`<small>${escape(item.source||'')}</small>`}</footer></article>`).join('');
- return `<div class="twx-highlights-meta"><span>${escape(report.date||'等待資料')}</span><small>更新 ${escape(taipeiTime(report.updated))}</small></div>${rows||'<div class="twx-empty">資料尚未取得，更新後會整理重點。</div>'}`;
+ return `<div class="twx-highlights-meta"><span>${escape(report.date||'等待資料')}</span><small>更新 ${escape(taipeiTime(report.updated))}</small></div>${summary}${rows||'<div class="twx-empty">資料尚未取得，更新後會整理重點。</div>'}`;
 }

@@ -1,4 +1,4 @@
-import { mountTWChartRadar } from './chart-radar.js?v=20261002-rank8';
+import { mountTWChartRadar } from './chart-radar.js?v=20261002-radarkeep1';
 import { radarAvailability } from './recovery.js?v=20261001-tiercomb1';
 import { TW_RADAR_MODES, normalizeTWStockCard, rowsForTWMode, renderTWStockCard } from "./radar-card.js";
 import { observeTWMiniCandles, resetTWMiniCandles, openTWStockDetail } from "./radar-candles.js?v=20261001-twhome1";
@@ -115,7 +115,7 @@ let sortKey =
 
 let activeMode = "risk";
 let chartRadar=null,latestRadarState=null,pendingChartSymbol=null;
-const RADAR_MODES = [TW_RADAR_MODES[0], { id: "screener", label: "篩選器" }, ...TW_RADAR_MODES.slice(1)];
+const RADAR_MODES = [...TW_RADAR_MODES, { id: "screener", label: "篩選器" }];
 let screener=null, screenerHost=null, screenerGeneration=0;
 function stopScreener(){++screenerGeneration;screener?.destroy();screener=null;screenerHost=null;}
 async function showScreener(host){
