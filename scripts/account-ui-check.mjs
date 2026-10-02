@@ -131,6 +131,10 @@ try {
   await page.reload();await adminStart;await page.evaluate(()=>window.OXAuth.signOut());releaseAdmin();await adminDone;
   await page.waitForFunction(()=>!window.OXAuth.user);assert.equal(await page.locator('#ox-account-admin-open').isVisible(),false);
   await page.unroute('**/api/v1/account/admin-review');admin=false;user=savedUser;
+  await page.goto('https://ox.test/?ox_auth=success');
+  await page.locator('#ox-account-center').waitFor({state:'visible'});
+  assert.equal(await page.locator('#ox-account-overlay').isVisible(),true);
+  assert.equal(await page.evaluate(()=>location.search.includes('ox_auth')),false);
   linkAvailable = false;
   await page.reload();
   await page.waitForFunction(() => window.OXAuth?.user?.id === 'fixture-member');
@@ -142,6 +146,18 @@ try {
   await page.reload();
   await page.locator('#ox-account-auth-status').filter({ hasText: '尚未設定' }).waitFor({ state: 'attached' });
   assert.equal(calls.some(call => call.endpoint === 'session'), false);
+  configured = true; user = null;
+  await page.goto('https://ox.test/?ox_auth=error&ox_auth_reason=provider_denied&ox_auth_provider=access_denied');
+  await page.locator('#ox-account-auth-status').filter({hasText:'登入連結或授權未完成'}).waitFor();
+  assert.doesNotMatch(await page.locator('#ox-account-auth-status').innerText(),/Google 登入已取消/);
+  await page.goto('https://ox.test/?ox_auth=error&ox_auth_reason=authorization_expired&ox_auth_provider=otp_expired');
+  await page.locator('#ox-account-auth-status').filter({hasText:'登入驗證已失效'}).waitFor();
+  await page.goto('https://ox.test/#error=access_denied&error_code=otp_expired&error_description=synthetic-private-error');
+  await page.reload();
+  await page.locator('#ox-account-auth-status').filter({hasText:'登入驗證已失效'}).waitFor();
+  assert.doesNotMatch(await page.locator('#ox-account-auth-status').innerText(), /Google|synthetic-private-error/);
+  assert.equal(await page.evaluate(()=>location.hash), '');
+  assert.equal(await page.evaluate(()=>window.OXAuth.user), null);
   assert.deepEqual(errors, []);
   console.log('Account UI passed: Magic Link registration, Google failure recovery, member profile escaping/storage status, mobile viewport, logout, unconfigured guest mode. Synthetic fixtures only.');
 } finally { await browser.close(); }

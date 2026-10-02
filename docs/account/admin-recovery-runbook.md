@@ -10,12 +10,7 @@ Public bootstrap contains only REPLACE_WITH_VERIFIED_GOOGLE_EMAIL. Real-account 
 
 ## Deployment evidence
 
-GitHub Vercel statuses all report `Deployment rate limited — retry in 24 hours.`:
-- 12022a62: 2026-10-02 08:09:08 UTC.
-- PR81 merge a1e2782: 2026-10-02 08:55:51 UTC.
-- main a3e47ff: 2026-10-02 09:05:16 UTC.
-
-Official limit: Hobby 100 deployments per 86400 seconds, owner scoped; Git-triggered previews also consume quota. These failure timestamps do not establish the precise reset timestamp. No rate-limit reset header is available here. A conservative read-only recheck after 2026-10-03 09:05:16 UTC is a checkpoint, not a guaranteed reset. Use the account's actual reset/remaining evidence when available. Do not redeploy, push retries, buy upgrades, or change accounts to bypass the limit.
+Vercel was READY at 2026-10-02 09:19:17 UTC for 0d015454bd1582a54a6e343d13be3b1b2c7b9650, but parent subsequently observed another daily-cap failure at 09:49:26 UTC. A prior successful deployment does not establish current available quota. Functions storage was reported at 9.84/10 GB. Exact quota reset/remaining is unknown; coordinate one consolidated release only after a fresh read-only availability check. Do not push or redeploy automatically.
 
 Evidence URLs:
 - https://api.github.com/repos/a0979989987-coder/ox-crypto-screener/commits/a3e47ff77e4e8cb974e8e653462c6cc1ec0bd59f/statuses
@@ -41,3 +36,9 @@ Use docs/account/admin-release/04-disable.sql only if separately needed: deactiv
 ## Completed local QA
 
 After integrating main a3e47ff: 488/488 full tests, 17/17 native PostgreSQL tests, build 96 assets/171 unique IDs, Account UI (including admin visibility and stale-admin logout response), synthetic local admin UI, and production transport router/handler/SDK/SQL UI all passed. Independent security review passed. These follow-up commits are local only; remote PR #80 remains draft at e47aa09. Google real success is retained from prior validation; Email real login and post-bootstrap production admin acceptance remain untested.
+
+## Email recovery follow-up (local only)
+
+Real evidence: logout returned 204 at 09:33:36 and 09:34:51 UTC. OTP send returned 200 at 09:34:15, followed by 429 on repeated sends; verify/token events occurred before logout. At 09:45:22/29 verify reported One-time token not found and redirected with access_denied/otp_expired. This establishes an invalid email link, not whether it was consumed or expired; switching devices is not a confirmed cause. Real Email login acceptance still requires a newly initiated, unused link and user confirmation after release. Existing Google real success is retained.
+
+Local fixes map direct error fragments as well as callback errors to fixed generic categories, remove raw error URLs, preserve PKCE, open the account center only after a verified callback/session, coalesce repeated email submissions, retain a timestamp-only 60-second same-tab cooldown across reload, and expose HTTP 429 clearly. The cooldown is a click guard, not a promise that provider hourly quota has reset. No automatic resend, real email, credential/template change, user-cookie operation or deployment occurs in these tests. Late session/verification UI responses cannot restore a logged-out user; this synthetic race is not claimed as the real logout cause.

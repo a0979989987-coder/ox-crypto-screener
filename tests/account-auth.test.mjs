@@ -61,7 +61,7 @@ test('SDK generates PKCE flow bound to encrypted cookie and callback preserves p
   const rawCookie=start.headers['Set-Cookie'].split(';')[0];
   assert.ok(!rawCookie.includes('random-verifier'));
   const callback=res(); await handler({method:'GET',query:{endpoint:'callback',code:'provider-code'},headers:{cookie:rawCookie}},callback);
-  assert.equal(callback.headers.Location,'/?market=crypto#radar'); assert.equal(callback.statusCode,303);
+  assert.equal(callback.headers.Location,'/?market=crypto&ox_auth=success#radar'); assert.equal(callback.statusCode,303);
 });
 test('email magic link keeps the PKCE verifier in an encrypted flow cookie and returns to the original page', async () => {
   let capturedStorage, emailOptions;
@@ -79,7 +79,7 @@ test('email magic link keeps the PKCE verifier in an encrypted flow cookie and r
   assert.match(start.body.message,/登入連結/);
   const rawCookie=start.headers['Set-Cookie'].split(';')[0]; assert.ok(!rawCookie.includes('one-time-verifier'));
   const callback=res(); await handler({method:'GET',query:{endpoint:'callback',code:'email-code'},headers:{cookie:rawCookie}},callback);
-  assert.equal(callback.headers.Location,'/?market=tw#radar');
+  assert.equal(callback.headers.Location,'/?market=tw&ox_auth=success#radar');
 });
 test('provider failure and forged encrypted cookies confer no session', async () => {
   let called=false;
@@ -146,4 +146,10 @@ test('real Supabase SDK generates PKCE without an outbound provider request', as
   assert.ok(authorize.searchParams.get('code_challenge'));
   const flow = unseal(r.headers['Set-Cookie'].split(';')[0].split('=')[1], secret, 'flow');
   assert.ok(Object.keys(flow.storage).some(key => key.endsWith('code-verifier')));
+});
+
+test('email rate limits return explicit 429 without private provider details',async()=>{
+ for(const error of [{status:429,code:'over_email_send_rate_limit',message:'private-details'},{status:400,code:'over_request_rate_limit',message:'private-details'}]){
+  const clientFactory=()=>({auth:{signInWithOtp:async()=>({error})}});const result=res();await createAccountHandler({env,clientFactory,limiter:()=>true})(req('email',{email:'member@example.test',register:true}),result);assert.equal(result.statusCode,429);assert.equal(result.body.code,'EMAIL_RATE_LIMITED');assert.equal(result.body.cooldownSeconds,60);assert.ok(!JSON.stringify(result.body).includes('private-details'));
+ }
 });
