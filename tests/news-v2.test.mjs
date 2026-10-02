@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { monthGrid, eventDay, taipeiDay, importance, monthEvents, defaultState, newsBase, filterNews, ranking, dedupe, hotWords, safeLink, validDate, sourcesFor, coverage } from '../src/components/news/model.js';
+import { monthGrid, eventDay, taipeiDay, importance, monthEvents, defaultState, newsBase, filterNews, ranking, dedupe, hotWords, safeLink, validDate, sourcesFor, coverage, agendaDays } from '../src/components/news/model.js';
 import { MARKET_CATEGORIES } from '../src/components/news/config.js';
 import { identifyAssets, rocDate, nullableNumber, dividends, holidays, governanceEvents } from '../scripts/news-providers.mjs';
 import { parseBlsCalendar, normalizeFeed } from '../scripts/collect-news.mjs';
@@ -26,6 +26,17 @@ test('month lookup retains historical events and scopes market-specific types', 
   const snapshot = { events: [{ id: 'past', occursAt: '2026-09-01T12:30:00Z', sourceId: 'bls-calendar', markets: ['crypto', 'tw'] }, { id: 'div', date: '2026-09-10', category: 'dividend', markets: ['tw'] }] };
   assert.equal(monthEvents(snapshot, 'crypto', state).length, 1); assert.equal(monthEvents(snapshot, 'tw', state).length, 2);
   assert.equal(MARKET_CATEGORIES.crypto.includes('dividend'), false);
+});
+test('agenda retains all upcoming recorded dates, chronologically groups busy days and shares filters',()=>{
+ const state={...defaultState(),month:'2026-10'},snapshot={events:[
+ {id:'jan',date:'2027-01-15',markets:['tw'],category:'macro',impact:{stars:5}},
+ {id:'late',occursAt:'2026-10-09T10:00:00Z',markets:['tw'],category:'macro',impact:{stars:5}},
+ {id:'early',occursAt:'2026-10-09T02:00:00Z',markets:['tw'],category:'dividend',impact:{stars:1}},
+ {id:'old',date:'2026-09-30',markets:['tw']},{id:'crypto',date:'2026-10-01',markets:['crypto']},
+ {id:'early',occursAt:'2026-10-09T02:00:00Z',markets:['tw']},{id:'invalid',date:'2026-99-99',markets:['tw']}]};
+ const days=agendaDays(snapshot,'tw',state);assert.deepEqual(days.map(d=>d.date),['2026-10-09','2027-01-15']);assert.deepEqual(days[0].events.map(e=>e.id),['early','late']);
+ assert.equal(agendaDays(snapshot,'tw',{...state,categories:['macro'],importance:['3']}).flatMap(d=>d.events).length,2);
+ assert.equal(agendaDays(snapshot,'tw',{...state,categories:[]}).length,0);
 });
 test('importance has an explicit adapter without modifying raw five-star ratings', () => {
   for (const [raw, expected] of [[1,1],[2,1],[3,2],[4,3],[5,3]]) { const item = { impact: { stars: raw, ruleVersion: 'source-rule' } }; assert.equal(importance(item).value, expected); assert.equal(item.impact.stars, raw); }

@@ -1,133 +1,23 @@
-const colors = (v) => (v >= 0 ? "#00b8d4" : "#ff3078");
+import {BubbleField} from '../crypto/bubbles/field.js?v=20261002-tw3';
+// Keep US sizing tied to average traded value while sharing the same drag,
+// contact deformation, pinch, recovery and lifecycle as Crypto and Taiwan.
+export function usBubbleRadii(rows,width,height){
+ const radii=rows.map(row=>20+Math.log10(Math.max(1,row.liquidity||1))*2);
+ const area=radii.reduce((sum,r)=>sum+Math.PI*r*r,0),fit=Math.min(1,Math.sqrt(width*height*.52/Math.max(area,1)));
+ return radii.map(r=>Math.min(width*.22,height*.22,Math.max(8,r*fit)));
+}
 export class USBubbles {
-  constructor(root, rows, onSelect) {
-    this.root = root;
-    this.rows = rows;
-    this.onSelect = onSelect;
-    this.pan = { x: 0, y: 0, scale: 1 };
-    this.pointers = new Map();
-    root.innerHTML =
-      '<canvas class="us2-bubble-plot" aria-label="股票泡泡圖：顏色為完整交易日漲跌，大小為平均成交額的對數權重" tabindex="0"></canvas><div class="us2-visual-legend">藍＋／紅−：完整日漲跌 · 大小：20日平均成交額對數 <button type="button">重設視野</button></div>';
-    this.canvas = root.querySelector("canvas");
-    this.canvas.style.touchAction = "none";
-    this.ro = new ResizeObserver(() => this.draw());
-    this.ro.observe(root);
-    root.querySelector("button").onclick = () => {
-      this.pan = { x: 0, y: 0, scale: 1 };
-      this.draw();
-    };
-    this.canvas.onwheel = (e) => {
-      e.preventDefault();
-      this.pan.scale = Math.max(
-        0.5,
-        Math.min(4, this.pan.scale * (e.deltaY < 0 ? 1.1 : 0.9)),
-      );
-      this.draw();
-    };
-    this.canvas.onpointerdown = (e) => {
-      this.canvas.setPointerCapture(e.pointerId);
-      this.pointers.set(e.pointerId, { x: e.offsetX, y: e.offsetY });
-      this.start = { x: e.offsetX, y: e.offsetY };
-      this.moved = false;
-    };
-    this.canvas.onpointermove = (e) => {
-      if (!this.pointers.has(e.pointerId)) return;
-      const old = this.pointers.get(e.pointerId);
-      if (this.pointers.size === 2) {
-        const other = [...this.pointers].find(([id]) => id !== e.pointerId)[1];
-        const a = Math.hypot(old.x - other.x, old.y - other.y),
-          b = Math.hypot(e.offsetX - other.x, e.offsetY - other.y);
-        if (a > 0)
-          this.pan.scale = Math.max(0.5, Math.min(4, (this.pan.scale * b) / a));
-      } else {
-        this.pan.x += e.offsetX - old.x;
-        this.pan.y += e.offsetY - old.y;
-      }
-      this.moved =
-        this.moved ||
-        Math.hypot(e.offsetX - this.start.x, e.offsetY - this.start.y) > 5;
-      this.pointers.set(e.pointerId, { x: e.offsetX, y: e.offsetY });
-      this.draw();
-    };
-    this.canvas.onpointerup = (e) => {
-      if (!this.moved && this.pointers.size === 1) {
-        const p = this.positions?.find(
-          (p) => Math.hypot(e.offsetX - p.x, e.offsetY - p.y) < p.r,
-        );
-        if (p) this.onSelect(p.row.symbol);
-      }
-      this.pointers.delete(e.pointerId);
-    };
-    this.canvas.onpointercancel = (e) => this.pointers.delete(e.pointerId);
-    this.draw();
-  }
-  draw() {
-    const canvas = this.canvas,
-      dpr = devicePixelRatio || 1,
-      w = canvas.clientWidth,
-      h = canvas.clientHeight || 440;
-    canvas.width = w * dpr;
-    canvas.height = h * dpr;
-    const ctx = canvas.getContext("2d");
-    ctx.scale(dpr, dpr);
-    ctx.clearRect(0, 0, w, h);
-    const rows = this.rows.slice(0, 60),
-      radii = rows.map(
-        (row) => 20 + Math.log10(Math.max(1, row.liquidity || 1)) * 2,
-      ),
-      points = [];
-    for (let i = 0; i < rows.length; i++) {
-      const r = radii[i];
-      let found = false;
-      for (let step = 0; step < 1500; step++) {
-        const a = step * 2.399963,
-          rad = step ? Math.sqrt(step) * 12 : 0,
-          x = Math.cos(a) * rad,
-          y = Math.sin(a) * rad;
-        if (points.every((p) => Math.hypot(p.x - x, p.y - y) > p.r + r + 5)) {
-          points.push({ x, y, r, row: rows[i] });
-          found = true;
-          break;
-        }
-      }
-      if (!found) continue;
-    }
-    const bound = Math.max(170, ...points.map((p) => Math.abs(p.x) + p.r));
-    const fit = Math.min(1, w / (bound * 2.1), h / (bound * 2.1));
-    this.positions = points.map((p) => ({
-      ...p,
-      x: w / 2 + p.x * fit * this.pan.scale + this.pan.x,
-      y: h / 2 + p.y * fit * this.pan.scale + this.pan.y,
-      r: p.r * fit * this.pan.scale,
-    }));
-    for (const p of this.positions) {
-      const c = colors(p.row.changePct);
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-      ctx.fillStyle = c + "20";
-      ctx.fill();
-      ctx.strokeStyle = c + "99";
-      ctx.lineWidth = 1;
-      ctx.stroke();
-      if (p.r > 12) {
-        ctx.textAlign = "center";
-        ctx.fillStyle = "#f4f0e8";
-        ctx.font = `600 ${Math.min(13, p.r * 0.32)}px -apple-system, sans-serif`;
-        ctx.fillText(p.row.symbol, p.x, p.y - 2);
-        ctx.font = `${Math.min(11, p.r * 0.27)}px -apple-system, sans-serif`;
-        ctx.fillStyle = c;
-        ctx.fillText(
-          `${p.row.changePct >= 0 ? "+" : ""}${p.row.changePct.toFixed(2)}%`,
-          p.x,
-          p.y + 12,
-        );
-      }
-    }
-  }
-  destroy() {
-    this.ro.disconnect();
-    this.root.innerHTML = "";
-  }
+ constructor(root,rows,onSelect){
+  this.root=root;this.rows=rows;this.onSelect=onSelect;
+  root.innerHTML='<canvas class="us2-bubble-plot" aria-label="股票泡泡圖：顏色為完整交易日漲跌，大小為平均成交額的對數權重" tabindex="0"></canvas><div class="us2-visual-legend">藍＋／紅−：完整日漲跌 · 大小：20日平均成交額對數 <button type="button">重設視野</button></div>';
+  this.canvas=root.querySelector('canvas');this.canvas.style.touchAction='none';
+  this.field=new BubbleField(this.canvas,{assetName:'股票',metricNames:{change:'完整日漲跌'},palette:{up:'#00b8d4',down:'#ff3078'},radiusForRows:usBubbleRadii,onSelect:n=>this.onSelect(n.symbol),formatMetric:value=>Number.isFinite(value)?`${value>=0?'+':''}${value.toFixed(2)}%`:'—'});
+  root.querySelector('button').onclick=()=>this.field.reset();
+  this.canvas.addEventListener('keydown',e=>{if(!['+','-','0'].includes(e.key))return;e.preventDefault();if(e.key==='0')this.field.reset();else this.field.setZoom(this.field.zoom*(e.key==='+'?1.2:1/1.2));},{signal:this.field.life.signal});
+  this.draw();
+ }
+ draw(){this.field.setRows(this.rows.slice(0,60).map(row=>({symbol:row.symbol,base:row.symbol,value:row.changePct,change:row.changePct,liquidity:row.liquidity})),'change');}
+ destroy(){this.field.destroy();this.root.innerHTML='';}
 }
 export function bindPatternBoard(root, onPath) {
   const canvas = root.querySelector("canvas"),

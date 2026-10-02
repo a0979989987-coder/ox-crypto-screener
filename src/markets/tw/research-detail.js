@@ -2,6 +2,7 @@ import { twProvider } from './api.js?v=20261001-tiercomb1';
 import { renderTWCandles } from './radar-card.js';
 import { escape, number, pct, money, direction, stockRows } from './research-ui.js';
 import { readWatchlist, toggleWatch } from './research-data.js?v=20261001-twhome1';
+import {highlightsContent} from './home-highlights.js?v=20261002-tw3';
 export function closeResearchDetails() { document.querySelectorAll('.twx-dialog').forEach(d => { d.close(); d.remove(); }); }
 function dialog(title) {
   closeResearchDetails();
@@ -12,6 +13,17 @@ function dialog(title) {
   node.addEventListener('cancel', e => { e.preventDefault(); close(); });
   node.addEventListener('click', e => { if (e.target.closest('[data-close]') || e.target === node) close(); });
   return node;
+}
+export function updateHomeHighlights(home,phase,research){
+ const node=document.querySelector('.twx-dialog[data-home-highlights]');if(!node)return;
+ node.dataset.homeHighlights=phase;node.setAttribute('aria-label',phase==='before'?'盤前重點':'盤後重點');
+ node.querySelector('header strong').textContent=phase==='before'?'盤前重點':'盤後重點';
+ node.querySelector('.twx-detail-content').innerHTML=highlightsContent(home,phase,research);
+}
+export function showHomeHighlights(home,phase,research){
+ const node=dialog(phase==='before'?'盤前重點':'盤後重點');node.dataset.homeHighlights=phase;
+ node.setAttribute('aria-label',phase==='before'?'盤前重點':'盤後重點');
+ updateHomeHighlights(home,phase,research);return node;
 }
 export function watchClick(button) {
   const selected = toggleWatch(button.dataset.watch);

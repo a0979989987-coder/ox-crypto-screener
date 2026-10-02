@@ -10,7 +10,7 @@ import {
   patterns,
   sectorETF,
 } from "./view-utils.js?v=20261001-us-eod1";
-import { USBubbles, bindPatternBoard } from "./visuals.js?v=20261001-us-eod1";
+import { USBubbles, bindPatternBoard } from "./visuals.js?v=20261002-tw3";
 import { tierResults, matchPath } from "./analysis.js?v=20261002-rank8";
 import { createToolsRail } from "../../components/strength/tools-rail.js?v=20261001-tiercomb1";
 import { candleChart } from "../crypto/patterns/charts.js";

@@ -44,12 +44,12 @@ export function retainMarket(row,previous,reportDate){
  if(row.group==='asia'&&(!(previous.marketDate<reportDate)||previous.quoteKind!=='previous-close'))return row;
  return {...previous,status:'stale',error:row.error,checkedAt:row.checkedAt};
 }
-export async function collectBriefing(previous,now=new Date(),read=readSource){
+export async function collectBriefing(previous,now=new Date(),read=readSource,receivedNow=()=>new Date()){
  const date=marketDate(now.getTime()/1000,'Asia/Taipei'),cutoff=Math.floor(now.getTime()/1000),checkedAt=now.toISOString();
  const old=new Map((previous?.rows||[]).map(row=>[row.id,row]));let index=0;const rows=new Array(MARKETS.length);
  const worker=async()=>{while(index<MARKETS.length){const i=index++,item=MARKETS[i], [group,name,id,decimals,unit]=item;
   let row={group,name,id,decimals,unit,source:'Yahoo Finance',sourceUrl:'https://finance.yahoo.com/quote/'+encodeURIComponent(id)+'/',checkedAt};
-  try{const raw=await(await read('https://query1.finance.yahoo.com/v8/finance/chart/'+encodeURIComponent(id)+'?interval=1d&range=1mo')).json();row={...row,...parseMarket(raw,id,cutoff,group==='asia'?date:null),collectedAt:checkedAt};}
+  try{const raw=await(await read('https://query1.finance.yahoo.com/v8/finance/chart/'+encodeURIComponent(id)+'?interval=1d&range=1mo')).json(),received=receivedNow();row={...row,...parseMarket(raw,id,Math.max(cutoff,Math.floor(received.getTime()/1000)),group==='asia'?date:null),collectedAt:received.toISOString()};}
   catch(error){row={...row,value:null,change:null,changePct:null,status:'unavailable',error:error.message};}
   rows[i]=retainMarket(row,old.get(id),date);
  }};await Promise.all(Array.from({length:4},worker));
@@ -60,5 +60,5 @@ export async function collectBriefing(previous,now=new Date(),read=readSource){
   const last=yields?.at(-1),prior=yields?.at(-2);let row={id,name,group:'yields',source:'美國財政部',sourceUrl,unit:'%',decimals:2,changeUnit:'bp',value:last?.[key]??null,change:prior?(last[key]-prior[key])*100:null,changePct:null,marketDate:last?.date??null,quotedAt:null,quoteKind:'daily-yield',collectedAt:last?checkedAt:null,checkedAt,status:last?'ok':'unavailable',...(error?{error}:{})};
   rows.push(retainMarket(row,old.get(id),date));
  }
- return {date,startedAt:checkedAt,collectedAt:new Date().toISOString(),scheduledTime:'13:35 Asia/Taipei',rows,complete:rows.every(row=>row.status==='ok')};
+ return {date,startedAt:checkedAt,collectedAt:new Date().toISOString(),scheduledTime:'05:30 Asia/Taipei',rows,complete:rows.every(row=>row.status==='ok')};
 }

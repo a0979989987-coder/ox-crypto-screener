@@ -1,9 +1,9 @@
-import {savedHome,loadHome} from './home-data.js?v=20261001-twhome1';
+import {savedHome,loadHome} from './home-data.js?v=20261002-tw3';
 import {coreContent,briefingContent,institutionContent} from './home-content.js?v=20261001-twhome1';
 import { savedResearch, loadResearch, selectSectors, readWatchlist, quadrant } from './research-data.js?v=20261001-twhome1';
 import { escape, number, pct, money, direction, segments, mountResearch, stockRows } from './research-ui.js';
 import { bubbleChart, bubblePoints } from './research-bubbles.js?v=20261001-twhome1';
-import { closeResearchDetails, showSector, showStock, watchClick } from './research-detail.js?v=20261001-twhome1';
+import { closeResearchDetails, showSector, showStock, watchClick, showHomeHighlights, updateHomeHighlights } from './research-detail.js?v=20261002-tw3';
 const prefs = { tab: 'bubble', scope: 'all', market: 'ALL', mode: 'auto', density: 'top', zoom: 1, panX: 0, panY: 0, sort: 'buy', query: '', quadrant: null, help: false, replayIndex: null };
 let session, data = savedResearch(), loading = false, error = null, lastFetch = 0;
 let home=savedHome(),homeLoading=false,homeFetched=0,homeSession='after';
@@ -20,7 +20,7 @@ function homeContent(state) {
   const leaders = [...sectors].sort((a, b) => b.flow - a.flow);
   const chip = s => `<button type="button" class="twx-sector-chip" data-sector="${escape(s.name)}"><span>${escape(s.name)}</span><b class="${direction(s.flow)}">${money(s.flow)}</b></button>`;
 
-  const toolbar=`<div class="twx-home-toolbar"><button type="button" class="twx-session-toggle" data-home-session aria-label="切換${homeSession==='after'?'盤前':'盤後'}資訊"><span class="${homeSession==='after'?'active':''}">盤後</span><span aria-hidden="true">⇄</span><span class="${homeSession==='before'?'active':''}">盤前</span></button><button type="button" class="twx-refresh" data-home-refresh ${homeLoading?'disabled':''}>${homeLoading?'更新中…':'更新資料'}</button></div>`;
+  const toolbar=`<div class="twx-home-toolbar"><div class="twx-home-session-actions"><button type="button" class="twx-session-toggle" data-home-session aria-label="切換${homeSession==='after'?'盤前':'盤後'}資訊"><span class="${homeSession==='after'?'active':''}">盤後</span><span aria-hidden="true">⇄</span><span class="${homeSession==='before'?'active':''}">盤前</span></button><button type="button" class="twx-highlights-button" data-home-highlights aria-haspopup="dialog">${homeSession==='after'?'盤後':'盤前'}重點</button></div><button type="button" class="twx-refresh" data-home-refresh ${homeLoading?'disabled':''}>${homeLoading?'更新中…':'更新資料'}</button></div>`;
   if(homeSession==='before')return toolbar+briefingContent(home,homeLoading);
   return `${toolbar}<div class="twx-home-grid">${coreContent(home,homeLoading)}${institutionContent(home)}<section class="twx-glass twx-flows"><div class="twx-section-head"><span>法人買賣超產業</span><button type="button" data-go="strength">查看泡泡圖 ↗</button></div><div class="twx-flow-columns"><div><h3 class="up">買超</h3><div class="twx-chip-list">${leaders.filter(s => s.flow > 0).slice(0, 5).map(chip).join('') || '<span class="twx-muted">法人資料待更新</span>'}</div></div><div><h3 class="down">賣超</h3><div class="twx-chip-list">${leaders.filter(s => s.flow < 0).reverse().slice(0, 5).map(chip).join('') || '<span class="twx-muted">法人資料待更新</span>'}</div></div></div></section><section class="twx-glass twx-home-wide"><div class="twx-section-head"><span>法人動向</span><small>估算淨買超</small></div>${stockRows([...stocks].filter(s => Number.isFinite(s.netTwd)).sort((a, b) => b.netTwd - a.netTwd), readWatchlist(), 5) || '<div class="twx-empty">官方資料載入後顯示</div>'}</section></div>`;
 }
@@ -82,6 +82,7 @@ function indicatorContent() {
 }
 function paint(s) {
   if (session !== s) return;
+  if(s.view==='home')updateHomeHighlights(home,homeSession,data);
   const content = s.view === 'home' ? homeContent(s.state) : indicatorContent();
   s.root.innerHTML = `<div class="twx" data-twx-view="${s.view}">${error && !data ? '<div class="twx-empty" role="status">資料暫時無法載入，請重新整理頁面。</div>' : ''}${content}</div>`;
 }
@@ -114,6 +115,7 @@ export function renderResearch(view, state, { host } = {}) {
     if (Date.now() < (s.suppressClickUntil || 0) && event.target.closest('.twx-bubble')) return;
     const button = event.target.closest('button, [data-sector]'); if (!button) return;
     if(button.hasAttribute('data-home-session')){homeSession=homeSession==='after'?'before':'after';paint(s);return;}
+    if(button.hasAttribute('data-home-highlights')){showHomeHighlights(home,homeSession,data);return;}
     if(button.hasAttribute('data-home-refresh')){refreshHome(s,true);return;}
     if (button.dataset.watch) { event.stopPropagation(); watchClick(button); return; }
     if (button.dataset.stock) { showStock(data?.stocks.find(stock => stock.symbol === button.dataset.stock)); return; }

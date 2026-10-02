@@ -42,7 +42,7 @@
     const host = document.querySelector(`[data-news-surface="${scope === 'all' ? 'all' : 'market'}"]`);
     if (!host) return;
     const token = ++generation;
-    const { mountNewsWorkspace } = await import('./workspace.js?v=20261002-newsv2');
+    const { mountNewsWorkspace } = await import('./workspace.js?v=20261002-tw3');
     if (token !== generation || !host.isConnected) return;
     if (state.scope !== scope || state.workspace?.host !== host) {
       state.workspace?.destroy(); state.scope = scope;
