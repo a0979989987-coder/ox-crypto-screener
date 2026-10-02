@@ -2,7 +2,7 @@ import { evaluateClassic, compareClassic } from '../../core/classic.js?v=2026100
 import { classicTWRow } from './classic.js?v=20261002-rank8';
 import {patternFrameTier} from './timeframe-tiers.js?v=20261002-rank8';
 import {FRAME_LABELS} from './patterns/model.js';
-import { rankChartRows, chartUniverse } from './chart-radar-model.js?v=20261002-rank8';
+import { rankChartRows, chartUniverse } from './chart-radar-model.js?v=20261002-radarkeep1';
 import { escapeTW as esc } from './radar-card.js';
 import { savedResearch } from './research-data.js?v=20261001-twhome1';
 import { bundleState, bundleEntry, bundleClassification, subscribeBundle, preloadBundle } from './patterns/bundle.js?v=20261002-rank8';
@@ -67,7 +67,7 @@ export function mountTWChartRadar(host,{state:marketState,watchlist=new Set()}={
  const direction=scanner.querySelector('[id$="-direction-toggle"]');
  direction.dataset.action='side';
  direction.setAttribute('aria-label','切換當日上漲或下跌股票池');
- scanner.insertAdjacentHTML('beforeend','<div class="twcr-pool-info"></div><div id="tw-radar-screener-list" class="twcr-results" role="list"></div>');
+ scanner.insertAdjacentHTML('beforeend','<div class="twcr-pool-info"></div><div class="twcr-classification-note" role="status" hidden></div><div id="tw-radar-screener-list" class="twcr-results" role="list"></div>');
  const details=cryptoRadarPart('#ox-detail-panel');
  details.classList.add('twcr-details');details.setAttribute('aria-label','目前股票資訊');
  details.querySelector('.panel-title').innerHTML='OX 股票詳情 · <span data-details-title></span>';
@@ -119,13 +119,15 @@ export function mountTWChartRadar(host,{state:marketState,watchlist=new Set()}={
  }
  function renderList(){
   if(life.signal.aborted)return;
-  const config=window.OXTierFilters?.get('tw'),stocks=universe().map(r=>classicTWRow(r,bundleClassification(r.symbol,'1D',snapshot()?.date),snapshot()?.date));
-  const pool=config?.enabled?stocks.flatMap(row=>{const match=window.OXTierFilters.resolve(row,config,(r,f)=>patternFrameTier(bundleClassification(r.symbol,f,snapshot()?.date),side));return match?[{...row,...match.value,sourceTier:row.tier,tier:match.tier,filterFrame:match.frame}]:[];}):stocks;
-  const rows=rankChartRows(pool,{tab,tier,side,watchlist,query,strictTier:config?.enabled});
+  const config=window.OXTierFilters?.get('tw'),indexed=bundleState(),classificationDate=indexed.date;
+  const candidateStocks=chartUniverse(marketState,{date:classificationDate,stocks:indexed.stocks},{asOf:classificationDate});
+  const stocks=candidateStocks.map(r=>classicTWRow(r,bundleClassification(r.symbol,'1D',classificationDate),classificationDate));
+  const pool=config?.enabled?stocks.flatMap(row=>{const match=window.OXTierFilters.resolve(row,config,(r,f)=>patternFrameTier(bundleClassification(r.symbol,f,classificationDate),side));return match?[{...row,...match.value,sourceTier:row.tier,tier:match.tier,filterFrame:match.frame}]:[];}):stocks;
+  const rows=rankChartRows(tab==='all'?pool:universe(),{tab,tier,side,watchlist,query,strictTier:config?.enabled});
   $('[data-tier-label]').textContent=tier==='all'?'':tier;
   host.querySelectorAll('[data-twcr-tab]').forEach(b=>{const selected=b.dataset.twcrTab===tab;b.classList.toggle('active',selected);b.setAttribute('aria-selected',String(selected));});
   host.querySelectorAll('[data-twcr-tier]').forEach(b=>b.setAttribute('aria-checked',String(b.dataset.twcrTier===tier)));
-  $('[data-surge-count]').textContent=rankChartRows(stocks,{tab:'surge'}).length;
+  $('[data-surge-count]').textContent=rankChartRows(universe(),{tab:'surge'}).length;
   $('[data-watch-count]').textContent=watchlist.size;
   const direction=$('[data-action="side"]');
   direction.classList.toggle('is-long',side==='long');direction.classList.toggle('is-short',side==='short');
@@ -134,6 +136,9 @@ export function mountTWChartRadar(host,{state:marketState,watchlist=new Set()}={
   direction.setAttribute('aria-checked',String(side==='short'));
   direction.title=side==='long'?'OX 經典多頭候選':'OX 經典空頭候選';
   $('.twcr-pool-info').textContent=tab==='all'?`OX 經典${side==='long'?'多頭':'空頭'} · ${rows.length} 檔`:tab==='surge'?`當日成交額前 ${rows.length} 檔`:`自選 ${rows.length} 檔`;
+  const note=$('.twcr-classification-note'),quoteDate=snapshot()?.date;
+  note.hidden=tab!=='all'||!classificationDate||!quoteDate||classificationDate===quoteDate;
+  note.textContent=note.hidden?'':`候選分類 ${classificationDate} · 最新行情 ${quoteDate}；新分類公布後自動更新。`;
   $('.twcr-date').textContent=snapshot()?.date?`資料日 ${snapshot().date}`:'官方資料載入中';
   if(symbol)renderQuote();if($('.twcr-search-dialog').open)renderSearch();
   const list=$('.twcr-results'),top=list.scrollTop,wanted=new Set(rows.map(r=>r.symbol));
@@ -154,7 +159,7 @@ export function mountTWChartRadar(host,{state:marketState,watchlist=new Set()}={
    if(card._markup!==html){card.innerHTML=html;card._markup=html;}
    if(list.children[i]!==card)list.insertBefore(card,list.children[i]||null);
   });
-  if(!rows.length){const empty=document.createElement('div');empty.className='twcr-empty';empty.textContent=config?.enabled?'目前沒有符合時間組合的股票；未完成分類的級別不列入':marketState?.status==='loading'?'官方雷達資料載入中…':marketState?.status==='error'?'雷達請求失敗，尚無可用候選資料':tab==='watch'?'尚未收藏股票，點選星星加入自選':'目前沒有符合條件的股票';list.append(empty);}
+  if(!rows.length){const empty=document.createElement('div');empty.className='twcr-empty';empty.textContent=tab==='all'&&(!classificationDate||indexed.loading)&&!indexed.classified?'型態分類資料載入中…':config?.enabled?'目前沒有符合時間組合的股票；未完成分類的級別不列入':marketState?.status==='loading'?'官方雷達資料載入中…':marketState?.status==='error'?'雷達請求失敗，尚無可用候選資料':tab==='watch'?'尚未收藏股票，點選星星加入自選':'目前沒有符合條件的股票';list.append(empty);}
   list.scrollTop=top;
  }
  function refreshRange(){state.candleSeries?.applyOptions({autoscaleInfoProvider:provider});}
