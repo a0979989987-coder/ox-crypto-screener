@@ -1,6 +1,6 @@
 import {escape,number,pct,money,direction} from './research-ui.js';
 import {taipeiTime} from './home-content.js';
-import {buildPremarketBriefing,buildAftermarketBriefing,homeBriefingInput} from './briefing-formatter.js';
+import {buildPremarketBriefing,buildAftermarketBriefing,homeBriefingInput} from './briefing-formatter.js?v=20261002-nav6';
 const finite=n=>typeof n==='number'&&Number.isFinite(n);
 const signed=(n,digits=2)=>finite(n)?`${n>0?'+':''}${number(n,digits)}`:'—';
 const sourceLink=url=>{try{const u=new URL(url);return u.protocol==='https:'&&!u.username&&!u.password?u.href:null;}catch{return null;}};

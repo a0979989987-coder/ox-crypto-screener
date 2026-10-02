@@ -81,6 +81,10 @@ export function buildAftermarketBriefing(input = {}) {
   const amount = value => `${value.estimated ? '估算' : ''}${rounded(Math.abs(value.netTwd) / 1e8, 2)}億`;
   const theme = onDate(input.buyTheme, date) && clean(input.buyTheme.name) ? clean(input.buyTheme.name) : null;
   let text = index ? `大盤${signed(index.changePct, 2)}%。` : '當日大盤漲跌幅待補。';
+  if (input.partial && sectors.length) {
+    text += '已收錄族群中，';
+    missing.push('部分法人來源待更新');
+  }
   if (buys.length) {
     text += `${theme ? `法人主要掃貨${theme}，` : '法人主要掃貨'}${buys.map(value => clean(value.name)).join('、')}，分別買超${buys.map(amount).join('、')}。`;
     const strength = onDate(input.buyStrength, date) && finite(input.buyStrength.baselineTwd) && input.buyStrength.baselineTwd > 0 && clean(input.buyStrength.baselineLabel) ? input.buyStrength : null;
@@ -100,7 +104,8 @@ export function buildAftermarketBriefing(input = {}) {
   if (rotation) text += `${!anomalies ? '籌碼異常股數待確認。' : ''}轉向相當${rotation.label}（${clean(rotation.basis)}）。`;
   else { missing.push('轉向程度依據'); text += anomalies ? '轉向程度待確認。' : '籌碼異常與轉向待確認。'; }
   return { title: 'AI 盤後總結', date, text, missing, complete: Boolean(date) && missing.length === 0,
-    basis: sectors.some(value => value.estimated) ? '法人金額：淨股數×收盤價估算' : '' };
+    basis: [sectors.some(value => value.estimated) ? '法人金額：淨股數×收盤價估算' : '',
+      input.partial && sectors.length ? '部分來源未更新，採同日已取得資料' : ''].filter(Boolean).join('；') };
 }
 
 // Adapter for today's available snapshots. ADR, futures positioning, US sector
@@ -118,8 +123,9 @@ export function homeBriefingInput(home = {}, phase = 'after', research = null) {
   }
   const date = home.coreStatus?.reportDate || home.core?.date;
   const index = home.core?.index ? { ...home.core.index, date: home.core.date, status: home.coreStatus?.error ? 'stale' : 'ok' } : null;
+  const partial = Boolean(research?.sourceHealth && Object.values(research.sourceHealth).some(source => !source.ok || source.stale));
   const sectors = research?.date === date && research?.methodology === 'net-shares-times-daily-close-v1' ?
     (research.sectors || []).map(value => ({ name: value.name, netTwd: value.flow, date: research.date, estimated: true,
-      status: research.sourceHealth && Object.values(research.sourceHealth).some(source => !source.ok) ? 'stale' : 'ok' })) : [];
-  return { date, index, sectors };
+      status: partial ? 'partial' : 'ok' })) : [];
+  return { date, index, sectors, partial };
 }

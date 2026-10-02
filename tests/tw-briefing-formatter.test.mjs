@@ -59,6 +59,19 @@ test('verified zero flows are not presented as missing data',()=>{
   const date='2026-10-02';const report=buildAftermarketBriefing({date,index:{date,changePct:0},sectors:[{date,name:'半導體',netTwd:0,estimated:true}],chipAnomalies:{date,count:0,rule:'已核對異常清單'}});
   assert.match(report.text,/未見淨買超/);assert.match(report.text,/未見淨賣超/);assert.match(report.text,/籌碼異常股數0檔/);assert(!report.missing.includes('當日法人產業買超'));
 });
+test('a partial source outage keeps same-day verified flows with explicit coverage',()=>{
+  const date='2026-10-02';
+  const home={core:{date,index:{changePct:.25}},coreStatus:{reportDate:date}};
+  const research={date,methodology:'net-shares-times-daily-close-v1',sourceHealth:{TWSE:{ok:true},TPEX:{ok:false,stale:true}},
+    sectors:[{name:'半導體',flow:8.2e9},{name:'金融',flow:-1e9}]};
+  const report=buildAftermarketBriefing(homeBriefingInput(home,'after',research));
+  assert.match(report.text,/已收錄族群中，法人主要掃貨半導體/);
+  assert.match(report.text,/估算82億/);assert.match(report.text,/金融賣超估算10億/);
+  assert.match(report.basis,/部分來源未更新，採同日已取得資料/);
+  assert.equal(report.complete,false);assert(report.missing.includes('部分法人來源待更新'));
+  assert(!report.missing.includes('當日法人產業買超'));
+  assert.equal(homeBriefingInput(home,'after',{...research,date:'2026-10-01'}).sectors.length,0);
+});
 test('snapshot adapter uses exact dates and preserves all detailed source cards',()=>{
   const home=JSON.parse(readFileSync(new URL('../data/tw-home.json',import.meta.url),'utf8'));
   const research={date:'1900-01-01',methodology:'net-shares-times-daily-close-v1',sectors:[{name:'錯日族群',flow:1e9}]};
