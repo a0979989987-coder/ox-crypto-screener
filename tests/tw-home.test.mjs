@@ -27,6 +27,14 @@ test('Asia ignores report-day intraday quotes, walks holiday gaps and compares t
  raw.chart.result[0].meta.fulldayPrice=999;raw.chart.result[0].meta.fulldayChange=2;assert.equal(parseMarket(raw,'TEST',345601).change,2);
  assert.equal(MARKETS.length,20);assert.equal(new Set(MARKETS.map(m=>m[2])).size,20);
 });
+test('USD/JPY accepts the source canonical alias only with JPY currency and rejects reversed or unrelated symbols',()=>{
+ const meta={symbol:'USDJPY=X',currency:'JPY',exchangeTimezoneName:'UTC',regularMarketTime:86400,regularMarketPrice:158};
+ const raw={chart:{result:[{meta,timestamp:[0,86400],indicators:{quote:[{close:[157,158]}]}}]}};
+ assert.equal(parseMarket(raw,'JPY=X',86401).value,158);
+ assert.throws(()=>parseMarket(raw,'EURUSD=X',86401),/代號/);
+ meta.currency='USD';assert.throws(()=>parseMarket(raw,'JPY=X',86401),/代號/);
+ meta.symbol='JPYUSD=X';meta.currency='JPY';assert.throws(()=>parseMarket(raw,'JPY=X',86401),/代號/);
+});
 const nightHtml=(session='2026/09/30',date='2026/10/01')=>`<input name="queryDate" value="${date}"><p>${session} 15:00~次日05:00 盤後交易時段行情表</p><table>`+[
  ['TX','202610/202611',...Array(13).fill('1')],['TX','202610W1',...Array(13).fill('1')],['TX','202611','48000','48600','47900','48430','▼-64','▼-0.13%','210',...Array(6).fill('-')],['TX','202610','48320','48592','48158','48298','▼-32','▼-0.07%','28717',...Array(6).fill('-')]
  ].map(row=>'<tr>'+row.map(v=>'<td>'+v+'</td>').join('')+'</tr>').join('')+'</table>';

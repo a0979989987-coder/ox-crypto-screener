@@ -17,7 +17,10 @@ export async function readSource(url){
 }
 export function parseMarket(raw,symbol,cutoff,reportDate=null){
  const result=raw?.chart?.result?.[0],meta=result?.meta;
- if(meta?.symbol!==symbol)throw Error('來源代號不符');
+ // Yahoo now also resolves the legacy JPY=X route to canonical USDJPY=X.
+ // Accept only this verified same-currency alias; unrelated symbols still fail.
+ const sameSymbol=meta?.symbol===symbol||symbol==='JPY=X'&&meta?.symbol==='USDJPY=X'&&meta.currency==='JPY';
+ if(!sameSymbol)throw Error('來源代號不符');
  const timezone=meta.exchangeTimezoneName||'UTC',closes=result.indicators?.quote?.[0]?.close||[];
  const pairs=(result.timestamp||[]).map((stamp,i)=>({stamp,date:marketDate(stamp,timezone),value:closes[i]})).filter(p=>p.stamp<=cutoff&&price(p.value)).sort((a,b)=>a.stamp-b.stamp);
  if(reportDate){
