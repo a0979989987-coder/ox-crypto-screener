@@ -35,6 +35,9 @@ async function phase(page,session){
  if(await button.innerText()!==session+'重點')await page.locator('[data-home-session]').click();
  assert.equal(await button.innerText(),session+'重點');await button.click();
  const dialog=page.getByRole('dialog',{name:session+'重點'});await dialog.waitFor();
+ const summary=dialog.locator('.twx-highlight-summary');await summary.waitFor();
+ assert.equal(await summary.locator('h3').innerText(),session==='盤前'?'【08:30 盤前快訊】':'【AI 盤後總結】');
+ if(session==='盤前'){const length=[...await summary.locator('p').innerText()].length;assert(length>=50&&length<=100,'morning briefing must stay within 50–100 characters');}
  assert.match(await dialog.innerText(),session==='盤前'?/台指期夜盤[\s\S]*美股收盤/:/台股收盤[\s\S]*權值股貢獻/);
  assert((await dialog.innerText()).includes(session==='盤前'?home.night.close.toLocaleString('zh-TW'):home.core.index.close.toLocaleString('zh-TW')));
  return dialog;
@@ -74,7 +77,8 @@ async function dragPressure(page,market){
    let acquisitions=[];page.on('request',r=>{if(r.url().includes('/v1/tw/home?')&&r.url().includes('refresh=1'))acquisitions.push(new URL(r.url()).searchParams.get('section'));});
    await page.getByRole('button',{name:'更新資料',exact:true}).click();await page.getByRole('button',{name:'更新資料',exact:true}).waitFor();assert.deepEqual(acquisitions.sort(),['briefing','core','night']);
    assert.equal((await page.locator('.app-dock [data-view-target="data"]').innerText()).trim(),'資訊');
-   if(width<600)await page.locator('.app-dock [data-view-target="data"]').tap();else{await page.locator('.ox-desktop-nav [data-view-target="data"]').click();await page.getByRole('menuitem',{name:'本市場新聞',exact:true}).click();}
+   if(width<600)await page.locator('.app-dock [data-view-target="data"]').tap();else await page.locator('.ox-desktop-nav [data-view-target="data"]').click();
+   assert.equal(await page.locator('#ox-news-entry-menu').count(),0,'Information goes directly to this market without a menu');
    await page.locator('.oxn-calendar-grid').waitFor();
    const toggle=page.getByRole('button',{name:'切換為行程列表',exact:true});assert.equal(await toggle.innerText(),'切換');await toggle.click();await page.locator('.oxn-agenda').waitFor();await noOverflow(page,width+' agenda');
    const rendered=await page.locator('.oxn-agenda-day').evaluateAll(es=>es.map(e=>e.dataset.date));assert.deepEqual(rendered,[...rendered].sort());
