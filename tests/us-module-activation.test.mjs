@@ -14,7 +14,7 @@ for(const previous of ['home','strength','data','media'])test(`first US entry fr
  let module;
  const window={switchAppView(view){document.body.dataset.view=view;module.view(view);}};
  const context=vm.createContext({document,window,USWorkspace,US_MODULE_CONFIG:{id:'us',label:'美股',status:'ready'},createUSMarketState:()=>({})});
- const source=(await readFile(new URL('../src/markets/us/index.js',import.meta.url),'utf8')).replace(/^import .*;\n/gm,'').replace('export const usModule','const usModule');
+ const source=(await readFile(new URL('../src/markets/us/index.js',import.meta.url),'utf8')).replace(/^import .*;\r?\n/gm,'').replace('export const usModule','const usModule');
  vm.runInContext(source+'\nglobalThis.testModule=usModule;',context);module=context.testModule;
  await module.activate({view:previous});
  assert.deepEqual(calls,['activate','show']);

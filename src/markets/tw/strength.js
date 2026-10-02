@@ -1,6 +1,6 @@
 import { renderResearch, stopResearch } from './research-page.js?v=20261002-finance4';
 import { mountResearch } from './research-ui.js';
-import { createToolsRail } from '../../components/strength/tools-rail.js?v=20261001-tiercomb1';
+import { createToolsRail } from '../../components/strength/tools-rail.js?v=20261002-etf2';
 import { createTWMarketState } from './engine.js?v=20261002-rank8';
 let selected = 'screener', session = null, modules;
 export function preloadTWStrength() {
@@ -15,18 +15,29 @@ export function stopTWStrength() {
 }
 async function show(s) {
   if (session !== s) return;
-  s.instance?.destroy(); s.instance = null; stopResearch(); s.host.replaceChildren();
+  s.instance?.destroy(); s.instance = null; stopResearch();
+  // The drawing and bubble tools own a shadow root. A destroyed shadow root
+  // cannot be detached; mounting light-DOM children into it would hide them.
+  const freshHost=document.createElement('div');freshHost.id=s.host.id;
+  s.host.replaceWith(freshHost);s.host=freshHost;
   const generation = ++s.generation;
   s.host.hidden = selected === 'rotation'; s.research.hidden = selected !== 'rotation';
   if (selected === 'rotation') { renderResearch('strength', s.state, { host: s.research }); return; }
-  if(['screener','savings'].includes(selected)){
-    const tool=selected;
-    s.host.textContent='工具載入中…';
-    try {const module=await import(tool==='screener'?'./screener/view.js?v=20261002-screen4':'./savings/view.js?v=20261002-screen4');
+  if(selected==='screener'){
+    if(window.OXLoading)OXLoading.render(s.host,'載入篩選器');
+    try{const module=await import('./screener/view.js?v=20261002-screen4');if(session!==s||generation!==s.generation)return;s.host.replaceChildren();s.instance=module.mountScreener(s.host,{onOpenRadar(symbol){document.dispatchEvent(new CustomEvent('ox:tw-chart-symbol',{detail:{symbol}}));document.querySelector('.dock-btn[data-view-target="radar"]')?.click();}});}catch{if(session===s&&generation===s.generation)s.host.textContent='篩選器暫時無法載入';}return;
+  }
+  if(['etf','savings'].includes(selected)){
+
+    if(window.OXLoading)OXLoading.render(s.host,selected==='etf'?'載入 ETF 精選':'載入存股計算');
+    else s.host.textContent='介面載入中…';
+    try{
+      const module=selected==='etf'?await import('./etf/view.js?v=20261002-etf2'):await import('./etf/savings.js?v=20261002-etf2');
       if(session!==s||generation!==s.generation)return;
-      s.host.textContent='';
-      s.instance=tool==='screener'?module.mountScreener(s.host,{onOpenRadar:symbol=>{document.dispatchEvent(new CustomEvent('ox:tw-chart-symbol',{detail:{symbol}}));document.querySelector('.dock-btn[data-view-target="radar"]')?.click();}}):module.mountSavings(s.host);
-    }catch(error){if(session===s&&generation===s.generation){s.host.textContent='工具暫時無法載入';}}
+      s.host.replaceChildren();
+      s.instance=selected==='etf'?module.mountETF(s.host,{onSavings(selection){s.savingsInitial=selection;s.rail.select('savings');}}):module.mountSavings(s.host,{initialSelection:s.savingsInitial});
+      s.savingsInitial=null;
+    }catch(error){if(session===s&&generation===s.generation){s.host.textContent='ETF 工具載入失敗。';const retry=document.createElement('button');retry.textContent='重新載入';retry.onclick=()=>show(s);s.host.append(retry);}}
     return;
   }
   if(window.OXLoading)OXLoading.render(s.host,selected==='bubbles'?'載入泡泡圖':'載入型態畫板');else s.host.textContent='介面載入中…';
@@ -55,7 +66,7 @@ export function renderTWStrength(state) {
   stopTWStrength(); stopResearch(); root.replaceChildren();
   const host = document.createElement('div'), research = document.createElement('div');
   host.id = 'ox-tw-patterns'; research.id = 'ox-tw-sector-tools';
-  const rail = createToolsRail({ tabs: [['screener','篩選器'],['patterns', '型態搜尋'], ['bubbles','泡泡圖'], ['rotation', '板塊輪動'],['savings','存股計算']], selected, label: '台股指標分類', attribute: 'data-tw-tool',equal:false, onSelect(id) { selected = id; if (session) show(session); } });
+  const rail = createToolsRail({ tabs: [['patterns', '畫板'], ['bubbles','泡泡圖'], ['rotation', '板塊輪動'],['screener','篩選器'],['etf','ETF 精選'],['savings','存股計算']], selected, label: '台股指標分類', attribute: 'data-tw-tool',equal:true,mobileRows:true, onSelect(id) { selected = id; if (session) show(session); } });
   rail.element.id = 'ox-tw-tools-nav';
   const style = document.createElement('style');
   style.textContent = '#ox-tw-tools-nav{margin:0 0 12px}#ox-tw-patterns,#ox-tw-sector-tools{min-width:0}#ox-tw-sector-tools[hidden],#ox-tw-patterns[hidden]{display:none!important}';
@@ -65,6 +76,6 @@ export function renderTWStrength(state) {
 }
 
 if(typeof document !== 'undefined') {
- document.addEventListener('ox:tw-tool', event => { if(['screener','patterns','bubbles','rotation','savings'].includes(event.detail?.tool)){selected=event.detail.tool;stopTWStrength();} });
+ document.addEventListener('ox:tw-tool', event => { if(['patterns','bubbles','rotation','screener','etf','savings'].includes(event.detail?.tool)){selected=event.detail.tool;stopTWStrength();} });
  document.addEventListener('ox:tw-close-refresh',()=>{if(session&&selected==='patterns')session.instance?.refresh?.();});
 }

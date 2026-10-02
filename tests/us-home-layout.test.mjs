@@ -4,7 +4,7 @@ import {readFile} from 'node:fs/promises';
 
 const source = await readFile(new URL('../src/markets/us/workspace.js', import.meta.url), 'utf8');
 const renderHome = source.slice(source.indexOf('  renderHome(main) {'), source.indexOf('  updateHome() {'));
-const template = renderHome.match(/main\.innerHTML = (\x60[\s\S]*\x60);\n/)[1];
+const template = renderHome.match(/main\.innerHTML = (\x60[\s\S]*\x60);\r?\n/)[1];
 const html = new Function('e', 'EOD_INTERVALS', 'return ' + template).call(
   {state:{homeSymbol:'SPY', homeInterval:'1D'}}, value => value, ['1D','1W','1M'],
 );
