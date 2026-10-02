@@ -16,6 +16,10 @@ body.ox-account-open{overflow:hidden}body.theme-light .ox-account-shell{backgrou
 #ox-bitget-link-section { margin-top:20px; padding-top:16px; border-top:1px solid #ffffff22; overflow-wrap:anywhere; }
 #ox-bitget-uid { box-sizing:border-box; max-width:100%; }
 #ox-bitget-link-status { font-size:12px; line-height:1.7; }
+.ox-service-row:has(.ox-bitget-link-open) { align-items:center; gap:10px; flex-wrap:wrap; }
+.ox-service-row:has(.ox-bitget-link-open)>b { margin-left:auto; }
+.ox-bitget-link-open { min-height:40px; padding:8px 12px; border:1px solid #ffffff40; border-radius:8px; background:#ffffff12; color:inherit; font:inherit; cursor:pointer; }
+.ox-bitget-link-open:focus-visible { outline:2px solid currentColor; outline-offset:3px; }
 .ox-account-avatar { display:grid; place-items:center; width:44px; height:44px; border-radius:50%; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.2); }
 #ox-account-email-code { min-height:44px; width:100%; box-sizing:border-box; font:inherit; }
 .ox-account-card [aria-busy="true"] { opacity:.7; transition:opacity 200ms ease; }

@@ -11,7 +11,7 @@
     if ($('#ox-bitget-link-form')) return;
     const section = document.createElement('section'); section.id = 'ox-bitget-link-section';
     section.innerHTML = '<h3>Bitget UID 待驗證連結</h3><p>填寫 UID 不代表已證明帳號持有權，也不會取得會員資格。所有公開功能維持開放。</p><form id="ox-bitget-link-form"><label for="ox-bitget-uid">Bitget UID</label><input id="ox-bitget-uid" inputmode="numeric" pattern="[1-9][0-9]{0,19}" maxlength="20" autocomplete="off" required><button class="ox-account-submit" id="ox-bitget-link-save" type="submit">儲存待驗證 UID</button><button class="ox-account-skip" id="ox-bitget-link-remove" type="button" hidden>移除待驗證連結</button></form><p id="ox-bitget-link-status" role="status" aria-live="polite"></p>';
-    $('#ox-account-bitget-info')?.after(section);
+    $('#ox-bitget-link-summary')?.closest('.ox-service-row')?.after(section);
     $('#ox-bitget-link-form').addEventListener('submit', async event => {
       event.preventDefault(); if (!event.currentTarget.reportValidity() || event.currentTarget.getAttribute('aria-busy') === 'true') return;
       await mutateLink(() => window.OXAuth.saveBitgetLink($('#ox-bitget-uid').value.trim(), linkRevision));
@@ -89,6 +89,13 @@
     const trigger = $('#ox-account-trigger'); if (trigger) trigger.setAttribute('aria-label',user ? `OX 帳號：${user.displayName}` : '登入或註冊 OX 帳號');
   };
   document.addEventListener('ox:accountchange',event => renderUser(event.detail.user));
+  $('#ox-bitget-link-open')?.addEventListener('click', () => {
+    if (!window.OXAuth.user) return;
+    ensureLinkForm();
+    $('#ox-bitget-link-section').hidden = false;
+    $('#ox-bitget-link-section').scrollIntoView({ block: 'center' });
+    if (!$('#ox-bitget-uid').disabled) $('#ox-bitget-uid').focus({ preventScroll: true });
+  });
   const open = (view='auth', returnFocus=null) => {
     if (view === 'auth' && window.OXAuth.user) view = 'center';
     priorFocus = returnFocus || document.activeElement;
