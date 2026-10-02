@@ -1,6 +1,6 @@
 import { renderResearch, stopResearch } from './research-page.js?v=20261002-finance4';
 import { mountResearch } from './research-ui.js';
-import { createToolsRail } from '../../components/strength/tools-rail.js?v=20261002-etf1';
+import { createToolsRail } from '../../components/strength/tools-rail.js?v=20261002-etf2';
 import { createTWMarketState } from './engine.js?v=20261002-rank8';
 let selected = 'screener', session = null, modules;
 export function preloadTWStrength() {
@@ -32,7 +32,7 @@ async function show(s) {
     if(window.OXLoading)OXLoading.render(s.host,selected==='etf'?'載入 ETF 精選':'載入存股計算');
     else s.host.textContent='介面載入中…';
     try{
-      const module=selected==='etf'?await import('./etf/view.js?v=20261002-etf1'):await import('./etf/savings.js?v=20261002-etf1');
+      const module=selected==='etf'?await import('./etf/view.js?v=20261002-etf2'):await import('./etf/savings.js?v=20261002-etf2');
       if(session!==s||generation!==s.generation)return;
       s.host.replaceChildren();
       s.instance=selected==='etf'?module.mountETF(s.host,{onSavings(selection){s.savingsInitial=selection;s.rail.select('savings');}}):module.mountSavings(s.host,{initialSelection:s.savingsInitial});
