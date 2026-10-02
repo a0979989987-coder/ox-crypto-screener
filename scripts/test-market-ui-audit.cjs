@@ -118,6 +118,12 @@ async function setup(browser, width) {
               const overlay = document.querySelector('#ox-control-overlay');
               return overlay?.getAttribute('aria-hidden') === 'true' && getComputedStyle(overlay).pointerEvents === 'none';
             });
+            if (market === 'us') {
+              // Verify the first landing before later view changes could mask
+              // a cold-start/reentrant initialization failure.
+              await page.locator('.us2-radar-pane').waitFor();
+              assert.equal(await page.locator('.us-boot-status').count(), 0, 'first US entry must mount without a retry');
+            }
           }
           for (const view of ['home','radar','strength','data','media']) {
             const nav = width > 720 ? '.ox-desktop-nav' : '.app-dock';
