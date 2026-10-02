@@ -15,13 +15,13 @@ import {
 
 import {
   renderTWStrength
-} from "./strength.js?v=20261002-nav6";
+} from "./strength.js?v=20261002-rail1";
 
 import {
   renderTWRadar, stopTWRadar
 } from "./radar.js?v=20261002-radarkeep1";
 import { cancelTWLookup } from "./lookup.js?v=20261001-tiercomb1";
-import { stopTWStrength, preloadTWStrength } from "./strength.js?v=20261002-nav6";
+import { stopTWStrength, preloadTWStrength } from "./strength.js?v=20261002-rail1";
 import { createPreloader } from "./preload.js?v=20261001-twhome1";
 import { preloadBundle } from "./patterns/bundle.js?v=20261002-rank8";
 import {savedRadarSnapshot,saveRadarSnapshot,bundledRadarSnapshot} from './radar-snapshot.js?v=20261001-tiercomb1';
