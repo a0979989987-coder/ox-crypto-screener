@@ -145,7 +145,7 @@ async function setup(browser, width) {
             if (market === 'us') await page.locator(`.us2-${view}-pane`).waitFor();
             if (view === 'strength') {
               // Excludes floating bubbles, covered by their dedicated physics QA.
-              await page.getByRole('tab',{name:market === 'us' ? '型態畫板' : '型態搜尋',exact:true}).click();
+              await page.getByRole('tab',{name:market === 'us' ? '型態畫板' : market === 'tw' ? '畫板' : '型態搜尋',exact:true}).click();
               await page.locator('.px-board').waitFor();
               await page.locator('.px-board:not(.is-scanning)').waitFor({timeout:30000});
             }
