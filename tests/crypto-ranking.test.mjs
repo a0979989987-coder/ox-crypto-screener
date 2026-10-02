@@ -155,6 +155,9 @@ test('new RWA listings and HPQ never fall into the crypto fallback',()=>{
  assert.equal(classify({symbol:'HPQUSDT',baseCoin:'HPQ',isRwa:'YES'}),'stock');
  assert.notEqual(classify({symbol:'HPQUSDT'}),'crypto');
  assert.equal(classify({symbol:'HPQUSDT',symbolType:'perpetual',quoteCoin:'USDT',isRwa:'NO'}),'stock');
+ assert.equal(classify({symbol:'HPQUSDT',assetSymbolType:'crypto',isRwa:'NO'}),'stock');
+ assert.equal(classify({symbol:'USDJPYUSDT',assetSymbolType:'crypto',isRwa:'NO'}),'other');
+ assert.equal(classify({symbol:'NEWSTOCKUSDT',assetSymbolType:'crypto',isRwa:'YES'}),'other');
  assert.equal(classify({symbol:'NEWSTOCKUSDT',isRwa:'YES'}),'other');
  assert.equal(classify({symbol:'XAUTUSDT',isRwa:'YES'}),'crypto');
  assert.equal(classify({symbol:'NEWCOINUSDT',symbolType:'perpetual',quoteCoin:'USDT',isRwa:'NO'}),'crypto');

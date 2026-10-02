@@ -26,6 +26,7 @@ const NON_CRYPTO_UNDERLYINGS = Object.freeze({
 // Asset-backed crypto tokens remain crypto contracts even if their economics reference metals.
 const CRYPTO_TOKEN_EXCEPTIONS = new Set(["PAXG","XAUT","DGX"]);
 const CRYPTO_TICKER_COLLISIONS = new Set(["CVX","SPX"]);
+const FX_UNDERLYINGS = new Set(["EURUSD","USDJPY","GBPUSD","AUDUSD","NZDUSD","USDCAD","USDCHF","EURJPY","GBPJPY"]);
 
 function normalizeUnderlyingSymbol(contract = {}) {
   const raw = String(contract.baseCoin || contract.baseAsset || contract.underlying || contract.symbol || "").toUpperCase().trim();
@@ -35,10 +36,19 @@ function normalizeUnderlyingSymbol(contract = {}) {
 function classifyInstrument(contract = {}) {
   const base = normalizeUnderlyingSymbol(contract);
   if (CRYPTO_TOKEN_EXCEPTIONS.has(base)) return ASSET_CLASS.CRYPTO;
+  // A generic/mislabelled crypto type cannot override a verified stock or FX
+  // underlying. Known token collisions still defer to official asset metadata.
+  if(FX_UNDERLYINGS.has(base))return ASSET_CLASS.OTHER;
+  if(!CRYPTO_TICKER_COLLISIONS.has(base)){
+    for(const cls of [ASSET_CLASS.STOCK,ASSET_CLASS.ETF,ASSET_CLASS.COMMODITY,ASSET_CLASS.INDEX]){
+      if(NON_CRYPTO_UNDERLYINGS[cls]?.has(base))return cls;
+    }
+  }
+  const rwa=String(contract.isRwa || '').toUpperCase()==='YES';
 
   // Bitget v3 instrument metadata exposes crypto / metal / stock / commodity symbol types.
   const type = String(contract.assetSymbolType || contract.instrumentSymbolType || contract.v3SymbolType || contract.symbolTypeV3 || "").toLowerCase();
-  if (type === "crypto") return ASSET_CLASS.CRYPTO;
+  if (type === "crypto" && !rwa) return ASSET_CLASS.CRYPTO;
   if (type === "stock") return NON_CRYPTO_UNDERLYINGS.etf.has(base) ? ASSET_CLASS.ETF : ASSET_CLASS.STOCK;
   if (type === "metal" || type === "commodity") return ASSET_CLASS.COMMODITY;
   if (type === "index") return ASSET_CLASS.INDEX;
@@ -51,7 +61,7 @@ function classifyInstrument(contract = {}) {
   if (/\b(index|indices)\b/.test(metadataHint)) return ASSET_CLASS.INDEX;
   if (/\b(stock|equity|share)\b/.test(metadataHint)) return ASSET_CLASS.STOCK;
   if (/\b(metal|commodity)\b/.test(metadataHint)) return ASSET_CLASS.COMMODITY;
-  if (/\bcrypto(currency)?\b/.test(metadataHint)) return ASSET_CLASS.CRYPTO;
+  if (/\bcrypto(currency)?\b/.test(metadataHint) && !rwa) return ASSET_CLASS.CRYPTO;
 
   // A v2 perpetual explicitly marked non-RWA is a crypto contract even when
   // its token ticker also names an equity (for example CVX). The official v3
