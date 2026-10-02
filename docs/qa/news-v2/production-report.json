@@ -1,0 +1,118 @@
+{
+  "commit": "569c819d6d25e62a5b13099fb408e63dcfaa31cb",
+  "origin": "https://ox-crypto-screener.vercel.app",
+  "mode": "real production, fresh guest browser, no news fixtures",
+  "checks": [
+    "Production environment success and public alias serves exact committed news JS/CSS",
+    "All five desktop/mobile viewports, real news and event data, source multiselect, crypto/TW/all workspaces, modal cleanup and all-news reload"
+  ],
+  "viewports": [
+    {
+      "size": {
+        "width": 1440,
+        "height": 900
+      },
+      "overflow": 0,
+      "bottom": 817.0511474609375,
+      "dockTop": 0,
+      "passed": true
+    },
+    {
+      "size": {
+        "width": 1366,
+        "height": 768
+      },
+      "overflow": 0,
+      "bottom": 817.6822509765625,
+      "dockTop": 0,
+      "passed": true
+    },
+    {
+      "size": {
+        "width": 390,
+        "height": 844
+      },
+      "overflow": 0,
+      "bottom": 741,
+      "dockTop": 773,
+      "passed": true
+    },
+    {
+      "size": {
+        "width": 375,
+        "height": 667
+      },
+      "overflow": 0,
+      "bottom": 564,
+      "dockTop": 596,
+      "passed": true
+    },
+    {
+      "size": {
+        "width": 430,
+        "height": 932
+      },
+      "overflow": 0,
+      "bottom": 829,
+      "dockTop": 861,
+      "passed": true
+    }
+  ],
+  "screenshots": [
+    "calendar-1440x900.png",
+    "key-news-1440x900.png",
+    "source-multi-1440x900.png",
+    "crypto-detail-1440x900.png",
+    "tw-detail-1440x900.png",
+    "calendar-1366x768.png",
+    "key-news-1366x768.png",
+    "source-multi-1366x768.png",
+    "crypto-detail-1366x768.png",
+    "tw-detail-1366x768.png",
+    "calendar-390x844.png",
+    "key-news-390x844.png",
+    "source-multi-390x844.png",
+    "crypto-detail-390x844.png",
+    "tw-detail-390x844.png",
+    "calendar-375x667.png",
+    "key-news-375x667.png",
+    "source-multi-375x667.png",
+    "crypto-detail-375x667.png",
+    "tw-detail-375x667.png",
+    "calendar-430x932.png",
+    "key-news-430x932.png",
+    "source-multi-430x932.png",
+    "crypto-detail-430x932.png",
+    "tw-detail-430x932.png"
+  ],
+  "errors": [],
+  "deployment": {
+    "id": 6800867058,
+    "environment": "Production",
+    "state": "success",
+    "url": "https://ox-crypto-screener-8xy94voti-ox-lab.vercel.app",
+    "createdAt": "2026-10-02T03:51:50Z"
+  },
+  "snapshot": {
+    "generatedAt": "2026-10-02T03:12:18.549Z",
+    "news": 243,
+    "events": 200
+  },
+  "passed": true,
+  "runId": 36961994481,
+  "runUrl": "https://github.com/a0979989987-coder/ox-crypto-screener/actions/runs/36961994481",
+  "visualReview": {
+    "reviewed": [
+      "production-desktop-calendar.jpg",
+      "production-mobile-key-news.jpg"
+    ],
+    "result": "Actual production images inspected; readable Traditional Chinese, OX LIVE and original navigation retained, dense list and complete calendar, no horizontal overflow.",
+    "otherScreenshots": "All 25 production PNGs are retained in the Actions artifact; required event/panel/entry/radar scenes were also visually reviewed before release."
+  },
+  "limits": [
+    "Existing T1 full E2E failure persists",
+    "No WebKit/Safari or physical iPhone pass",
+    "Partial source coverage; no complete 30-day/full-market claims",
+    "Additional uncommitted two-line-label draft was not released after visual clipping was observed"
+  ]
+}

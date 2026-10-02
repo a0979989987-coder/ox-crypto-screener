@@ -49,7 +49,7 @@
 - [實際截图與測試紀錄](qa/news-v2/)：桌面／手機行事曆、關鍵新聞、兩市場詳情、多選、桌面／手機入口、兩市場雷達選單與小手機六週。
 - 截圖已逐張檢視；面板等動畫穩定才拍，無透明遮罩殘留／橫向溢出；既有雷達卡片、OXLIVE 視覺不因本輪修改。
 
-## 預覽與正式隔離
+## 預覽與正式隔離（發布前紀錄）
 - 實作已提交並發布到 `feature/news-center-v2-20261002`。完整功能提交：`8be78440e533accf9f03f3653d934afd9af6b480`；後續驗證提交只補交付紀錄、實際部署畫面與快照說明文字。
 - Vercel 回報 Preview 成功（GitHub deployment `6800524088`，不是正式發布）；實際回傳網址：https://ox-crypto-screener-mfwommay1-ox-lab.vercel.app/ 。瀏覽器已從原入口實際核對加密新聞、台股新聞、新聞總頁、多選、詳情返回與重新整理，附 [部署核對紀錄](qa/news-v2/deployed-preview.json)。
 - 原生 HTTP 未登入請求轉向 Vercel 登入保護；既有瀏覽器可開啟實際產品，未變更部署保護／帳號權限。預覽可能要求具有 OX Lab 存取權的 Vercel 帳號登入，不能宣稱匿名公開可用。
@@ -70,3 +70,13 @@
 - 發布前再次核對 main，仍為 `dc011fc6220b890552910ebf93e133814005ad66`。採用已提交、390 項單元測試／建置檢查／五尺寸 Chromium 與實際部署 UI 驗證的 `d67cff0075e8d1786528104030e7a9e3b4e1f1a2` 程式樹；不使用中斷工作區中未提交的額外版面草稿。
 - 以不強制的 fast-forward 整合功能分支到 main，保留既有提交與其他功能；不刪測試或變更 T1／T2／T3 策略。若 main 在更新前已有新提交，必須重新整合，不能強推。
 - Vercel 正式部署結果與正式頁核對記錄將在成功後補齊；結果未取得前不宣稱已上線。來源限制與既有 E2E／WebKit 缺口仍適用。
+
+## 正式發布結果
+- 已依最新授權發布正式 main；產品程式為已驗證的 `d67cff0075e8d1786528104030e7a9e3b4e1f1a2`，後續提交補授權、正式驗證流程與證據，不改產品邏輯。
+- 正式公開網址：https://ox-crypto-screener.vercel.app/ 。GitHub Actions 已驗證該公開網址送出本輪提交的新聞 JS／CSS 完整 bytes，而非僅以 main SHA 判定部署。
+- 本次正式瀏覽器核對提交：`569c819d6d25e62a5b13099fb408e63dcfaa31cb`。Vercel deployment `6800867058`，環境 **Production**、狀態 success；回傳 immutable URL：https://ox-crypto-screener-8xy94voti-ox-lab.vercel.app 。
+- [正式 Chromium 驗收](https://github.com/a0979989987-coder/ox-crypto-screener/actions/runs/36961994481) 成功：五個指定尺寸、真實新聞／事件、加密／台股／總頁、多選、詳情關閉、總頁重新整理；沒有新聞 fixture，0 pageerror，0 橫向溢出。完整 [report](qa/news-v2/production-report.json)。發布前另已通過五／六週、手勢／hover／鍵盤／歷史／慢回應等測試。
+- 正式站截圖：桌面行事曆與手機關鍵新聞 JPEG 已在本文件同目錄下保存並逐張檢視；25 張正式 PNG 保存在本次 workflow artifact（14 日），其他指定詳情／多選／入口／雷達場景的發布前實際圖片已檢視並保存在 repo。
+- 正式快照：2026-10-02 11:12（台北），243 篇已譯／原生繁中、200 個累積來源事件（含明示預估排程）；6 小時正式收集器現在随 main 版本啟用，未擅自加頻率或購買服務。手動重抓是讀取最後成功部署快照，非即時串流。
+- 工作區／互動瀏覽器執行服務中斷，故最後正式核對改由只讀的 GitHub Actions Chromium 執行；沒有更改帳號、權限或資料。額外手機兩行短標題草稿出現文字裁切，未提交到 main，保留已通過圖像驗證的緊湊單行版。
+- 390 項單元測試及建置檢查通過；原有 T1 E2E 失敗、WebKit 系統依賴缺口與 iPhone 實機未驗證仍如上記錄。來源／授權／翻譯／現金發放日等未完成項目仍見來源文件，不因正式發布改寫為完成。
