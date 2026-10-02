@@ -128,11 +128,14 @@ async function setup(browser, width) {
           for (const view of ['home','radar','strength','data','media']) {
             const nav = width > 720 ? '.ox-desktop-nav' : '.app-dock';
             if (view === 'data') {
+              const info = page.locator(`${nav} [data-view-target="data"]`);
+              assert.equal((await info.innerText()).trim(), '資訊', `${market}/${width}: consistent information label`);
               if (width > 720) await page.locator(`${nav} [data-view-target="data"]`).click();
               else await page.locator(`${nav} [data-view-target="data"]`).tap();
-              if (width > 720) await page.getByRole('menuitem',{name:'本市場新聞',exact:true}).click();
               await page.waitForFunction(() => document.body.dataset.view === 'data');
               await page.locator(market === 'us' ? '.us2-news-page' : '.oxn-root').waitFor();
+              assert.equal(await page.locator('#ox-news-entry-menu').count(), 0, 'information opens its market directly without a menu');
+              assert.equal(await page.locator('body').getAttribute('data-market'), market, 'information preserves the selected market');
             } else {
               await page.locator(`${nav} [data-view-target="${view}"]`).click();
               await page.waitForFunction(view => document.body.dataset.view === view,view);
