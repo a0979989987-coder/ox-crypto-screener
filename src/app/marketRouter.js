@@ -26,8 +26,9 @@ export function createMarketRouter() {
       if (token !== activation) return false;
       active = next;
       await next.activate?.(context);
-      if (token !== activation && active !== next) next.deactivate?.();
-      return true;
+      // Switching away already deactivated this module before the next one
+      // mounted. A slow response must not clean up the new owner's shared host.
+      return token === activation;
     },
     current() { return active?.id || null; }
   });

@@ -3,6 +3,57 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import vm from 'node:vm';
 
+async function informationEntryHarness(market = 'crypto') {
+  const events = new Map(), opened = [], scheduled = [];
+  const entries = ['desktop', 'mobile'].map(surface => ({
+    surface, dataset:{}, attributes:new Map(), listeners:new Map(),
+    setAttribute(name, value) { this.attributes.set(name, value); },
+    addEventListener(type, callback) {
+      const handlers = this.listeners.get(type) || [];
+      handlers.push(callback); this.listeners.set(type, handlers);
+    },
+  }));
+  const document = {
+    readyState:'loading', body:{dataset:{market}},
+    querySelectorAll:() => entries,
+    addEventListener:(type, callback) => events.set(type, callback),
+    createElement() { assert.fail('Information must not create a popup'); },
+  };
+  const window = {OXNews:{openMarket:() => opened.push(document.body.dataset.market)}};
+  const context = vm.createContext({document, window, setTimeout:fn => scheduled.push(fn)});
+  vm.runInContext(await readFile(new URL('../src/components/news/entry.js', import.meta.url), 'utf8'), context);
+  events.get('DOMContentLoaded')();
+  return {document, entries, events, opened, scheduled};
+}
+
+test('desktop and mobile Information clicks immediately open the currently selected market', async () => {
+  const {document, entries, opened, scheduled} = await informationEntryHarness();
+  for (const market of ['crypto','tw','us']) {
+    document.body.dataset.market = market;
+    for (const entry of entries) {
+      let prevented = false, stopped = false;
+      entry.listeners.get('click')[0]({detail:1, preventDefault(){prevented=true;}, stopImmediatePropagation(){stopped=true;}});
+      assert.equal(opened.at(-1), market, `${entry.surface} uses the current market`);
+      assert.ok(prevented && stopped, 'one action owns navigation without duplicate bubbling');
+    }
+  }
+  assert.equal(opened.length, 6);
+  assert.equal(scheduled.length, 0, 'single-click navigation has no double-tap delay');
+});
+
+test('Information exposes one label and has no hover, long-press, double-tap or keyboard menu', async () => {
+  const {entries, events, opened} = await informationEntryHarness('tw');
+  events.get('DOMContentLoaded')();
+  for (const entry of entries) {
+    assert.equal(entry.attributes.get('aria-label'), '資訊');
+    assert.equal(entry.attributes.has('aria-haspopup'), false);
+    assert.deepEqual([...entry.listeners.keys()], ['click']);
+    assert.equal(entry.listeners.get('click').length, 1, 'rebinding cannot duplicate navigation');
+    entry.listeners.get('click')[0]({detail:0, preventDefault(){}, stopImmediatePropagation(){}});
+  }
+  assert.deepEqual(opened, ['tw','tw'], 'keyboard activation uses the same direct action');
+});
+
 test('leaving news for settings restores market navigation and supports history', async () => {
   const documentEvents = new Map(), windowEvents = new Map(), entries = [];
   let view = 'media';
