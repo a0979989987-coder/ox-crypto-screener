@@ -102,8 +102,8 @@ body:not([data-us-workspace="1"]):has(#view-news.active,#view-data.active,#view-
 }
 
 /* News 2.0: all product styles are scoped to the news workspace or its layers. */
-#view-data:has(.oxn-root) .media-page,#view-data:has(.oxn-root) .media-card {padding:0!important;margin:0!important;border:0!important;background:none!important;box-shadow:none!important;max-width:none!important}
-#view-news .ox-news-page:has(.oxn-root) {padding:0 0 100px!important;max-width:1160px!important;margin:0 auto!important;width:100%!important}
+.oxn-page {width:100%;max-width:1160px;margin:0 auto;padding:0;min-width:0}
+.oxn-page>[data-news-surface] {margin:0!important}
 .oxn-root {color:var(--ink,#f3f0e8);font-family:inherit;max-width:1160px;margin:0 auto;padding:0 0 100px;min-width:0;--oxn-line:#ffffff18;--oxn-muted:#c7c6c0a1;--oxn-bg:#17191dee}
 .oxn-root *,.oxn-popover *,.oxn-modal *,.oxn-entry-menu * {box-sizing:border-box}
 .oxn-root button,.oxn-popover button,.oxn-modal button,.oxn-entry-menu button {font:inherit;color:inherit;cursor:pointer}
@@ -128,9 +128,6 @@ body:not([data-us-workspace="1"]):has(#view-news.active,#view-data.active,#view-
 .oxn-controls button[data-calendar-switch]::after {display:none}
 .oxn-controls button[data-calendar-switch][aria-pressed="true"] {border-color:#ffffff75;box-shadow:0 0 10px #ffffff14,inset 0 1px 0 #ffffff24}
 .oxn-agenda{padding:0 2px}
-.oxn-agenda-range{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 3px;font-size:12px}
-.oxn-agenda-range span{color:var(--oxn-muted);font-size:10px}
-.oxn-agenda-month{font-size:18px;font-weight:500;letter-spacing:.03em;margin:18px 0 10px;padding:0 3px}
 .oxn-agenda-day{border:1px solid var(--oxn-line);border-radius:16px;background:linear-gradient(150deg,#ffffff09,#ffffff02);margin:0 0 10px;overflow:hidden}
 .oxn-root .oxn-agenda-day-heading{position:static;display:block;background:transparent;border:0;box-shadow:none;padding:11px 14px}
 .oxn-agenda-day-heading time{display:flex;align-items:center;gap:11px;font-size:12px;color:#dedbd4}
