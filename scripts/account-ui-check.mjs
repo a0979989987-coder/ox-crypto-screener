@@ -17,7 +17,7 @@ const browser = await chromium.launch({ headless: true, ...(executablePath ? { e
 try {
   const page = await browser.newPage();
   const calls = [], errors = [];
-  let configured = true, user = null, link = null, linkRevision = null, linkAvailable = true;
+  let admin = false, configured = true, user = null, link = null, linkRevision = null, linkAvailable = true;
   page.on('pageerror', error => errors.push(error.message));
   await page.route('https://ox.test/**', async route => {
     const request = route.request(), path = new URL(request.url()).pathname;
@@ -25,6 +25,7 @@ try {
     if (['/auth.js', '/session.js', '/account.js'].includes(path)) return route.fulfill({ contentType: 'text/javascript', body: readFileSync(resolve(root, 'src/components/account', path.slice(1)), 'utf8') });
     const endpoint = path.split('/').at(-1);
     calls.push({ endpoint, method: request.method(), body: request.postDataJSON() });
+    if (endpoint === 'admin-review') return route.fulfill({status:admin?200:403,contentType:'application/json',body:JSON.stringify(admin?{ok:true,administrator:true}:{ok:false,code:'ADMIN_REQUIRED'})});
     if (endpoint === 'bitget-link') {
       if (!linkAvailable) return route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ ok: false, message: 'UID 連結儲存服務尚未就緒。' }) });
       if (request.method() === 'POST') {
@@ -117,6 +118,19 @@ try {
   await page.locator('#ox-bitget-link-save').click();
   await page.locator('#ox-bitget-link-status').filter({ hasText: '持有權待驗證' }).waitFor();
   assert.equal(calls.filter(call => call.endpoint === 'bitget-link' && call.method === 'POST').at(-1).body.revision, '00000000-0000-4000-8000-000000000004');
+  assert.equal(await page.locator('#ox-account-admin-open').isVisible(),false);
+  admin = true; await page.reload(); await page.locator('[data-ox-account-open]').click();
+  await page.locator('#ox-account-admin-open').waitFor({state:'visible'});
+  admin = false; await page.reload(); await page.locator('[data-ox-account-open]').click();
+  await page.waitForFunction(()=>window.OXAuth?.user?.id==='fixture-member');
+  assert.equal(await page.locator('#ox-account-admin-open').isVisible(),false);
+  // An in-flight old admin reply cannot restore the entry after logout.
+  admin = true; const savedUser = user; let releaseAdmin,adminStarted,adminFinished;
+  const adminStart=new Promise(r=>adminStarted=r),adminGate=new Promise(r=>releaseAdmin=r),adminDone=new Promise(r=>adminFinished=r);
+  await page.route('**/api/v1/account/admin-review',async route=>{adminStarted();await adminGate;await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({ok:true,administrator:true})});adminFinished();});
+  await page.reload();await adminStart;await page.evaluate(()=>window.OXAuth.signOut());releaseAdmin();await adminDone;
+  await page.waitForFunction(()=>!window.OXAuth.user);assert.equal(await page.locator('#ox-account-admin-open').isVisible(),false);
+  await page.unroute('**/api/v1/account/admin-review');admin=false;user=savedUser;
   linkAvailable = false;
   await page.reload();
   await page.waitForFunction(() => window.OXAuth?.user?.id === 'fixture-member');

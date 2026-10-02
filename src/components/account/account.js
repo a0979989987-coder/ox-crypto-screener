@@ -6,7 +6,23 @@
   const status = $('#ox-account-auth-status');
   let priorFocus = null, busy = false;
   const form = $('#ox-account-email-form');
-  let linkEpoch = 0, linkRevision = null;
+  let linkEpoch = 0, linkRevision = null, adminEpoch = 0;
+  async function loadAdmin(user) {
+    const epoch = ++adminEpoch;
+    let entry = $('#ox-account-admin-open');
+    if (!entry) {
+      entry = document.createElement('button'); entry.id = 'ox-account-admin-open'; entry.type = 'button';
+      entry.className = 'ox-account-skip'; entry.textContent = '代理審核後台'; center?.append(entry);
+      entry.addEventListener('click', () => { if (!entry.hidden && window.OXAuth.user) location.assign('/previews/account-admin/'); });
+    }
+    entry.hidden = true; entry.style.display = 'none';
+    if (!user) return;
+    try {
+      const result = await window.OXAuth.getAdminReviewStatus();
+      if (epoch !== adminEpoch || window.OXAuth.user?.id !== user.id) return;
+      entry.hidden = !(result.ok && result.administrator === true); entry.style.display = entry.hidden ? 'none' : '';
+    } catch { /* Fail closed; ordinary member and market use remain available. */ }
+  }
   function ensureLinkForm() {
     if ($('#ox-bitget-link-form')) return;
     const section = document.createElement('section'); section.id = 'ox-bitget-link-section';
@@ -65,7 +81,7 @@
   }
   const renderUser = user => {
     if (!center) return;
-    loadLink(user);
+    loadLink(user); loadAdmin(user);
     let profile = $('#ox-account-profile');
     if (!profile) {
       center.querySelector('h2 + p')?.remove();

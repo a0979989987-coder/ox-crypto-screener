@@ -103,6 +103,9 @@ $('#revoke-confirm').addEventListener('click',async()=>{
 });
 
 if(productionTransport) {
+  document.title='OX 代理審核後台';
+  const verifiedStatus=document.createElement('p');verifiedStatus.append($('#session-state'));$('.notice').after(verifiedStatus);
+  const accountLink=text('a','返回 OX 帳號');accountLink.href='/';verifiedStatus.after(accountLink);
   document.querySelector('[aria-label="合成測試身分"]').style.display='none';$('#example').hidden=true;$('.muted')?.remove();
   $('.notice').textContent='人工代理核准與 Bitget 官方驗證、UID 持有權驗證分開；代理等級不包含管理權。普通功能未配置時不授權。';
   $('#approve').textContent='確認人工核准';$('#revoke-confirm').textContent='確認撤銷';

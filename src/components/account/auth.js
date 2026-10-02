@@ -16,6 +16,7 @@
     get status() { return { configured: config.configured === true, providerConnected: !!current, configurationOnly: !current }; },
     async initialize() { config = await request('config'); let user = null; if (config.configured) { const result = await request('session'); if (result.ok) user = result.user; } setUser(user); return config; },
     async getCurrent() { const result = await request('session'); setUser(result.ok ? result.user : null); return current; },
+    getAdminReviewStatus() { return request('admin-review'); },
     getBitgetLink() { return request('bitget-link'); },
     saveBitgetLink(uid, revision) { return request('bitget-link', { action: 'save', uid, revision }); },
     removeBitgetLink(revision) { return request('bitget-link', { action: 'remove', revision }); },
