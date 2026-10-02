@@ -45,6 +45,7 @@ async function dragPressure(page,market){
  const scene=await page.evaluate(()=>field.nodes.map(n=>({x:n.x,y:n.y,r:n.r})));
  await page.mouse.move(box.x+scene[0].x,box.y+scene[0].y);await page.mouse.down();
  await page.mouse.move(box.x+scene[1].x-scene[0].r*.5,box.y+scene[1].y,{steps:5});
+ await pause(120); // Smooth pressure follows contact over frames, not a snap.
  const strain=await page.evaluate(()=>field.nodes.map(n=>Math.hypot(n.strainX||0,n.strainY||0)));
  assert(strain.every(v=>v>.01),market+' bubble contact must deform both bubbles');
  await shot(page,market+'-contact.png');await page.mouse.up();await pause(900);

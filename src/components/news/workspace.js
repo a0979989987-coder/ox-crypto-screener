@@ -5,7 +5,7 @@ import { node, button, anchoredPanel, modal } from './layers.js';
 const fmt = value => Number.isFinite(Date.parse(value)) ? new Intl.DateTimeFormat('zh-TW', { timeZone: 'Asia/Taipei', dateStyle: 'short', timeStyle: 'short', hour12: false }).format(new Date(value)) : '時間待確認';
 const label = item => item.titleZh || item.title || '標題資料未提供';
 const statusLabel = item => item.announcementStatus === 'cancelled' ? '已取消' : item.announcementStatus === 'estimated' || item.kind === 'token-unlock' && item.date ? '預估排程' : item.announcementStatus === 'preview' ? '預告' : item.status === 'confirmed' || item.announcementStatus === 'confirmed' ? '已公告' : '狀態待確認';
-const sourceState = source => source.status === 'not-connected' ? '尚未接入' : source.status === 'error' ? '更新失敗' : source.lastSuccessAt && Date.now() - Date.parse(source.lastSuccessAt) > 18 * 3600000 ? '資料過期' : source.status === 'ready' && source.count === 0 ? '成功・零篇' : source.status === 'ready' ? '已接入' : '尚未載入';
+const sourceState = source => source.access === 'authorization-required' ? '需取得授權' : source.status === 'not-connected' ? '尚未接入' : source.status === 'error' ? '更新失敗' : source.lastSuccessAt && Date.now() - Date.parse(source.lastSuccessAt) > 18 * 3600000 ? '資料過期' : source.status === 'ready' && source.count === 0 ? '成功・零篇' : source.status === 'ready' ? source.access==='public-aggregated-rss'?'聚合接入':'已接入' : '尚未載入';
 function link(text, url) { const safe = safeLink(url); if (!safe) return null; const a = node('a', '', text); a.href = safe; a.target = '_blank'; a.rel = 'noopener noreferrer'; return a; }
 function fieldList(fields) { const list = node('dl', 'oxn-fields'); for (const [name, value] of fields) { list.append(node('dt', '', name), node('dd', '', value === null || value === undefined || value === '' ? '資料未提供' : plain(value))); } return list; }
 export function mountNewsWorkspace(host, api) {
@@ -38,7 +38,7 @@ export function mountNewsWorkspace(host, api) {
       const all = button('全部', '', () => { state[property] = choices.filter(c => !c.disabled).map(c => c.id); if (property !== 'times') state[property] = null; persist(); sync(); renderContent(); }, 'oxn-action');
       const none = button('清除選取', '', () => { state[property] = []; persist(); sync(); renderContent(); }, 'oxn-action');
       const reset = button('恢復預設', '', () => { state[property] = defaults; persist(); sync(); renderContent(); }, 'oxn-action'); tools.append(all, none, reset); body.append(tools);
-      for (const choice of choices) { const tag = button(choice.label, '', () => { const selected = new Set(state[property] || []); selected.has(choice.id) ? selected.delete(choice.id) : selected.add(choice.id); state[property] = [...selected]; persist(); sync(); renderContent(); }, 'oxn-tag'); tag.dataset.value = choice.id; tag.disabled = Boolean(choice.disabled); if (choice.hint) { tag.append(node('small', '', choice.hint)); tag.title = choice.hint; } tags.append(tag); }
+      for (const choice of choices) { const tag = button(choice.label, '', () => { const selected = new Set(state[property] || []); selected.has(choice.id) ? selected.delete(choice.id) : selected.add(choice.id); state[property] = [...selected]; persist(); sync(); renderContent(); }, 'oxn-tag'); tag.dataset.value = choice.id; tag.disabled = Boolean(choice.disabled); if (choice.hint) { tag.append(node('small', '', choice.hint)); tag.title = choice.description || choice.hint; } tags.append(tag); }
       body.append(tags); if (footer) body.append(node('p', 'oxn-caption', footer)); sync();
     });
   }
@@ -63,7 +63,7 @@ export function mountNewsWorkspace(host, api) {
       const time = button('時間', '多選新聞時間', () => multi(time, '時間', 'times', TIME_CHOICES.map(([id, text]) => ({ id, label: text })), ['24'], '時間採聯集並去重，依發布時間篩選。'), 'oxn-pill');
       const source = button('來源', '多選新聞來源', () => {
         const available = sourcesFor(data.snapshot, scope()).filter(s => !s.id.includes('calendar') && !['aptos', 'twse-dividends', 'twse-holidays', 'mops-payments', 'mops-conferences', 'tpex-dividends', 'tpex-dividends-daily', 'twse-conferences', 'aave-governance'].includes(s.id));
-        multi(source, '來源', 'sources', available.map(s => ({ id: s.id, label: s.name, disabled: s.status === 'not-connected', hint: `${sourceState(s)}${s.aggregator ? '・聚合入口' : ''}` })), null, '全部＝不限來源；清除選取＝零個來源。來源失敗時保留最後成功資料。');
+        multi(source, '來源', 'sources', available.map(s => ({ id: s.id, label: s.name, disabled: s.status === 'not-connected', hint: `${sourceState(s)}${s.scopeLabel?'・'+s.scopeLabel:s.aggregator ? '・聚合入口' : ''}`, description:s.message })), null, '公開標題與原文連結，非全文轉載；聚合接入不代表官方 API。中央通訊社 RSS 限個人／非營利的非商業用途；金十需先確認授權。來源失敗保留最後成功資料。');
       }, 'oxn-pill');
       const words = button('關鍵字', '搜尋與熱門關鍵字', () => showPanel(words, '關鍵字', (body, layer) => {
         const input = node('input', 'oxn-search'); input.type = 'search'; input.placeholder = '關鍵字、名稱、代號'; input.value = state.query; input.setAttribute('aria-label', '搜尋新聞');
@@ -104,22 +104,28 @@ export function mountNewsWorkspace(host, api) {
     const grid = node('div', 'oxn-calendar-grid'); grid.style.setProperty('--weeks', gridInfo.weeks); grid.setAttribute('role', 'grid');
     for (const cell of gridInfo.cells) {
       const entries = map.get(cell.date) || []; const b = node('div', 'oxn-day'); b.dataset.date = cell.date; b.setAttribute('role', 'gridcell');
-      b.addEventListener('click', () => api.navigate({ day: cell.date }));
+      const selectDay = () => { state.selectedDay=cell.date; persist(); renderContent(); };
+      b.addEventListener('click', selectDay);
       if (cell.outside) b.classList.add('is-outside'); if (cell.date === taipeiDay()) { b.classList.add('is-today'); b.setAttribute('aria-current', 'date'); }
-      b.append(button(String(cell.day), `${cell.date}，${entries.length} 個已收錄事件`, e => { e.stopPropagation(); api.navigate({ day: cell.date }); }, 'oxn-day-number'));
-      for (const item of entries.slice(0, innerWidth <= 600 ? 1 : 2)) { const short = button(item.shortTitle || label(item).replace(/美國 \d{4} 年 \d+ 月/, ''), `${CATEGORY_NAMES[eventCategory(item)] || '事件'}：${label(item)}`, e => { e.stopPropagation(); api.navigate({ day: cell.date, event: item.id }); }, 'oxn-calendar-event'); short.title = label(item); short.dataset.category = eventCategory(item) || ''; b.append(short); }
-      if (entries.length > (innerWidth <= 600 ? 1 : 2)) b.append(node('span', 'oxn-day-more', `＋${entries.length - (innerWidth <= 600 ? 1 : 2)}`)); grid.append(b);
+      b.append(button(String(cell.day), `${cell.date}，${entries.length} 個已收錄事件`, e => { e.stopPropagation(); selectDay(); api.navigate({day:cell.date}); }, 'oxn-day-number'));
+      if(entries.length)b.append(button(`${entries.length} 件`,`${cell.date}，查看下方 ${entries.length} 個事件`,e=>{e.stopPropagation();selectDay();requestAnimationFrame(()=>content.querySelector('.oxn-day-events')?.scrollIntoView({block:'center',behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'instant':'smooth'}));},'oxn-day-count'));
+      for (const item of entries.slice(0, innerWidth <= 600 ? 0 : 2)) { const short = button(item.shortTitle || label(item).replace(/美國 \d{4} 年 \d+ 月/, ''), `${CATEGORY_NAMES[eventCategory(item)] || '事件'}：${label(item)}`, e => { e.stopPropagation(); api.navigate({ day: cell.date, event: item.id }); }, 'oxn-calendar-event'); short.title = label(item); short.dataset.category = eventCategory(item) || ''; b.append(short); }
+      if (innerWidth>600 && entries.length>2) b.append(node('span', 'oxn-day-more', `＋${entries.length-2}`)); grid.append(b);
     }
     const cover = coverage(data.snapshot, scope(), state.month);
     const caption = node('div', 'oxn-calendar-caption'); caption.append(node('span', '', '台北時間 UTC+8'), button(cover.complete ? '資料範圍' : '部分資料・範圍', '', () => showPanel(caption.querySelector('button'), '事件資料範圍', body => {
       for (const category of cover.categories) { const entry = node('div', 'oxn-coverage-row'); entry.append(node('b', '', CATEGORY_NAMES[category.category]), node('span', '', category.covered ? '本月完整來源範圍' : category.known ? `本月已收錄 ${category.known} 件・非完整月資料` : '本月未覆蓋，不能判定沒有事件')); for (const span of category.spans) entry.append(node('small', '', `${span.from}～${span.to}・${sourceName({ sourceId: span.sourceId })}`)); body.append(entry); }
     }), 'oxn-text-button'));
     calendar.append(weekdays, grid, caption); content.append(calendar);
-    const today = node('section', 'oxn-today'); today.append(node('h2', '', '今日重要事件'));
-    const current = (data.snapshot.events || []).filter(e => eventDay(e) === taipeiDay() && (scope() === 'all' || e.markets?.includes(scope())) && (importance(e).value || 0) >= 2);
-    if (!current.length) today.append(node('p', 'oxn-caption', '已收錄資料中沒有今日中／高重要性事件。'));
-    for (const item of current) today.append(eventRow(item, () => api.navigate({ event: item.id })));
-    content.append(today);
+    const selected=state.selectedDay?.slice(0,7)===state.month?state.selectedDay:taipeiDay().slice(0,7)===state.month?taipeiDay():[...map.keys()].sort()[0]||`${state.month}-01`;
+    grid.querySelector(`[data-date="${selected}"]`)?.classList.add('is-selected');
+    const section=node('section','oxn-day-events');section.setAttribute('aria-label','所選日期完整事件');
+    const heading=node('div','oxn-day-events-heading');heading.append(node('h2','',`${selected.replaceAll('-','／')} 事件`),button('完整列表','查看所選日期完整列表',()=>api.navigate({day:selected}),'oxn-text-button'));section.append(heading);
+    const entries=[...(map.get(selected)||[])].sort((a,b)=>(a.occursAt||'').localeCompare(b.occursAt||'')||label(a).localeCompare(label(b)));
+    const cards=node('div','oxn-event-carousel');cards.tabIndex=0;cards.setAttribute('aria-label','事件卡片，左右滑動瀏覽');
+    for(const item of entries){const card=eventRow(item,()=>api.navigate({day:selected,event:item.id}));card.classList.add('oxn-event-card');card.append(node('small','oxn-card-source',`${sourceName(item)} · ${statusLabel(item)}`));cards.append(card);}
+    if(!entries.length)cards.append(node('p','oxn-caption','這一天目前沒有符合篩選條件的已收錄事件；不代表沒有事件。'));
+    section.append(cards);content.append(section);
   }
   function eventRow(item, action) {
     const b = button('', label(item), action, 'oxn-event-row');
@@ -163,7 +169,8 @@ export function mountNewsWorkspace(host, api) {
     const body = node('div', 'oxn-article-body');
     if (item.summaryZh) { body.append(node('small', 'oxn-caption', item.summaryType === 'system' ? '系統整理' : '來源摘要'), node('p', '', plain(item.summaryZh))); } else body.append(node('p', 'oxn-caption', item.translationStatus === 'translated' ? '來源未提供已核對的繁中摘要，完整內容請見原文。' : '繁體中文翻譯待補，保留原文供查核。'));
     if (item.title !== item.titleZh) body.append(node('p', 'oxn-original', item.title));
-    const actions = node('div', 'oxn-article-actions'), original = link('閱讀原文', item.link); if (original) actions.append(original);
+    if(item.aggregation)body.append(node('p','oxn-caption',`公開標題由 ${item.aggregation} 聚合 · ${item.publisher?`原始發布者：${item.publisher}`:`入口來源：${sourceName(item)}`}；非官方 API，不轉載全文。`));
+    const actions = node('div', 'oxn-article-actions'), original = link(item.aggregation?'前往聚合連結／原文':'閱讀原文', item.link); if (original) actions.append(original);
     const read = button((api.preferences().read || []).includes(item.id) ? '標為未讀' : '標為已讀', '', () => { const set = new Set(api.preferences().read || []); set.has(item.id) ? set.delete(item.id) : set.add(item.id); api.save({ read: [...set] }); read.textContent = set.has(item.id) ? '標為未讀' : '標為已讀'; row.classList.toggle('is-read', set.has(item.id)); });
     const follow = button((api.preferences().followedSources || []).includes(item.sourceId) ? '取消追蹤' : '追蹤來源', '', () => { const set = new Set(api.preferences().followedSources || []); set.has(item.sourceId) ? set.delete(item.sourceId) : set.add(item.sourceId); api.save({ followedSources: [...set] }); follow.textContent = set.has(item.sourceId) ? '取消追蹤' : '追蹤來源'; });
     actions.append(read, follow, button('隱藏', '', () => { api.save({ hidden: [...new Set([...(api.preferences().hidden || []), item.id])] }); row.remove(); })); body.append(actions);
@@ -215,12 +222,15 @@ export function mountNewsWorkspace(host, api) {
     requestAnimationFrame(() => { const grid = content.querySelector('.oxn-calendar-grid'); if (!grid) return;
       const dock = document.querySelector('.app-dock')?.getBoundingClientRect(), top = grid.getBoundingClientRect().top + scrollY;
       const bottom = Math.min(height, dock?.top || height - 80), rows = Number(content.querySelector('.oxn-calendar').dataset.weeks);
-      const available = Math.floor(bottom - top - 38), enlarged = parseFloat(getComputedStyle(document.documentElement).fontSize) > 20;
+      const room = Math.floor(bottom - top - 38);
+      // Reveal the event shelf when there is room, but keep six-week months
+      // usable on shorter phones instead of falling back to an oversized grid.
+      const available = room-Math.min(70,Math.max(0,room-rows*40)), enlarged = parseFloat(getComputedStyle(document.documentElement).fontSize) > 20;
       const fit = innerWidth <= 600 && height > innerWidth && available >= rows * 40 && !enlarged;
       grid.style.setProperty('--month-height', fit ? `${available}px` : 'auto'); root.dataset.fit = fit ? '1' : '0';
     });
   }
-  window.addEventListener('resize', () => { if (innerWidth !== width || Math.abs(innerHeight - height) > 90) { width = innerWidth; height = innerHeight; positionCalendar(); } }, { signal: life.signal });
+  window.addEventListener('resize', () => { if (innerWidth !== width || Math.abs(innerHeight - height) > 90) { const crossed=(width<=600)!==(innerWidth<=600);width = innerWidth; height = innerHeight; if(crossed&&state.tab==='calendar')renderContent();else positionCalendar(); } }, { signal: life.signal });
   let scrollTimer; window.addEventListener('scroll', () => { if (!root.closest('.app-view.active')) return; clearTimeout(scrollTimer); scrollTimer = setTimeout(() => { state.scroll = scrollY; persist(); }, 180); }, { signal: life.signal, passive: true });
   renderControls();
   return { host, update(next) { const changed = next.snapshot !== data.snapshot || !content.firstChild; data = next; if (changed) { detailKey = ''; renderContent(); } else status(); renderRoute(data.route); rail.position(); if (restorePosition) { restorePosition = false; requestAnimationFrame(() => window.scrollTo(0, state.scroll || 0)); } }, suspend() { closePanel(); detail?.destroy(); detail = null; detailKey = ''; clearInterval(countdown); countdown = null; }, destroy() { state.scroll = root.closest('.app-view.active') ? scrollY : state.scroll; persist(); closePanel(); detail?.destroy(); clearInterval(countdown); clearTimeout(scrollTimer); life.abort(); rail.destroy(); root.remove(); } };

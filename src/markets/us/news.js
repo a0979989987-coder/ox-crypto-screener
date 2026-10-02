@@ -11,6 +11,7 @@ import {
   sectorETF,
 } from "./view-utils.js?v=20261001-us-eod1";
 import { fetchJSON } from "./provider.js?v=20261002-rank8";
+import { eventDay, matchesEventWindow, todayTaipei } from './news-dates.js';
 export const newsViews = {
   async loadNewsData() {
     if (this.newsData) return this.newsData;
@@ -27,8 +28,9 @@ export const newsViews = {
     return this.newsPending;
   },
   renderNews(main) {
-    main.innerHTML = `<div class="media-page"><div class="media-card"><div class="ox-news-controls"><div class="ox-news-tabs us2-news-tabs"><button data-news-kind="news" class="active" aria-pressed="true">市場新聞</button><button data-news-kind="events" aria-pressed="false">總經／財報</button></div><div class="ox-news-control-row"><select class="ox-news-filter" data-event-window aria-label="事件範圍"><option value="week">本週</option><option value="today">今日</option><option value="watch">自選</option></select><button class="ox-news-filter" data-news-refresh aria-label="重新整理新聞">↻</button></div></div><details class="ox-calendar-disclosure"><summary>事件行事曆</summary><div class="ox-mini-calendar us2-calendar"></div></details><div class="us2-news-list ox-news-list"><div class="ox-news-empty">讀取官方美股消息…</div></div></div></div>`;
-    this.calendarMonth ||= new Date(new Date().getFullYear(),new Date().getMonth(),1);
+    main.innerHTML = `<div class="us2-news-page"><div class="ox-news-controls"><div class="ox-news-tabs us2-news-tabs"><button data-news-kind="news" class="active" aria-pressed="true">市場新聞</button><button data-news-kind="events" aria-pressed="false">總經／財報</button></div><div class="ox-news-control-row"><select class="ox-news-filter" data-event-window aria-label="事件範圍"><option value="week">本週</option><option value="today">今日</option><option value="watch">自選</option></select><button class="ox-news-filter" data-news-refresh aria-label="重新整理新聞">↻</button></div></div><details class="ox-calendar-disclosure"><summary>事件行事曆</summary><div class="ox-mini-calendar us2-calendar"></div></details><div class="us2-news-list ox-news-list"><div class="ox-news-empty">讀取美股市場消息…</div></div></div>`;
+    const [year, month] = todayTaipei().split('-').map(Number);
+    this.calendarMonth ||= new Date(year,month-1,1);
     this.paintCalendar();
     this.newsKind = "news";
     main.querySelectorAll("[data-news-kind]").forEach(
@@ -41,7 +43,11 @@ export const newsViews = {
           this.paintNews();
         }),
     );
-    main.querySelector("[data-event-window]").onchange = () => this.paintNews();
+    main.querySelector("[data-event-window]").onchange = () => {
+      this.calendarDate = '';
+      this.paintCalendar();
+      this.paintNews();
+    };
     main.querySelector("[data-news-refresh]").onclick = () => {
       this.newsData = null;
       this.loadNewsData()
@@ -65,35 +71,7 @@ export const newsViews = {
       scope = this.root.querySelector("[data-event-window]").value;
     let rows = (events ? this.newsData?.events : this.newsData?.news) || [];
     rows = rows.filter((x) => x.markets?.includes("us"));
-    if (events) {
-      const today = new Intl.DateTimeFormat("en-CA", {
-        timeZone: "Asia/Taipei",
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-      }).format(new Date());
-      const taipeiMidnight = Date.parse(`${today}T00:00:00+08:00`);
-      const weekday = new Date(taipeiMidnight + 8 * 3600000).getUTCDay();
-      const weekStart = taipeiMidnight - ((weekday + 6) % 7) * 86400000;
-      const until = weekStart + 7 * 86400000;
-      rows = rows.filter((x) => {
-        if(this.calendarDate)return (x.date||new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Taipei",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date(x.occursAt)))===this.calendarDate;
-        const at = Date.parse(x.occursAt || x.date);
-        if (scope === "watch")
-          return x.symbols?.some((s) => this.watch.has(s)) && at >= Date.now();
-        if (scope === "today")
-          return (
-            x.occursAt &&
-            new Intl.DateTimeFormat("en-CA", {
-              timeZone: "Asia/Taipei",
-              year: "numeric",
-              month: "2-digit",
-              day: "2-digit",
-            }).format(new Date(x.occursAt)) === today
-          );
-        return at >= weekStart && at < until;
-      });
-    }
+    if (events) rows = rows.filter(x => matchesEventWindow(x, {scope,date:this.calendarDate,watch:this.watch}));
     const seen = new Set();
     rows = rows
       .filter((x) => {
@@ -115,7 +93,7 @@ export const newsViews = {
       ? rows
           .map(
             (x, i) =>
-              `<article class="ox-news-card us2-news-card" data-article="${i}"><div class="ox-news-meta"><span class="ox-news-source">${e(x.source || x.sourceId || "官方來源")}</span><time>${fmt(x.occursAt || x.publishedAt)}</time>${x.impact?.stars?`<span class="ox-news-impact" title="${e(x.impact.reason||"")}">${"★".repeat(x.impact.stars)}</span>`:""}</div><h3>${e(x.titleZh || x.title || "官方消息")}</h3><p class="ox-news-detail">${events?"事件時間":"發布時間"} · ${e(x.summaryZh || (events?(x.status==="confirmed"?"官方排程已確認":"時間待確認"):"官方消息"))}</p><div class="ox-news-actions"><button data-article="${i}" aria-label="閱讀 ${e(x.titleZh||x.title)}">閱讀詳情 ↗</button>${(x.symbols||[]).map(s=>`<button data-symbol="${e(s)}">${e(s)} 圖表</button>`).join("")}</div></article>`,
+              `<article class="ox-news-card us2-news-card" data-article="${i}"><div class="ox-news-meta"><span class="ox-news-source">${e(x.source || x.sourceId || "資料來源")}</span><time>${events && !x.occursAt && eventDay(x) ? e(eventDay(x))+' · 全天／時間待公布' : fmt(x.occursAt || x.publishedAt)}</time>${x.impact?.stars?`<span class="ox-news-impact" title="${e(x.impact.reason||"")}">${"★".repeat(x.impact.stars)}</span>`:""}</div><h3>${e(x.titleZh || x.title || "市場消息")}</h3><p class="ox-news-detail">${events?"事件時間":"發布時間"} · ${e(x.summaryZh || (events?(x.status==="confirmed"?"官方排程已確認":"時間待確認"):"市場消息"))}</p><div class="ox-news-actions"><button data-article="${i}" aria-label="閱讀 ${e(x.titleZh||x.title)}">閱讀詳情 ↗</button>${(x.symbols||[]).map(s=>`<button data-symbol="${e(s)}">${e(s)} 圖表</button>`).join("")}</div></article>`,
           )
           .join("")
       : `<div class="us2-empty">這個範圍沒有來源已確認的${events ? "事件／財報" : "新聞"}。個股財報時間尚未接入授權來源。</div>`;
@@ -127,8 +105,7 @@ export const newsViews = {
   },
   openArticle(item) {
     const list = this.root.querySelector(".us2-news-list"),
-      y = window.scrollY,
-      html = list.innerHTML;
+      y = window.scrollY;
     let url;
     try {
       url = new URL(item.link || item.url);
@@ -143,11 +120,9 @@ export const newsViews = {
         "",
       )}</div>${url ? `<a href="${e(url.href)}" target="_blank" rel="noopener noreferrer">閱讀原始來源 ↗</a>` : ""}</article>`;
     list.querySelector(".us2-back").onclick = () => {
-      list.innerHTML = html;
-      list.onclick = (ev) => {
-        const b = ev.target.closest("[data-article]");
-        if (b) this.openArticle(this.newsRows[+b.dataset.article]);
-      };
+      // Reuse the normal row binding so stock-chart actions still work after
+      // returning from an article (and do not accidentally reopen its detail).
+      this.paintNews();
       requestAnimationFrame(() => window.scrollTo(0, y));
     };
     this.bindRows(list.querySelector(".us2-scope"));
@@ -155,12 +130,12 @@ export const newsViews = {
   },
   paintCalendar() {
     const node=this.root.querySelector(".us2-calendar");if(!node)return;
-    const m=this.calendarMonth,y=m.getFullYear(),month=m.getMonth(),first=new Date(y,month,1).getDay(),days=new Date(y,month+1,0).getDate();
-    node.innerHTML=`<div class="ox-mini-calendar-toolbar"><button data-month="-1" aria-label="上個月">‹</button><strong>${y} / ${month+1}</strong><button data-month="1" aria-label="下個月">›</button></div><div class="ox-mini-calendar-grid">${["日","一","二","三","四","五","六"].map(d=>`<span class="ox-mini-weekday">${d}</span>`).join("")}${"<span class=\"ox-mini-spacer\"></span>".repeat(first)}${Array.from({length:days},(_,i)=>{const date=`${y}-${String(month+1).padStart(2,"0")}-${String(i+1).padStart(2,"0")}`;return `<button class="ox-mini-day ${date===this.calendarDate?"is-selected":""}" data-date="${date}">${i+1}</button>`;}).join("")}</div><button class="ox-mini-calendar-clear" data-date="">清除日期篩選</button>`;
+    const m=this.calendarMonth,y=m.getFullYear(),month=m.getMonth(),first=new Date(y,month,1).getDay(),days=new Date(y,month+1,0).getDate(),today=todayTaipei();
+    node.innerHTML=`<div class="ox-mini-calendar-toolbar"><button data-month="-1" aria-label="上個月">‹</button><strong>${y} / ${month+1}</strong><button data-month="1" aria-label="下個月">›</button></div><div class="ox-mini-calendar-grid">${["日","一","二","三","四","五","六"].map(d=>`<span class="ox-mini-weekday">${d}</span>`).join("")}${"<span class=\"ox-mini-spacer\"></span>".repeat(first)}${Array.from({length:days},(_,i)=>{const date=`${y}-${String(month+1).padStart(2,"0")}-${String(i+1).padStart(2,"0")}`;return `<button class="ox-mini-day ${date===this.calendarDate?"is-selected":""} ${date===today?"is-today":""}" data-date="${date}"${date===today?' aria-current="date"':''} aria-label="${date}">${i+1}</button>`;}).join("")}</div><button class="ox-mini-calendar-clear" data-date="">清除日期篩選</button>`;
     node.onclick=ev=>{const b=ev.target.closest("button");if(!b)return;if(b.dataset.month){this.calendarMonth=new Date(y,month+Number(b.dataset.month),1);}else{this.calendarDate=b.dataset.date;this.newsKind="events";this.root.querySelectorAll("[data-news-kind]").forEach(x=>{x.classList.toggle("active",x.dataset.newsKind==="events");x.setAttribute("aria-pressed",x.dataset.newsKind==="events");});this.paintNews();}this.paintCalendar();};
   },
   renderMedia(main) {
-    main.innerHTML = `<div class="media-page"><div class="media-card"><div class="media-intro"><div class="media-logo"><img src="ox-logo.png" alt="OX" width="150" height="150"></div><div><h1>少一點雜訊。<br>多一點判斷。</h1><p>美股研究、教學與操作案例。</p><button class="ox-news-open" data-media-news>查看美股官方消息</button></div></div><div class="media-sections"><section class="media-section"><h2>美股研究與教學</h2><div class="us2-media-content"><div class="us2-empty">讀取已發布內容…</div></div></section><section class="media-section"><h2>分析工作流程</h2><div class="media-function-list us2-media-workflow"><button class="media-function-item" data-help="search"><b>搜尋標的</b><span>普通股、ADR 與 ETF</span></button><button class="media-function-item" data-help="patterns"><b>型態畫板</b><span>比對真實 K 線</span></button><button class="media-function-item" data-help="watch"><b>自選雷達</b><span>開啟收藏的分析圖表</span></button></div></section></div></div></div>`;
+    main.innerHTML = `<div class="media-page"><div class="media-card"><div class="media-intro"><div class="media-logo"><img src="ox-logo.png" alt="OX" width="150" height="150"></div><div><h1>少一點雜訊。<br>多一點判斷。</h1><p>美股研究、教學與操作案例。</p><button class="ox-news-open" data-media-news>查看美股市場消息</button></div></div><div class="media-sections"><section class="media-section"><h2>美股研究與教學</h2><div class="us2-media-content"><div class="us2-empty">讀取已發布內容…</div></div></section><section class="media-section"><h2>分析工作流程</h2><div class="media-function-list us2-media-workflow"><button class="media-function-item" data-help="search"><b>搜尋標的</b><span>普通股、ADR 與 ETF</span></button><button class="media-function-item" data-help="patterns"><b>型態畫板</b><span>比對真實 K 線</span></button><button class="media-function-item" data-help="watch"><b>自選雷達</b><span>開啟收藏的分析圖表</span></button></div></section></div></div></div>`;
     main.querySelector("[data-media-news]").onclick=()=>window.switchAppView?.("data");
     main.querySelector('[data-help="search"]').onclick = () =>
       this.openSearch(main.querySelector('[data-help="search"]'));

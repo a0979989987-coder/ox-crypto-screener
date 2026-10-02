@@ -1,6 +1,6 @@
 import { US_MODULE_CONFIG } from "./config.js?v=20261001-us-eod1";
 import { createUSMarketState } from "./engine.js?v=20261001-us-eod1";
-import { USWorkspace } from "./workspace.js?v=20261002-tw3";
+import { USWorkspace } from "./workspace.js?v=20261002-finance4r2";
 const workspace = new USWorkspace();
 let active = false,
   entered = false;
@@ -21,9 +21,12 @@ export const usModule = Object.freeze({
     active = true;
     const target = entered ? workspace.state.view : "radar";
     entered = true;
+    // View changes dispatch synchronously and can re-enter view(). Bind the
+    // workspace host before emitting them, including on the first US visit.
+    const activation = workspace.activate(target);
     if (typeof window !== "undefined" && document.body.dataset.view !== target)
       window.switchAppView?.(target);
-    return workspace.activate(target);
+    return activation;
   },
   deactivate() {
     active = false;

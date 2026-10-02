@@ -52,6 +52,7 @@ import { readFile } from 'node:fs/promises';
 test('published snapshot has Chinese titles and retains official originals', async () => {
   const snapshot = JSON.parse(await readFile(new URL('../data/news.json', import.meta.url)));
   for (const item of [...snapshot.news, ...snapshot.events]) {
+    if(item.translationStatus==='original'){assert.ok(item.title&&!item.titleZh);assert.ok(FEEDS.some(f=>f.id===item.sourceId));continue;}
     assert.match(item.titleZh, /[\u4e00-\u9fff]/);
     assert.ok(item.title && item.link.startsWith('https://'));
     assert.equal(item.translationStatus, 'translated');

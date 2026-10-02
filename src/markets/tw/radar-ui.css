@@ -166,3 +166,7 @@ dialog.tw-stock-detail::backdrop { background:#040507c9; backdrop-filter:blur(3p
 .tw-stock-detail-panel button[data-twr-chart] { flex:none; width:auto; height:auto; padding:9px 16px; border-radius:12px; }
 .tw-radar-root .tw-stock-status.urgent,.tw-risk-analysis strong.urgent { color:#fff; font-weight:750; text-shadow:0 0 4px #ffffff30; }
 @media(max-width:640px) { .tw-stock-detail .tw-stock-detail-panel { padding:14px; border-radius:18px; }.tw-stock-detail-panel h3 { font-size:20px; }.tw-risk-quote-grid { grid-template-columns:1fr; gap:8px; }.tw-risk-metrics { grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }.tw-risk-metric { padding:10px; }.tw-stock-detail-panel footer { align-items:flex-start; }.tw-risk-announcement { padding:11px; } }
+
+.tw-radar-root #twr-screener[hidden],.tw-radar-root .twr-scan-button[hidden]{display:none!important}
+.tw-radar-root #twr-screener{min-width:0}
+@media(max-width:700px){.tw-radar-root .twr-mode-rail{min-width:430px}.tw-radar-root .twr-mode-rail button{flex:1 0 auto}}

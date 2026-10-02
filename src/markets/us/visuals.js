@@ -1,4 +1,4 @@
-import {BubbleField} from '../crypto/bubbles/field.js?v=20261002-tw3';
+import {BubbleField} from '../crypto/bubbles/field.js?v=20261002-finance4';
 // Keep US sizing tied to average traded value while sharing the same drag,
 // contact deformation, pinch, recovery and lifecycle as Crypto and Taiwan.
 export function usBubbleRadii(rows,width,height){

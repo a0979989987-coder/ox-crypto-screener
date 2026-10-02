@@ -488,7 +488,7 @@ async function mobileRegression(browser) {
   return { overflow: layout.overflow, css, intervals: runtime.intervals.length };
 }
 
-module.exports = { server, preparePage, selectMarket, selectView, testBase };
+module.exports = { server, preparePage, selectMarket, selectView, testBase, bitgetBody };
 async function progressiveRadarRegression(browser) {
   const context=await browser.newContext({viewport:{width:390,height:844}});
   let release;const pending=new Promise(resolve=>release=resolve);

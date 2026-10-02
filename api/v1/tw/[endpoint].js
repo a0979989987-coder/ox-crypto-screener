@@ -1510,6 +1510,20 @@ export default async function handler(
         return ok(res, data, { realtime: false, provider: "official-tw" });
       }
 
+      case "etf": {
+        const action=stringParam(req.query.action||'catalog'), refresh=booleanParam(req.query.refresh,false);
+        const etf=await import('../../../server/markets/tw/etf.js');
+        res.setHeader('Cache-Control','no-store');
+        if(action==='catalog')return ok(res,await etf.getCatalog({refresh}),{realtime:false});
+        if(action==='offering')return ok(res,await etf.getOfferings({refresh}),{realtime:false});
+        if(action==='radar')return ok(res,await etf.getHotStocks({refresh}),{realtime:false});
+        const symbols=stringParam(req.query.symbols||req.query.symbol).split(',').filter(Boolean);
+        if(!symbols.length||symbols.length>8||symbols.some(s=>!/^00\d{2,4}[A-Z]?$/.test(s)))return fail(res,400,'INVALID_ETF_SYMBOL','請選擇 1–8 檔有效 ETF。');
+        if(action==='history')return ok(res,await etf.batchHistory([...new Set(symbols)],{refresh}),{realtime:false});
+        if(action==='holdings'&&symbols.length===1)return ok(res,await etf.getHoldings(symbols[0],{refresh}),{realtime:false});
+        return fail(res,400,'INVALID_ETF_ACTION','無效的 ETF 查詢。');
+      }
+
       case "home": {
         const section=stringParam(req.query.section||'core');
         if(!['core','briefing','night'].includes(section))return fail(res,400,'INVALID_SECTION','Unknown Taiwan home section.');
