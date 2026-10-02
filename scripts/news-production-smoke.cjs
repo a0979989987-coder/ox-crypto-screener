@@ -49,7 +49,7 @@ async function snapshot(page, name) {
     const jpeg = await page.screenshot({type:'jpeg',quality:85});
     const id = name === 'calendar-1440x900.png' ? 'production-desktop-calendar.jpg' : 'production-mobile-key-news.jpg';
     fs.writeFileSync(path.join(out,id),jpeg);
-    const sha = crypto.createHash('sha1').update(Buffer.from('blob ' + jpeg.length + '\\0')).update(jpeg).digest('hex');
+    const sha = crypto.createHash('sha1').update(Buffer.from('blob ' + jpeg.length)).update(Buffer.from([0])).update(jpeg).digest('hex');
     proofImages.push({id,sha,data:jpeg.toString('base64')});
   }
 }
