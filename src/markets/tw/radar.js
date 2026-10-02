@@ -3066,8 +3066,8 @@ function refreshRadarDataUI(
   if (resultsPanel) resultsPanel.hidden = false;
   const sourceNotice = root.querySelector("#twr-source-notice");
   if (sourceNotice) {
-    sourceNotice.hidden = !availability.notice;
-    sourceNotice.textContent = availability.notice;
+    sourceNotice.hidden = true;
+    sourceNotice.textContent = "";
   }
   const retryButton = root.querySelector('[data-twr-retry]');
   if (retryButton) {
