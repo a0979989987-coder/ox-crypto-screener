@@ -4,7 +4,7 @@ const assert = require('node:assert/strict');
 const { readFileSync, mkdirSync, writeFileSync } = require('node:fs');
 const { resolve } = require('node:path');
 const { chromium, webkit } = require('playwright');
-const { server, preparePage, selectMarket, testBase } = require('./e2e-check.cjs');
+const { server, preparePage, selectMarket, testBase, bitgetBody } = require('./e2e-check.cjs');
 const root = resolve(__dirname, '..');
 const read = file => JSON.parse(readFileSync(resolve(root, 'data', file), 'utf8'));
 const home = read('tw-home.json'), research = read('tw-research.json'), radar = read('tw-radar.json').data;
@@ -76,6 +76,9 @@ async function setup(browser, width) {
     return route.fulfill({ json:[] });
   });
   const { page, audit } = await preparePage(context, size);
+  await page.route('https://api.bitget.com/**', route => route.fulfill({
+    json:{...bitgetBody(new URL(route.request().url())), requestTime:Date.now()},
+  }));
   page.setDefaultTimeout(15000);
   await page.route('**/api/v1/tw/**', route => {
     const u = new URL(route.request().url()), section = u.searchParams.get('section');
@@ -135,6 +138,7 @@ async function setup(browser, width) {
               // Excludes floating bubbles, covered by their dedicated physics QA.
               await page.getByRole('tab',{name:market === 'us' ? '型態畫板' : '型態搜尋',exact:true}).click();
               await page.locator('.px-board').waitFor();
+              await page.locator('.px-board:not(.is-scanning)').waitFor({timeout:30000});
             }
             await layout(page, market, view, width);
             if (market === 'us' && view === 'data') {
