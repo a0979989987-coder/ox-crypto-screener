@@ -132,9 +132,13 @@ body.ox-terminal #market-unavailable-card.tw-radar-root { margin-top: 16px !impo
   -webkit-backdrop-filter: none;
 }
 .tw-radar-root .twr-results-panel::before { display: none; }
-.tw-radar-root .twr-retry { margin: 6px 0 10px; padding: 7px 14px; border: 1px solid #ffffff50; border-radius: 9px; color: inherit; background: #ffffff12; font: inherit; font-size: 12px; cursor: pointer; }
-.tw-radar-root .twr-retry:disabled { opacity: .55; cursor: wait; }
-.tw-radar-root .twr-retry[hidden], .tw-radar-root .twr-source-notice[hidden] { display: none !important; }
+/* Compact scan control outside the results flow, above the bottom navigation. */
+.tw-radar-root .twr-scan-button { position:fixed; z-index:18; right:26px; bottom:calc(85px + env(safe-area-inset-bottom)); display:grid; place-items:center; width:38px; height:38px; padding:0; border:1px solid #ffffffbd; border-radius:999px; background:radial-gradient(circle at 34% 18%,#ffffff39,#293037ed 45%,#14191ef0); color:#fff; box-shadow:inset 0 1px #fff9,0 0 8px #fff9,0 0 20px #ffffff6c,0 6px 18px #0009; backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); cursor:pointer; }
+.tw-radar-root .twr-scan-button svg { width:22px; height:22px; }
+.tw-radar-root .twr-scan-button:hover { box-shadow:inset 0 1px #fff,0 0 12px #fffc,0 0 25px #ffffff88,0 6px 18px #0009; }
+.tw-radar-root .twr-scan-button:disabled { opacity:.65; cursor:wait; }
+.tw-radar-root .twr-source-notice[hidden] { display:none!important; }
+@media(max-width:640px) { .tw-radar-root .twr-scan-button { right:22px; bottom:calc(78px + env(safe-area-inset-bottom)); width:36px; height:36px; } }
 /* Native top-layer dialog: unaffected by transformed radar ancestors or chart loads. */
 dialog.tw-stock-detail { width:100vw; height:100dvh; max-width:none; max-height:none; margin:0; padding:14px; border:0; box-sizing:border-box; background:transparent; color:#f3f0e9; transition:none; }
 dialog.tw-stock-detail::backdrop { background:#040507c9; backdrop-filter:blur(3px); }

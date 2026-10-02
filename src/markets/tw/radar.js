@@ -2438,7 +2438,7 @@ function ensureStyles() {
   const ui = document.createElement("link");
   ui.id = 'ox-tw-radar-css';
   ui.rel = "stylesheet";
-  ui.href = "src/markets/tw/radar-ui.css?v=20261001-tiercomb1";
+  ui.href = "src/markets/tw/radar-ui.css?v=20261002-radarrefresh1";
   document.head.appendChild(ui);
 }
 
@@ -2874,6 +2874,11 @@ function refreshRadarDataUI(
           .filter(row => !searchQuery || `${row.symbol} ${row.name} ${row.industry}`.toLowerCase().includes(searchQuery.toLowerCase()));
 
   const availability = radarAvailability(state, activeMode, filtered.length);
+  const scanButton = root.querySelector('[data-twr-scan]');
+  if (scanButton) {
+    scanButton.disabled = availability.loading;
+    scanButton.setAttribute('aria-busy', String(availability.loading));
+  }
 
 
   const totalEl =
@@ -3069,12 +3074,7 @@ function refreshRadarDataUI(
     sourceNotice.hidden = true;
     sourceNotice.textContent = "";
   }
-  const retryButton = root.querySelector('[data-twr-retry]');
-  if (retryButton) {
-    retryButton.hidden = !(availability.retry || availability.cached);
-    retryButton.disabled = availability.loading;
-    retryButton.textContent = availability.loading ? '更新中…' : '重新載入';
-  }
+
 
 
   /*
@@ -3243,6 +3243,11 @@ export function renderTWRadar(
 
 
   latestRadarState=state;
+  const scanButton = root.querySelector('[data-twr-scan]');
+  if (scanButton) {
+    scanButton.disabled = state?.status === 'loading';
+    scanButton.setAttribute('aria-busy', String(scanButton.disabled));
+  }
   if(activeMode==='chart'&&chartRadar&&root.querySelector('#twr-chart-radar')){chartRadar.update(state);if(pendingChartSymbol){chartRadar.openSymbol(pendingChartSymbol);pendingChartSymbol=null;}return {view:'radar',status:state?.status};}
   stopTWRadar();
   ensureStyles();
@@ -3884,7 +3889,7 @@ export function renderTWRadar(
         </div>
 
         <p id="twr-source-notice" class="twr-source-notice" role="status" hidden></p>
-        <button type="button" class="twr-retry" data-twr-retry hidden>重新載入</button>
+
 
 
         <div
@@ -3959,6 +3964,7 @@ export function renderTWRadar(
 
 
     </div>
+    <button type="button" class="twr-scan-button" data-twr-scan aria-label="重新掃描台股雷達" title="重新掃描台股雷達"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="1.5"/><path d="M12 12 17 7M12 2v2M22 12h-2M12 22v-2M2 12h2"/></svg></button>
   `;
 
 
@@ -4074,7 +4080,7 @@ export function renderTWRadar(
         watchlist
       );
 
-  root.querySelector('[data-twr-retry]')?.addEventListener('click', () => {
+  root.querySelector('[data-twr-scan]')?.addEventListener('click', () => {
     document.dispatchEvent(new CustomEvent('ox:tw-retry'));
   });
 
