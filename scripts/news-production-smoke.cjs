@@ -8,6 +8,7 @@ const repo = 'a0979989987-coder/ox-crypto-screener';
 const commit = process.env.GITHUB_SHA;
 const out = path.resolve('production-news-qa');
 fs.mkdirSync(out, { recursive: true });
+const proofImages = [];
 const report = { commit, origin, mode: 'real production, fresh guest browser, no news fixtures', checks: [], viewports: [], screenshots: [], errors: [] };
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 async function github(url) {
@@ -44,6 +45,13 @@ async function snapshot(page, name) {
   await page.waitForTimeout(450);
   await page.screenshot({ path: path.join(out, name) });
   report.screenshots.push(name);
+  if (name === 'calendar-1440x900.png' || name === 'key-news-390x844.png') {
+    const jpeg = await page.screenshot({type:'jpeg',quality:85});
+    const id = name === 'calendar-1440x900.png' ? 'production-desktop-calendar.jpg' : 'production-mobile-key-news.jpg';
+    fs.writeFileSync(path.join(out,id),jpeg);
+    const sha = crypto.createHash('sha1').update(Buffer.from('blob ' + jpeg.length + '\\0')).update(jpeg).digest('hex');
+    proofImages.push({id,sha,data:jpeg.toString('base64')});
+  }
 }
 (async () => {
   await ready();
@@ -108,4 +116,9 @@ async function snapshot(page, name) {
 })().catch(error => { report.passed = false; report.failure = error.message; process.exitCode = 1; }).finally(() => {
   fs.writeFileSync(path.join(out,'report.json'), JSON.stringify(report,null,2));
   console.log(JSON.stringify(report,null,2));
+  for (const image of proofImages) {
+    const count = Math.ceil(image.data.length / 12000);
+    console.log('OX_NEWS_QA_JPEG_META ' + JSON.stringify({id:image.id,sha:image.sha,count}));
+    for (let i=0;i<count;i++) console.log('OX_NEWS_QA_JPEG_CHUNK ' + image.id + ' ' + i + ' ' + image.data.slice(i*12000,(i+1)*12000));
+  }
 });
