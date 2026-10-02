@@ -2,7 +2,7 @@ import { renderResearch, stopResearch } from './research-page.js?v=20261002-fina
 import { mountResearch } from './research-ui.js';
 import { createToolsRail } from '../../components/strength/tools-rail.js?v=20261001-tiercomb1';
 import { createTWMarketState } from './engine.js?v=20261002-rank8';
-let selected = 'patterns', session = null, modules;
+let selected = 'screener', session = null, modules;
 export function preloadTWStrength() {
   return modules ??= Promise.all([
     import('../crypto/patterns/view.js?v=20261002-quiet1'),
@@ -19,6 +19,16 @@ async function show(s) {
   const generation = ++s.generation;
   s.host.hidden = selected === 'rotation'; s.research.hidden = selected !== 'rotation';
   if (selected === 'rotation') { renderResearch('strength', s.state, { host: s.research }); return; }
+  if(['screener','savings'].includes(selected)){
+    const tool=selected;
+    s.host.textContent='工具載入中…';
+    try {const module=await import(tool==='screener'?'./screener/view.js?v=20261002-screen4':'./savings/view.js?v=20261002-screen4');
+      if(session!==s||generation!==s.generation)return;
+      s.host.textContent='';
+      s.instance=tool==='screener'?module.mountScreener(s.host,{onOpenRadar:symbol=>{document.dispatchEvent(new CustomEvent('ox:tw-chart-symbol',{detail:{symbol}}));document.querySelector('.dock-btn[data-view-target="radar"]')?.click();}}):module.mountSavings(s.host);
+    }catch(error){if(session===s&&generation===s.generation){s.host.textContent='工具暫時無法載入';}}
+    return;
+  }
   if(window.OXLoading)OXLoading.render(s.host,selected==='bubbles'?'載入泡泡圖':'載入型態畫板');else s.host.textContent='介面載入中…';
   try {
     const [{ mountPatternSearch }, source, cache,{mountTWBubbles}] = await preloadTWStrength();
@@ -45,7 +55,7 @@ export function renderTWStrength(state) {
   stopTWStrength(); stopResearch(); root.replaceChildren();
   const host = document.createElement('div'), research = document.createElement('div');
   host.id = 'ox-tw-patterns'; research.id = 'ox-tw-sector-tools';
-  const rail = createToolsRail({ tabs: [['patterns', '型態搜尋'], ['bubbles','泡泡圖'], ['rotation', '板塊輪動']], selected, label: '台股指標分類', attribute: 'data-tw-tool',equal:true, onSelect(id) { selected = id; if (session) show(session); } });
+  const rail = createToolsRail({ tabs: [['screener','篩選器'],['patterns', '型態搜尋'], ['bubbles','泡泡圖'], ['rotation', '板塊輪動'],['savings','存股計算']], selected, label: '台股指標分類', attribute: 'data-tw-tool',equal:false, onSelect(id) { selected = id; if (session) show(session); } });
   rail.element.id = 'ox-tw-tools-nav';
   const style = document.createElement('style');
   style.textContent = '#ox-tw-tools-nav{margin:0 0 12px}#ox-tw-patterns,#ox-tw-sector-tools{min-width:0}#ox-tw-sector-tools[hidden],#ox-tw-patterns[hidden]{display:none!important}';
@@ -55,6 +65,6 @@ export function renderTWStrength(state) {
 }
 
 if(typeof document !== 'undefined') {
- document.addEventListener('ox:tw-tool', event => { if(['patterns','bubbles','rotation'].includes(event.detail?.tool)){selected=event.detail.tool;stopTWStrength();} });
+ document.addEventListener('ox:tw-tool', event => { if(['screener','patterns','bubbles','rotation','savings'].includes(event.detail?.tool)){selected=event.detail.tool;stopTWStrength();} });
  document.addEventListener('ox:tw-close-refresh',()=>{if(session&&selected==='patterns')session.instance?.refresh?.();});
 }
