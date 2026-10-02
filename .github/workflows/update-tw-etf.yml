@@ -19,6 +19,7 @@ jobs:
         with:
           node-version: '22'
       - run: node scripts/collect-tw-etf.mjs
+      - run: node scripts/collect-tw-etf-extras.mjs
       - name: Save source snapshots
         run: |
           git add data/tw-etf

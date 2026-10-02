@@ -1,7 +1,7 @@
 import {parseHoldingsCSV,compareHoldings as compareAllocation} from '../savings/model.js';
 import { lifecycle, futureValue, compareHoldings, portfolioHistory, STRATEGIES } from './model.js';
-import { etfRequest, knownHistory, rememberHistory } from './api.js';
-import { shell,esc,fmt,pct,color,money,amount,tabs,selector,input,chart,donut } from './ui.js';
+import { etfRequest, knownHistory, rememberHistory } from './api.js?v=20261002-pages3';
+import { shell,esc,fmt,pct,color,money,amount,tabs,selector,input,chart,donut } from './ui.js?v=20261002-pages3';
 const manualFunds=new Map();let allocation=50;
 const tools=[['life','生命週期'],['single','單一標的'],['portfolio','投資組合'],['compare','相似度比較']];
 const defaults={age:30,retire:60,lifespan:90,initial:100000,monthly:10000,annual:6,retirementAnnual:3};
