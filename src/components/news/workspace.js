@@ -169,7 +169,7 @@ export function mountNewsWorkspace(host, api) {
     const body = node('div', 'oxn-article-body');
     if (item.summaryZh) { body.append(node('small', 'oxn-caption', item.summaryType === 'system' ? '系統整理' : '來源摘要'), node('p', '', plain(item.summaryZh))); } else body.append(node('p', 'oxn-caption', item.translationStatus === 'translated' ? '來源未提供已核對的繁中摘要，完整內容請見原文。' : '繁體中文翻譯待補，保留原文供查核。'));
     if (item.title !== item.titleZh) body.append(node('p', 'oxn-original', item.title));
-    if(item.aggregation)body.append(node('p','oxn-caption',`公開標題由 ${item.aggregation} 聚合 · 原始發布者：${item.publisher||sourceName(item)}；非官方 API，不轉載全文。`));
+    if(item.aggregation)body.append(node('p','oxn-caption',`公開標題由 ${item.aggregation} 聚合 · ${item.publisher?`原始發布者：${item.publisher}`:`入口來源：${sourceName(item)}`}；非官方 API，不轉載全文。`));
     const actions = node('div', 'oxn-article-actions'), original = link(item.aggregation?'前往聚合連結／原文':'閱讀原文', item.link); if (original) actions.append(original);
     const read = button((api.preferences().read || []).includes(item.id) ? '標為未讀' : '標為已讀', '', () => { const set = new Set(api.preferences().read || []); set.has(item.id) ? set.delete(item.id) : set.add(item.id); api.save({ read: [...set] }); read.textContent = set.has(item.id) ? '標為未讀' : '標為已讀'; row.classList.toggle('is-read', set.has(item.id)); });
     const follow = button((api.preferences().followedSources || []).includes(item.sourceId) ? '取消追蹤' : '追蹤來源', '', () => { const set = new Set(api.preferences().followedSources || []); set.has(item.sourceId) ? set.delete(item.sourceId) : set.add(item.sourceId); api.save({ followedSources: [...set] }); follow.textContent = set.has(item.sourceId) ? '取消追蹤' : '追蹤來源'; });

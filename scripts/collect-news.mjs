@@ -90,11 +90,19 @@ export function normalizeFeed(xml, feed) {
     if (feed.id === 'kraken' && /VIP château|APY on AUSD|Pre-IPO Challenge/i.test(title)) return null;
     if (['abmedia','blocktempo','decrypt'].includes(feed.id) && !cryptoRelevant(title)) return null;
     const relevantMarkets = ['sec','cftc'].includes(feed.id) && !/bitcoin|crypto|digital asset|spot etf|exchange.traded fund/i.test(title) ? ['us'] : feed.markets;
-    return { id: hash(link), title, link, publishedAt, source: feed.name, sourceId: feed.id,
+    return { id: hash(feed.aggregator ? `${feed.id}:${link}` : link), title, link, publishedAt, source: feed.name, sourceId: feed.id,
       ...(feed.aggregator?{aggregation:'Google News RSS',publisher,publisherUrl}:{}),
       ...(feed.portal?{aggregation:`${feed.name} RSS`,feedUrl:feed.url}:{}),
       markets: relevantMarkets, kind: 'news', verified: feed.verified || 'official-source', fetchedAt: new Date().toISOString(), contentType: /sponsored|sponsor|APY|challenge|giveaway|獎池|限時優惠|抽獎|贊助|業配/i.test(title) ? 'promotion' : 'news', impact: impact(title, feed.id, link) };
   }).filter(Boolean).slice(0, 50);
+}
+
+// One aggregator URL can appear in the general feed and a publisher feed.
+// Keep both source attributions; the UI de-duplicates after source filtering.
+// Re-key retained snapshots too, so a refresh does not keep both old/new IDs.
+export function migrateAggregateHeadline(item) {
+  if (item.aggregation !== 'Google News RSS' || !item.sourceId || !item.link) return item;
+  return { ...item, id: hash(`${item.sourceId}:${item.link}`) };
 }
 
 export function cryptoRelevant(title) {
@@ -195,7 +203,7 @@ export async function collect() {
   const sources = results.map((result, i) => result.status === 'fulfilled'
     ? { id: FEEDS[i].id, name: FEEDS[i].name, markets: FEEDS[i].markets, status: 'ready', count: result.value.items.length, lastSuccessAt: stamp, lastAttemptAt: stamp, access: FEEDS[i].aggregator?'public-aggregated-rss':FEEDS[i].portal?'public-portal-rss':'public-rss-headlines-links', aggregator:Boolean(FEEDS[i].aggregator||FEEDS[i].portal), usage:FEEDS[i].usage, termsUrl:FEEDS[i].termsUrl, scopeLabel:FEEDS[i].scopeLabel, endpoint: FEEDS[i].url }
     : { ...old?.sources?.find(s => s.id === FEEDS[i].id), id: FEEDS[i].id, name: FEEDS[i].name, markets: FEEDS[i].markets, endpoint: FEEDS[i].url, scopeLabel:FEEDS[i].scopeLabel, status: 'error', lastAttemptAt: stamp, message: String(result.reason?.message || '來源請求失敗').slice(0, 100) });
-  const allOldNews = [...(old?.news || []), ...(old?.pendingNews || [])].filter(item => item.sourceId !== 'decrypt');
+  const allOldNews = [...(old?.news || []), ...(old?.pendingNews || [])].filter(item => item.sourceId !== 'decrypt').map(migrateAggregateHeadline);
   // Append to history rather than replacing yesterday with today's RSS window.
   const articles = new Map(allOldNews.map(item => [item.id, item]));
   results.forEach(result => { if (result.status === 'fulfilled') result.value.items.forEach(item => articles.set(item.id, item)); });

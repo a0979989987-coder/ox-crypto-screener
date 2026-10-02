@@ -1,7 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {FEEDS,normalizeFeed,localize,fetchText} from '../scripts/collect-news.mjs';
+import {FEEDS,normalizeFeed,localize,fetchText,migrateAggregateHeadline} from '../scripts/collect-news.mjs';
 import {FINANCE_SOURCES,RESTRICTED_FINANCE_SOURCES} from '../scripts/news-finance-sources.mjs';
+import {newsBase} from '../src/components/news/model.js';
+import {createHash} from 'node:crypto';
+import {readFileSync} from 'node:fs';
+import {runInNewContext} from 'node:vm';
 const rss=(publisher,link='https://news.google.com/rss/articles/verified')=>`<rss><channel><item><title>台股財經新聞 - MoneyDJ</title><link>${link}</link><source url="${publisher}">MoneyDJ</source><pubDate>Fri, 02 Oct 2026 06:00:00 GMT</pubDate></item></channel></rss>`;
 test('aggregate headlines require matching publisher domain and retain provenance',()=>{
  const f={...FINANCE_SOURCES.find(f=>f.id==='wantgoo'),domain:'moneydj.com'};const [item]=normalizeFeed(rss('https://www.moneydj.com'),f);
@@ -66,4 +70,32 @@ test('CTEE policy RSS is explicitly scoped and strictly filters financial headli
  const items=normalizeFeed(`<rss><channel>${entry('央行討論利率與通膨政策','finance')}${entry('地方議會議事爭議','politics')}${entry('藝人演唱會售票','entertainment')}${entry('總統視察軍事基地','military')}</channel></rss>`,f);
  assert.equal(f.scopeLabel,'財經篩選 RSS');assert.equal(items.length,1);assert.equal(items[0].publishedAt,'2026-10-02T07:28:45.000Z');assert.equal(items[0].sourceId,'ctee');
  assert.equal(normalizeFeed(`<rss><channel>${entry('地方議會議事爭議','politics')}</channel></rss>`,f).length,0);
+});
+test('shared Google article URL retains each source filter and dedupes the combined view',()=>{
+ const xml=rss('https://www.wantgoo.com');
+ const a=normalizeFeed(xml,FEEDS.find(f=>f.id==='wantgoo'))[0];
+ const b=normalizeFeed(xml,FEEDS.find(f=>f.id==='google-news'))[0];
+ assert.equal(a.link,b.link);assert.notEqual(a.id,b.id);
+ const snapshot={news:[...new Map([a,b].map(i=>[i.id,i])).values()]};
+ const state={times:['24'],sources:null};const now=Date.parse('2026-10-02T08:00:00Z');
+ assert.equal(snapshot.news.length,2);assert.equal(newsBase(snapshot,'tw',state,{},now).length,1);
+ for(const source of ['wantgoo','google-news'])assert.equal(newsBase(snapshot,'tw',{...state,sources:[source]}, {},now)[0].sourceId,source);
+});
+test('retained aggregator IDs migrate idempotently without changing direct article IDs',()=>{
+ const [current]=normalizeFeed(rss('https://www.wantgoo.com'),FEEDS.find(f=>f.id==='wantgoo'));
+ const old={...current,id:'legacy-url-only',titleZh:'已核對標題'};
+ const retained=migrateAggregateHeadline(old);assert.equal(retained.id,current.id);assert.equal(retained.titleZh,old.titleZh);
+ assert.deepEqual(migrateAggregateHeadline(retained),retained);
+ assert.equal(new Map([retained,current].map(i=>[i.id,i])).size,1);
+ const f=FEEDS.find(f=>f.id==='yahoo');const url='https://tw.news.yahoo.com/finance-123.html';
+ const [direct]=normalizeFeed(`<rss><channel><item><title>台股市場收盤</title><link>${url}</link><pubDate>Fri, 02 Oct 2026 06:00:00 GMT</pubDate></item></channel></rss>`,f);
+ assert.equal(direct.id,createHash('sha256').update(url).digest('hex').slice(0,20));assert.equal(migrateAggregateHeadline(direct),direct);
+});
+test('portal attribution does not invent an original publisher',()=>{
+ // Exercise the production caption with a minimal DOM sink; no browser globals
+ // or network are needed for this provenance-only rendering branch.
+ const captionLine=readFileSync(new URL('../src/components/news/workspace.js',import.meta.url),'utf8').split('\n').find(line=>line.includes('公開標題由'));
+ const render=item=>{const output=[];runInNewContext(captionLine,{item,sourceName:()=>item.source,body:{append:value=>output.push(value)},node:(_tag,_class,text)=>text});return output.join('');};
+ const portal=render({aggregation:'Yahoo RSS',source:'Yahoo'});assert.match(portal,/入口來源：Yahoo/);assert.doesNotMatch(portal,/原始發布者/);
+ const publisher=render({aggregation:'Google News RSS',source:'Google 新聞',publisher:'玩股網'});assert.match(publisher,/原始發布者：玩股網/);assert.doesNotMatch(publisher,/入口來源/);
 });
