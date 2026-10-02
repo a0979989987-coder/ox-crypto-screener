@@ -1,4 +1,4 @@
-import { etfRequest, rememberHistory, knownHistory } from './api.js?v=20261002-pages3';
+import { etfRequest, rememberHistory, knownHistory } from './api.js?v=20261002-etffast1';
 import { matchesCategory } from './model.js';
 import { shell, esc, fmt, money, signed, pct, color, tabs, sourceNote, iconSearch } from './ui.js?v=20261002-pages3';
 const mainTabs=[['rank','排行榜'],['hot','熱門資訊'],['stock','股票型'],['bond','債券型']];

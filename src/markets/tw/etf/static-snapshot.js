@@ -1,17 +1,32 @@
-// GitHub Pages has no server functions. Use the same validated files published
-// by the ETF collector when the Vercel market API has not deployed yet.
+// Cancelling one view must not cancel data shared with the next mounted tool.
+export function waitForSignal(task, signal) {
+  if (!signal) return task;
+  if (signal.aborted) return Promise.reject(signal.reason);
+  return new Promise((resolve, reject) => {
+    const abort = () => reject(signal.reason);
+    signal.addEventListener('abort', abort, { once: true });
+    task.then(resolve, reject).finally(() => signal.removeEventListener('abort', abort));
+  });
+}
+// Both hosts serve validated daily files; concurrent symbol requests share
+// one file download, without sharing a mounted view's cancellation signal.
 export function createSnapshotLoader(fetcher, rootUrl) {
-  const cache = new Map();
-  async function read(file, { refresh = false, signal } = {}) {
+  const cache = new Map(), pending = new Map();
+  function read(file, { refresh = false, signal } = {}) {
     const saved = cache.get(file);
-    if (!refresh && saved && Date.now() - saved.at < 300000) return saved.data;
-    const url = new URL(`data/${file}`, rootUrl);
-    if (refresh) url.searchParams.set('check', String(Date.now()));
-    const response = await fetcher(url, { cache: 'no-store', signal });
-    if (!response.ok) throw Error(`已發布的 ETF 資料暫時無法下載（${response.status}）`);
-    const data = await response.json();
-    cache.set(file, { at: Date.now(), data });
-    return data;
+    if (!refresh && saved && Date.now() - saved.at < 300000) return waitForSignal(Promise.resolve(saved.data), signal);
+    let task = pending.get(file);
+    if (!task) {
+      task = (async () => {
+        const url = new URL(`data/${file}`, rootUrl);
+        if (refresh) url.searchParams.set('check', String(Date.now()));
+        const response = await fetcher(url, { cache: 'no-store', signal: AbortSignal.timeout(8000) });
+        if (!response.ok) throw Error(`已發布的 ETF 資料暫時無法下載（${response.status}）`);
+        const data = await response.json(); cache.set(file, { at: Date.now(), data }); return data;
+      })().finally(() => pending.delete(file));
+      pending.set(file, task);
+    }
+    return waitForSignal(task, signal);
   }
   return async function load(action, params = {}, signal, refresh = false) {
     if (action === 'catalog') {

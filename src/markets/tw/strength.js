@@ -28,7 +28,7 @@ async function show(s) {
     if(window.OXLoading)OXLoading.render(s.host,selected==='etf'?'載入 ETF 精選':'載入存股計算');
     else s.host.textContent='介面載入中…';
     try{
-      const module=selected==='etf'?await import('./etf/view.js?v=20261002-pages3'):await import('./etf/savings.js?v=20261002-pages3');
+      const module=selected==='etf'?await import('./etf/view.js?v=20261002-etffast1'):await import('./etf/savings.js?v=20261002-etffast1');
       if(session!==s||generation!==s.generation)return;
       s.host.replaceChildren();
       s.instance=selected==='etf'?module.mountETF(s.host,{onSavings(selection){s.savingsInitial=selection;s.rail.select('savings');}}):module.mountSavings(s.host,{initialSelection:s.savingsInitial});
