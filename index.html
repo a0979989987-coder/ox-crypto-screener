@@ -44,7 +44,7 @@
   <link rel="stylesheet" href="src/styles/components/fullscreen-lightglass.css?v=20261001-tiercomb2">
   <link rel="stylesheet" href="src/styles/components/feature-search-provider.css?v=20261001-tiercomb2">
   <link rel="stylesheet" href="src/styles/markets/us.css?v=20261001-us-device2">
-  <link rel="stylesheet" href="src/styles/components/news-center.css?v=20261001-tiercomb2">
+  <link rel="stylesheet" href="src/styles/components/news-center.css?v=20261002-newsv2">
   <link rel="stylesheet" href="src/styles/themes/editorial-terminal.css?v=20261001-tiercomb2">
 
 <!-- CSS moved: ox-premium-glass-design-system -->
@@ -545,9 +545,6 @@
 
   <section class="app-view" id="view-news" data-app-view="news">
     <div class="ox-news-page">
-      <header class="ox-news-heading"><button class="ox-news-open" id="ox-news-return" type="button" aria-label="關閉新聞並返回市場">←</button><span>返回市場</span><span class="ox-news-edition" data-terminal-date></span></header>
-      <div class="ox-news-masthead"><div><span class="ox-eyebrow">THE MARKET BRIEF</span><h1>市場，正在發生。</h1></div><p>官方來源 · 關鍵消息 · 跨市場視野</p></div>
-      <nav class="ox-news-section-nav" aria-label="新聞分類"><button type="button" data-news-tab="overview">總覽</button><button type="button" data-news-tab="latest">最新快訊</button><button type="button" data-news-tab="calendar">經濟行事曆</button><button type="button" data-news-tab="moves">市場異動</button><button type="button" data-news-tab="following">我的追蹤</button></nav>
       <div data-news-surface="all"></div>
     </div>
   </section>
@@ -697,13 +694,7 @@
     <span class="dock-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m10 9 5 3-5 3z"/></svg></span><span>媒體</span>
   </button>
 </nav>
-<nav class="ox-news-dock" aria-label="新聞功能">
-  <button type="button" data-news-tab="overview">總覽</button>
-  <button type="button" data-news-tab="latest">快訊</button>
-  <button type="button" data-news-tab="calendar">行事曆</button>
-  <button type="button" data-news-tab="moves">異動</button>
-  <button type="button" data-news-tab="following">追蹤</button>
-</nav>
+
 
 <div id="toast" class="toast" role="status"></div>
 
@@ -770,10 +761,11 @@
 
 
 
-<script src="src/components/navigation/repair.js?v=20261001-tiercomb2"></script>
+<script src="src/components/navigation/repair.js?v=20261002-newsv2"></script>
 
-<script src="src/components/navigation/market-quick-switch.js?v=20261001-tiercomb2"></script>
-<script src="src/components/news/center.js?v=20261001-tiercomb2"></script>
+<script src="src/components/navigation/market-quick-switch.js?v=20261002-newsv2"></script>
+<script src="src/components/news/center.js?v=20261002-newsv2"></script>
+<script src="src/components/news/entry.js?v=20261002-newsv2"></script>
 
 
 <script src="src/components/chart/mobile-interaction.js?v=20261001-tiercomb2"></script>

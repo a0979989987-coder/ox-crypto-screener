@@ -14,6 +14,8 @@ concurrency:
 
 jobs:
   collect:
+    # Preview/manual runs on feature branches must never write production main.
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -28,6 +30,7 @@ jobs:
       - run: npm run news:collect
       - run: npm test
       - name: Publish changed snapshot
+        if: github.ref == 'refs/heads/main'
         run: |
           if git diff --quiet -- data/news.json; then exit 0; fi
           git config user.name "github-actions[bot]"

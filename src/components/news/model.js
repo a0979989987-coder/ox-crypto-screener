@@ -1,0 +1,124 @@
+import { SOURCE_CATALOG, MARKET_CATEGORIES, EVENT_PROVIDERS } from './config.js';
+export const validDate = value => { if (!/^\d{4}-\d{2}-\d{2}$/.test(value || '')) return false; const date = new Date(`${value}T00:00:00Z`); return Number.isFinite(date.getTime()) && date.toISOString().slice(0, 10) === value; };
+export const safeLink = value => { try { const u = new URL(value); return u.protocol === 'https:' && !u.username && !u.password ? u.href : null; } catch { return null; } };
+export const plain = value => String(value ?? '').replace(/<[^>]*>/g, '').replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g, '').trim();
+export function taipeiDay(value = new Date()) {
+  const parts = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Taipei', year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(new Date(value));
+  const part = name => parts.find(p => p.type === name).value;
+  return `${part('year')}-${part('month')}-${part('day')}`;
+}
+export function eventDay(item) {
+  if (item.date && validDate(item.date)) return item.date;
+  return Number.isFinite(Date.parse(item.occursAt)) ? taipeiDay(item.occursAt) : null;
+}
+export function eventCategory(item) {
+  if (item.category) return item.category;
+  if (item.kind === 'token-unlock') return 'unlock';
+  if (item.sourceId === 'bls-calendar') return 'macro';
+  return null;
+}
+export function importance(item) {
+  const raw = item.impact?.stars;
+  const value = Number.isInteger(raw) && raw >= 1 && raw <= 5 ? (raw <= 2 ? 1 : raw === 3 ? 2 : 3) : null;
+  return { value, raw: raw ?? null, source: item.impact?.ruleVersion || null, evidence: safeLink(item.impact?.evidence), reason: item.impact?.reason || null };
+}
+export function monthGrid(month) {
+  const [year, index] = month.split('-').map(Number);
+  const offset = (new Date(Date.UTC(year, index - 1, 1)).getUTCDay() + 6) % 7;
+  const days = new Date(Date.UTC(year, index, 0)).getUTCDate();
+  const weeks = Math.ceil((offset + days) / 7);
+  const cells = Array.from({ length: weeks * 7 }, (_, i) => {
+    const date = new Date(Date.UTC(year, index - 1, 1 - offset + i)).toISOString().slice(0, 10);
+    return { date, day: Number(date.slice(8)), outside: date.slice(0, 7) !== month };
+  });
+  return { weeks, cells };
+}
+export function shiftMonth(month, delta) { const [y, m] = month.split('-').map(Number); return new Date(Date.UTC(y, m - 1 + delta, 1)).toISOString().slice(0, 7); }
+export function defaultState() { return { tab: 'calendar', month: taipeiDay().slice(0, 7), categories: null, importance: null, times: ['24'], sources: null, words: [], query: '', asset: null, limit: 40, scroll: 0, market: 'all' }; }
+export const inMarket = (item, scope) => scope === 'all' || item.markets?.includes(scope);
+export function canonicalURL(value) {
+  const safe = safeLink(value); if (!safe) return null;
+  const url = new URL(safe); for (const key of [...url.searchParams.keys()]) if (/^(utm_|fbclid|gclid|ref$)/i.test(key)) url.searchParams.delete(key);
+  url.hash = ''; return url.href.replace(/\/$/, '');
+}
+function titleKey(item) { return plain(item.originalTitle || item.title).normalize('NFKC').toLowerCase().replace(/[\p{P}\p{Z}]/gu, ''); }
+export function dedupe(items) {
+  const groups = [], links = new Map(), titles = new Map();
+  for (const item of items) {
+    const link = canonicalURL(item.canonicalUrl || item.link); if (!link) continue;
+    const key = titleKey(item), day = item.publishedAt?.slice(0, 10) || '';
+    const existing = links.get(link) || (key.length >= 14 ? titles.get(`${day}:${key}`) : null);
+    if (existing) { existing.reports.push(item); continue; }
+    const copy = { ...item, link, reports: [item] }; groups.push(copy); links.set(link, copy); if (key.length >= 14) titles.set(`${day}:${key}`, copy);
+  }
+  return groups;
+}
+export function newsBase(snapshot, scope, state, prefs = {}, now = Date.now()) {
+  const hidden = new Set(prefs.hidden || []), muted = new Set(prefs.mutedSources || []);
+  const windows = (state.times || []).map(Number).filter(h => h > 0 && h <= 720);
+  if (!windows.length) return [];
+  const lower = now - Math.max(...windows) * 3600000;
+  return dedupe([...(snapshot?.news || []), ...(snapshot?.pendingNews || [])].filter(item => {
+    const published = Date.parse(item.publishedAt);
+    return inMarket(item, scope) && !hidden.has(item.id) && !muted.has(item.sourceId) && item.contentType !== 'promotion' &&
+      Number.isFinite(published) && published <= now + 60000 && published >= lower &&
+      (state.sources === null || state.sources.includes(item.sourceId));
+  })).sort((a, b) => b.publishedAt.localeCompare(a.publishedAt));
+}
+export function filterNews(items, state) {
+  const query = plain(state.query).normalize('NFKC').toLocaleLowerCase();
+  return items.filter(item => {
+    const text = [item.titleZh, item.title, item.summaryZh, ...(item.assets || []).flatMap(a => [a.symbol, a.name, ...(a.aliases || [])])].join(' ').normalize('NFKC').toLocaleLowerCase();
+    return (!query || text.includes(query)) && (!state.words.length || state.words.some(word => text.includes(word.toLocaleLowerCase()))) &&
+      (!state.asset || (item.assets || []).some(a => a.id === state.asset));
+  });
+}
+export function monthEvents(snapshot, scope, state) {
+  return (snapshot?.events || []).filter(item => {
+    const day = eventDay(item), type = eventCategory(item), level = importance(item).value;
+    return inMarket(item, scope) && day?.slice(0, 7) === state.month &&
+      (state.categories === null || state.categories.includes(type)) && (state.importance === null || state.importance.includes(String(level || 'unrated')));
+  }).sort((a, b) => (eventDay(a) + (a.occursAt || '')).localeCompare(eventDay(b) + (b.occursAt || '')));
+}
+const STOP = new Set('以及 相關 表示 今年 今天 昨日 目前 預計 可能 最新 消息 新聞 公告 發布 宣布 報導 指出 美國 台灣 全球 官方 公司 集團 市場 投資 投資人 金融 交易 交易所 新增 因為 已經 還有 這個 這次 這些 其中 一個 成為 提供 推出 開放 預告 進行 發展 調整 計畫 資訊 來源 更新 年 月 日 萬 億 元 美元 the and for with from this that are has new its to of in on by at an us as is a will over via announces release available'.split(' '));
+const segmenter = new Intl.Segmenter('zh-TW', { granularity: 'word' });
+export function hotWords(items) {
+  const counts = new Map();
+  for (const item of items) {
+    const words = new Set((item.assets || []).map(a => a.name));
+    const aliases = new Map((item.assets || []).flatMap(a => [a.symbol, a.name, ...(a.aliases || [])].map(word => [word.normalize('NFKC').toLowerCase(), a.name])));
+    const text = plain(item.titleZh || item.title).normalize('NFKC');
+    for (const part of segmenter.segment(text)) {
+      const word = part.segment.trim();
+      if (!part.isWordLike || STOP.has(word.toLowerCase()) || word.length < 2 || word.length > 16 || /^\d/.test(word) || /^[\p{P}\p{Z}\p{S}]+$/u.test(word) || /^[\d,.]+[月億萬元%]?$/.test(word)) continue;
+      words.add(aliases.get(word.toLowerCase()) || (/^(ETF|NFT|AI|DeFi|DAO)$/i.test(word) ? word.toUpperCase() : word));
+    }
+    for (const word of words) counts.set(word, (counts.get(word) || 0) + 1);
+  }
+  return [...counts].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'zh-TW')).slice(0, 36);
+}
+export function ranking(items) {
+  const counts = new Map();
+  for (const item of items) for (const asset of new Map((item.assets || []).map(a => [a.id, a])).values()) {
+    if (!asset.id || !asset.market) continue;
+    const old = counts.get(asset.id) || { ...asset, count: 0 }; old.count++; counts.set(asset.id, old);
+  }
+  return [...counts.values()].sort((a, b) => b.count - a.count || a.symbol.localeCompare(b.symbol));
+}
+export function sourcesFor(snapshot, scope) {
+  return SOURCE_CATALOG.filter(s => scope === 'all' || s.markets.includes(scope)).map(source => {
+    const health = snapshot?.sources?.find(s => s.id === source.id);
+    return { ...source, ...health, id: source.id, name: source.name, lastSuccessAt: health?.lastSuccessAt || (health?.status === 'ready' ? snapshot.generatedAt : null) };
+  });
+}
+export function coverage(snapshot, scope, month) {
+  const sources = sourcesFor(snapshot, scope), categories = MARKET_CATEGORIES[scope];
+  const categoryCoverage = categories.map(category => {
+    const spans = (snapshot?.eventCoverage || []).filter(c => c.category === category && (scope === 'all' || c.markets?.includes(scope)));
+    const covered = spans.some(c => c.from?.slice(0, 7) <= month && c.to?.slice(0, 7) >= month && c.complete === true);
+    const known = (snapshot?.events || []).filter(e => inMarket(e, scope) && eventCategory(e) === category && eventDay(e)?.slice(0, 7) === month).length;
+    const connected = sources.filter(s => EVENT_PROVIDERS[category]?.includes(s.id) && s.status !== 'not-connected');
+    return { category, covered, known, spans, connected };
+  });
+  return { sources, categories: categoryCoverage, complete: categoryCoverage.every(c => c.covered) };
+}

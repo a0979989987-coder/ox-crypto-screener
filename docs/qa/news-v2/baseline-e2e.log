@@ -1,0 +1,11 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> ox-market-command-center@4.0.0-rc.2 test:e2e
+> node scripts/e2e-check.cjs
+
+Progressive radar passed: available results render during a blocked candle request, then the completed symbol joins without a loading animation
+Error: long: strict T1 capacity or exclusion failed
+    at assert (/workspace/scratch/ae3578c4c138/ox-news-v2/scripts/e2e-check.cjs:15:25)
+    at tierCapacityRegression (/workspace/scratch/ae3578c4c138/ox-news-v2/scripts/e2e-check.cjs:251:5)
+    at async desktopRegression (/workspace/scratch/ae3578c4c138/ox-news-v2/scripts/e2e-check.cjs:285:3)
+    at async /workspace/scratch/ae3578c4c138/ox-news-v2/scripts/e2e-check.cjs:516:21

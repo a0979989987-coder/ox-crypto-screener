@@ -34,29 +34,8 @@
     postReleaseHoldMs: 3000
   };
 
-  const MARKETS = [
-    {
-      id: "crypto",
-      label: "Crypto"
-    },
-    {
-      id: "us",
-      label: "美股"
-    },
-    {
-      id: "tw",
-      label: "台股"
-    },
-    {
-      id: "news",
-      label: "新聞"
-    }
-  ];
-
-  const IDS =
-    MARKETS.filter(item => item.id !== 'news').map(
-      item => item.id
-    );
+  const MARKETS = [ { id: "crypto", label: "加密" }, { id: "tw", label: "台股" } ];
+  const IDS = MARKETS.map(item => item.id);
 
   const MENU_ID =
     "ox-market-quick-switch";
@@ -214,7 +193,7 @@
 
   width:
     min(
-      352px,
+      212px,
       calc(100vw - 20px)
     );
 
@@ -391,7 +370,7 @@
 
   grid-template-columns:
     repeat(
-      5,
+      2,
       minmax(0,1fr)
     );
 
@@ -773,7 +752,7 @@ body.theme-light
   #${MENU_ID} {
 
     width:
-      calc(100vw - 18px);
+      min(212px, calc(100vw - 18px));
 
     padding: 5px;
 
@@ -1036,7 +1015,7 @@ body.theme-light
 
   function setSelected(id) {
     const next =
-      (valid(id) || id === 'news')
+      valid(id)
         ? id
         : null;
 
@@ -1310,10 +1289,6 @@ body.theme-light
      ========================================================= */
 
   function switchMarket(id) {
-    if (id === 'news') {
-      window.OXNews?.open();
-      return true;
-    }
     if (
       !valid(id)
     ) {

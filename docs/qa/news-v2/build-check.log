@@ -1,0 +1,6 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> ox-market-command-center@4.0.0-rc.2 check
+> node scripts/check-build.mjs
+
+Build check passed: 96 local assets, 171 unique ids

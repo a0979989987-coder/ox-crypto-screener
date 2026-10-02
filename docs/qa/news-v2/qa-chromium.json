@@ -1,0 +1,96 @@
+{
+  "engine": "chromium",
+  "screenshots": [
+    "desktop-calendar.png",
+    "desktop-key-news.png",
+    "desktop-ranking.png",
+    "mobile-calendar.png",
+    "mobile-key-news.png",
+    "mobile-multi-select.png",
+    "small-mobile-six-weeks.png",
+    "crypto-event-detail.png",
+    "mobile-news-entry.png",
+    "tw-event-detail.png",
+    "mobile-all-calendar.png",
+    "mobile-radar-two-markets.png",
+    "desktop-news-entry.png"
+  ],
+  "viewports": [
+    {
+      "size": {
+        "width": 1440,
+        "height": 900
+      },
+      "overflow": 0,
+      "weeks": 6,
+      "calendarBottom": 911,
+      "dockTop": 0,
+      "gridHeight": 564,
+      "liveVisible": true
+    },
+    {
+      "size": {
+        "width": 1366,
+        "height": 768
+      },
+      "overflow": 0,
+      "weeks": 6,
+      "calendarBottom": 911,
+      "dockTop": 0,
+      "gridHeight": 564,
+      "liveVisible": true
+    },
+    {
+      "size": {
+        "width": 390,
+        "height": 844
+      },
+      "overflow": 0,
+      "weeks": 6,
+      "calendarBottom": 765,
+      "dockTop": 773,
+      "gridHeight": 454,
+      "liveVisible": true
+    },
+    {
+      "size": {
+        "width": 375,
+        "height": 667
+      },
+      "overflow": 0,
+      "weeks": 6,
+      "calendarBottom": 588,
+      "dockTop": 596,
+      "gridHeight": 277,
+      "liveVisible": true
+    },
+    {
+      "size": {
+        "width": 430,
+        "height": 932
+      },
+      "overflow": 0,
+      "weeks": 6,
+      "calendarBottom": 853,
+      "dockTop": 861,
+      "gridHeight": 542,
+      "liveVisible": true
+    }
+  ],
+  "interactions": [
+    "nested history/back/forward/reload",
+    "market state isolation",
+    "single/double/long tap and move cancel",
+    "two market radar menu",
+    "multi-select all/none/reset",
+    "real title-based crypto ranking",
+    "slow response ignored for stale market",
+    "successful empty",
+    "503 retry",
+    "source failure retains last articles",
+    "new-snapshot notification preserves reading",
+    "landscape and reduced motion"
+  ],
+  "errors": [],
+  "passed": true
+}

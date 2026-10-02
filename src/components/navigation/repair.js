@@ -10,7 +10,7 @@
       if (!btn) return;
       btn.style.gridColumn = String(index + 1);
       btn.style.gridRow = "1";
-      if (view === "radar" || btn.dataset.oxNavBound === "1") return;
+      if (view === "radar" || view === "data" || btn.dataset.oxNavBound === "1") return;
       btn.dataset.oxNavBound = "1";
       btn.addEventListener("click", (event) => {
         event.preventDefault();

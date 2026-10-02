@@ -1,0 +1,56 @@
+# OX 新聞中心 2.0 施工紀錄
+
+## 基線與隔離
+- 核對時間：2026-10-02（台北）。遠端 main：`dc011fc6220b890552910ebf93e133814005ad66`。
+- 交接 SHA `480add8` 已有更新，未退版。
+- 工作分支：`feature/news-center-v2-20261002`。獨立 worktree，其他三個現有 checkout 無未提交修改，未更動其他工作分支。
+- 現有 main 已包含畫板掃描／介面修正及 Bitget UID 入口，不重新合併舊新聞分支。
+- 沒有 AGENTS.md。README／ARCHITECTURE／CURRENT_STATE 已讀，舊市場占位描述不作為刪除新版功能的依據。
+- 施工範圍：news 元件與資料轉接、news CSS、新聞入口、雷達底部市場快捷選单、收集器與隔離工作流、驗收測試。
+- 不改雷達策略、評分、量能、圖表、OXLIVE、帳號、美股資料供應。
+
+## 基線驗證
+- `npm test`：372 通過，0 失敗。
+- `npm run check`：通過（95 資產／172 ID）。
+- 既有 `npm run test:e2e`：失敗 `long: strict T1 capacity or exclusion failed`，在產品修改前執行；progressive radar 通過。不得以新聞修改宣稱修好此問題。
+- Chromium 使用既有 Chrome Headless Shell；尚未完成 Safari／iPhone 實機驗證。
+- 參考站 finoinvestbot.com/genie-calendar 無法透過檢索讀取；未使用其內部接口。
+
+## 已完成的實作
+- 原新聞總頁、加密／台股的原新聞 host 原地使用同一 workspace；只保留行事曆／關鍵新聞，沿用既有指標分段 rail。
+- 每市場獨立 session 分頁／月份／篩選／捲動狀態，舊 localStorage 已讀／隱藏／來源追蹤保留。
+- 新聞入口桌面 hover／點擊／鍵盤選單；手機延遲單擊、快速双擊、480ms 長按，移動／cancel 取消。事件只作用於原入口，沒有第六顆底部鈕。
+- 底部雷達市場選單縮為加密／台股、等寬居中，觸控索引跟隨兩個選項；全站 us 市場保留。
+- 浮層多選：時間聯集、來源全部／無選取、事件、三等重要性、查詢／熱詞／排行；未接入來源不可選。白光漸變與 reduced-motion。
+- 日曆完整週列，純日期不補午夜；國際發布換算台北並保留来源時區／DST。日期開清單，短事件可直接開詳情，返回／前進／reload 嵌套。
+- 手機可視高度量測，保留 OXLIVE 與原 dock；正常 375／390／430 直式五週及六週完整，橫式／放大字體允許捲動。
+- 高密度新聞、真實來源／發布時間、翻譯狀態／原文／次級閱讀偏好；去重標題資產提及、熱詞分詞／同義資產，註明來源子集而非全網。
+- 快照保留成功資料，來源單獨失敗、待譯、零筆、過期、未接入分開；舊市場慢回應不覆蓋目前市場，新快照先提示，未接受前保留閱讀位置。
+- 收集器沿用 schemaVersion 1，維持 news 繁中與既有 OXLIVE／US 消費端；新增 pendingNews／assetCatalog／eventCoverage。沒有 key 到前端／日誌。
+- 未更換前端框架／行情供應；保留原 CSS 中美股／首頁／圖表／觸控依賴，新增樣式只作用於 oxn workspace／layer。
+
+## 真實資料與未完成項目
+參見 [NEWS_CENTER_V2_SOURCES.md](NEWS_CENTER_V2_SOURCES.md)，逐來源列出實測數量／狀態／接口／限制。
+- 已實測的加密媒體：CoinDesk、Cointelegraph、BlockTempo、ABMedia。台股：科技新報與證交所公開 RSS；不是所有指定平台皆已接通。
+- 事件：TWSE／TPEx 除權息資料、交易日曆、官方 DOCX 法說月表、BLS、Bitcoin Core 正式版本發布、官方 Aptos 規則的純日期預估。
+- Aave 官方治理查詢成功返回 0，並不填入示例。
+- Decrypt 官方条款限制自動收集，已停用、移除本次擷取；Kraken 返回 HTML 不是 RSS，顯示更新失敗。
+- 法說九月更新版公告是 PDF，本版只解析 DOCX；歷史累積记录與已解析月表不代表完整覆蓋。
+- 現金發放／填息／殖利率歷史樣本、Tokenomist API key／授權、其他未驗證的媒體与排程接口、繁中全文摘要／自動翻譯服務，仍未完成。所有缺口有明示，没有假數值／時間／新聞。
+
+## 驗收與畫面
+- `npm test`：390 通過、0 失敗（原 372＋18 新測試）。
+- `npm run check`：通過（96 資產／171 唯一 ID）。
+- `npm run test:news-v2` Chromium：通過；詳見 [qa-chromium.json](qa/news-v2/qa-chromium.json)，五尺寸、五／六週、嵌套返回／前進／reload、手勢、各市場狀態、多選、慢回應／空／503、來源失敗、更新保留閱讀、橫式／reduced motion。
+- 原 `npm run test:e2e`：与施工前相同 `long: strict T1 capacity or exclusion failed`，progressive radar 通過；未改 T1 策略或放寬檢查。後续整站檢查因該失敗未抵達，不宣稱全面綠燈。
+- 新聞 QA 另驗證原美股 data 工作區、home／strength 入口、五顆 dock 與控制入口。帳號真實會員／付費行情／Bitget 驗證沒有執行外部帳號操作。
+- WebKit 已下載，啟動因缺 GTK／GStreamer 等系統 library 阻擋；安裝依賴受環境檔案權限阻擋，因此沒有 WebKit 通過結果。沒有 iPhone 實機驗證。
+- 本地 QA 使用真實 data/news.json，部分錯誤情境明確隔離於 route fixture。圖表 vendor 是實際官方 JS bytes，帳號 config 为明確未配置 guest；未把 fixture 寫入快照。
+- [實際截图與測試紀錄](qa/news-v2/)：桌面／手機行事曆、關鍵新聞、兩市場詳情、多選、桌面／手機入口、兩市場雷達選單與小手機六週。
+- 截圖已逐張檢視；面板等動畫穩定才拍，無透明遮罩殘留／橫向溢出；既有雷達卡片、OXLIVE 視覺不因本輪修改。
+
+## 預覽與正式隔離
+- 實作即將提交／推送 `feature/news-center-v2-20261002`；尚待取得並驗證部署回傳 URL。
+- 六小時 production workflow 添加 main-ref guard；預覽 workflow contents:read，仅驗證與 artifact，不 commit／push／deploy main，也沒有排程。
+- 本輪沒有合併、推 main、觸發寫 main 的資料流程或授權正式發布。
+- 遠端 main 與 Vercel 部署分開查核，不以 branch SHA 直接推定正式站版本。預覽驗收後才由使用者決定是否合併發布。
