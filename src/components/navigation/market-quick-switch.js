@@ -6,8 +6,8 @@
    *
    * Desktop:
    * - Click Radar -> Radar
-   * - Hold Radar -> Quick Switch
-   * - Drag -> Select market
+   * - Hover Radar -> Quick Switch
+   * - Choose a market -> Its Radar
    *
    * Mobile:
    * - Tap Radar -> Radar
@@ -47,6 +47,9 @@
     "ox-previous-market";
 
   let radar = null;
+  let desktopRadar = null;
+  let menuAnchor = null;
+  let hoverCloseTimer = null;
   let menu = null;
 
   let holdTimer = null;
@@ -311,6 +314,9 @@
     rotate(45deg);
 }
 
+
+#${MENU_ID}[data-placement="below"] {transform-origin:50% 0;touch-action:auto}
+#${MENU_ID}[data-placement="below"]::after {top:-7px;bottom:auto;transform:translateX(-50%) rotate(225deg)}
 
 /* Open */
 
@@ -843,6 +849,8 @@ body.theme-light
 
     menu.id =
       MENU_ID;
+    menu.setAttribute('role', 'menu');
+    menu.setAttribute('aria-label', '雷達市場');
 
     menu.setAttribute(
       "aria-hidden",
@@ -857,6 +865,7 @@ body.theme-light
             <button
               class="ox-mqs-item"
               type="button"
+              role="menuitem"
               data-market="${market.id}"
               aria-label="切換至${market.label}"
             >
@@ -883,10 +892,11 @@ body.theme-light
     );
 
     menu.addEventListener('pointerenter', event => {
+      clearTimeout(hoverCloseTimer);
       pointerHover = event.pointerType === 'mouse';
       if (pointerHover) pauseAutoClose();
     });
-    menu.addEventListener('pointerleave', () => { pointerHover = false; scheduleAutoClose(); });
+    menu.addEventListener('pointerleave', () => { pointerHover = false; if (menuAnchor === desktopRadar) leaveDesktopMenu(); else scheduleAutoClose(); });
     menu.addEventListener('focusin', pauseAutoClose);
     menu.addEventListener('focusout', event => {
       if (!menu.contains(event.relatedTarget)) scheduleAutoClose();
@@ -898,7 +908,7 @@ body.theme-light
     menu.addEventListener('keydown', event => {
       const buttons = [...menu.querySelectorAll('.ox-mqs-item')];
       const index = buttons.indexOf(document.activeElement);
-      if (event.key === 'Escape') { event.preventDefault(); closeMenu(); radar.focus(); }
+      if (event.key === 'Escape') { event.preventDefault(); closeMenu(); (menuAnchor || radar).focus(); }
       if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
         event.preventDefault();
         buttons[(index + (event.key === 'ArrowRight' ? 1 : -1) + buttons.length) % buttons.length].focus();
@@ -949,7 +959,18 @@ body.theme-light
     }
 
     const rect =
-      radar.getBoundingClientRect();
+      (menuAnchor || radar).getBoundingClientRect();
+
+    if (menuAnchor === desktopRadar && desktopRadar) {
+      const half = Math.min(212, window.innerWidth - 20) / 2;
+      menu.dataset.placement = 'below';
+      menu.style.left = `${Math.max(half + 10, Math.min(window.innerWidth - half - 10, rect.left + rect.width / 2))}px`;
+      menu.style.bottom = 'auto';
+      menu.style.top = `${rect.bottom + 8}px`;
+      return;
+    }
+    menu.dataset.placement = 'above';
+    menu.style.top = '';
 
     const viewportHeight =
       window.visualViewport
@@ -990,6 +1011,7 @@ body.theme-light
   function syncMenu() {
     current =
       currentMarket();
+    const activeMarket = document.body.dataset.market || current;
 
     menu
       ?.querySelectorAll(
@@ -1002,7 +1024,7 @@ body.theme-light
             "is-current",
 
             button.dataset.market ===
-              current
+              activeMarket
           );
 
         }
@@ -1130,7 +1152,9 @@ body.theme-light
      OPEN
      ========================================================= */
 
-  function openMenu() {
+  function openMenu(anchor = radar, { hover = false } = {}) {
+    menuAnchor = anchor;
+    clearTimeout(hoverCloseTimer);
     pauseAutoClose();
     clearTimeout(
       closeTimer
@@ -1149,8 +1173,7 @@ body.theme-light
 
     positionMenu();
 
-    holding =
-      true;
+    holding = !hover;
 
     taps =
       [];
@@ -1164,9 +1187,10 @@ body.theme-light
     document.body
       .classList
       .add(
-        "ox-mqs-open",
-        "ox-mqs-dragging"
+        "ox-mqs-open"
       );
+    document.body.classList.toggle('ox-mqs-dragging', !hover);
+    desktopRadar?.setAttribute('aria-expanded', String(anchor === desktopRadar));
 
     menu
       .classList
@@ -1181,6 +1205,7 @@ body.theme-light
 
     requestAnimationFrame(
       () => {
+        if (menu.getAttribute?.('aria-hidden') === 'true') return;
         menu
           .classList
           .add(
@@ -1199,6 +1224,10 @@ body.theme-light
   function closeMenu(
     immediate = false
   ) {
+    if (menu?.contains(document.activeElement)) (menuAnchor || radar)?.focus();
+    clearTimeout(hoverCloseTimer);
+    pointerHover = false;
+    desktopRadar?.setAttribute('aria-expanded', 'false');
     clearTimeout(
       holdTimer
     );
@@ -1296,9 +1325,9 @@ body.theme-light
     }
 
     if (
-      id ===
-      currentMarket()
+      id === document.body.dataset.market
     ) {
+      openRadar();
       return true;
     }
 
@@ -1319,6 +1348,7 @@ body.theme-light
     controller.setMarket(
       id
     );
+    openRadar();
 
     return true;
   }
@@ -1328,6 +1358,7 @@ body.theme-light
      ========================================================= */
 
   function openRadar() {
+    closeMenu(true);
     if (
       typeof
       window.switchAppView ===
@@ -1942,6 +1973,43 @@ body.theme-light
      BIND
      ========================================================= */
 
+  function leaveDesktopMenu() {
+    clearTimeout(hoverCloseTimer);
+    hoverCloseTimer = setTimeout(() => {
+      if (!pointerHover && !menu?.contains(document.activeElement)) closeMenu();
+    }, 180);
+  }
+
+  function bindDesktopRadar() {
+    desktopRadar = document.querySelector('.ox-desktop-nav [data-view-target="radar"]');
+    if (!desktopRadar || desktopRadar.dataset.oxQuickSwitch) return;
+    desktopRadar.dataset.oxQuickSwitch = '3';
+    desktopRadar.setAttribute('aria-haspopup', 'menu');
+    desktopRadar.setAttribute('aria-expanded', 'false');
+    desktopRadar.setAttribute('aria-controls', MENU_ID);
+    desktopRadar.addEventListener('pointerenter', event => {
+      if (event.pointerType !== 'mouse') return;
+      pointerHover = true;
+      openMenu(desktopRadar, { hover: true });
+    });
+    desktopRadar.addEventListener('pointerleave', () => {
+      pointerHover = false;
+      leaveDesktopMenu();
+    });
+    desktopRadar.addEventListener('click', event => {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      openRadar();
+    }, true);
+    desktopRadar.addEventListener('keydown', event => {
+      if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+        event.preventDefault();
+        openMenu(desktopRadar, { hover: true });
+        menu.querySelector('.ox-mqs-item')?.focus();
+      } else if (event.key === 'Escape') closeMenu();
+    });
+  }
+
   function bind() {
     radar =
       document.querySelector(
@@ -1967,6 +2035,8 @@ body.theme-light
     addStyles();
 
     buildMenu();
+
+    bindDesktopRadar();
 
     /*
      * =======================================================
@@ -2106,8 +2176,9 @@ body.theme-light
     );
 
     document.addEventListener('pointerdown', event => {
-      if (menu?.classList.contains('is-open') && !menu.contains(event.target) && !radar.contains(event.target)) closeMenu();
+      if (menu?.classList.contains('is-open') && !menu.contains(event.target) && !radar.contains(event.target) && !desktopRadar?.contains(event.target)) closeMenu();
     });
+    document.addEventListener('ox:viewchange', () => closeMenu(true));
 
     /*
      * =======================================================
