@@ -6,7 +6,7 @@ const day = value => /^\d{4}-\d{2}-\d{2}$/.test(value || '') && Number.isFinite(
 const clean = value => String(value || '').replace(/\s+/g, ' ').trim();
 const short = (value, limit = 8) => { const chars = [...clean(value)]; return chars.length > limit ? chars.slice(0, limit - 1).join('') + '…' : chars.join(''); };
 const rounded = (value, digits = 1) => Number(value.toFixed(digits)).toString();
-const signed = (value, digits = 1) => `${value > 0 ? '+' : ''}${rounded(value, digits)}`;
+const signed = (value, digits = 2) => `${value > 0 ? '+' : ''}${rounded(value, digits)}`;
 const compact = value => {
   if (Math.abs(value) < 1e6) return rounded(value, 0);
   const [scale, unit] = Math.abs(value) >= 1e12 ? [1e12, '兆'] : Math.abs(value) >= 1e8 ? [1e8, '億'] : [1e4, '萬'];

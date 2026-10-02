@@ -14,7 +14,7 @@ const before = {
 test('premarket keeps 50–100 characters, three axes and a measurable final action',()=>{
   const report=buildPremarketBriefing(before);
   assert.equal(report.complete,true);assert([...report.text].length>=50&&[...report.text].length<=100);
-  for(const part of ['費半+1.6%','ADR+0.7%','夜盤+223點收48475','美股半導體','台股半導體','空單增1000口','偏開高'])assert(report.text.includes(part));
+  for(const part of ['費半+1.58%','ADR+0.7%','夜盤+223點收48475','美股半導體','台股半導體','空單增1000口','偏開高'])assert(report.text.includes(part));
   assert.match(report.text,/前15分鐘.*昨同期不追價。$/);
 });
 test('missing data stays explicit and an index is never invented as a sector ranking',()=>{
