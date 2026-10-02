@@ -14,7 +14,7 @@ export function mountNewsWorkspace(host, api) {
   const state = { ...defaultState(), ...saved }, life = new AbortController();
   let data = {}, panel = null, detail = null, detailKey = '', countdown = null, restorePosition = true;
   const root = node('section', 'oxn-root'); root.dataset.scope = api.scope;
-  const header = node('header', 'oxn-header'), exit = button('‹', '返回先前頁面', api.exit, 'oxn-close');
+  const header = node('div', 'oxn-header'), exit = button('‹', '返回先前頁面', api.exit, 'oxn-close');
   header.append(exit, node('span', 'oxn-title', api.scope === 'all' ? '新聞總頁' : `${MARKET_NAMES[api.scope]}新聞`));
   const marketChoice = button('全部市場', '篩選新聞總頁市場', () => showPanel(marketChoice, '市場', body => {
     const tags = node('div', 'oxn-tags'); for (const id of ['all', 'crypto', 'tw', 'us']) { const tag = button(id === 'all' ? '全部市場' : MARKET_NAMES[id], '', () => { state.market = id; state.sources = null; state.categories = null; persist(); renderContent(); panel.destroy(); }); tag.setAttribute('aria-pressed', String(state.market === id)); tags.append(tag); } body.append(tags);
@@ -126,14 +126,11 @@ export function mountNewsWorkspace(host, api) {
     b.append(node('span', 'oxn-event-type', CATEGORY_NAMES[eventCategory(item)] || '事件'), node('strong', '', label(item)), node('small', '', item.date ? '全天／時間待公布' : fmt(item.occursAt).split(' ')[1]), node('span', 'oxn-stars', importance(item).value ? '★'.repeat(importance(item).value) : '未分級')); return b;
   }
   function renderAgenda(){
-    const days=agendaDays(data.snapshot,scope(),state),total=days.reduce((n,d)=>n+d.events.length,0);
+    const days=agendaDays(data.snapshot,scope(),state);
     const agenda=node('section','oxn-agenda');agenda.setAttribute('aria-label','行程列表');
-    const range=node('div','oxn-agenda-range');range.append(node('strong','','行程列表'),node('span','',`${state.month.replace('-','／')} 起 · ${total} 個事件 · 台北時間`));agenda.append(range);
-    let month='';
     for(const day of days){
-      if(day.date.slice(0,7)!==month){month=day.date.slice(0,7);const [year,m]=month.split('-');agenda.append(node('h2','oxn-agenda-month',`${year} 年 ${Number(m)} 月`));}
       const section=node('section','oxn-agenda-day');section.dataset.date=day.date;
-      const heading=node('header','oxn-agenda-day-heading'),date=node('time');date.dateTime=day.date;
+      const heading=node('div','oxn-agenda-day-heading'),date=node('time');date.dateTime=day.date;
       date.append(node('strong','',String(Number(day.date.slice(8)))),node('span','',`${Number(day.date.slice(5,7))} 月 · ${new Intl.DateTimeFormat('zh-TW',{timeZone:'UTC',weekday:'short'}).format(new Date(day.date+'T12:00:00Z'))}`));heading.append(date);section.append(heading);
       if(day.date===taipeiDay()){section.classList.add('is-today');date.setAttribute('aria-current','date');}
       const events=node('div','oxn-agenda-events');
