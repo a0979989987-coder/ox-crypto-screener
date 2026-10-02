@@ -2084,32 +2084,6 @@
       "translationStatus": "translated"
     },
     {
-      "id": "9a2c3554bf239005ba19",
-      "title": "SEC Charges Boiler Room Operator and Three Entities with Defrauding Retail Investors in $74 Million Pre-IPO Investment Scam",
-      "link": "https://www.sec.gov/newsroom/press-releases/2026-75-sec-charges-boiler-room-operator-three-entities-defrauding-retail-investors-74-million-pre-ipo",
-      "publishedAt": "2026-08-14T20:16:34.000Z",
-      "source": "U.S. SEC",
-      "sourceId": "sec",
-      "markets": [
-        "us"
-      ],
-      "kind": "news",
-      "verified": "official-source",
-      "impact": {
-        "stars": null,
-        "impactImportance": null,
-        "reason": "尚未評估；標題不足以判定影響力",
-        "ruleVersion": "unassessed-v1",
-        "evidence": null,
-        "sourceConfidence": "official-source",
-        "analysisConfidence": null,
-        "direction": null,
-        "sourceId": "sec"
-      },
-      "titleZh": "美國證管會指控高壓推銷業者及三家機構，以 7,400 萬美元上市前投資騙局詐騙散戶",
-      "translationStatus": "translated"
-    },
-    {
       "id": "dc91b81ebe98c431bc5d",
       "title": "CPI for all items increases 0.1% in July; shelter rises",
       "link": "https://www.bls.gov/news.release/archives/cpi_08122026.htm",
@@ -3618,32 +3592,6 @@
       "translationStatus": "translated"
     },
     {
-      "id": "6965916cdac43bfa1fa9",
-      "title": "Checkpoint #8: Jan 2026",
-      "link": "https://blog.ethereum.org/en/2026/01/20/checkpoint-8",
-      "publishedAt": "2026-01-20T00:00:00.000Z",
-      "source": "Ethereum Foundation",
-      "sourceId": "ethereum",
-      "markets": [
-        "crypto"
-      ],
-      "kind": "news",
-      "verified": "official-source",
-      "impact": {
-        "stars": null,
-        "impactImportance": null,
-        "reason": "尚未評估；標題不足以判定影響力",
-        "ruleVersion": "unassessed-v1",
-        "evidence": null,
-        "sourceConfidence": "official-source",
-        "analysisConfidence": null,
-        "direction": null,
-        "sourceId": "ethereum"
-      },
-      "titleZh": "以太坊進度檢視第 8 期：2026 年 1 月",
-      "translationStatus": "translated"
-    },
-    {
       "id": "52a6a84b61bb06d46f89",
       "title": "CPI for all items rises 0.3% in December; shelter and food up",
       "link": "https://www.bls.gov/news.release/archives/cpi_01132026.htm",
@@ -4289,7 +4237,7 @@
       }
     }
   ],
-  "generatedAt": "2026-10-01T18:41:03.520Z",
+  "generatedAt": "2026-10-02T00:43:02.709Z",
   "sources": [
     {
       "id": "twse",
