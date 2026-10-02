@@ -1,0 +1,40 @@
+name: Verify deployed news production
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/news-production-smoke.yml'
+      - 'scripts/news-production-smoke.cjs'
+  workflow_dispatch:
+permissions:
+  contents: read
+  deployments: read
+concurrency:
+  group: news-production-smoke
+  cancel-in-progress: false
+jobs:
+  verify:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: node --check scripts/news-production-smoke.cjs
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: node scripts/news-production-smoke.cjs
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: news-production-browser-proof
+          path: production-news-qa/
+          retention-days: 14
+      # Read-only production verification. Never commit/push data or change accounts.
