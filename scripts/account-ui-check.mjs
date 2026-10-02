@@ -60,6 +60,19 @@ try {
   assert.match(await page.locator('#ox-account-profile').innerText(), /會員資料已儲存/);
   await page.locator('#ox-bitget-link-save').waitFor({ state: 'visible' });
   await page.waitForFunction(() => !document.querySelector('#ox-bitget-link-save').disabled);
+  for (const viewport of [{ width: 1440, height: 900 }, { width: 1366, height: 768 }, { width: 390, height: 844 }]) {
+    await page.setViewportSize(viewport);
+    await page.locator('.ox-account-shell').evaluate(el => { el.scrollTop = 0; });
+    const entry = await page.locator('#ox-bitget-link-open').boundingBox();
+    const shell = await page.locator('.ox-account-shell').boundingBox();
+    assert.ok(entry.y >= shell.y && entry.y + entry.height <= shell.y + shell.height,
+      `Bitget UID entry must be visible without scrolling at ${viewport.width}x${viewport.height}`);
+    await page.locator('#ox-bitget-link-open').click();
+    assert.equal(await page.locator('#ox-bitget-uid').evaluate(el => document.activeElement === el), true);
+    const input = await page.locator('#ox-bitget-uid').boundingBox();
+    assert.ok(input.y >= shell.y && input.y + input.height <= shell.y + shell.height,
+      'UID entry must bring the input into the account viewport');
+  }
   await page.locator('#ox-bitget-uid').fill('12345678901234567890');
   await page.locator('#ox-bitget-link-save').click();
   await page.locator('#ox-bitget-link-status').filter({ hasText: '持有權待驗證' }).waitFor();
