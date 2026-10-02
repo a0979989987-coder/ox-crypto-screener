@@ -122,7 +122,7 @@ async function showScreener(host){
   if(screenerHost===host)return;
   stopScreener();screenerHost=host;const generation=screenerGeneration;
   host.textContent="篩選器載入中…";
-  try{const {mountScreener}=await import("./screener/view.js?v=20261002-screen4");
+  try{const {mountScreener}=await import("./screener/view.js?v=20261002-mobile1");
     if(generation!==screenerGeneration||activeMode!=="screener"||!host.isConnected)return;
     host.replaceChildren();screener=mountScreener(host,{onOpenRadar(symbol){document.dispatchEvent(new CustomEvent("ox:tw-chart-symbol",{detail:{symbol}}));}});
   }catch{if(generation===screenerGeneration){host.textContent="篩選器暫時無法載入";screenerHost=null;}}
@@ -2450,7 +2450,7 @@ function ensureStyles() {
   const ui = document.createElement("link");
   ui.id = 'ox-tw-radar-css';
   ui.rel = "stylesheet";
-  ui.href = "src/markets/tw/radar-ui.css?v=20261002-radarfilter1";
+  ui.href = "src/markets/tw/radar-ui.css?v=20261002-mobile1";
   document.head.appendChild(ui);
 }
 
