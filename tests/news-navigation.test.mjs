@@ -61,11 +61,36 @@ test('direct news URL owns its base history entry so Back stays in the calendar'
  const docEvents=new Map(),winEvents=new Map();let view='radar';
  const body={dataset:{market:'tw',newsMode:'0'}};
  const history={state:null,replaceState(value){this.state=value;}};
- const document={body,addEventListener:(k,v)=>docEvents.set(k,v),querySelector:s=>s==='.app-view.active'?{dataset:{appView:view}}:null};
+ const document={readyState:'loading',body,addEventListener:(k,v)=>docEvents.set(k,v),querySelector:s=>s==='.app-view.active'?{dataset:{appView:view}}:null};
  const window={scrollY:0,scrollTo(){},addEventListener:(k,v)=>winEvents.set(k,v),switchAppView:v=>{view=v;}};
  const context=vm.createContext({document,window,history,location:{pathname:'/',search:'',hash:'#news/tw'},localStorage:{getItem:()=>null},URLSearchParams,AbortController,setTimeout:fn=>{fn();return 1;},clearTimeout(){},requestAnimationFrame:fn=>fn(),fetch:async()=>({ok:true,json:async()=>({schemaVersion:1,news:[],events:[]})})});
  vm.runInContext(await readFile(new URL('../src/components/news/center.js',import.meta.url),'utf8'),context);
  docEvents.get('DOMContentLoaded')();
  assert.equal(history.state.oxView,'data');assert.equal(history.state.oxMarket,'tw');assert.equal(history.state.oxMarketNews,true);
  const base=history.state;view='radar';winEvents.get('popstate')({state:base});assert.equal(view,'data');
+});
+
+for (const market of ['crypto', 'tw', 'all']) test(`reloading ${market} event preserves deep link and history through radar boot`, async () => {
+ const docEvents=new Map(), pending=[];let view='radar', pushes=0;
+ const route={day:'2026-10-02',event:'real-event-id'};
+ const hash=(market==='all'?'#news':`#news/${market}`)+'?date=2026-10-02&event=real-event-id';
+ const location={pathname:'/',search:'',hash};
+ const previous={view:'home',market:'tw',scroll:75};
+ const history={state:{oxNews:market==='all',oxMarketNews:market!=='all',oxView:market==='all'?'news':'data',oxMarket:market==='all'?'tw':market,oxPrevious:previous,oxNewsDepth:2,oxNewsRoute:route},
+   replaceState(value,_,url){this.state=value;location.hash=new URL(url,'https://example.test').hash;},
+   pushState(value,_,url){pushes++;this.replaceState(value,_,url);}};
+ const body={dataset:{market:market==='all'?'tw':market,newsMode:'0'}};
+ const document={readyState:'loading',body,addEventListener:(k,v)=>docEvents.set(k,v),querySelector:s=>s==='.app-view.active'?{dataset:{appView:view}}:null};
+ const window={scrollY:0,scrollTo(){},addEventListener(){},switchAppView(v){view=v;docEvents.get('ox:viewchange')?.({detail:{to:v}});}};
+ const context=vm.createContext({document,window,history,location,localStorage:{getItem:()=>null},URLSearchParams,AbortController,setTimeout(fn,ms){if(ms===0)pending.push(fn);return 1;},clearTimeout(){},requestAnimationFrame:fn=>fn(),fetch:async()=>({ok:true,json:async()=>({schemaVersion:1,news:[],events:[]})})});
+ vm.runInContext(await readFile(new URL('../src/components/news/center.js',import.meta.url),'utf8'),context);
+ docEvents.get('DOMContentLoaded')();
+ window.switchAppView('radar'); // runtime-boot's window DOMContentLoaded listener
+ assert.equal(pushes,0,'boot must not add a history entry or erase the event hash');
+ pending.shift()();
+ assert.equal(location.hash,hash);
+ assert.equal(view,market==='all'?'news':'data');
+ assert.equal(JSON.stringify(history.state.oxNewsRoute),JSON.stringify(route));
+ assert.equal(history.state.oxNewsDepth,2);
+ assert.equal(history.state.oxPrevious,previous);
 });
