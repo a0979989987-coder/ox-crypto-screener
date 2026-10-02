@@ -133,6 +133,7 @@ body:not([data-us-workspace="1"]):has(#view-news.active,#view-data.active,#view-
 .oxn-agenda-day-heading time{display:flex;align-items:center;gap:11px;font-size:12px;color:#dedbd4}
 .oxn-agenda-day-heading strong{display:grid;place-items:center;min-width:32px;height:32px;font-size:20px;font-weight:500}
 .oxn-agenda-day.is-today .oxn-agenda-day-heading strong{border:1px solid #ffffff72;border-radius:50%;background:#ffffff15;box-shadow:0 0 12px #ffffff15;color:#fff}
+.oxn-agenda-day.is-today{border-color:#ffffffd9;box-shadow:0 0 11px #ffffff30,inset 0 0 10px #ffffff08}
 .oxn-agenda-events{padding:0 12px 4px}
 .oxn-root .oxn-agenda-event{width:100%;display:grid;grid-template-columns:64px minmax(0,1fr) auto;gap:5px 10px;border:0;border-top:1px solid var(--oxn-line);border-radius:0;min-height:72px;background:transparent;text-align:left;padding:12px 2px}
 .oxn-agenda-event strong{grid-column:2;grid-row:1/3;font-size:13px;font-weight:500;line-height:1.6;overflow-wrap:anywhere;align-self:center}
@@ -150,7 +151,19 @@ body:not([data-us-workspace="1"]):has(#view-news.active,#view-data.active,#view-
 .oxn-day:hover {background:#ffffff07}
 .oxn-day.is-outside {opacity:.34}
 .oxn-day-number {display:block;width:100%;padding:0;text-align:left;background:none;border:0;font-size:14px!important;font-weight:550;line-height:20px;font-variant-numeric:tabular-nums}
+.oxn-day.is-today {z-index:1;box-shadow:inset 0 0 0 1.5px #fff,inset 0 0 12px #ffffff30,0 0 9px #ffffff35}
 .oxn-day.is-today .oxn-day-number {color:#fff;text-shadow:0 0 9px #ffffff80}
+.oxn-day.is-selected:not(.is-today) {box-shadow:inset 0 0 0 1px #ffffff65;background:#ffffff08}
+.oxn-day-count {display:none}
+.oxn-day-events {margin-top:14px;min-width:0}
+.oxn-day-events-heading {display:flex;justify-content:space-between;align-items:center;gap:8px}
+.oxn-day-events-heading h2 {font-size:15px;margin:0;font-weight:500}
+.oxn-event-carousel {display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x proximity;padding:10px 2px 14px;overscroll-behavior-x:contain;touch-action:pan-x pan-y;scrollbar-width:thin}
+.oxn-event-carousel .oxn-event-card {display:flex;flex-direction:column;align-items:flex-start;gap:10px;flex:0 0 min(300px,82vw);min-height:160px;padding:16px;text-align:left;scroll-snap-align:start;border:1px solid #ffffff25;border-radius:16px;background:#ffffff04}
+.oxn-event-card strong {white-space:normal;overflow:visible;text-overflow:clip;line-height:1.6;overflow-wrap:anywhere}
+.oxn-event-card .oxn-card-source {margin-top:auto;white-space:normal;color:#939994}
+.oxn-root .oxn-event-card>small {display:block;white-space:normal}
+@media(max-width:600px){.oxn-day-count {display:block;padding:0;border:0;background:none;color:#c5cbc7;font-size:11px;line-height:14px;white-space:nowrap;min-height:14px}.oxn-day-events {margin-top:12px}.oxn-calendar-event,.oxn-day-more {display:none}}
 .oxn-day.is-today::after {content:'';position:absolute;top:6px;right:7px;width:4px;height:4px;background:#fff;border-radius:50%;box-shadow:0 0 8px #ffffff70}
 .oxn-calendar-event {display:block;flex:none;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:12px!important;line-height:17px;padding:0 0 0 5px;text-align:left;background:none;border:0;border-left:2px solid #dad4c57d;color:#dedbd4}
 .oxn-calendar-event[data-category="macro"] {border-color:#e5d8b896}
@@ -203,6 +216,7 @@ body:not([data-us-workspace="1"]):has(#view-news.active,#view-data.active,#view-
 .oxn-tags button[aria-pressed="true"] {border-color:#fffdf0c9;background:#ffffff16;color:#fff7e6;box-shadow:0 0 8px #ffffff28,inset 0 0 8px #ffffff08}
 .oxn-tags button[aria-pressed="false"] {box-shadow:0 0 0 #fff0}
 .oxn-tags small {font-size:11px;color:#a8a8a2}
+.oxn-tags button {max-width:100%;white-space:normal;overflow-wrap:anywhere}
 .oxn-tags button:disabled {opacity:.4;cursor:default}
 .oxn-search,.oxn-year-row input {width:100%;min-height:44px;font:inherit;font-size:16px;color:#eee9de;border:1px solid #ffffff30;border-radius:var(--ox-radius-sm,12px);background:#ffffff04;padding:9px 10px;outline:none}
 .oxn-year-row {display:flex;align-items:center;gap:12px;margin-bottom:12px}.oxn-year-row button {width:44px;height:44px;border:0;background:none}.oxn-year-row input {text-align:center}

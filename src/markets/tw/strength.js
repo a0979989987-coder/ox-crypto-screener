@@ -1,4 +1,4 @@
-import { renderResearch, stopResearch } from './research-page.js?v=20261002-tw3';
+import { renderResearch, stopResearch } from './research-page.js?v=20261002-finance4';
 import { mountResearch } from './research-ui.js';
 import { createToolsRail } from '../../components/strength/tools-rail.js?v=20261001-tiercomb1';
 import { createTWMarketState } from './engine.js?v=20261002-rank8';
@@ -6,7 +6,7 @@ let selected = 'patterns', session = null, modules;
 export function preloadTWStrength() {
   return modules ??= Promise.all([
     import('../crypto/patterns/view.js?v=20261002-quiet1'),
-    import('./patterns/source.js?v=20261002-rank8'), import('./patterns/index-cache.js?v=20261002-rank8'),import('./bubbles/view.js?v=20261002-tw3')
+    import('./patterns/source.js?v=20261002-rank8'), import('./patterns/index-cache.js?v=20261002-rank8'),import('./bubbles/view.js?v=20261002-finance4')
   ]).catch(error => { modules = null; throw error; });
 }
 export function stopTWStrength() {

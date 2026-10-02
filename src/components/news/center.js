@@ -1,6 +1,8 @@
 (() => {
   'use strict';
   const SAVED_KEY = 'ox-news-preferences-v1';
+  const initialNewsHash = /^#news(?:\/[^?]*)?(?:\?|$)/.test(location.hash || '') ? location.hash : '';
+  let restoringInitialRoute = Boolean(initialNewsHash);
   const state = { snapshot: null, candidate: null, pending: null, lastError: null, request: 0, previous: null, route: {}, navigating: false, workspace: null, scope: null };
   const markets = ['crypto', 'tw', 'us'];
   const currentMarket = () => markets.includes(document.body.dataset.market) ? document.body.dataset.market : 'crypto';
@@ -34,6 +36,7 @@
   }
   let generation = 0;
   async function render() {
+    const token = ++generation;
     const view = document.querySelector('.app-view.active')?.dataset.appView;
     if (!['news', 'data'].includes(view)) { state.workspace?.suspend(); return; }
     // US keeps its existing Data workspace. Cross-market news remains available from the news menu.
@@ -41,8 +44,7 @@
     const scope = document.body.dataset.newsMode === '1' ? 'all' : currentMarket();
     const host = document.querySelector(`[data-news-surface="${scope === 'all' ? 'all' : 'market'}"]`);
     if (!host) return;
-    const token = ++generation;
-    const { mountNewsWorkspace } = await import('./workspace.js?v=20261002-newscompact');
+    const { mountNewsWorkspace } = await import('./workspace.js?v=20261002-finance4');
     if (token !== generation || !host.isConnected) return;
     if (state.scope !== scope || state.workspace?.host !== host) {
       state.workspace?.destroy(); state.scope = scope;
@@ -67,7 +69,7 @@
     refresh(); render();
   }
   function openMarket({ historyEntry = true, market = currentMarket() } = {}) {
-    const previous = capturePrevious(); state.previous = previous; state.route = {};
+    const previous = !historyEntry && history.state?.oxPrevious || capturePrevious(); state.previous = previous; state.route = {};
     if (historyEntry) history.replaceState?.({ ...history.state, oxView: previous.view, oxMarket: previous.market, oxScroll: previous.scroll }, '', baseURL() + (location.hash || ''));
     switchTo('data', market);
     if (historyEntry) history.pushState({ oxView: 'data', oxMarket: market, oxMarketNews: true, oxPrevious: previous }, '', `#news/${market}`);
@@ -103,9 +105,9 @@
   document.addEventListener('ox:marketchange', () => { if (!state.navigating) { state.route = {}; render(); } });
   document.addEventListener('ox:viewchange', event => {
     const view = event.detail?.to;
-    if (!state.navigating && view && view !== 'news' && document.body.dataset.newsMode === '1') {
+    if (!restoringInitialRoute && !state.navigating && view && view !== 'news' && document.body.dataset.newsMode === '1') {
       document.body.dataset.newsMode = '0'; state.route = {}; history.pushState({ oxView: view, oxMarket: currentMarket() }, '', baseURL());
-    } else if (!state.navigating && view && !['data', 'news'].includes(view) && history.state?.oxMarketNews) {
+    } else if (!restoringInitialRoute && !state.navigating && view && !['data', 'news'].includes(view) && history.state?.oxMarketNews) {
       state.route = {}; history.pushState({ oxView: view, oxMarket: currentMarket() }, '', baseURL());
     }
     if (view === 'data' || view === 'news') refresh(); render();
@@ -118,10 +120,21 @@
     else if (document.body.dataset.newsMode === '1' || currentView() === 'data') restore(state.previous);
   });
   window.OXNews = Object.freeze({ open, openMarket, close, refresh, render, unlockCountdown });
-  if ((location.hash || '').startsWith('#news')) document.addEventListener('DOMContentLoaded', () => setTimeout(() => {
-    const [path, query = ''] = location.hash.split('?'), market = path.split('/')[1];
+  const restoreInitialRoute = () => setTimeout(() => {
+    const [path, query = ''] = initialNewsHash.split('?'), market = path.split('/')[1];
     if (markets.includes(market)) openMarket({ historyEntry: false, market }); else open({ historyEntry: false, previous: history.state?.oxPrevious });
-    const params = new URLSearchParams(query); state.route = { day: params.get('date'), event: params.get('event') }; render();
-  }, 0), { once: true });
+    const params = new URLSearchParams(query); state.route = { day: params.get('date'), event: params.get('event') };
+    // A directly opened/reloaded URL needs a real base history entry as well.
+    // Otherwise Back from its first event restores the unrelated boot radar.
+    history.replaceState?.({ ...history.state, oxNews: document.body.dataset.newsMode==='1', oxMarketNews:markets.includes(market), oxView:currentView(), oxMarket:currentMarket(), oxPrevious:history.state?.oxPrevious||state.previous, oxNewsRoute:state.route, oxNewsDepth:history.state?.oxNewsDepth||0 },'',baseURL()+initialNewsHash);
+    restoringInitialRoute = false;
+    render();
+  }, 0);
+  // The legacy boot briefly selects radar. During reload that must not push a
+  // new history entry or erase the deep link before its route is restored.
+  if (initialNewsHash) {
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', restoreInitialRoute, { once: true });
+    else restoreInitialRoute();
+  }
   else render();
 })();

@@ -7,10 +7,12 @@ import { pathToFileURL } from 'node:url';
 import { XMLParser } from 'fast-xml-parser';
 import { CRYPTO_ASSETS, identifyAssets, issuerAssets, dividends, holidays, paymentEvents, governanceEvents, spansFor, tpexDividends } from './news-providers.mjs';
 import { collectConferences } from './news-conferences.mjs';
+import { FINANCE_SOURCES, FINANCE_FEEDS, RESTRICTED_FINANCE_SOURCES, publisherMatches, financeHeadline } from './news-finance-sources.mjs';
 
-// Public, first-party feeds only. Feed headlines and source links are republished;
-// article bodies and third-party summaries are never copied into the site.
+// Public publisher and explicitly identified aggregation feeds. Only dated
+// headlines and source links are retained; article bodies are never republished.
 export const FEEDS = [
+  ...FINANCE_FEEDS, ...FINANCE_SOURCES,
   { id: 'technews', name: '科技新報', url: 'https://technews.tw/feed/', markets: ['tw'], verified: 'publisher-feed' },
   { id: 'abmedia', name: '鏈新聞 ABMedia', url: 'https://abmedia.io/feed', markets: ['crypto'], verified: 'publisher-feed' },
   { id: 'blocktempo', name: '動區動趨 BlockTempo', url: 'https://www.blocktempo.com/feed/', markets: ['crypto'], verified: 'publisher-feed' },
@@ -27,6 +29,8 @@ export const FEEDS = [
   { id: 'bitcoin-core', name: 'Bitcoin Core', url: 'https://github.com/bitcoin/bitcoin/releases.atom', markets: ['crypto'] }
 ];
 const OFFICIAL_HOSTS = new Set(['technews.tw', 'abmedia.io', 'www.blocktempo.com', 'www.coindesk.com', 'cointelegraph.com', 'decrypt.co', 'www.twse.com.tw', 'www.federalreserve.gov', 'www.bls.gov', 'www.ecb.europa.eu', 'www.sec.gov', 'blog.ethereum.org', 'blog.kraken.com', 'www.cftc.gov']);
+for(const feed of FINANCE_FEEDS)for(const host of feed.hosts)OFFICIAL_HOSTS.add(host);
+OFFICIAL_HOSTS.add('news.google.com');
 
 const parser = new XMLParser({ ignoreAttributes: false, processEntities: true, trimValues: true });
 const array = value => value == null ? [] : Array.isArray(value) ? value : [value];
@@ -36,6 +40,8 @@ const iso = value => { const ms = Date.parse(String(value ?? '')); return Number
 const safeUrl = value => { try { const u = new URL(plain(value)); return u.protocol === 'https:' && (OFFICIAL_HOSTS.has(u.hostname) || (u.hostname === 'github.com' && /^\/bitcoin\/bitcoin\/releases(?:\/tag\/[^/]+)?\/?$/.test(u.pathname))) ? u.href : null; } catch { return null; } };
 const verifiedForFeed = (url, feed) => { try {
   const parsed = new URL(url);
+  if(feed.aggregator)return parsed.hostname==='news.google.com'&&/^\/rss\/articles\//.test(parsed.pathname);
+  if(feed.hosts)return feed.hosts.includes(parsed.hostname);
   return feed.id === 'bitcoin-core' ? parsed.hostname === 'github.com' && /^\/bitcoin\/bitcoin\/releases\/tag\/[^/]+\/?$/.test(parsed.pathname)
     : parsed.hostname === new URL(feed.url).hostname;
 } catch { return false; } };
@@ -60,30 +66,53 @@ export function impact(title, sourceId, sourceUrl = null) {
 export function normalizeFeed(xml, feed) {
   if (/<!DOCTYPE|<!ENTITY/i.test(xml)) throw Error('XML declarations are not accepted');
   const parsed = parser.parse(xml);
-  if (!parsed?.rss?.channel && !parsed?.feed) throw Error('來源沒有返回 RSS 或 Atom');
-  const raw = array(parsed?.rss?.channel?.item ?? parsed?.feed?.entry);
+  const portalNews = feed.format === 'pchome-xml' ? parsed?.news : null;
+  if (!parsed?.rss?.channel && !parsed?.feed && !portalNews) throw Error('來源沒有返回 RSS 或 Atom');
+  const raw = array(parsed?.rss?.channel?.item ?? parsed?.feed?.entry ?? portalNews?.item);
   return raw.map(entry => {
-    const title = plain(entry.title);
+    let title = plain(entry.title);
+    if(feed.financialOnly&&!financeHeadline(title))return null;
+    const categories = array(entry.category).map(plain);
+    if(feed.allowedCategories&&!categories.some(category=>feed.allowedCategories.includes(category)))return null;
+    if(feed.excludedCategories&&categories.some(category=>feed.excludedCategories.includes(category)))return null;
+    const publisherUrl=plain(entry.source?.['@_url']);
+    const publisher=plain(entry.source);
+    if(feed.aggregator&&(!publisherUrl||feed.domain&&!publisherMatches(publisherUrl,feed.domain)))return null;
+    if(feed.aggregator&&publisher&&title.endsWith(` - ${publisher}`))title=title.slice(0,-publisher.length-3);
     const links = array(entry.link);
     const preferred = links.find(value => typeof value === 'object' && (!value['@_rel'] || value['@_rel'] === 'alternate')) ?? links[0];
     const rawLink = plain(typeof preferred === 'object' ? preferred?.['@_href'] ?? preferred?.['#text'] : preferred);
     const link = safeUrl(feed.id === 'twse' && /^\/rwd\/zh\/news\/newsDetail\//.test(rawLink) ? `https://www.twse.com.tw${rawLink}` : rawLink);
-    const publishedAt = iso(entry.pubDate ?? entry.published ?? entry.updated);
+    let rawDate=entry.pubDate ?? entry.published ?? entry.updated ?? (feed.format === 'pchome-xml' ? entry.pubdate : null);
+    if(feed.timezone&&/^\d{4}-\d\d-\d\d[ T]\d\d:\d\d:\d\d$/.test(rawDate))rawDate=rawDate.replace(' ','T')+(feed.timezone==='Asia/Taipei'?'+08:00':'Z');
+    const publishedAt = iso(rawDate);
     if (!title || !link || !verifiedForFeed(link, feed) || !publishedAt) return null;
     if (feed.id === 'kraken' && /VIP château|APY on AUSD|Pre-IPO Challenge/i.test(title)) return null;
     if (['abmedia','blocktempo','decrypt'].includes(feed.id) && !cryptoRelevant(title)) return null;
     const relevantMarkets = ['sec','cftc'].includes(feed.id) && !/bitcoin|crypto|digital asset|spot etf|exchange.traded fund/i.test(title) ? ['us'] : feed.markets;
-    return { id: hash(link), title, link, publishedAt, source: feed.name, sourceId: feed.id,
+    return { id: hash(feed.aggregator ? `${feed.id}:${link}` : link), title, link, publishedAt, source: feed.name, sourceId: feed.id,
+      ...(feed.aggregator?{aggregation:'Google News RSS',publisher,publisherUrl}:{}),
+      ...(feed.portal?{aggregation:`${feed.name} RSS`,feedUrl:feed.url}:{}),
       markets: relevantMarkets, kind: 'news', verified: feed.verified || 'official-source', fetchedAt: new Date().toISOString(), contentType: /sponsored|sponsor|APY|challenge|giveaway|獎池|限時優惠|抽獎|贊助|業配/i.test(title) ? 'promotion' : 'news', impact: impact(title, feed.id, link) };
   }).filter(Boolean).slice(0, 50);
+}
+
+// One aggregator URL can appear in the general feed and a publisher feed.
+// Keep both source attributions; the UI de-duplicates after source filtering.
+// Re-key retained snapshots too, so a refresh does not keep both old/new IDs.
+export function migrateAggregateHeadline(item) {
+  if (item.aggregation !== 'Google News RSS' || !item.sourceId || !item.link) return item;
+  return { ...item, id: hash(`${item.sourceId}:${item.link}`) };
 }
 
 export function cryptoRelevant(title) {
   return /bitcoin|ethereum|crypto|blockchain|token|stablecoin|defi|nft|web3|solana|coinbase|binance|bitget|kraken|bitcoin|比特幣|以太|加密|區塊鏈|代幣|穩定幣|空投|主網|鏈上|交易所|幣安|幣圈|\b(?:BTC|ETH|SOL|XRP|USDT|USDC|ETF)\b/i.test(title);
 }
 
-async function fetchText(url) {
-  const response = await fetch(url, { signal: AbortSignal.timeout(35000), headers: { 'User-Agent': 'Mozilla/5.0 (compatible; OXNews/1.0)', Accept: 'application/rss+xml, application/atom+xml, application/xml, text/html' } });
+export async function fetchText(url) {
+  // Some native RSS servers negotiate text/xml (e.g. DIGITIMES), not
+  // application/xml. Advertise that actual format to avoid a valid HTTP 406.
+  const response = await fetch(url, { signal: AbortSignal.timeout(35000), headers: { 'User-Agent': 'Mozilla/5.0 (compatible; OXNews/1.0)', Accept: 'application/rss+xml, application/atom+xml, application/xml, text/xml, application/json, text/html, */*;q=0.1' } });
   if (!response.ok) throw new Error(`HTTP ${response.status}`);
   const text = await response.text();
   if (text.length > 2_000_000) throw new Error('Feed exceeds size limit');
@@ -119,7 +148,7 @@ const retainEvent = item => ({ ...item, sourceUrl: item.sourceUrl ?? item.link ?
 export function localize(item, previous = []) {
   const reviewed = REVIEWED_V2.find(entry => entry.id === item.id && entry.sourceId === item.sourceId && entry.title === item.title);
   const old = previous.find(entry => entry.id === item.id && entry.sourceId === item.sourceId && entry.title === item.title);
-  let titleZh = reviewed?.titleZh || old?.titleZh || (['twse','technews','abmedia','blocktempo'].includes(item.sourceId) && /[\u4e00-\u9fff]/.test(item.title) ? item.title : null) || VERIFIED_TRANSLATIONS[item.title] || null;
+  let titleZh = reviewed?.titleZh || old?.titleZh || (['twse','technews','abmedia','blocktempo',...FINANCE_FEEDS.map(f=>f.id),...FINANCE_SOURCES.map(f=>f.id)].includes(item.sourceId) && /[\u4e00-\u9fff]/.test(item.title) ? item.title : null) || VERIFIED_TRANSLATIONS[item.title] || null;
   if (item.kind === 'event') {
     const match = item.title.match(/^(Consumer Price Index|Employment Situation|Producer Price Index|Job Openings and Labor Turnover Survey|State Job Openings and Labor Turnover|Employment Situation of Veterans) for (\w+) (\d{4})$/);
     const names = { 'Consumer Price Index': '消費者物價指數', 'Employment Situation': '就業情勢報告', 'Producer Price Index': '生產者物價指數', 'Job Openings and Labor Turnover Survey': '職缺與勞動流動調查', 'State Job Openings and Labor Turnover': '州別職缺與勞動流動調查', 'Employment Situation of Veterans': '退伍軍人就業情勢報告' };
@@ -128,7 +157,7 @@ export function localize(item, previous = []) {
     if (match && match[2] === 'Annual') titleZh = `美國 ${match[3]} 年${names[match[1]]}（年度）`;
     if (match && month) titleZh = `美國 ${match[3]} 年 ${month} 月${names[match[1]]}`;
   }
-  return { ...item, titleZh, translationStatus: titleZh ? 'translated' : 'pending' };
+  return { ...item, titleZh, translationStatus: titleZh ? 'translated' : [...FINANCE_FEEDS,...FINANCE_SOURCES].some(f=>f.id===item.sourceId)?'original':'pending' };
 }
 
 // Reviewed headline translations are keyed by the exact original text; changed
@@ -172,9 +201,9 @@ export async function collect() {
   const stamp = new Date().toISOString();
   const results = await Promise.allSettled(FEEDS.map(async feed => ({ feed, items: normalizeFeed(await fetchText(feed.url), feed) })));
   const sources = results.map((result, i) => result.status === 'fulfilled'
-    ? { id: FEEDS[i].id, name: FEEDS[i].name, markets: FEEDS[i].markets, status: 'ready', count: result.value.items.length, lastSuccessAt: stamp, lastAttemptAt: stamp, access: 'public-rss-headlines-links', endpoint: FEEDS[i].url }
-    : { ...old?.sources?.find(s => s.id === FEEDS[i].id), id: FEEDS[i].id, status: 'error', lastAttemptAt: stamp, message: String(result.reason?.message || '來源請求失敗').slice(0, 100) });
-  const allOldNews = [...(old?.news || []), ...(old?.pendingNews || [])].filter(item => item.sourceId !== 'decrypt');
+    ? { id: FEEDS[i].id, name: FEEDS[i].name, markets: FEEDS[i].markets, status: 'ready', count: result.value.items.length, lastSuccessAt: stamp, lastAttemptAt: stamp, access: FEEDS[i].aggregator?'public-aggregated-rss':FEEDS[i].portal?'public-portal-rss':'public-rss-headlines-links', aggregator:Boolean(FEEDS[i].aggregator||FEEDS[i].portal), usage:FEEDS[i].usage, termsUrl:FEEDS[i].termsUrl, scopeLabel:FEEDS[i].scopeLabel, endpoint: FEEDS[i].url }
+    : { ...old?.sources?.find(s => s.id === FEEDS[i].id), id: FEEDS[i].id, name: FEEDS[i].name, markets: FEEDS[i].markets, endpoint: FEEDS[i].url, scopeLabel:FEEDS[i].scopeLabel, status: 'error', lastAttemptAt: stamp, message: String(result.reason?.message || '來源請求失敗').slice(0, 100) });
+  const allOldNews = [...(old?.news || []), ...(old?.pendingNews || [])].filter(item => item.sourceId !== 'decrypt').map(migrateAggregateHeadline);
   // Append to history rather than replacing yesterday with today's RSS window.
   const articles = new Map(allOldNews.map(item => [item.id, item]));
   results.forEach(result => { if (result.status === 'fulfilled') result.value.items.forEach(item => articles.set(item.id, item)); });
@@ -202,6 +231,7 @@ export async function collect() {
       if (!response.ok) throw Error(`HTTP ${response.status}`); const body = await response.json(); if (body.errors || !Array.isArray(body.data?.proposals)) throw Error('Governance response has no verified proposals'); return governanceEvents(body.data.proposals, stamp);
     }]
   ];
+  sources.push(...RESTRICTED_FINANCE_SOURCES);
   sources.push({ id: 'mops-payments', status: 'not-connected', message: '已查核官方股利表，但不含除息交易日與現金發放日，無法生成可靠日期事件。' });
   sources.push({ id: 'decrypt', status: 'not-connected', message: '已驗證 RSS，但官方服務條款限制自動收集；未取得許可，因此不啟用。', termsUrl: 'https://decrypt.co/terms-of-service' });
   const eventResults = await Promise.allSettled(providers.map(async ([id, load]) => ({ id, items: await load() })));
@@ -223,8 +253,8 @@ export async function collect() {
     const event = localize({ ...item, id: `release:${item.id}`, kind: 'event', category: 'network', occursAt: item.publishedAt, status: 'confirmed', announcementStatus: 'confirmed', sourceUrl: item.link, projectId: 'bitcoin', eventTimeType: 'software-release-publication' }, old?.events);
     if (event.titleZh) events.set(event.id, event);
   }
-  const translations = news.filter(item => item.translationStatus === 'translated');
-  const pendingNews = news.filter(item => item.translationStatus !== 'translated');
+  const translations = news.filter(item => item.translationStatus !== 'pending');
+  const pendingNews = news.filter(item => item.translationStatus === 'pending');
   if (!news.length && !events.size) throw Error('No verified source data; snapshot not replaced');
   const snapshot = { schemaVersion: 1, generatedAt: sources.some(s => s.status === 'ready') ? stamp : old?.generatedAt || null, attemptedAt: stamp, sources,
     news: translations, pendingNews, events: [...events.values()], eventCoverage, assetCatalog: catalog,
