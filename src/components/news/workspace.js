@@ -1,6 +1,6 @@
 import { createToolsRail } from '../strength/tools-rail.js';
 import { MARKET_NAMES, CATEGORY_NAMES, MARKET_CATEGORIES, TIME_CHOICES, sourceName } from './config.js';
-import { defaultState, taipeiDay, monthGrid, shiftMonth, eventDay, eventCategory, importance, newsBase, filterNews, hotWords, ranking, sourcesFor, coverage, safeLink, plain } from './model.js';
+import { defaultState, taipeiDay, monthGrid, shiftMonth, eventDay, eventCategory, importance, newsBase, filterNews, hotWords, ranking, sourcesFor, coverage, safeLink, plain, agendaDays } from './model.js?v=20261002-tw3';
 import { node, button, anchoredPanel, modal } from './layers.js';
 const fmt = value => Number.isFinite(Date.parse(value)) ? new Intl.DateTimeFormat('zh-TW', { timeZone: 'Asia/Taipei', dateStyle: 'short', timeStyle: 'short', hour12: false }).format(new Date(value)) : '時間待確認';
 const label = item => item.titleZh || item.title || '標題資料未提供';
@@ -51,13 +51,14 @@ export function mountNewsWorkspace(host, api) {
         row.append(button('‹', '前一年', () => { year.value = Math.max(1900, Number(year.value) - 1); }), year, button('›', '後一年', () => { year.value = Math.min(2200, Number(year.value) + 1); })); body.append(row);
         const months = node('div', 'oxn-month-picker'); for (let m = 1; m <= 12; m++) months.append(button(`${m} 月`, '', () => { const y = Number(year.value); if (y < 1900 || y > 2200 || !Number.isInteger(y)) return; state.month = `${y}-${String(m).padStart(2, '0')}`; persist(); closePanel(); renderControls(); renderContent(); })); body.append(months);
       }), 'oxn-pill oxn-month-title');
-      const today = button('今天', '回到今天', () => { state.month = taipeiDay().slice(0, 7); persist(); renderControls(); renderContent(); }, 'oxn-pill');
+      const viewSwitch = button('切換', state.calendarView==='agenda'?'切換為月份格':'切換為行程列表', () => { state.calendarView=state.calendarView==='agenda'?'month':'agenda'; persist(); renderControls(); renderContent(); }, 'oxn-pill');
+      viewSwitch.dataset.calendarSwitch='';viewSwitch.setAttribute('aria-pressed',String(state.calendarView==='agenda'));viewSwitch.title=state.calendarView==='agenda'?'目前：行程列表':'目前：月份格';
       const events = button('事件', '多選事件類別', () => {
         const c = coverage(data.snapshot, scope(), state.month).categories;
         multi(events, '事件類別', 'categories', MARKET_CATEGORIES[scope()].map(id => ({ id, label: CATEGORY_NAMES[id], hint: c.find(i => i.category === id)?.spans.length ? '有資料・覆蓋依月份' : c.find(i => i.category === id)?.known ? '部分排程' : c.find(i => i.category === id)?.connected.length ? '已接入・依來源排程' : '尚未接入' })), null, '沒有覆蓋的類別不會填入示範事件。');
       }, 'oxn-pill'); const level = button('重要性', '多選重要性', () => multi(level, '重要性', 'importance', [{ id: '1', label: '★ 低' }, { id: '2', label: '★★ 中' }, { id: '3', label: '★★★ 高' }, { id: 'unrated', label: '未分級' }], null, '舊制 1–2 星→低、3 星→中、4–5 星→高。保留原始值與來源，星級不代表漲跌。'), 'oxn-pill');
       events.classList.toggle('is-filtered', state.categories !== null); level.classList.toggle('is-filtered', state.importance !== null);
-      controls.append(prev, month, next, today, events, level);
+      controls.append(prev, month, next, viewSwitch, events, level);
     } else {
       const time = button('時間', '多選新聞時間', () => multi(time, '時間', 'times', TIME_CHOICES.map(([id, text]) => ({ id, label: text })), ['24'], '時間採聯集並去重，依發布時間篩選。'), 'oxn-pill');
       const source = button('來源', '多選新聞來源', () => {
@@ -92,7 +93,7 @@ export function mountNewsWorkspace(host, api) {
   function renderContent() {
     content.replaceChildren(); marketChoice.textContent = state.market === 'all' ? '全部市場' : MARKET_NAMES[state.market]; status();
     if (!data.snapshot) { content.append(node('div', 'oxn-empty', data.error ? '暫時無法讀取資料，請重試。' : '載入新聞與事件…')); return; }
-    if (state.tab === 'calendar') renderCalendar(); else renderNews();
+    if (state.tab === 'calendar') {if(state.calendarView==='agenda')renderAgenda();else renderCalendar();} else renderNews();
     positionCalendar();
   }
   function renderCalendar() {
@@ -123,6 +124,27 @@ export function mountNewsWorkspace(host, api) {
   function eventRow(item, action) {
     const b = button('', label(item), action, 'oxn-event-row');
     b.append(node('span', 'oxn-event-type', CATEGORY_NAMES[eventCategory(item)] || '事件'), node('strong', '', label(item)), node('small', '', item.date ? '全天／時間待公布' : fmt(item.occursAt).split(' ')[1]), node('span', 'oxn-stars', importance(item).value ? '★'.repeat(importance(item).value) : '未分級')); return b;
+  }
+  function renderAgenda(){
+    const days=agendaDays(data.snapshot,scope(),state),total=days.reduce((n,d)=>n+d.events.length,0);
+    const agenda=node('section','oxn-agenda');agenda.setAttribute('aria-label','行程列表');
+    const range=node('div','oxn-agenda-range');range.append(node('strong','','行程列表'),node('span','',`${state.month.replace('-','／')} 起 · ${total} 個事件 · 台北時間`));agenda.append(range);
+    let month='';
+    for(const day of days){
+      if(day.date.slice(0,7)!==month){month=day.date.slice(0,7);const [year,m]=month.split('-');agenda.append(node('h2','oxn-agenda-month',`${year} 年 ${Number(m)} 月`));}
+      const section=node('section','oxn-agenda-day');section.dataset.date=day.date;
+      const heading=node('header','oxn-agenda-day-heading'),date=node('time');date.dateTime=day.date;
+      date.append(node('strong','',String(Number(day.date.slice(8)))),node('span','',`${Number(day.date.slice(5,7))} 月 · ${new Intl.DateTimeFormat('zh-TW',{timeZone:'UTC',weekday:'short'}).format(new Date(day.date+'T12:00:00Z'))}`));heading.append(date);section.append(heading);
+      if(day.date===taipeiDay()){section.classList.add('is-today');date.setAttribute('aria-current','date');}
+      const events=node('div','oxn-agenda-events');
+      for(const item of day.events){
+        const row=eventRow(item,()=>api.navigate({day:day.date,event:item.id}));row.dataset.eventId=item.id;row.dataset.category=eventCategory(item)||'';row.classList.add('oxn-agenda-event');
+        row.append(node('small','oxn-agenda-source',`${sourceName(item)} · ${statusLabel(item)}`));events.append(row);
+      }
+      section.append(events);agenda.append(section);
+    }
+    if(!days.length)agenda.append(node('p','oxn-empty','已收錄資料中沒有本月起符合條件的行程。可切換月份或調整篩選。'));
+    agenda.append(node('p','oxn-caption','依已接入來源的排程列出有事件的日期；未提供的日期與事件不補入示範資料。'));content.append(agenda);
   }
   function renderNews() {
     const base = baseItems(), prefs = api.preferences(); let items = filterNews(base, state);

@@ -5,7 +5,11 @@ on:
     branches: [main]
     paths: ['server/markets/tw/home-*.js', 'scripts/collect-tw-home.mjs', '.github/workflows/update-tw-home.yml']
   schedule:
-    # Daily briefing plus staged weekday close/institutional publication retries.
+    # UTC 21:30 = the following day 05:30 in Asia/Taipei, every day.
+    # Retry morning sources that are still publishing, then retain close retries.
+    - cron: '30 21 * * *'
+    - cron: '45 21 * * *'
+    - cron: '15 22 * * *'
     - cron: '35 5 * * *'
     - cron: '40 5 * * 1-5'
     - cron: '15 6 * * 1-5'
@@ -29,6 +33,9 @@ jobs:
       - run: npm ci
       - run: node --test tests/tw-home*.test.mjs
       - run: node scripts/collect-tw-home.mjs
+      - name: Report source availability
+        run: |
+          node --input-type=module -e 'import fs from "node:fs";const d=JSON.parse(fs.readFileSync("data/tw-home.json"));for(const s of ["core","briefing","night"]){const r=d[s+"Status"];if(r?.error)console.log("::warning title=TW "+s+"::"+r.error);fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,"- "+s+": "+r?.status+" · "+(d[s]?.date||d[s]?.tradeDate||"unavailable")+"\n");}'
       - name: Save verified source snapshots
         run: |
           git add data/tw-home.json

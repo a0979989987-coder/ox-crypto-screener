@@ -24,15 +24,15 @@ export async function refreshHomeSection(section,previous,now=new Date(),collect
  const checkedAt=now.toISOString(),clock=taipeiClock(now);let data=previous,error=null;
  try{
   const fresh=acceptHomeSection(section,await collectors[section](previous,now));
-  // Manual refresh really contacts every source even before the publishing
-  // gate. The daily briefing remains the last published snapshot until 13:30.
-  data=section==='briefing'&&clock.minutes<810&&previous?previous:fresh;
+  // The morning briefing is independent of the Taiwan cash close gate.
+  // Manual and scheduled acquisitions publish newly verified rows immediately.
+  data=fresh;
   if(section==='night'&&fresh?.status!=='ok')error=fresh?.error||'夜盤尚未公布';
   if(section==='briefing'&&!fresh?.complete)error='部分來源更新失敗，已保留並標示上次有效報價';
  }catch(e){error=e.message;}
  const pendingClose=section==='core'&&data?.date!==clock.date&&!clock.weekend;
- const message=pendingClose?'今日收盤尚未公布，顯示最近完整交易日':section==='briefing'&&clock.minutes<810?'每日資料於 13:30 後更新，已重新查詢來源，保留最近有效快照':section==='core'&&clock.weekend?'今日休市，顯示最近完整交易日':'';
- return {section,data,checkedAt,reportDate:clock.date,status:error?(data?'stale':'unavailable'):data?'ok':'unavailable',error,message,publication:pendingClose?'pending':section==='briefing'&&clock.minutes<810?'pending':'published',refreshed:true};
+ const message=pendingClose?'今日收盤尚未公布，顯示最近完整交易日':section==='core'&&clock.weekend?'今日休市，顯示最近完整交易日':'';
+ return {section,data,checkedAt,reportDate:clock.date,status:error?(data?'stale':'unavailable'):data?'ok':'unavailable',error,message,publication:pendingClose?'pending':'published',refreshed:true};
 }
 export async function getHomeSection(section,{refresh=false,now=new Date(),collectors}={}){
  if(!['core','briefing','night'].includes(section))throw Error('無效的首頁資料區域');

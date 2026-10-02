@@ -55,7 +55,7 @@ if (section) {
     pending = true;loading.hidden=false;loading.innerHTML=window.OXLoading?.markup('工具載入中')||'工具載入中…';const token = ++generation;
     try {
       if(selected==='bubbles'){
-        const { mountCryptoBubbles } = await import('../bubbles/view.js?v=20261001-twbubbles1');
+        const { mountCryptoBubbles } = await import('../bubbles/view.js?v=20261002-tw3');
         if(token!==generation||!active())return;
         instance=mountCryptoBubbles(host);
         return;

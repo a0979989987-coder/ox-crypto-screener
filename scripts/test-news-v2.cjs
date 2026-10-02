@@ -33,7 +33,7 @@ async function bounds(page) {
 (async () => {
   await new Promise(r => server.listen(port,'127.0.0.1',r));
   const engine = report.engine === 'webkit' ? webkit : chromium;
-  const browser = await engine.launch({headless:true,...(report.engine === 'chromium' && process.env.OX_BROWSER_PATH ? {executablePath:process.env.OX_BROWSER_PATH} : {})});
+  const browser = await engine.launch({headless:true,...(process.env.OX_BROWSER_PATH ? {executablePath:process.env.OX_BROWSER_PATH} : {})});
   try {
     for (const size of (process.env.OX_NEWS_ONLY_INTERACTIONS ? [] : [{width:1440,height:900},{width:1366,height:768},{width:390,height:844},{width:375,height:667},{width:430,height:932}])) {
       const {context,page,errors} = await contextFor(browser,size); await load(page);

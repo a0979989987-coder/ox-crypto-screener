@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {calculate,parseReport,parseWeights,taipeiClock,tradingDates} from '../server/markets/tw/home-close.js';
-import {parseMarket,parseTreasury,retainMarket,MARKETS} from '../server/markets/tw/home-markets.js';
+import {parseMarket,parseTreasury,retainMarket,collectBriefing,MARKETS} from '../server/markets/tw/home-markets.js';
 import {parseNight,collectNight} from '../server/markets/tw/home-night.js';
 import {collectCore,refreshHomeSection,getHomeSection} from '../server/markets/tw/home-provider.js';
 import {validCloseReport,validBriefing,validNight,acceptHomeSection} from '../src/markets/tw/home-model.js';
@@ -65,8 +65,29 @@ test('manual refresh bypasses cache and fetches sources even before publication;
  const a=await getHomeSection('core',{refresh:true,now,collectors});assert.equal(count,1);assert(a.refreshed);assert.equal(a.publication,'pending');
  const b=await getHomeSection('core',{now,collectors});assert.equal(count,1);assert.equal(b.refreshed,false);
  await getHomeSection('core',{refresh:true,now,collectors});assert.equal(count,2);
- const gated=await refreshHomeSection('briefing',seed.briefing,now,collectors);assert.equal(count,3);assert.equal(gated.data,seed.briefing);assert.equal(gated.publication,'pending');
+ const fresh={...seed.briefing,date:taipeiClock(now).date,collectedAt:now.toISOString()};
+ const morning=await refreshHomeSection('briefing',seed.briefing,now,{briefing:async()=>{count++;return fresh;}});assert.equal(count,3);assert.equal(morning.data,fresh);assert.equal(morning.publication,'published');assert.equal(morning.data.date,taipeiClock(now).date);
  const failure=await refreshHomeSection('core',seed.core,now,{core:async()=>{throw Error('offline');}});assert.equal(failure.status,'stale');assert.equal(failure.data.savedAt,seed.core.savedAt);assert.equal(failure.error,'offline');
+});
+test('05:30 Taipei briefing publishes new data independently of the cash close gate and preserves partial sources',async()=>{
+ const date='2026-10-02',now=new Date(date+'T05:30:00+08:00');
+ const fresh={...seed.briefing,date,collectedAt:now.toISOString()};
+ const morning=await refreshHomeSection('briefing',seed.briefing,now,{briefing:async()=>fresh});assert.equal(morning.data,fresh);assert.equal(morning.publication,'published');
+ const partial={...fresh,complete:false,rows:fresh.rows.map((r,i)=>i===0?{...r,status:'stale',error:'upstream timeout'}:r)};
+ const degraded=await refreshHomeSection('briefing',seed.briefing,now,{briefing:async()=>partial});assert.equal(degraded.data,partial);assert.equal(degraded.status,'stale');assert(degraded.error);
+ const failure=await refreshHomeSection('briefing',seed.briefing,now,{briefing:async()=>{throw Error('offline');}});assert.equal(failure.data,seed.briefing);assert.equal(failure.status,'stale');
+ const workflow=await readFile(new URL('../.github/workflows/update-tw-home.yml',import.meta.url),'utf8');assert.match(workflow,/cron: '30 21 \* \* \*'/);
+ const collector=await readFile(new URL('../scripts/collect-tw-home.mjs',import.meta.url),'utf8');assert.doesNotMatch(collector,/clock.minutes<810/);
+});
+test('briefing accepts quotes acquired after collection starts, while rejecting timestamps beyond receipt',async()=>{
+ const start=new Date('2026-10-02T05:30:00+08:00'),received=new Date(start.getTime()+30000);
+ const read=async url=>({json:async()=>{
+  const id=decodeURIComponent(url.split('/chart/')[1].split('?')[0]);
+  const stamp=Math.floor(start.getTime()/1000)+(id==='BTC-USD'?31:20);
+  return {chart:{result:[{meta:{symbol:id,regularMarketTime:stamp,regularMarketPrice:110,previousClose:100,exchangeTimezoneName:'UTC'},timestamp:[stamp-3*86400,stamp-2*86400,stamp],indicators:{quote:[{close:[90,100,110]}]}}]}};
+ },text:async()=>'<feed/>'});
+ const r=await collectBriefing(null,start,read,()=>received),fx=r.rows.find(row=>row.id==='JPY=X'),future=r.rows.find(row=>row.id==='BTC-USD');
+ assert.equal(fx.status,'ok');assert.equal(fx.value,110);assert.equal(fx.collectedAt,received.toISOString());assert.equal(future.status,'unavailable');assert.match(future.error,/時間超出/);
 });
 test('home renders only one actual change field, estimates, independent dates, native market groups and bp/units',()=>{
  const html=coreContent(seed,false)+briefingContent(seed,false);

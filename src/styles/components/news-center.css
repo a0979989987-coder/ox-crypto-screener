@@ -124,8 +124,27 @@ body:not([data-us-workspace="1"]):has(#view-news.active,#view-data.active,#view-
 .oxn-pill[aria-expanded="true"],.oxn-pill.is-filtered {border-color:#ffffffe0;box-shadow:0 0 8px #ffffff20,inset 0 0 8px #ffffff0b;background:#ffffff13}
 .oxn-month-arrow {width:34px;min-width:34px;color:#aaa!important}
 .oxn-month-title {font-variant-numeric:tabular-nums;min-width:107px;padding:0 10px}
-.oxn-controls button[aria-label="回到今天"] {margin-right:auto;padding:0 10px}
-.oxn-controls button[aria-label="回到今天"]::after {display:none}
+.oxn-controls button[data-calendar-switch] {margin-right:auto;padding:0 10px}
+.oxn-controls button[data-calendar-switch]::after {display:none}
+.oxn-controls button[data-calendar-switch][aria-pressed="true"] {border-color:#ffffff75;box-shadow:0 0 10px #ffffff14,inset 0 1px 0 #ffffff24}
+.oxn-agenda{padding:0 2px}
+.oxn-agenda-range{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 3px;font-size:12px}
+.oxn-agenda-range span{color:var(--oxn-muted);font-size:10px}
+.oxn-agenda-month{font-size:18px;font-weight:500;letter-spacing:.03em;margin:18px 0 10px;padding:0 3px}
+.oxn-agenda-day{border:1px solid var(--oxn-line);border-radius:16px;background:linear-gradient(150deg,#ffffff09,#ffffff02);margin:0 0 10px;overflow:hidden}
+.oxn-root .oxn-agenda-day-heading{position:static;display:block;background:transparent;border:0;box-shadow:none;padding:11px 14px}
+.oxn-agenda-day-heading time{display:flex;align-items:center;gap:11px;font-size:12px;color:#dedbd4}
+.oxn-agenda-day-heading strong{display:grid;place-items:center;min-width:32px;height:32px;font-size:20px;font-weight:500}
+.oxn-agenda-day.is-today .oxn-agenda-day-heading strong{border:1px solid #ffffff72;border-radius:50%;background:#ffffff15;box-shadow:0 0 12px #ffffff15;color:#fff}
+.oxn-agenda-events{padding:0 12px 4px}
+.oxn-root .oxn-agenda-event{width:100%;display:grid;grid-template-columns:64px minmax(0,1fr) auto;gap:5px 10px;border:0;border-top:1px solid var(--oxn-line);border-radius:0;min-height:72px;background:transparent;text-align:left;padding:12px 2px}
+.oxn-agenda-event strong{grid-column:2;grid-row:1/3;font-size:13px;font-weight:500;line-height:1.6;overflow-wrap:anywhere;align-self:center}
+.oxn-agenda-event .oxn-event-type{grid-column:1;grid-row:1;font-size:10px;align-self:end}
+.oxn-agenda-event>small:not(.oxn-agenda-source){grid-column:1;grid-row:2;font-size:10px;color:var(--oxn-muted)}
+.oxn-agenda-event .oxn-stars{grid-column:3;grid-row:1/3;align-self:center;white-space:nowrap;font-size:10px}
+.oxn-agenda-event .oxn-agenda-source{grid-column:2/4;grid-row:3;color:var(--oxn-muted);font-size:9px}
+.oxn-root .oxn-agenda-event>small{display:block;white-space:normal}
+.oxn-agenda-event:hover{background:#ffffff05}
 .oxn-calendar {border:1px solid var(--oxn-line);border-radius:var(--ox-radius-sm,12px);overflow:clip;background:linear-gradient(150deg,#ffffff06,#0c0d1000)}
 .oxn-weekdays {display:grid;grid-template-columns:repeat(7,minmax(0,1fr));height:29px;align-items:center;text-align:center;font-size:12px;color:var(--oxn-muted);border-bottom:1px solid var(--oxn-line)}
 .oxn-calendar-grid {display:grid;grid-template-columns:repeat(7,minmax(0,1fr));grid-template-rows:repeat(var(--weeks),minmax(94px,1fr));height:var(--month-height,auto);min-width:0}

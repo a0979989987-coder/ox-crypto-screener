@@ -1,7 +1,7 @@
 import { numeric, reportTables } from './research.js';
 import { dailyCandles, aggregateCandles, TIMEFRAMES } from '../../../src/markets/tw/patterns/model.js';
 import { prepareCandles, classifyPrepared } from '../../../src/markets/crypto/patterns/matcher.js';
-import { compactClassic } from '../../../src/core/classic.js';
+import { compactClassic } from '../../../src/core/classic-server.js';
 export const ALGORITHM_VERSION = 6;
 export function parseMarketDay(payload, market, date, companies) {
   if (String(payload?.date || '').replace(/\D/g, '') !== date.replaceAll('-', '')) throw Error(`${market}: substituted report date`);

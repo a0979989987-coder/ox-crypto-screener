@@ -34,7 +34,7 @@ export function monthGrid(month) {
   return { weeks, cells };
 }
 export function shiftMonth(month, delta) { const [y, m] = month.split('-').map(Number); return new Date(Date.UTC(y, m - 1 + delta, 1)).toISOString().slice(0, 7); }
-export function defaultState() { return { tab: 'calendar', month: taipeiDay().slice(0, 7), categories: null, importance: null, times: ['24'], sources: null, words: [], query: '', asset: null, limit: 40, scroll: 0, market: 'all' }; }
+export function defaultState() { return { tab: 'calendar', calendarView: 'month', month: taipeiDay().slice(0, 7), categories: null, importance: null, times: ['24'], sources: null, words: [], query: '', asset: null, limit: 40, scroll: 0, market: 'all' }; }
 export const inMarket = (item, scope) => scope === 'all' || item.markets?.includes(scope);
 export function canonicalURL(value) {
   const safe = safeLink(value); if (!safe) return null;
@@ -79,6 +79,18 @@ export function monthEvents(snapshot, scope, state) {
     return inMarket(item, scope) && day?.slice(0, 7) === state.month &&
       (state.categories === null || state.categories.includes(type)) && (state.importance === null || state.importance.includes(String(level || 'unrated')));
   }).sort((a, b) => (eventDay(a) + (a.occursAt || '')).localeCompare(eventDay(b) + (b.occursAt || '')));
+}
+// Agenda includes every recorded date from the chosen month onward, rather
+// than silently dropping events in later months or truncating a busy day.
+export function agendaDays(snapshot, scope, state) {
+  const dates = new Map(), seen = new Set();
+  for (const item of snapshot?.events || []) {
+    const day=eventDay(item),type=eventCategory(item),level=importance(item).value;
+    if(!day||day<state.month+'-01'||!inMarket(item,scope)||seen.has(item.id)||
+      state.categories!==null&&!state.categories.includes(type)||state.importance!==null&&!state.importance.includes(String(level||'unrated')))continue;
+    seen.add(item.id);if(!dates.has(day))dates.set(day,[]);dates.get(day).push(item);
+  }
+  return [...dates].sort(([a],[b])=>a.localeCompare(b)).map(([date,events])=>({date,events:events.sort((a,b)=>(a.occursAt||date).localeCompare(b.occursAt||date)||plain(a.titleZh||a.title).localeCompare(plain(b.titleZh||b.title)))}));
 }
 const STOP = new Set('以及 相關 表示 今年 今天 昨日 目前 預計 可能 最新 消息 新聞 公告 發布 宣布 報導 指出 美國 台灣 全球 官方 公司 集團 市場 投資 投資人 金融 交易 交易所 新增 因為 已經 還有 這個 這次 這些 其中 一個 成為 提供 推出 開放 預告 進行 發展 調整 計畫 資訊 來源 更新 年 月 日 萬 億 元 美元 the and for with from this that are has new its to of in on by at an us as is a will over via announces release available'.split(' '));
 const segmenter = new Intl.Segmenter('zh-TW', { granularity: 'word' });

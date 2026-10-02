@@ -1,6 +1,6 @@
 import { readFile } from 'node:fs/promises';
 import { gunzipSync } from 'node:zlib';
-import { evaluateClassic, qualifyClassicRow, CLASSIC_VERSION, compactClassic } from '../../../src/core/classic.js';
+import { evaluateClassic, qualifyClassicRow, CLASSIC_VERSION, compactClassic } from '../../../src/core/classic-server.js';
 
 const base = new URL('../../../data/tw-patterns/', import.meta.url);
 let cache = null, pending = null;

@@ -1,6 +1,6 @@
 import { METRICS, bubbleRows, metricText, largeTradeFlow } from './model.js?v=20261001-bubbles3';
 import { fetchCaps, fetchQuotes, fetchLargeTrades, pause } from './source.js?v=20261001-bubbles3';
-import { BubbleField } from './field.js?v=20261001-twbubbles1';
+import { BubbleField } from './field.js?v=20261002-tw3';
 import { revealStyledShadow } from '../../../components/style-ready.js?v=20261001-loading1';
 const css=new URL('./bubbles.css?v=20261001-twbubbles1',import.meta.url);
 const DIRECTIONS=[['both','多空'],['long','看多'],['short','看空']];

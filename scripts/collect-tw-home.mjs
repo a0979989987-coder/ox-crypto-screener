@@ -1,8 +1,6 @@
 import {readFile,writeFile,rename} from 'node:fs/promises';
-import {taipeiClock} from '../server/markets/tw/home-close.js';
 import {refreshHomeSection} from '../server/markets/tw/home-provider.js';
-const now=new Date(),clock=taipeiClock(now);
-if(clock.minutes<810){console.log('Before 13:30 Asia/Taipei: preserve published snapshots');process.exit(0);}
+const now=new Date();
 const path=new URL('../data/tw-home.json',import.meta.url);let previous={};try{previous=JSON.parse(await readFile(path,'utf8'));}catch{}
 const results=await Promise.all(['core','briefing','night'].map(section=>refreshHomeSection(section,previous[section],now)));
 const snapshot={sourceProject:previous.sourceProject,collectedAt:new Date().toISOString()};
