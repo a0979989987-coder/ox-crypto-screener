@@ -21,7 +21,7 @@ export function mountNewsWorkspace(host, api) {
   }), 'oxn-pill'); if (api.scope === 'all') header.append(marketChoice);
   const more = button('⋯', '閱讀偏好與快照更新', () => showPanel(more, '閱讀偏好', body => {
     const tags = node('div', 'oxn-tags'); for (const [id, text] of [['all', '全部閱讀狀態'], ['unread', '僅未讀'], ['following', '追蹤來源']]) { const b = button(text, '', () => { state.reader = id; persist(); renderContent(); [...tags.children].forEach(n => n.setAttribute('aria-pressed', String(n === b))); }); b.setAttribute('aria-pressed', String((state.reader || 'all') === id)); tags.append(b); }
-    body.append(tags, button('恢復隱藏新聞／來源', '', () => { api.save({ hidden: [], mutedSources: [] }); renderContent(); }, 'oxn-action'), button('更新來源快照', '', api.refresh, 'oxn-action'), node('p', 'oxn-caption', '每六小時定時收集；更新會讀取最後成功快照。'));
+    body.append(tags, button('恢復隱藏新聞／來源', '', () => { api.save({ hidden: [], mutedSources: [] }); renderContent(); }, 'oxn-action'), button('更新來源快照', '', api.refresh, 'oxn-action'), node('p', 'oxn-caption', '資料依來源快照更新，並非即時串流；重新讀取會保留最後成功資料。'));
   }), 'oxn-close oxn-more'); header.append(more);
   const rail = createToolsRail({ tabs: [['calendar', '行事曆'], ['key', '關鍵新聞']], selected: state.tab, label: '新聞內容', attribute: 'data-news-tab', equal: true,
     onSelect(tab) { state.tab = tab; persist(); panel?.destroy({ focus: false }); renderControls(); renderContent(); } }); rail.element.classList.add('oxn-tabs');

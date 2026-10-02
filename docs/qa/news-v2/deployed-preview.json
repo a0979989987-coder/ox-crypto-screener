@@ -1,0 +1,53 @@
+{
+  "codeCommit": "8be78440e533accf9f03f3653d934afd9af6b480",
+  "branch": "feature/news-center-v2-20261002",
+  "deploymentId": 6800524088,
+  "deploymentState": "success",
+  "previewUrl": "https://ox-crypto-screener-mfwommay1-ox-lab.vercel.app/",
+  "verifiedNewsUrl": "https://ox-crypto-screener-mfwommay1-ox-lab.vercel.app/#news",
+  "unauthenticatedAccess": "HTTP 302 to Vercel sign-in; protection unchanged",
+  "cloudBrowser": {
+    "passed": true,
+    "viewport": {
+      "width": 1363,
+      "height": 936
+    },
+    "scope": "deployed UI with existing browser access; no fixtures",
+    "verified": [
+      "original desktop data entry opens crypto news",
+      "only Calendar and Key News tabs",
+      "real source snapshot loaded",
+      "CoinDesk and Cointelegraph multi-select stays open; 34 matching articles",
+      "all sources reset restores 45 matching articles",
+      "APT date-only estimated detail; no invented time/quantity",
+      "TWSE dividend preview detail shows official cash amount and missing payment date",
+      "original entry opens TW news after existing market switch",
+      "all-news uses same workspace and returns to preserved crypto Key News tab",
+      "event detail back closes overlay",
+      "news-all reload retains functioning Calendar"
+    ]
+  },
+  "localChromium": {
+    "report": "qa-chromium.json",
+    "passed": true,
+    "viewports": "1440x900,1366x768,390x844,375x667,430x932"
+  },
+  "earlierHeadlessRemoteAttempt": {
+    "passed": false,
+    "reason": "environment proxy certificate error before UI; not product verification"
+  },
+  "production": {
+    "deploymentId": 6799752473,
+    "sha": "dc011fc6220b890552910ebf93e133814005ad66",
+    "state": "success",
+    "changedByThisTask": false
+  },
+  "screenshots": [
+    "deployed-desktop-calendar.jpg",
+    "deployed-desktop-key-news.jpg",
+    "deployed-crypto-detail.jpg",
+    "deployed-tw-detail.jpg",
+    "deployed-multi-select.jpg"
+  ],
+  "review": "All saved images visually inspected. Deployment shots are actual browser JPEGs; local mobile PNGs are actual Chromium screenshots, not iPhone physical-device tests."
+}

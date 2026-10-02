@@ -50,7 +50,17 @@
 - 截圖已逐張檢視；面板等動畫穩定才拍，無透明遮罩殘留／橫向溢出；既有雷達卡片、OXLIVE 視覺不因本輪修改。
 
 ## 預覽與正式隔離
-- 實作即將提交／推送 `feature/news-center-v2-20261002`；尚待取得並驗證部署回傳 URL。
+- 實作已提交並發布到 `feature/news-center-v2-20261002`。完整功能提交：`8be78440e533accf9f03f3653d934afd9af6b480`；後續驗證提交只補交付紀錄、實際部署畫面與快照說明文字。
+- Vercel 回報 Preview 成功（GitHub deployment `6800524088`，不是正式發布）；實際回傳網址：https://ox-crypto-screener-mfwommay1-ox-lab.vercel.app/ 。瀏覽器已從原入口實際核對加密新聞、台股新聞、新聞總頁、多選、詳情返回與重新整理，附 [部署核對紀錄](qa/news-v2/deployed-preview.json)。
+- 原生 HTTP 未登入請求轉向 Vercel 登入保護；既有瀏覽器可開啟實際產品，未變更部署保護／帳號權限。預覽可能要求具有 OX Lab 存取權的 Vercel 帳號登入，不能宣稱匿名公開可用。
+- [預覽 CI](https://github.com/a0979989987-coder/ox-crypto-screener/actions/runs/36959885962) 成功；只收集、測試、檢查與保存 artifact，不寫入 main。
+- 本預覽使用部署所附 2026-10-02 11:12（台北）成功快照；不可把正式 main 的六小時排程當成本預覽每六小時自動更新的證明。新的正式收集器需未來驗收、合併後才啟用。
+- 交付時再次核對遠端 main，仍為 `dc011fc6220b890552910ebf93e133814005ad66`。Vercel 最新正式 deployment `6799752473` 也仍指向該 SHA，與本輪開始時相同；兩項證據分開查核。
 - 六小時 production workflow 添加 main-ref guard；預覽 workflow contents:read，仅驗證與 artifact，不 commit／push／deploy main，也沒有排程。
 - 本輪沒有合併、推 main、觸發寫 main 的資料流程或授權正式發布。
 - 遠端 main 與 Vercel 部署分開查核，不以 branch SHA 直接推定正式站版本。預覽驗收後才由使用者決定是否合併發布。
+
+## 後續驗收缺口
+- 部分候選來源／事件供應尚未接入，原因逐項列在來源文件；不得視為完整 20 平台覆蓋。現金發放日、填息、估值／流通比例、自動繁中摘要、精確代幣解鎖時間無完整可靠供應，保持缺值／待補。
+- RSS 為來源有限文章子集，不能宣稱完整 30 日新聞或全網排行；未接入分類保留明示状态。
+- Safari／WebKit 系統依賴阻擋與既有 T1 E2E 失敗仍待處理；會員／Bitget 外部驗證及 iPhone 實機未執行。本輪沒有修改上述功能來製造通過。
