@@ -176,6 +176,9 @@ body[data-market="us"][data-us-workspace="1"] #view-data:has(#ox-news-center),bo
 .us2-root dialog header{position:static!important;width:auto!important;min-height:0!important;height:auto!important;padding:0!important;background:none!important;border:0!important;backdrop-filter:none!important}
 .us2-root dialog header button{display:grid;place-items:center;box-sizing:border-box;margin:0;line-height:1}
 
+/* This grid row shares the event list's height; keep its heading at the top. */
+.us2-home-pane .ox-analysis-heading{align-self:start}
+
 /* News has its own surface: old media-card decoration must not leak into it. */
 .us2-news-page{min-width:0;width:100%;margin:0;padding:0 0 40px}
 body.ox-terminal .us2-news-page .us2-news-list{align-items:stretch}
