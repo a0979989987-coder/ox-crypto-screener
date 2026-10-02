@@ -9,7 +9,7 @@ export const amount=n=>Number.isFinite(n)?'NT$ '+fmt(n,0):'—';
 export const iconSearch='<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.8"/><path d="m16 16 5 5"/></svg>';
 export function shell(host,title){
   const node=document.createElement('div');host.append(node);const shadow=node.attachShadow({mode:'open'}), life=new AbortController();
-  shadow.innerHTML=`<link rel="stylesheet" href="${new URL('./style.css?v=20261002-mobile1',import.meta.url)}"><main aria-label="${esc(title)}"><div class="loading" role="status">正在載入 ${esc(title)}…</div></main>`;
+  shadow.innerHTML=`<link rel="stylesheet" href="${new URL('./style.css?v=20261002-compact1',import.meta.url)}"><main aria-label="${esc(title)}"><div class="loading" role="status">正在載入 ${esc(title)}…</div></main>`;
   revealStyledShadow(shadow,life.signal,'main',360);
   return {node,shadow,life,main:shadow.querySelector('main'),destroy(){life.abort();node.remove();}};
 }

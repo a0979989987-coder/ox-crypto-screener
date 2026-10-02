@@ -1,4 +1,4 @@
-import { esc, fmt, pct, color } from './ui.js?v=20261002-mobile1';
+import { esc, fmt, pct, color } from './ui.js?v=20261002-compact1';
 
 // Keep the dense desktop table; phones get the same data as readable cards.
 export function fundCards(rows, { saved, columns, cell, start = 0 }) {

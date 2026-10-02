@@ -122,7 +122,7 @@ async function showScreener(host){
   if(screenerHost===host)return;
   stopScreener();screenerHost=host;const generation=screenerGeneration;
   host.textContent="篩選器載入中…";
-  try{const {mountScreener}=await import("./screener/view.js?v=20261002-mobile1");
+  try{const {mountScreener}=await import("./screener/view.js?v=20261002-compact1");
     if(generation!==screenerGeneration||activeMode!=="screener"||!host.isConnected)return;
     host.replaceChildren();screener=mountScreener(host,{onOpenRadar(symbol){document.dispatchEvent(new CustomEvent("ox:tw-chart-symbol",{detail:{symbol}}));}});
   }catch{if(generation===screenerGeneration){host.textContent="篩選器暫時無法載入";screenerHost=null;}}
@@ -2450,7 +2450,7 @@ function ensureStyles() {
   const ui = document.createElement("link");
   ui.id = 'ox-tw-radar-css';
   ui.rel = "stylesheet";
-  ui.href = "src/markets/tw/radar-ui.css?v=20261002-mobile1";
+  ui.href = "src/markets/tw/radar-ui.css?v=20261002-compact1";
   document.head.appendChild(ui);
 }
 
@@ -3307,7 +3307,7 @@ export function renderTWRadar(
     >
 
 
-      <nav class="twr-mode-viewport" aria-label="台股雷達模式"><div class="twr-mode-rail" role="tablist"><span class="twr-mode-indicator" aria-hidden="true"></span>${RADAR_MODES.map(mode => `<button type="button" role="tab" data-twr-mode="${mode.id}" aria-selected="${mode.id === activeMode}">${mode.label}</button>`).join("")}</div></nav>
+      <nav class="twr-mode-viewport" aria-label="台股雷達模式"><div class="twr-mode-rail" role="tablist"><span class="twr-mode-indicator" aria-hidden="true"></span>${RADAR_MODES.map(mode => `<button type="button" role="tab" data-twr-mode="${mode.id}" aria-selected="${mode.id === activeMode}" aria-label="${mode.label}"><span class="twr-label-full">${mode.label}</span><span class="twr-label-short" aria-hidden="true">${({"圖表雷達":"雷達","風險股":"風險","處置中":"處置","即將出關":"出關"})[mode.label]||mode.label}</span></button>`).join("")}</div></nav>
       <section id="twr-chart-radar" hidden></section>
       <section id="twr-screener" hidden aria-label="台股篩選器"></section>
 

@@ -169,4 +169,5 @@ dialog.tw-stock-detail::backdrop { background:#040507c9; backdrop-filter:blur(3p
 
 .tw-radar-root #twr-screener[hidden],.tw-radar-root .twr-scan-button[hidden]{display:none!important}
 .tw-radar-root #twr-screener{min-width:0}
-@media(max-width:700px){.tw-radar-root .twr-mode-viewport{overflow:visible}.tw-radar-root .twr-mode-rail{min-width:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}.tw-radar-root .twr-mode-rail button{min-width:0;white-space:normal;min-height:44px;font-size:12px}.tw-radar-root .twr-mode-indicator{display:none}.tw-radar-root .twr-mode-rail button.active{background:linear-gradient(140deg,#ffffff25,#ffffff0c);border:1px solid #ffffff66;box-shadow:0 0 10px #ffffff15}}
+.twr-label-short{display:none}
+@media(max-width:700px){.tw-radar-root .twr-mode-viewport{overflow:hidden}.tw-radar-root .twr-mode-rail{min-width:0;width:100%;display:flex;flex-wrap:nowrap;gap:1px;padding:3px}.tw-radar-root .twr-mode-rail button{flex:1 1 0;min-width:0;white-space:nowrap;min-height:36px;padding:6px 2px;font-size:11px}.tw-radar-root .twr-label-full{display:none}.tw-radar-root .twr-label-short{display:inline}.tw-radar-root .twr-mode-indicator{display:block}}
