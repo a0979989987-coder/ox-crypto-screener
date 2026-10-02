@@ -115,7 +115,19 @@ let sortKey =
 
 let activeMode = "risk";
 let chartRadar=null,latestRadarState=null,pendingChartSymbol=null;
-export function stopTWRadar(){chartRadar?.destroy();chartRadar=null;pageObserver?.disconnect();modeResizeObserver?.disconnect();resetTWMiniCandles();}
+const RADAR_MODES = [TW_RADAR_MODES[0], { id: "screener", label: "篩選器" }, ...TW_RADAR_MODES.slice(1)];
+let screener=null, screenerHost=null, screenerGeneration=0;
+function stopScreener(){++screenerGeneration;screener?.destroy();screener=null;screenerHost=null;}
+async function showScreener(host){
+  if(screenerHost===host)return;
+  stopScreener();screenerHost=host;const generation=screenerGeneration;
+  host.textContent="篩選器載入中…";
+  try{const {mountScreener}=await import("./screener/view.js?v=20261002-screen4");
+    if(generation!==screenerGeneration||activeMode!=="screener"||!host.isConnected)return;
+    host.replaceChildren();screener=mountScreener(host,{onOpenRadar(symbol){document.dispatchEvent(new CustomEvent("ox:tw-chart-symbol",{detail:{symbol}}));}});
+  }catch{if(generation===screenerGeneration){host.textContent="篩選器暫時無法載入";screenerHost=null;}}
+}
+export function stopTWRadar(){stopScreener();chartRadar?.destroy();chartRadar=null;pageObserver?.disconnect();modeResizeObserver?.disconnect();resetTWMiniCandles();}
 if(typeof document!=='undefined')document.addEventListener('ox:tw-chart-symbol',event=>{if(!/^\d{4}$/.test(event.detail?.symbol))return;activeMode='chart';pendingChartSymbol=event.detail.symbol;if(document.body.dataset.market==='tw'&&document.body.dataset.view==='radar')renderTWRadar(latestRadarState);});
 let pageObserver = null;
 let modeResizeObserver = null;
@@ -2438,7 +2450,7 @@ function ensureStyles() {
   const ui = document.createElement("link");
   ui.id = 'ox-tw-radar-css';
   ui.rel = "stylesheet";
-  ui.href = "src/markets/tw/radar-ui.css?v=20261002-radarrefresh1";
+  ui.href = "src/markets/tw/radar-ui.css?v=20261002-radarfilter1";
   document.head.appendChild(ui);
 }
 
@@ -2991,6 +3003,15 @@ function refreshRadarDataUI(
   root.querySelectorAll(".twr-classic-only").forEach(section => section.hidden = activeMode !== "classic");
   const chartHost=root.querySelector('#twr-chart-radar');
   if(chartHost)chartHost.hidden=activeMode!=='chart';
+  const filterHost=root.querySelector('#twr-screener');
+  if(filterHost)filterHost.hidden=activeMode!=='screener';
+  if(scanButton)scanButton.hidden=activeMode==='screener';
+  if(activeMode==='screener'){
+    pageObserver?.disconnect();resetTWMiniCandles();
+    if(resultsPanel)resultsPanel.hidden=true;if(marketScan)marketScan.hidden=true;
+    chartRadar?.destroy();chartRadar=null;showScreener(filterHost);return;
+  }
+  if(screenerHost)stopScreener();
   if(activeMode==='chart'){
     pageObserver?.disconnect();resetTWMiniCandles();if(resultsPanel)resultsPanel.hidden=true;if(marketScan)marketScan.hidden=true;
     if(!chartRadar)chartRadar=mountTWChartRadar(chartHost,{state,watchlist});else chartRadar.update(state);
@@ -3248,6 +3269,7 @@ export function renderTWRadar(
     scanButton.disabled = state?.status === 'loading';
     scanButton.setAttribute('aria-busy', String(scanButton.disabled));
   }
+  if(activeMode==='screener'&&screenerHost&&root.contains(screenerHost))return {view:'radar',status:state?.status};
   if(activeMode==='chart'&&chartRadar&&root.querySelector('#twr-chart-radar')){chartRadar.update(state);if(pendingChartSymbol){chartRadar.openSymbol(pendingChartSymbol);pendingChartSymbol=null;}return {view:'radar',status:state?.status};}
   stopTWRadar();
   ensureStyles();
@@ -3285,8 +3307,9 @@ export function renderTWRadar(
     >
 
 
-      <nav class="twr-mode-viewport" aria-label="台股雷達模式"><div class="twr-mode-rail" role="tablist"><span class="twr-mode-indicator" aria-hidden="true"></span>${TW_RADAR_MODES.map(mode => `<button type="button" role="tab" data-twr-mode="${mode.id}" aria-selected="${mode.id === activeMode}">${mode.label}</button>`).join("")}</div></nav>
+      <nav class="twr-mode-viewport" aria-label="台股雷達模式"><div class="twr-mode-rail" role="tablist"><span class="twr-mode-indicator" aria-hidden="true"></span>${RADAR_MODES.map(mode => `<button type="button" role="tab" data-twr-mode="${mode.id}" aria-selected="${mode.id === activeMode}">${mode.label}</button>`).join("")}</div></nav>
       <section id="twr-chart-radar" hidden></section>
+      <section id="twr-screener" hidden aria-label="台股篩選器"></section>
 
 
       <!-- ============================================================ -->
