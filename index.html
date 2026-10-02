@@ -78,7 +78,7 @@
   <link rel="stylesheet" href="src/styles/components/radar-detail-neon.css?v=20261001-tiercomb2">
   <link rel="stylesheet" href="src/styles/components/chart-toolbar.css?v=20261001-tiercomb2">
   <link rel="stylesheet" href="src/styles/components/chart-drawings.css?v=20261001-tiercomb2">
-  <link rel="stylesheet" href="src/styles/components/home-preview.css?v=20261001-tiercomb2">
+  <link rel="stylesheet" href="src/styles/components/home-preview.css?v=20261002-quiet1">
   <link rel="stylesheet" href="src/styles/components/radar-turnover.css?v=20261001-tiercomb2">
   <link rel="stylesheet" href="src/styles/components/radar-combined.css?v=20261001-tiercomb2">
   <link rel="stylesheet" href="src/styles/components/live-visibility.css?v=20261001-tiercomb2">
@@ -87,7 +87,7 @@
   <link rel="stylesheet" id="ox-tw-research-css" href="src/markets/tw/research-ui.css?v=20261001-twhome1">
   <link rel="stylesheet" id="ox-tw-radar-css" href="src/markets/tw/radar-ui.css?v=20261001-tiercomb2">
   <link rel="stylesheet" data-tw-chart-style href="src/markets/tw/chart-radar.css?v=20261001-tiercomb2">
-  <link rel="preload" as="style" href="src/markets/crypto/patterns/patterns.css?v=20261001-tiercomb2">
+  <link rel="preload" as="style" href="src/markets/crypto/patterns/patterns.css?v=20261002-quiet1">
   <link rel="preload" as="style" href="src/markets/crypto/analytics/flow.css?v=20261001-tiercomb2">
   <link rel="preload" as="style" href="src/markets/crypto/bubbles/bubbles.css?v=20261001-tiercomb2">
 </head>
@@ -104,18 +104,13 @@
       <button type="button" data-view-target="media">OX Journal</button>
     </nav>
     <div class="nav-stats">
-      <div class="live"><i class="dot" id="dot"></i><span id="scan-status">全市場輪巡佇列準備中…</span></div>
-      <button class="btn-act" id="btn-force-rescan" title="重新掃描">重啟輪巡</button>
-      <div class="ox-ui-mode" role="group" aria-label="首頁顯示版本">
-        <button type="button" data-ui-mode-choice="plus" aria-pressed="false">Plus</button>
-        <button type="button" data-ui-mode-choice="pro" aria-pressed="true">Pro</button>
-      </div>
       <button class="ox-menu-btn" id="ox-control-open" type="button" aria-label="開啟 OX 控制中心" aria-controls="ox-control-panel" aria-expanded="false">
         <span class="ox-menu-glyph" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" focusable="false"><path d="M4 6h16M4 12h16M4 18h16"/></svg></span>
       </button>
     </div>
   </div>
 </header>
+<div hidden aria-hidden="true"><i id="dot"></i><span id="scan-status"></span><button id="btn-force-rescan" type="button" tabindex="-1"></button></div>
 <div class="wrap ox-live-shell" aria-live="polite">
   <div class="ox-live-strip">
     <span class="ox-live-badge">OX LIVE</span>
@@ -818,10 +813,10 @@
 <!-- CSS moved: ox-v384-feature-search-provider-switch-styles -->
 
 <script src="src/components/search/provider-switch.js?v=20261001-tiercomb2"></script>
-<script src="src/app/market-boot.js?v=20261002-rank8"></script>
-<script type="module" src="src/app/app.js?v=20261002-rank8"></script>
-<script type="module" src="src/markets/crypto/analytics/entry.js?v=20261002-rank8"></script>
-<script src="src/app/editorial-workspace.js?v=20261001-tiercomb2"></script>
+<script src="src/app/market-boot.js?v=20261002-quiet1"></script>
+<script type="module" src="src/app/app.js?v=20261002-quiet1"></script>
+<script type="module" src="src/markets/crypto/analytics/entry.js?v=20261002-quiet1"></script>
+<script src="src/app/editorial-workspace.js?v=20261002-quiet1"></script>
 <script src="src/components/radar/controls.js?v=20261001-tiercomb2"></script>
 
 </body>
