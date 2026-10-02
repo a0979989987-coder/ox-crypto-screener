@@ -3,7 +3,7 @@ const { readFileSync, existsSync, mkdirSync, writeFileSync } = require('node:fs'
 const { resolve, extname } = require('node:path');
 const { chromium, webkit } = require('playwright');
 const root = resolve(__dirname, '..'), port = Number(process.env.OX_NEWS_QA_PORT || 4196), base = `http://127.0.0.1:${port}`;
-const out = resolve(root, 'docs/qa/news-v2', process.env.OX_NEWS_ENGINE === 'webkit' ? 'webkit' : '.'); mkdirSync(out, { recursive: true });
+const out = process.env.OX_NEWS_QA_OUT || resolve(root, 'docs/qa/news-v2', process.env.OX_NEWS_ENGINE === 'webkit' ? 'webkit' : '.'); mkdirSync(out, { recursive: true });
 const snapshot = JSON.parse(readFileSync(resolve(root, 'data/news.json'), 'utf8'));
 const server = createServer((req, res) => {
   const path = new URL(req.url, base).pathname;
@@ -52,6 +52,7 @@ async function bounds(page) {
       await page.getByRole('button',{name:'新聞資產提及排行'}).click();assert(await page.locator('.oxn-ranking button').count()>0,'real crypto asset ranking');if(size.width===1440)await shot(page,'desktop-ranking.png');await page.keyboard.press('Escape');await pause(300);
       report.viewports.push({size,...result});report.errors.push(...errors);await context.close();
     }
+    if(process.env.OX_NEWS_VIEWPORTS_ONLY){assert(report.errors.length===0,'runtime errors: '+report.errors.join(' | '));report.passed=true;console.log(JSON.stringify(report,null,2));return;}
     const {context,page,errors}=await contextFor(browser,{width:390,height:844});await load(page);
     // History nesting uses real events from the production snapshot, not fixtures.
     const event=snapshot.events.find(e=>e.kind==='token-unlock'&&e.date?.startsWith('2026-10')) || snapshot.events.find(e=>e.markets.includes('crypto')&&e.date?.startsWith('2026-10'));
@@ -70,7 +71,7 @@ async function bounds(page) {
     // Each market retains its own tab/month/filters; original all-news host uses the same workspace.
     await page.evaluate(()=>{window.OXMarketController.setMarket('crypto');window.OXNews.openMarket({market:'crypto'});});await page.locator('.oxn-root[data-scope="crypto"] .oxn-calendar-grid').waitFor();
     assert(await page.locator('.oxn-tabs [data-news-tab="calendar"]').getAttribute('aria-selected')==='true','TW tab must not overwrite crypto tab');
-    await page.locator('.oxn-calendar-event').first().click();await page.getByRole('dialog',{name:'事件詳情'}).waitFor();await page.goBack();await pause(320);assert(await page.locator('.oxn-modal-backdrop').count()===0,'direct event returns once to calendar');
+    assert(await page.locator('.oxn-calendar-event').count()===0,'mobile grid avoids clipped event titles');await page.locator('.oxn-day-count').first().click();assert(await page.locator('.oxn-event-card').count()>0,'selected date shows complete horizontal event cards');await page.locator('.oxn-event-card').first().click();await page.getByRole('dialog',{name:'事件詳情'}).waitFor();await page.goBack();await pause(320);assert(await page.locator('.oxn-modal-backdrop').count()===0,'direct event returns once to calendar');
     await page.evaluate(()=>{window.OXMarketController.setMarket('tw');window.OXNews.openMarket({market:'tw'});});await page.locator('.oxn-root[data-scope="tw"] .oxn-news-list').waitFor();
     assert(await page.locator('.oxn-tabs [data-news-tab="key"]').getAttribute('aria-selected')==='true','TW preserves its own key-news tab');
     await page.getByRole('button',{name:'多選新聞時間'}).click();let multi=page.locator('.oxn-popover.is-open');await multi.getByRole('button',{name:'3 小時',exact:true}).click();assert(await multi.getByRole('button',{name:'3 小時',exact:true}).getAttribute('aria-pressed')==='true','time union 3h selected');assert(await multi.getByRole('button',{name:'24 小時',exact:true}).getAttribute('aria-pressed')==='true','24h remains selected');await multi.getByRole('button',{name:'關閉篩選'}).click();await pause(300);

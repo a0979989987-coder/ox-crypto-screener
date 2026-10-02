@@ -56,3 +56,16 @@ test('date-only unlock count is stable across browser timezones', async () => {
   assert.equal(countdown({status:'date-only',date:'2026-10-12'}, new Date('2026-09-25T17:00:00Z')), '距官方預估日期 16 天・時間待公布');
   assert.equal(countdown({status:'confirmed',occursAt:'2026-09-26T17:00:00Z'}, new Date('2026-09-25T17:00:01Z')), '倒數 0 天 23:59:59');
 });
+
+test('direct news URL owns its base history entry so Back stays in the calendar', async()=>{
+ const docEvents=new Map(),winEvents=new Map();let view='radar';
+ const body={dataset:{market:'tw',newsMode:'0'}};
+ const history={state:null,replaceState(value){this.state=value;}};
+ const document={body,addEventListener:(k,v)=>docEvents.set(k,v),querySelector:s=>s==='.app-view.active'?{dataset:{appView:view}}:null};
+ const window={scrollY:0,scrollTo(){},addEventListener:(k,v)=>winEvents.set(k,v),switchAppView:v=>{view=v;}};
+ const context=vm.createContext({document,window,history,location:{pathname:'/',search:'',hash:'#news/tw'},localStorage:{getItem:()=>null},URLSearchParams,AbortController,setTimeout:fn=>{fn();return 1;},clearTimeout(){},requestAnimationFrame:fn=>fn(),fetch:async()=>({ok:true,json:async()=>({schemaVersion:1,news:[],events:[]})})});
+ vm.runInContext(await readFile(new URL('../src/components/news/center.js',import.meta.url),'utf8'),context);
+ docEvents.get('DOMContentLoaded')();
+ assert.equal(history.state.oxView,'data');assert.equal(history.state.oxMarket,'tw');assert.equal(history.state.oxMarketNews,true);
+ const base=history.state;view='radar';winEvents.get('popstate')({state:base});assert.equal(view,'data');
+});

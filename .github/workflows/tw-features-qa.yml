@@ -11,7 +11,7 @@ concurrency:
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -21,9 +21,13 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm run check
+      - name: Verify live financial news sources
+        run: npm run news:collect
+      - run: npm test
       - run: npx playwright install --with-deps chromium
       - run: node scripts/test-tw-third.cjs
       - run: npm run test:news-v2
+      - run: node scripts/test-market-ui-audit.cjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -31,4 +35,6 @@ jobs:
           path: |
             /tmp/ox-tw-third-qa
             docs/qa/news-v2
+            data/news.json
+            /tmp/ox-market-ui-audit
           retention-days: 7

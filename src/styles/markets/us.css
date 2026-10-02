@@ -175,3 +175,11 @@ body[data-market="us"][data-us-workspace="1"] #view-data:has(#ox-news-center),bo
 
 .us2-root dialog header{position:static!important;width:auto!important;min-height:0!important;height:auto!important;padding:0!important;background:none!important;border:0!important;backdrop-filter:none!important}
 .us2-root dialog header button{display:grid;place-items:center;box-sizing:border-box;margin:0;line-height:1}
+
+/* News has its own surface: old media-card decoration must not leak into it. */
+.us2-news-page{min-width:0;width:100%;margin:0;padding:0 0 40px}
+body.ox-terminal .us2-news-page .us2-news-list{align-items:stretch}
+body.ox-terminal .us2-news-page .ox-news-actions button{min-height:44px!important;font-size:12px!important;color:var(--ink)!important;padding:0 8px!important}
+.us2-news-page .us2-article header{position:static!important;min-height:0!important;height:auto!important;margin:0 0 12px!important;padding:0!important;background:none!important;border:0!important;box-shadow:none!important;backdrop-filter:none!important}
+.us2-news-page .us2-back{width:44px;height:44px}
+.us2-news-page .ox-mini-day.is-today{border:1px solid #fff!important;box-shadow:inset 0 0 8px #ffffff35,0 0 7px #ffffff65!important;text-shadow:0 0 7px #fff9}

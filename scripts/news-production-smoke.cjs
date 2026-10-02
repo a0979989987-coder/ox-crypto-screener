@@ -89,14 +89,14 @@ async function snapshot(page, name) {
       await panel.getByRole('button',{name:'關閉篩選',exact:true}).click();
       await panel.waitFor({state:'detached'});
       await page.locator('.oxn-tabs [data-news-tab="calendar"]').click();
-      await page.locator('.oxn-calendar-event').first().click();
+      if(size.width<600){await page.locator('.oxn-day-count').first().click();await page.locator('.oxn-event-card').first().click();}else await page.locator('.oxn-calendar-event').first().click();
       await page.getByRole('dialog',{name:'事件詳情',exact:true}).waitFor();
       await snapshot(page, 'crypto-detail-' + size.width + 'x' + size.height + '.png');
       await page.getByRole('button',{name:'返回上一層',exact:true}).click();
       await page.getByRole('dialog',{name:'事件詳情',exact:true}).waitFor({state:'detached'});
       await page.evaluate(() => window.OXNews.openMarket({market:'tw'}));
       await page.locator('.oxn-root[data-scope="tw"] .oxn-calendar-grid').waitFor();
-      await page.locator('.oxn-calendar-event[data-category="dividend-preview"]').first().click();
+      if(size.width<600){const day=data.events.find(e=>e.markets?.includes('tw')&&e.category==='dividend-preview'&&e.date?.startsWith('2026-10'))?.date;assert(day);await page.locator(`[data-date="${day}"] .oxn-day-count`).click();await page.locator('.oxn-event-card').first().click();}else await page.locator('.oxn-calendar-event[data-category="dividend-preview"]').first().click();
       await page.getByRole('dialog',{name:'事件詳情',exact:true}).waitFor();
       await snapshot(page, 'tw-detail-' + size.width + 'x' + size.height + '.png');
       await page.getByRole('button',{name:'返回上一層',exact:true}).click();

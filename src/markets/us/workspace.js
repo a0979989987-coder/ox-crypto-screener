@@ -15,8 +15,8 @@ import {
   sourceInfo,
   nativeAllowed,
 } from "./view-utils.js?v=20261001-us-device1";
-import { toolsViews } from "./tools.js?v=20261002-tw3";
-import { newsViews } from "./news.js?v=20261002-rank8";
+import { toolsViews } from "./tools.js?v=20261002-finance4";
+import { newsViews } from "./news.js?v=20261002-finance4";
 import { USAdapter, fetchJSON } from "./provider.js?v=20261002-rank8";
 import { DeviceEOD } from "./device-eod.js?v=20261002-rank8";
 import { USChart } from "./chart.js?v=20261002-rank8";
