@@ -1,6 +1,8 @@
 import { eodCapabilities, handleEOD } from './eod-service.js';
 import { readFile } from 'node:fs/promises';
+import { binanceCapabilities, binanceService } from './binance-service.js';
 export function capabilities({ privateValidation = false } = {}) {
+  if (!privateValidation && process.env.US_DATA_PROVIDER === 'binance-equity') return binanceCapabilities();
   return eodCapabilities(privateValidation);
 }
 
@@ -22,8 +24,10 @@ async function readDirectory() {
   );
   return j;
 }
-export async function snapshot() { return handleEOD('snapshot'); }
+export async function snapshot() { return handleUS2('snapshot'); }
 export async function handleUS2(endpoint, query, upstream, financeUpstream, options = {}) {
+  if (!options.privateValidation && process.env.US_DATA_PROVIDER === 'binance-equity')
+    return binanceService.handle(endpoint,query,{known:(await publicDirectory()).items});
   if (endpoint === 'directory') return publicDirectory();
   return handleEOD(endpoint, query, options);
 }

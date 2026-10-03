@@ -1,9 +1,11 @@
 import { evaluateClassic, compareClassic } from '../../core/classic.js?v=20261002-rank8';
-import { USAdapter } from "./provider.js?v=20261002-rank8";
+import { USAdapter } from "./provider.js?v=20261003-us-live1";
 import { INTERVALS, countdown, sessionAt, nyParts } from "./calendar.js?v=20261001-us-eod1";
-import { mergeCandles, movingAverage, vwap } from "./model.js?v=20261001-us-eod1";
+import { mergeCandles, movingAverage, vwap } from "./model.js?v=20261003-us-live1";
 import { icon, positionTimeframe, openDialog, closeDialog } from "./ui.js?v=20261001-us-eod1";
-import { sourceInfo, nativeAllowed } from "./view-utils.js?v=20261001-us-device1";
+import { sourceInfo, nativeAllowed } from "./view-utils.js?v=20261003-us-live1";
+import { subscribeEquity } from './live-equity.js?v=20261003-us-live1';
+import { perpetualCountdown } from './binance-equity.js?v=20261003-us-live1';
 const UP = "#00b8d4",
   DOWN = "#ff3078";
 const esc = (s) =>
@@ -68,11 +70,11 @@ export class USChart {
     const savedFrames = stored('ox-us-v2-chart-timeframes', null);
     this.allowedFrames = capabilities.intervals || INTERVALS;
     if (!this.allowedFrames.includes(this.interval)) this.interval = this.allowedFrames.includes('1D') ? '1D' : this.allowedFrames[0];
-    this.frames=(capabilities.mode === 'eod' ? this.allowedFrames : Array.isArray(savedFrames) ? savedFrames : ['1m','5m','15m','1H','4H','1D','1W']).filter(tf=>this.allowedFrames.includes(tf));
+    this.frames=(capabilities.mode === 'eod' ? this.allowedFrames : Array.isArray(savedFrames) ? savedFrames : ['1m','15m','1H','1D']).filter(tf=>this.allowedFrames.includes(tf));
     if(!this.frames.length)this.frames=[this.interval];
     root.innerHTML = `<div class="chart-controls us2-chart-toolbar"><div class="ctrl-group chart-timeframe-group"><div class="chart-timeframe-strip us2-timeframes" aria-label="圖表時間級別"><span class="tf-glass-indicator" aria-hidden="true"></span>${INTERVALS.map((tf,i)=>`<button class="btn-tf ${tf===interval?"active":""}" type="button" data-tf="${tf}" aria-pressed="${tf===interval}">${tf}${i===INTERVALS.length-1?'<span class="tf-hint">▾</span>':''}</button>`).join("")}</div></div><div class="ctrl-group chart-tool-actions"><button class="chart-tool-icon us2-indicator-open" type="button" data-indicator-open aria-label="指標與時段設定" aria-haspopup="dialog">${icon("settings")}</button>${onCollapse?`<button class="chart-tool-icon us2-list-toggle" type="button" data-collapse aria-label="收起／展開雷達清單">${icon("collapse")}</button>`:""}<button class="chart-tool-icon ox-chart-expand-dot us2-expand-control" type="button" data-expand aria-label="展開圖表">${icon("expand")}</button></div></div><button class="us2-focus-exit chart-tool-icon" data-exit-focus aria-label="收合圖表" hidden>${icon("expand")}</button>
       <div class="us2-chart-stage chart-container"><div class="us2-chart-canvas"></div><svg class="us2-drawings" aria-label="型態關鍵線"></svg><div class="us2-ohlc" role="status"></div><div class="chart-current-price" hidden><span class="chart-current-price-line"></span><div class="chart-mobile-last-price us2-price-label"><strong></strong><small></small></div></div><div class="us2-chart-message" role="status">取得歷史 OHLCV…</div><button class="chart-tool-icon us2-latest" data-latest title="回到最新行情" aria-label="回到最新行情">${icon("latest")}</button></div>
-      <dialog class="chart-tools-dialog us2-indicators-dialog" aria-label="指標與時段設定"><header><b>指標與交易時段</b><button data-close-indicators aria-label="關閉指標選單">${icon("close")}</button></header><div class="chart-indicator-options"><button class="chart-indicator-option" data-ma aria-pressed="false">MA20／50</button><button class="chart-indicator-option" data-vwap aria-pressed="false" title="依 OHLCV 加權估計，非逐筆 VWAP" ${capabilities.mode === "eod" ? "hidden" : ""}>VWAP 估計</button><select data-session aria-label="交易時段" ${capabilities.mode === "eod" ? "hidden" : ""}><option value="regular">正常盤</option><option value="extended" ${capabilities.extendedHours ? "" : "disabled"}>含盤前盤後${capabilities.extendedHours ? "" : " · 權限未確認"}</option></select><button data-retry>重新取得行情</button></div><div class="chart-tier-filter" data-us-tier-filter></div><details class="us2-chart-source"><summary>來源與資料口徑</summary><div class="us2-chart-meta"></div><div class="us2-attribution"><a href="https://www.tradingview.com/" target="_blank" rel="noopener">TradingView Lightweight Charts™</a> · <a data-provider-credit href="https://verdenroz.github.io/finance-query/" target="_blank" rel="noopener">Finance Query / Yahoo</a></div></details></dialog><dialog class="chart-tools-dialog us2-timeframe-dialog" aria-label="時間級別"><header><b>時間級別</b><button data-close-timeframes aria-label="關閉時間級別">${icon("close")}</button></header><div class="chart-timeframe-preferences">${INTERVALS.map(tf=>`<label class="chart-choice"><input type="checkbox" value="${tf}" ${this.frames.includes(tf)?"checked":""}><span>${tf}</span></label>`).join("")}</div><button class="chart-tools-save" data-save-timeframes>儲存時間級別</button></dialog>`;
+      <dialog class="chart-tools-dialog us2-indicators-dialog" aria-label="指標與時段設定"><header><b>指標與交易時段</b><button data-close-indicators aria-label="關閉指標選單">${icon("close")}</button></header><div class="chart-indicator-options"><button class="chart-indicator-option" data-ma aria-pressed="false">MA20／50</button><button class="chart-indicator-option" data-vwap aria-pressed="false" title="依 OHLCV 加權估計，非逐筆 VWAP" ${capabilities.mode === "eod" ? "hidden" : ""}>VWAP 估計</button><select data-session aria-label="交易時段" ${["eod","perpetual"].includes(capabilities.mode) ? "hidden" : ""}><option value="regular">正常盤</option><option value="extended" ${capabilities.extendedHours ? "" : "disabled"}>含盤前盤後${capabilities.extendedHours ? "" : " · 權限未確認"}</option></select><button data-retry>重新取得行情</button></div><div class="chart-tier-filter" data-us-tier-filter></div><details class="us2-chart-source"><summary>來源與資料口徑</summary><div class="us2-chart-meta"></div><div class="us2-attribution"><a href="https://www.tradingview.com/" target="_blank" rel="noopener">TradingView Lightweight Charts™</a> · <a data-provider-credit href="https://verdenroz.github.io/finance-query/" target="_blank" rel="noopener">Finance Query / Yahoo</a></div></details></dialog><dialog class="chart-tools-dialog us2-timeframe-dialog" aria-label="時間級別"><header><b>時間級別</b><button data-close-timeframes aria-label="關閉時間級別">${icon("close")}</button></header><div class="chart-timeframe-preferences">${INTERVALS.map(tf=>`<label class="chart-choice"><input type="checkbox" value="${tf}" ${this.frames.includes(tf)?"checked":""}><span>${tf}</span></label>`).join("")}</div><button class="chart-tools-save" data-save-timeframes>儲存時間級別</button></dialog>`;
     this.tierFilters=globalThis.OXTierFilters?.mount(root.querySelector('[data-us-tier-filter]'),{market:'us',frames:this.allowedFrames,onChange:onTierFilter});
     this.message = root.querySelector(".us2-chart-message");
     this.svg = root.querySelector(".us2-drawings");
@@ -347,6 +349,7 @@ export class USChart {
     const previousSource = this.capabilities.source;
     const previousSession = this.capabilities.sessionDate;
     this.capabilities=capabilities;
+    if(previousSource!==capabilities.source)this.stopLive();
     if (capabilities.mode === "eod") { clearTimeout(this.poll); clearInterval(this.timer); }
     this.allowedFrames = capabilities.intervals || INTERVALS;
     this.frames = this.frames.filter(tf => this.allowedFrames.includes(tf));
@@ -370,7 +373,8 @@ export class USChart {
   }
   unavailable(message, status = 0, code = null) {
     this.error = true;
-    this.blocked = status === 403;
+    this.blocked = status === 403 || status === 451;
+    if(this.blocked)this.stopLive();
     clearTimeout(this.poll);
     const empty = !this.bars.length;
     this.root.classList.toggle("is-blocked", this.blocked);
@@ -405,6 +409,7 @@ export class USChart {
     extended = this.extended,
   } = {}) {
     if (!this.chart) return;
+    this.stopLive();
     this.saveViewport();
     ++this.request;
     this.controller?.abort();
@@ -447,6 +452,7 @@ export class USChart {
       this.unavailable("盤後資料尚未開通公開使用；不載入盤中行情。", 403, "US_DATA_DISPLAY_RIGHTS_REQUIRED");
       return;
     }
+    const requestStartedAt=Date.now();
     const id = ++this.request,
       controller = new AbortController();
     this.controller = controller;
@@ -472,7 +478,11 @@ export class USChart {
       this.historyExhausted = first
         ? result.historyExhausted
         : this.historyExhausted;
-      this.applyBars(result.bars, first);
+      const existing=new Map(this.bars.map(bar=>[bar.time,bar]));
+      // A slower REST resync must not overwrite a newer WebSocket candle.
+      const receivedBars=result.bars.map(bar=>(this.liveVersions?.get(bar.time)||0)>requestStartedAt
+        ? existing.get(bar.time)||bar : bar);
+      this.applyBars(receivedBars, first);
       this.sharedDrawings?.sync();
       this.message.hidden = !result.stale;
       this.message.textContent = result.stale ? "更新暫停 · 保留前次收盤 K 線，可手動重試" : "";
@@ -487,12 +497,13 @@ export class USChart {
         this.draw();
       }
       this.root.querySelector(".us2-chart-meta").textContent =
-        `${result.source} · ${result.feed} · ${this.extended ? "含盤前盤後" : "正常盤"} · ${result.adjustment} · ${this.bars.length} 根 · ${result.volumeScope}`;
+        `${result.source} · ${result.feed} · ${result.mode==='perpetual'?'24/7 · UTC K 線':this.extended ? "含盤前盤後" : "正常盤"} · ${result.adjustment} · ${this.bars.length} 根 · ${result.volumeScope}`;
       const provider = sourceInfo(result.source), link = this.root.querySelector('.us2-attribution [data-provider-credit]');
       link.textContent = provider.label;
       if (provider.url) link.href = provider.url;
       else link.removeAttribute('href');
       this.onState({ ...result, bars: this.bars, error: null });
+      this.startLive(result);
     } catch (e) {
       if (controller.signal.aborted || this.disposed || id !== this.request)
         return;
@@ -508,9 +519,45 @@ export class USChart {
       }
     }
   }
+  stopLive() {
+    this.liveStop?.();this.liveStop=null;this.liveKey=null;
+    clearTimeout(this.livePaint);this.livePaint=null;this.liveBar=null;
+    this.liveVersions=new Map();
+  }
+  startLive(result) {
+    if(this.capabilities.stream!=='binance-equity'||!nativeAllowed(this.capabilities)||!result.contractSymbol)return;
+    const key=`${result.contractSymbol}:${this.interval}`;
+    if(this.liveKey===key)return;
+    this.stopLive();this.liveKey=key;
+    this.liveStop=subscribeEquity({symbol:this.symbol,contractSymbol:result.contractSymbol,interval:this.interval,
+      onStatus:status=>{this.liveStatus=status;this.priceTimer();},
+      onReconnect:()=>{if(!this.disposed)this.load(true);},
+      onQuote:quote=>{if(!this.disposed&&this.liveKey===key)this.onState({quote,stream:true,symbol:this.symbol});},
+      onBar:(bar,eventTime)=>{
+        if(this.disposed||this.liveKey!==key||bar.time<(this.bars.at(-1)?.time||0))return;
+        this.liveVersions.set(bar.time,eventTime);
+        while(this.liveVersions.size>8)this.liveVersions.delete(this.liveVersions.keys().next().value);
+        this.liveBar=bar;
+        if(this.livePaint)return;
+        this.livePaint=setTimeout(()=>{
+          this.livePaint=null;
+          if(this.disposed||this.liveKey!==key||!this.liveBar)return;
+          const next=this.liveBar;this.liveBar=null;
+          this.applyBars([next]);this.error=false;
+          if(this.result){this.result.stale=false;this.result.receivedAt=Date.now();}
+          this.message.hidden=true;
+        },250);
+      },
+    });
+  }
   schedule() {
     clearTimeout(this.poll);
     if (this.disposed || this.blocked || this.capabilities.mode === "eod") return;
+    if(this.capabilities.mode==='perpetual') {
+      this.poll=setTimeout(()=>{if(!document.hidden)this.load(true);else this.schedule();},
+        this.liveStatus==='live'?60000:this.error?60000:15000);
+      return;
+    }
     const s = sessionAt(),
       ms = this.error
         ? 120000
@@ -539,7 +586,12 @@ export class USChart {
         ),
     );
     this.bars = mergeCandles(old, next);
-    this.classicSignal=["long","short"].map(side=>evaluateClassic(this.bars,{side,frame:this.interval})).filter(s=>s.eligible).sort(compareClassic)[0]||null;
+    const analysisBars=this.capabilities.mode==='perpetual'?this.bars.filter(c=>c.closeTime<Date.now()):this.bars;
+    const analysisKey=this.capabilities.mode==='perpetual'?JSON.stringify(analysisBars.at(-1)):null;
+    if(!analysisKey||this.analysisKey!==analysisKey) {
+      this.classicSignal=["long","short"].map(side=>evaluateClassic(analysisBars,{side,frame:this.interval})).filter(s=>s.eligible).sort(compareClassic)[0]||null;
+      this.analysisKey=analysisKey;
+    }
     const vol = (c) => ({
       time: c.time,
       value: c.volume ?? 0,
@@ -672,9 +724,9 @@ export class USChart {
     badge.style.width = `${Math.max(54, this.chart.priceScale("right").width?.() - 4 || 54)}px`;
     const priceNode = node.querySelector("strong"), timerNode = node.querySelector("small");
     const priceText = money(c.close);
-    const timer = this.capabilities.mode === "eod" ? `收盤 ${c.periodEnd || c.date}` : countdown(c, this.interval, this.extended);
+    const timer = this.capabilities.mode === 'perpetual' ? perpetualCountdown(c) : this.capabilities.mode === "eod" ? `收盤 ${c.periodEnd || c.date}` : countdown(c, this.interval, this.extended);
     const compactTimer = {"正常盤已收線":"已收線","等待成交／收線校正":"待校正","交易日曆待更新":"日曆未知"}[timer] || timer;
-    const delay = this.result?.delaySeconds === null ? "未確認" : this.result?.delaySeconds > 0 ? `延${Math.round(this.result.delaySeconds / 60)}分` : "輪詢";
+    const delay = this.capabilities.mode==='perpetual' ? ({live:'串流',connecting:'連線中',reconnecting:'重連中',paused:'暫停',stale:'待更新'}[this.liveStatus]||'定時更新') : this.result?.delaySeconds === null ? "未確認" : this.result?.delaySeconds > 0 ? `延${Math.round(this.result.delaySeconds / 60)}分` : "輪詢";
     const timerText = this.error || this.result?.stale ? "舊資料" : this.capabilities.mode === "eod" ? timer : `${compactTimer}·${delay}`;
     if (priceNode.textContent !== priceText) priceNode.textContent = priceText;
     if (timerNode.textContent !== timerText) timerNode.textContent = timerText;
@@ -866,6 +918,7 @@ export class USChart {
   }
   destroy() {
     this.disposed = true;
+    this.stopLive();
     this.tierFilters?.destroy();
     this.saveViewport();
     ++this.request;

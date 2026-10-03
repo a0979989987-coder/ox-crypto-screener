@@ -1,25 +1,27 @@
 import {BubbleField} from '../crypto/bubbles/field.js?v=20261002-finance4';
 import {mountBubbles} from '../crypto/bubbles/view.js?v=20261003-us-parity1';
-import {patternDataAllowed} from './patterns/source.js?v=20261003-us-parity1';
-import {e,price,compact,pct} from './view-utils.js?v=20261001-us-device1';
+import {patternDataAllowed} from './patterns/source.js?v=20261003-us-live1';
+import {e,price,compact,pct} from './view-utils.js?v=20261003-us-live1';
 
 export const US_BUBBLE_METRICS = Object.freeze([['change','收盤漲跌'],['volume','成交量'],['liquidity','平均成交額'],['rvol','量比']]);
 const usableNumber = value => typeof value === 'number' && Number.isFinite(value);
-export function usBubbleRows({capabilities,snapshot,directory=[]},{metric='change',direction='both',watch=null,limit=50}={}) {
- if(!patternDataAllowed(capabilities)||snapshot?.mode!=='eod'||!snapshot.sessionDate||!US_BUBBLE_METRICS.some(row=>row[0]===metric))return [];
+export function usBubbleRows({capabilities,snapshot,directory=[],quotes},{metric='change',direction='both',watch=null,limit=50}={}) {
+ if(!patternDataAllowed(capabilities)||!['eod','perpetual'].includes(snapshot?.mode)||!(snapshot.sessionDate||snapshot.asOf)||!US_BUBBLE_METRICS.some(row=>row[0]===metric))return [];
  const daily=new Map((snapshot.analyses||[]).filter(row=>row.interval==='1D').map(row=>[row.symbol,row]));
  const names=new Map(directory.map(row=>[row.symbol,row])),seen=new Set();
- return (snapshot.quotes||[]).flatMap(quote=>{
+ return (snapshot.quotes||[]).flatMap(stored=>{
+  const latest=snapshot.mode==='perpetual'?quotes?.get(stored.symbol):null;
+  const quote=latest&&latest.source===stored.source&&latest.marketTime>=stored.marketTime?latest:stored;
   const analysis=daily.get(quote.symbol),item=names.get(quote.symbol)||analysis;
   if(!item?.name||item.complex||seen.has(quote.symbol)||!(usableNumber(quote.price)&&quote.price>0)||
-    !usableNumber(quote.changePct)||quote.asOf&&quote.asOf!==snapshot.sessionDate)return [];
+    !usableNumber(quote.changePct)||snapshot.mode==='eod'&&quote.asOf&&quote.asOf!==snapshot.sessionDate)return [];
   seen.add(quote.symbol);
   const values={change:quote.changePct,volume:quote.volume,liquidity:analysis?.liquidity,rvol:analysis?.rvol},value=values[metric];
   if(!usableNumber(value)||metric!=='change'&&value<0||watch&&!watch.has(quote.symbol)||
     direction==='long'&&quote.changePct<=0||direction==='short'&&quote.changePct>=0)return [];
   return [{symbol:quote.symbol,base:quote.symbol,name:item.name,price:quote.price,change:quote.changePct,
    volume:usableNumber(quote.volume)?quote.volume:null,liquidity:usableNumber(analysis?.liquidity)?analysis.liquidity:null,
-   rvol:usableNumber(analysis?.rvol)?analysis.rvol:null,value,dataDate:snapshot.sessionDate}];
+   rvol:usableNumber(analysis?.rvol)?analysis.rvol:null,value,dataDate:snapshot.sessionDate||snapshot.asOf}];
  }).sort((a,b)=>(metric==='change'?Math.abs(b.value)-Math.abs(a.value):b.value-a.value)||a.symbol.localeCompare(b.symbol)).slice(0,limit);
 }
 export function usBubbleText(value,metric) {
@@ -30,22 +32,24 @@ export function usBubbleText(value,metric) {
 }
 export function mountUSBubbles(host,{getContext,watching,onOpenRadar,refresh=()=>{}}) {
  host.dataset.bubbleMarket='us';
- const adapter={marketLabel:'美股',metrics:US_BUBBLE_METRICS,format:usBubbleText,
+ const perpetual=getContext().capabilities?.mode==='perpetual';
+ const changeLabel=perpetual?'合約24h漲跌':'收盤漲跌';
+ const adapter={marketLabel:perpetual?'幣安股票合約':'美股',metrics:US_BUBBLE_METRICS.map(([key,label])=>[key,key==='change'?changeLabel:label]),format:usBubbleText,
   palette:{up:'#00b8d4',down:'#ff3078'},radiusForRows:usBubbleRadii,watching,
   displayName:row=>`${row.symbol} ${row.name}`,
   rows:options=>usBubbleRows(getContext(),options),
   empty(node,{scope,direction,metric}){
    const context=getContext();
-   node.textContent=!patternDataAllowed(context.capabilities)?'美股盤後行情尚未接通':scope==='watch'&&!watching().size?
-    '先在美股雷達收藏股票，這裡會顯示你的自選':!context.snapshot?.quotes?.length?'尚未取得收盤行情':
+   node.textContent=!patternDataAllowed(context.capabilities)?'美股行情尚未接通':scope==='watch'&&!watching().size?
+    '先在美股雷達收藏股票，這裡會顯示你的自選':!context.snapshot?.quotes?.length?'尚未取得行情':
     metric==='rvol'?'目前沒有可驗證的完整日量比':`目前沒有符合${direction==='long'?'看多':direction==='short'?'看空':'篩選'}條件的股票`;
   },
-  detail:row=>`<strong class="oxb-price">${price(row.price)}<small> USD</small></strong><dl><div><dt>收盤漲跌</dt><dd class="${row.change>=0?'up':'down'}">${pct(row.change)}</dd></div><div><dt>成交股數</dt><dd>${compact(row.volume)} 股</dd></div><div><dt>完整日量比</dt><dd>${usBubbleText(row.rvol,'rvol')}</dd></div><div><dt>20日平均估算成交額</dt><dd>${compact(row.liquidity)} USD</dd></div></dl><small class="oxb-note">交易日 ${e(row.dataDate)} · 已收盤<br>成交額以每日收盤價 × 成交股數估算；泡泡大小依 20 日平均估算成交額。未提供逐筆成交或盤中行情。</small>`,
+  detail:row=>`<strong class="oxb-price">${price(row.price)}<small> ${perpetual?'USDT':'USD'}</small></strong><dl><div><dt>${changeLabel}</dt><dd class="${row.change>=0?'up':'down'}">${pct(row.change)}</dd></div><div><dt>${perpetual?'24h合約成交量':'成交股數'}</dt><dd>${compact(row.volume)} ${perpetual?'合約':'股'}</dd></div><div><dt>完整日量比</dt><dd>${usBubbleText(row.rvol,'rvol')}</dd></div><div><dt>20日平均估算成交額</dt><dd>${compact(row.liquidity)} ${perpetual?'USDT':'USD'}</dd></div></dl><small class="oxb-note">${perpetual?'幣安股票永續合約 · 非美股現貨':'交易日 '+e(row.dataDate)+' · 已收盤'}<br>${perpetual?'漲跌與成交量為合約滾動24小時；量比及平均成交額依完整 UTC 日 K 計算。':'成交額以每日收盤價 × 成交股數估算；泡泡大小依20日平均估算成交額。'}</small>`,
   start(){return ()=>{};},refresh,
  };
  const mounted=mountBubbles(host,{adapter,onOpenRadar});
- host.shadowRoot.querySelector('[data-slot="metric-label"]').textContent='收盤漲跌';
- host.shadowRoot.querySelector('[data-action="metric-menu"]').setAttribute('aria-label','選擇泡泡篩選條件，目前收盤漲跌');
+ host.shadowRoot.querySelector('[data-slot="metric-label"]').textContent=changeLabel;
+ host.shadowRoot.querySelector('[data-action="metric-menu"]').setAttribute('aria-label','選擇泡泡篩選條件，目前'+changeLabel);
  const style=document.createElement('style');style.textContent='.oxb-dialog .up,.up b,.oxb-direction[data-direction=long]{color:#00b8d4}.oxb-dialog .down,.down b,.oxb-direction[data-direction=short]{color:#ff3078}';host.shadowRoot.append(style);
  return {...mounted,draw:mounted.refresh};
 }

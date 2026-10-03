@@ -22,6 +22,7 @@ export const nativeAllowed = cap => cap.externalDisplayConfirmed !== false || ca
   (cap.privateValidation === true && typeof location !== 'undefined' &&
     ['127.0.0.1', 'localhost', '[::1]'].includes(location.hostname));
 export const sourceInfo = source => ({
+  'binance-equity': {label:'幣安股票永續合約 · USDT',url:'https://www.binance.com/en/futures'},
   'device-eod': { label: '本機盤後資料 · 個人使用', url: null },
   'finance-query-eod': { label: 'Finance Query / Yahoo · 盤後', url: 'https://verdenroz.github.io/finance-query/' },
   'finance-query-eod-private': { label: 'Finance Query / Yahoo · 私人盤後驗證', url: 'https://verdenroz.github.io/finance-query/' },

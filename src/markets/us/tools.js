@@ -5,10 +5,10 @@ import {
   tone,
   compact,
   toolNames,
-} from "./view-utils.js?v=20261001-us-eod1";
-import { mountUSBubbles } from "./visuals.js?v=20261003-us-parity1";
+} from "./view-utils.js?v=20261003-us-live1";
+import { mountUSBubbles } from "./visuals.js?v=20261003-us-live1";
 import { mountPatternSearch } from "../crypto/patterns/view.js?v=20261003-us-parity1";
-import { createUSPatternSource, patternSourceKey } from "./patterns/source.js?v=20261003-us-parity1";
+import { createUSPatternSource, patternSourceKey } from "./patterns/source.js?v=20261003-us-live1";
 import { createToolsRail } from "../../components/strength/tools-rail.js?v=20261001-tiercomb1";
 import { createToolChart } from "../crypto/analytics/tools-charts.js";
 export const toolsViews = {
@@ -146,7 +146,7 @@ export const toolsViews = {
     this.bindRows(list);
   },
   patternContext() {
-    return { capabilities:this.cap, snapshot:this.snapshot, directory:this.directory, error:this.snapshotError };
+    return { capabilities:this.cap, snapshot:this.snapshot, directory:this.directory, quotes:this.quotes, error:this.snapshotError };
   },
   renderPatterns(c) {
     this.board?.destroy();

@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { USWorkspace, usHomeMarketMetrics } from '../src/markets/us/workspace.js';
-import { USAdapter } from '../src/markets/us/provider.js?v=20261002-rank8';
+import { USAdapter } from '../src/markets/us/provider.js?v=20261003-us-live1';
 
 test('US home breadth describes the actual daily stock pool and valid MA coverage', () => {
   const common = { interval: '1D', type: 'stock', price: 100, ma20: 90 };

@@ -9,8 +9,8 @@ import {
   toolNames,
   patterns,
   sectorETF,
-} from "./view-utils.js?v=20261001-us-eod1";
-import { fetchJSON } from "./provider.js?v=20261002-rank8";
+} from "./view-utils.js?v=20261003-us-live1";
+import { fetchJSON } from "./provider.js?v=20261003-us-live1";
 import { eventDay, matchesEventWindow, todayTaipei } from './news-dates.js';
 export const newsViews = {
   async loadNewsData() {

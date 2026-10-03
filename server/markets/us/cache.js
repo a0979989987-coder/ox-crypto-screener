@@ -38,7 +38,7 @@ export async function cachedRequest(key, load, {
   } catch (error) {
     const status = Number(error.status) || Number(error.code);
     // Never hide lost authorization, an invalid symbol or invalid input.
-    if ([400, 401, 403, 404].includes(status)) throw error;
+    if ([400, 401, 403, 404, 451].includes(status)) throw error;
     const previous = fallback(status === 429 ? "RATE_LIMITED" : "UPDATE_FAILED");
     if (previous) return previous;
     if (hit && now - hit.at < stale) {

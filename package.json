@@ -9,6 +9,7 @@
     "news:collect": "node scripts/collect-news.mjs",
     "check": "node scripts/check-build.mjs",
     "test:e2e": "node scripts/e2e-check.cjs",
+    "test:us-live": "node scripts/test-us-binance.cjs",
     "verify:extraction": "node scripts/verify-extraction.mjs",
     "test:news-v2": "node scripts/test-news-v2.cjs"
   },

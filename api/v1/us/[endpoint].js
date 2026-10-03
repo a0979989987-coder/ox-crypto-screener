@@ -80,11 +80,13 @@ export default async function handler(req,res) {
  if(req.method!=='GET')return fail(res,405,'METHOD_NOT_ALLOWED','只接受 GET。');
  const endpoint=String(req.query.endpoint||'').toLowerCase();
  try {
-  if(endpoint==='health')return ok(res,{service:'ox-us-market-data',mode:'eod',provider:capabilities().source,
-   status:capabilities().externalDisplayConfirmed?'eod-configured':'display-unconfirmed',intradayEnabled:false,apiKeyRequired:false});
+  const cap=capabilities();
+  if(endpoint==='health')return ok(res,{service:'ox-us-market-data',mode:cap.mode,provider:cap.source,
+   status:cap.externalDisplayConfirmed?`${cap.mode}-configured`:'display-unconfirmed',intradayEnabled:cap.mode==='perpetual'&&cap.rawDataAvailable,apiKeyRequired:false});
   const data=await handleUS2(endpoint,req.query);
   if(data===null)return fail(res,410,'US_INTRADAY_DISABLED','盤中資訊已停止，請使用收盤快照。');
-  res.setHeader('Cache-Control',endpoint==='directory'?'public, s-maxage=86400':'public, s-maxage=300');
-  return ok(res,data,{provider:capabilities().source,mode:'eod',contract:2});
- }catch(error){return fail(res,Number(error.status)||503,error.code||'US_EOD_UNAVAILABLE',error.message);}
+  res.setHeader('Cache-Control',endpoint==='directory'?'public, s-maxage=3600':
+    cap.mode==='perpetual'&&['quote-v2','chart-v2'].includes(endpoint)?'public, s-maxage=2':'public, s-maxage=300');
+  return ok(res,data,{provider:cap.source,mode:cap.mode,contract:2});
+ }catch(error){res.setHeader('Cache-Control','no-store');return fail(res,Number(error.status)||503,error.code||'US_EOD_UNAVAILABLE',error.message);}
 }
