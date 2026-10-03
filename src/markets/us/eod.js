@@ -11,6 +11,21 @@ export function completedSession(now=Date.now()) {
   if(day.open && (nyEpoch(date,day.closeMinute)+3600)*1000<=now)return date;
  } throw Error('找不到已完成交易日。');
 }
+// Freshness follows completed New York trading sessions, not elapsed wall time.
+// Friday's close remains current through the weekend; an older valid close is
+// still usable, but must be identified as awaiting an update.
+export function eodFreshness(sessionDate, now=Date.now()) {
+ let expectedSessionDate;
+ try { expectedSessionDate=completedSession(now); }
+ catch { return {status:'calendar-unavailable',sessionDate:sessionDate||null,expectedSessionDate:null}; }
+ if(!sessionDate)return {status:'unavailable',sessionDate:null,expectedSessionDate};
+ const valid=typeof sessionDate==='string' && /^\d{4}-\d{2}-\d{2}$/.test(sessionDate) &&
+  Number.isFinite(Date.parse(`${sessionDate}T12:00:00Z`)) &&
+  new Date(`${sessionDate}T12:00:00Z`).toISOString().slice(0,10)===sessionDate;
+ if(!valid || !tradingDay(sessionDate).open || sessionDate>expectedSessionDate)
+  return {status:'invalid',sessionDate,expectedSessionDate};
+ return {status:sessionDate===expectedSessionDate?'current':'stale',sessionDate,expectedSessionDate};
+}
 export function completedDaily(bars,now=Date.now()) {
  const cutoff=completedSession(now); return bars.filter(b=>b.date<=cutoff && tradingDay(b.date).open);
 }

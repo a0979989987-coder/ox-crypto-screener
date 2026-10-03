@@ -14,21 +14,39 @@ import {
   sectorETF,
   sourceInfo,
   nativeAllowed,
-} from "./view-utils.js?v=20261001-us-device1";
-import { toolsViews } from "./tools.js?v=20261002-finance4";
-import { newsViews } from "./news.js?v=20261002-finance4";
-import { USAdapter, fetchJSON } from "./provider.js?v=20261002-rank8";
-import { DeviceEOD } from "./device-eod.js?v=20261002-rank8";
-import { USChart } from "./chart.js?v=20261002-rank8";
+} from "./view-utils.js?v=20261003-us-live1";
+import { toolsViews } from "./tools.js?v=20261003-us-live1";
+import { newsViews } from "./news.js?v=20261003-us-live1";
+import { USAdapter, fetchJSON } from "./provider.js?v=20261003-us-live1";
+import { subscribeEquity } from './live-equity.js?v=20261003-us-live1';
+import { DeviceEOD } from "./device-eod.js?v=20261003-us-live1";
+import { USChart } from "./chart.js?v=20261003-us-live1";
 import { USWidgetChart } from "./widget-chart.js?v=20261001-tiercomb1";
 import { usDisplayCapabilities } from "./widget-config.js?v=20261001-us-device1";
-import { EOD_CAPABILITIES, EOD_INTERVALS } from "./eod.js";
-import { searchDirectory, quoteStatus } from "./model.js?v=20261001-us-eod1";
+import { EOD_CAPABILITIES, EOD_INTERVALS, eodFreshness } from "./eod.js?v=20261003-us-parity1";
+import { searchDirectory, quoteStatus } from "./model.js?v=20261003-us-live1";
 import { sessionAt, nyParts } from "./calendar.js?v=20261001-us-eod1";
 import { catalogueMode, cataloguePage, stockName } from "./directory-view.js?v=20261001-us-names1";
 
-import { tierResults, timeframeTierResults, stockClassic } from "./analysis.js?v=20261002-rank8";
+import { tierResults, timeframeTierResults, stockClassic } from "./analysis.js?v=20261003-us-live1";
 import { icon, openDialog, closeDialog } from "./ui.js?v=20261001-us-eod1";
+
+// These are measured breadth ratios for the available stock pool, not a
+// fabricated market score or an estimate of stocks absent from the snapshot.
+export function usHomeMarketMetrics(analyses = []) {
+  const stocks = [...new Map(analyses.filter(row => row.interval === '1D' &&
+    row.type !== 'ETF' && !row.complex && row.symbol && Number.isFinite(row.changePct))
+    .map(row => [row.symbol, row])).values()];
+  const advancing = stocks.filter(row => row.changePct > 0).length;
+  const declining = stocks.filter(row => row.changePct < 0).length;
+  const maRows = stocks.filter(row => Number.isFinite(row.price) && Number.isFinite(row.ma20) && row.ma20 > 0);
+  const aboveMA = maRows.filter(row => row.price > row.ma20).length;
+  return { total: stocks.length, advancing, declining, unchanged: stocks.length - advancing - declining,
+    maTotal: maRows.length, aboveMA,
+    advanceRatio: stocks.length ? advancing / stocks.length * 100 : null,
+    aboveMARatio: maRows.length ? aboveMA / maRows.length * 100 : null };
+}
+
 export class USWorkspace {
   constructor() {
     const storedPrefs = read(prefsKey, {});
@@ -93,6 +111,7 @@ export class USWorkspace {
         const displayCap = usDisplayCapabilities(c);
         const changedMode = this.cap.chartMode !== displayCap.chartMode;
         this.cap = {...displayCap,sessionDate:this.snapshot?.sessionDate};
+        if(c.source==='binance-equity'&&c.rawDataAvailable) this.loadDirectory(signal);
         this.root?.querySelectorAll('[data-us-home-tf]').forEach(button => {
           button.hidden = Boolean(c.intervals && !c.intervals.includes(button.dataset.usHomeTf));
         });
@@ -100,6 +119,7 @@ export class USWorkspace {
           const old=this.chart,root=old.root,symbol=old.symbol,interval=old.interval;
           old.destroy();this.chartIn(root,symbol,interval);
           if(this.state.view==='home')root.querySelector('.us2-chart-toolbar').hidden=true;
+          if(this.state.view==='radar')this.setScannerCollapsed(this.state.collapsed);
         } else this.chart?.setCapabilities(this.cap);
         this.updateIdentity();
         if(changedMode)this.lookupQuote(this.state.view==='home'?this.state.homeSymbol:this.state.symbol);
@@ -115,8 +135,8 @@ export class USWorkspace {
           this.snapshot = s;
           this.cap={...this.cap,sessionDate:s.sessionDate};
           this.chart?.setCapabilities(this.cap);
-          this.quotes.clear();
-          for (const q of s.quotes || []) this.quotes.set(q.symbol, q);
+          this.acceptSnapshotQuotes(s);
+          this.updateIdentity();
           this.updateCounts();
           this.updateSections();
         })
@@ -131,15 +151,19 @@ export class USWorkspace {
     await Promise.allSettled(jobs);
     if (!signal.aborted && this.active) {
       this.updateLive();
+      this.scheduleSnapshot();
       // Closing snapshots refresh on entry or explicit user action, never intraday polling.
     }
   }
   async loadDirectory(signal = this.controller?.signal) {
     this.directoryError = null;
     try {
-      const d = await USAdapter.directory({ signal });
+      const source=this.cap.source;
+      const d = await USAdapter.directory({ signal, capabilities:this.cap });
       if (signal?.aborted || !this.active) return;
+      if(source!==this.cap.source)return;
       this.directory = d.items; this.directoryDate = d.receivedAt;
+      this.startQuoteStream();
       if (this.chart instanceof USWidgetChart && !this.chart.entry) {
         this.chart.asset = this.directory.find(x => x.symbol === this.chart.symbol) || {}; this.chart.mount();
       }
@@ -186,6 +210,46 @@ export class USWorkspace {
   persist() {
     save(prefsKey, this.state);
   }
+  startQuoteStream() {
+    this.quoteStreamStop?.();this.quoteStreamStop=null;
+    if(this.cap.stream!=='binance-equity'||!nativeAllowed(this.cap)||!this.active)return;
+    const items=this.directory.filter(row=>row.source==='binance-equity'&&row.contractSymbol);
+    if(!items.length)return;
+    this.quoteStreamStop=subscribeEquity({items,onReconnect:()=>this.refreshSnapshot(),
+      onQuote:quote=>{
+        if(!this.active)return;
+        const old=this.quotes.get(quote.symbol);
+        if(old&&old.marketTime>quote.marketTime)return;
+        this.quotes.set(quote.symbol,quote);
+        if(this.quotePaint)return;
+        this.quotePaint=setTimeout(()=>{
+          this.quotePaint=null;if(!this.active)return;
+          this.updateIdentity();this.updateLive();this.bubbles?.draw();
+          for(const node of this.root.querySelectorAll('.us2-stock-row[data-symbol]')) {
+            const value=this.quotes.get(node.dataset.symbol);if(!value)continue;
+            const amount=node.querySelector('.coin-ox-value'),change=node.querySelector('.coin-change');
+            if(amount)amount.textContent=price(value.price);
+            if(change){change.textContent=pct(value.changePct);change.className=`coin-change ${tone(value.changePct)}`;}
+          }
+        },500);
+      }});
+  }
+  scheduleSnapshot() {
+    clearTimeout(this.refreshTimer);
+    if(this.active&&this.cap.mode==='perpetual')this.refreshTimer=setTimeout(()=>{
+      if(!document.hidden&&!this.root?.hidden)this.refreshSnapshot();else this.scheduleSnapshot();
+    },300000);
+  }
+  acceptSnapshotQuotes(snapshot) {
+    if(snapshot.mode!=='perpetual')this.quotes.clear();
+    const present=new Set();
+    for(const quote of snapshot.quotes||[]) {
+      present.add(quote.symbol);
+      const old=this.quotes.get(quote.symbol);
+      if(!old||old.source!==quote.source||old.marketTime<=quote.marketTime)this.quotes.set(quote.symbol,quote);
+    }
+    if(snapshot.mode==='perpetual')for(const symbol of this.quotes.keys())if(!present.has(symbol))this.quotes.delete(symbol);
+  }
   destroyTools() {
     this.patternLoading?.finish();
     ++this.workerId;
@@ -213,6 +277,7 @@ export class USWorkspace {
     this.renderedView = null;
     this.controller?.abort();
     clearTimeout(this.refreshTimer);
+    this.quoteStreamStop?.();this.quoteStreamStop=null;clearTimeout(this.quotePaint);this.quotePaint=null;
     this.destroyTools();
     delete document.body.dataset.usWorkspace;
     this.root?.classList.remove("us2-root");
@@ -220,6 +285,7 @@ export class USWorkspace {
   }
   suspend() {
     this.destroyTools();
+    this.quoteStreamStop?.();this.quoteStreamStop=null;clearTimeout(this.quotePaint);this.quotePaint=null;
     if (this.root) this.root.hidden = true;
   }
   show(view) {
@@ -246,6 +312,7 @@ export class USWorkspace {
     this.bindDeviceData();
     this.bindSearch();
     this.renderMain();
+    this.startQuoteStream();
     this.updateCounts();
     this.persist();
     requestAnimationFrame(() => {
@@ -266,6 +333,11 @@ export class USWorkspace {
     if(dateNode)dateNode.title=this.snapshotError || '';
     if (dateNode && this.cap.dataScope === 'device' && this.snapshot?.sessionDate)
       dateNode.textContent = `${this.snapshot.sessionDate} 已收盤 · 本機 ${this.snapshot.counts.quoted} 檔`;
+    const freshness = eodFreshness(this.snapshot?.sessionDate);
+    if (dateNode && freshness.status === 'stale') {
+      dateNode.textContent = `${freshness.sessionDate} · 待更新${this.cap.dataScope === 'device' ? ` · 本機 ${this.snapshot.counts.quoted} 檔` : ''}`;
+      dateNode.title = `目前資料：${freshness.sessionDate} 收盤；最近完整交易日：${freshness.expectedSessionDate}。${this.snapshotError || ''}`;
+    }
     const widget=this.cap.chartMode === 'widget';
     const heading=this.root.querySelector('.us2-eod-summary strong');
     if(heading)heading.textContent=widget?'美股圖表':'美股盤後';
@@ -274,6 +346,13 @@ export class USWorkspace {
       dateNode.title='行情由 TradingView 更新，延遲與資料來源依圖表標示；OX 盤後掃描另需原始行情。';
     }
     this.root.querySelector('[data-eod-refresh]')?.setAttribute('aria-label',widget?'重新連線圖表與更新盤後快照':'更新收盤快照');
+    if(this.cap.mode==='perpetual'&&!widget) {
+      if(heading)heading.textContent='美股合約';
+      if(dateNode)dateNode.textContent=this.snapshotError||`幣安 · ${counts?.quoted??0} 檔 · 24h 漲跌`;
+      if(dateNode)dateNode.title='股票永續合約價格與成交量；非美股現貨。K 線使用 UTC，雷達使用已完成日 K。';
+      node.textContent=`幣安合約 ${this.directory.length} · 有報價 ${counts?.quoted??0} · 已完成日 K 分析 ${counts?.scanned??0}`;
+      this.root.querySelector('[data-eod-refresh]')?.setAttribute('aria-label','更新合約行情與掃描');
+    }
     this.updateDataBrief();
     const selector = this.root.querySelector("[data-scan-interval]");
     if (selector)
@@ -288,6 +367,11 @@ export class USWorkspace {
     if (!this.active || document.body.dataset.market !== "us") return;
     const live = document.getElementById("ox-live-text");
     if (live) {
+      if(this.cap.mode==='perpetual'&&this.cap.chartMode!=='widget') {
+        const quotes=['SPY','QQQ',this.state.symbol].filter((s,i,a)=>a.indexOf(s)===i).map(s=>this.quotes.get(s)).filter(Boolean);
+        live.textContent=`幣安股票永續合約 · USDT · 24h ${quotes.map(q=>`${q.symbol} ${price(q.price)} ${pct(q.changePct)}`).join(' ｜ ')||'等待行情連線'}`;
+        live.title=live.textContent;live.dataset.usText=live.textContent;return;
+      }
       if (this.cap.mode === 'eod' && this.cap.chartMode !== 'widget') {
         const quotes=['SPY','QQQ','IWM'].map(s=>this.quotes.get(s)).filter(Boolean);
         live.textContent=`美股盤後${this.cap.privateValidation?' · 私人驗證':''} · ${this.snapshot?.sessionDate || '收盤資料待建立'} · ${quotes.map(q=>`${q.symbol} 收盤 ${price(q.price)} ${pct(q.changePct)}`).join(' ｜ ') || '盤中資訊已停止'}`;
@@ -318,7 +402,7 @@ export class USWorkspace {
   openData(opener) { this.updateDataBrief(); openDialog(this.root.querySelector(".us2-data-dialog"),opener); }
   updateDataBrief() {
     const error=this.chartError || this.quoteError;
-    const label=this.cap.chartMode === "widget" ? "資料" : this.cap.mode === "eod" ? (this.snapshot?.sessionDate ? "收盤 " + this.snapshot.sessionDate : "盤後資料待建立") : (!nativeAllowed(this.cap) || this.chartErrorCode === "US_DATA_DISPLAY_RIGHTS_REQUIRED")?"行情未開通":error?.includes("授權")?"授權未確認":error?"資料異常":this.cap.privateValidation?"私人驗證":sessionAt().label;
+    const label=this.cap.chartMode === "widget" ? "資料" : this.cap.mode === "eod" ? (this.snapshot?.sessionDate ? "收盤 " + this.snapshot.sessionDate : "盤後資料待建立") : (!nativeAllowed(this.cap) || this.chartErrorCode === "US_DATA_DISPLAY_RIGHTS_REQUIRED")?"行情未開通":error?.includes("授權")?"授權未確認":error?"資料異常":this.cap.mode==='perpetual'?'合約 24h':this.cap.privateValidation?"私人驗證":sessionAt().label;
     this.root?.querySelectorAll("[data-data-open]").forEach(node=>{node.textContent=label;node.title=error||"查看行情時間、來源、股票資料與掃描狀態";});
     const symbol=this.state.view==="home"?this.state.homeSymbol:this.state.symbol;
     const item=this.directory.find(x=>x.symbol===symbol),q=this.quotes.get(symbol);
@@ -328,6 +412,7 @@ export class USWorkspace {
     const provider=this.root?.querySelector(".us2-provider-detail");
     if(provider)provider.textContent=this.cap.chartMode === "widget" ? "TradingView 官方免費圖表。價格、行情時間與延遲狀態由圖表標示；不將單一交易所資料稱為全市場。搜尋目錄沿用既有公司資料，實際涵蓋以圖表為準。免費圖表不提供原始 K 線給 OX 掃描。" : `來源 ${q?.source||this.cap?.source||"盤後資料源"} · feed ${q?.feed||"未確認"} · ${q?.volumeScope||"成交量口徑未確認"} · ${this.snapshotError||"共用掃描快照狀態可查閱上方統計"}`;
     if (provider && this.cap.dataScope === 'device') provider.textContent = `本機盤後檔 · ${this.cap.feed} · 交易日 ${this.snapshot?.sessionDate || this.cap.sessionDate} · 只供個人使用 · 日／週／月線依完整收盤資料計算。資料不會上傳；匯入新檔可更新。`;
+    if(provider&&this.cap.mode==='perpetual'&&this.cap.chartMode!=='widget')provider.textContent='來源：幣安股票永續合約。USDT 計價；漲跌為滾動 24 小時，成交量為合約量。原生圖表以 WebSocket 更新，斷線時定時補抓。掃描使用已完成 UTC 日 K；美股休市時合約仍可能波動。';
   }
   bindSearch() {
     const form = this.root.querySelector("form"),
@@ -387,12 +472,7 @@ export class USWorkspace {
     }
     this.applyPatternGuide(symbol, interval);
     this.lookupQuote(symbol);
-    if (collapse) {
-      this.root
-        .querySelector(".us2-radar-layout")
-        ?.classList.add("is-collapsed");
-      this.root.querySelector(".us2-radar-pane")?.classList.add("ox-scanner-collapsed");
-    }
+    this.setScannerCollapsed(collapse);
   }
   async lookupQuote(symbol) {
     this.quoteController?.abort();
@@ -408,7 +488,8 @@ export class USWorkspace {
       const q = await USAdapter.quote(symbol, { signal: c.signal, capabilities: this.cap });
       if (c.signal.aborted || !this.active) return;
       this.quoteError = null;
-      this.quotes.set(symbol, q);
+      const previous=this.quotes.get(symbol);
+      if(!previous||previous.source!==q.source||previous.marketTime<=q.marketTime)this.quotes.set(symbol,q);
       this.updateIdentity();
       this.updateLive();
     } catch (error) {
@@ -435,8 +516,10 @@ export class USWorkspace {
     if(this.state.watchOnly && catalogueMode(this.snapshot))this.paintList();
   }
   rowHTML(row, { reasons = false, tierStart = false, tierEnd = false } = {}) {
+    const quote=this.cap.mode==='perpetual'?this.quotes.get(row.symbol):null;
+    if(quote)row={...row,price:quote.price,changePct:quote.changePct};
     const name=stockName({...this.directory.find(item=>item.symbol===row.symbol),...row});
-    if(this.state.view==="radar")return `<article class="coin-card us2-stock-row ${row.symbol===this.state.symbol?"selected":""} ${tierStart?"is-tier-start":""} ${tierEnd?"is-tier-end":""}" data-symbol="${e(row.symbol)}" data-interval="${e(row.interval||this.state.interval)}" tabindex="0" role="button" aria-label="開啟 ${e(row.symbol)} ${e(name)} 圖表">${tierStart?`<span class="coin-tier-heading">${e(row.tier)}</span>`:""}<div class="coin-top"><div class="coin-title"><span class="coin-symbol-mobile">${e(row.symbol)}</span></div><div class="coin-top-right"><div class="coin-ox"><span class="coin-ox-label">USD</span><b class="coin-ox-value">${price(row.price)}</b></div></div></div><small class="us2-row-name" title="${e(name)}">${e(name)}</small><div class="coin-mid"><span class="mobile-coin-volume">${e(row.setup||row.type||"自選")} · ${e(row.interval||this.state.interval)}</span></div><div class="coin-mobile-bottom"><span class="coin-change ${tone(row.changePct)}">${pct(row.changePct)}</span><button class="watch-star watch-star-mobile us2-star ${this.watch.has(row.symbol)?"is-starred is-saved":""}" data-watch="${e(row.symbol)}" aria-label="收藏 ${e(row.symbol)}" aria-pressed="${this.watch.has(row.symbol)}">${this.watch.has(row.symbol)?"★":"☆"}</button></div></article>`;
+    if(this.state.view==="radar")return `<article class="coin-card us2-stock-row ${row.symbol===this.state.symbol?"selected":""} ${tierStart?"is-tier-start":""} ${tierEnd?"is-tier-end":""}" data-symbol="${e(row.symbol)}" data-interval="${e(row.interval||this.state.interval)}" tabindex="0" role="button" aria-label="開啟 ${e(row.symbol)} ${e(name)} 圖表">${tierStart?`<span class="coin-tier-heading">${e(row.tier)}</span>`:""}<div class="coin-top"><div class="coin-title"><span class="coin-symbol-mobile">${e(row.symbol)}</span></div><div class="coin-top-right"><div class="coin-ox"><span class="coin-ox-label">${this.cap.currency==='USDT'?'USDT':'USD'}</span><b class="coin-ox-value">${price(row.price)}</b></div></div></div><div class="coin-mid"><small class="us2-row-name" title="${e(name)}">${e(name)}</small><span class="mobile-coin-volume">${e(row.setup||row.type||"自選")} · ${e(row.interval||this.state.interval)}</span></div><div class="coin-mobile-bottom"><span class="coin-change ${tone(row.changePct)}">${pct(row.changePct)}</span><button class="watch-star watch-star-mobile us2-star ${this.watch.has(row.symbol)?"is-starred is-saved":""}" data-watch="${e(row.symbol)}" aria-label="收藏 ${e(row.symbol)}" aria-pressed="${this.watch.has(row.symbol)}">${this.watch.has(row.symbol)?"★":"☆"}</button></div></article>`;
 
     return `<article class="us2-stock-row ${row.symbol === this.state.symbol ? "is-current" : ""} ${tierEnd ? "is-tier-end" : ""}"><button type="button" class="us2-stock-open" data-symbol="${e(row.symbol)}" data-interval="${e(row.interval || "1D")}"><span class="us2-stock-identity"><b>${e(row.symbol)}</b><small>${e(row.alias || row.name || "")}</small></span><span class="us2-stock-numbers"><b>${price(row.price)}</b><small class="${tone(row.changePct)}">${pct(row.changePct)}</small></span>${row.setup ? `<span class="us2-stock-setup">${tierStart ? `<strong class="us2-tier-inline">${e(row.tier)}</strong>` : ""}${e(row.setup)} · ${e(row.interval)}${row.forming ? " · 形成中" : ""}</span>` : ""}${reasons ? `<span class="us2-stock-reasons">${(row.reasons || []).map(e).join(" · ")}</span>` : ""}</button><button type="button" class="us2-star ${this.watch.has(row.symbol) ? "is-saved" : ""}" data-watch="${e(row.symbol)}" aria-label="收藏 ${e(row.symbol)}" aria-pressed="${this.watch.has(row.symbol)}">${this.watch.has(row.symbol) ? "★" : "☆"}</button></article>`;
   }
@@ -494,6 +577,11 @@ export class USWorkspace {
       },
       onState: (result) => {
         if (!this.active) return;
+        if(result.stream&&result.quote) {
+          const previous=this.quotes.get(result.quote.symbol);
+          if(!previous||previous.marketTime<=result.quote.marketTime)this.quotes.set(result.quote.symbol,result.quote);
+          this.quoteError=null;this.updateIdentity();this.updateLive();return;
+        }
         if (!result.error && !result.stale && result.bars?.length)
           this.lookupQuote(result.symbol || this.chart?.symbol || symbol);
         const hadError = Boolean(this.chartError);
@@ -526,6 +614,22 @@ export class USWorkspace {
     else if (view === "data") this.renderNews(main);
     else this.renderMedia(main);
   }
+  setScannerCollapsed(collapsed) {
+    this.state.collapsed = Boolean(collapsed);
+    const main = this.root?.querySelector('.us2-radar-pane');
+    if (!main) return;
+    main.classList.toggle('ox-scanner-collapsed', this.state.collapsed);
+    main.querySelector('.us2-radar-layout')?.classList.toggle('is-collapsed', this.state.collapsed);
+    const scanner = main.querySelector('.us2-scanner');
+    if (scanner) { scanner.inert = this.state.collapsed; scanner.setAttribute('aria-hidden', String(this.state.collapsed)); }
+    const button = main.querySelector('[data-collapse]');
+    if (button) {
+      button.setAttribute('aria-expanded', String(!this.state.collapsed));
+      button.setAttribute('aria-label', this.state.collapsed ? '展開雷達清單' : '收起雷達清單');
+      button.title = button.getAttribute('aria-label');
+    }
+    this.persist();
+  }
   renderRadar(main) {
     const filters = `<label>策略<select data-mode aria-label="雷達策略">${Object.entries({classic:"OX 經典",ma:"均線排列",breakout:"放量突破",gap:"跳空觀察",rs:"相對 SPY 強弱"}).map(([v,l])=>`<option value="${v}" ${this.state.mode===v?"selected":""}>${l}</option>`).join("")}</select></label><label>資產<select data-type aria-label="資產類型"><option value="stock">股票／ADR</option><option value="ETF">一般 ETF</option><option value="all">兩者</option></select></label><label>分析級別<select data-scan-interval aria-label="雷達分析級別"><option value="1D">1D</option></select></label>`;
     main.innerHTML = `<section class="top-summary compact-summary us2-ticker"><div class="metric-card market-line-card"><div class="market-line-item market-line-price"><button class="us2-symbol-picker" data-search-open aria-label="搜尋並選擇股票">${e(this.state.symbol)} <span>▾</span></button><strong class="us2-quote-value">—</strong></div><div class="market-line-item"><label>當日 · <button class="us2-data-brief" data-data-open>盤後</button></label><strong class="us2-quote-change">—</strong></div><div class="market-line-item us2-volume-cell"><label>成交量</label><strong class="us2-quote-volume">—</strong><button type="button" class="watch-star us2-star" data-watch="${e(this.state.symbol)}" aria-label="收藏目前股票">☆</button></div><div class="market-line-item radar-analysis-cell"><label>雷達策略</label><strong>OX 經典</strong><small>共用結構與量能判斷</small></div><div class="market-line-item radar-analysis-cell"><label>分析級別</label><strong>${e(this.state.scanInterval)}</strong><small>依已收線 K 線</small></div></div></section><div class="workspace us2-radar-layout ${this.state.collapsed ? "is-collapsed" : ""}"><article class="panel chart-box us2-chart-root"></article><aside class="panel us2-scanner"><div class="scanner-tabs"><button class="tab-btn radar-combined-tab us2-tier active" type="button" aria-label="雷達分組：全部，短按循環，長按兩秒展開" aria-haspopup="menu" aria-expanded="false"><span class="radar-combined-mark"><span class="radar-combined-logo">${icon("radar")}</span><span class="radar-tier-current"></span><small class="radar-combined-chevron">▼</small></span></button><button class="tab-btn" type="button" data-strategy-open aria-label="雷達策略與股票池">${icon("settings")}</button><button class="tab-btn" type="button" data-watch-filter aria-label="自選清單" aria-pressed="${this.state.watchOnly}">${icon("star")}<small hidden>${this.watch.size}</small></button><button class="direction-toggle-btn chart-tool-icon us2-side-control ${this.state.side === "long" ? "is-long" : "is-short"}" type="button" data-side aria-label="切換多空"><span class="direction-toggle-icon">${this.state.side === "long" ? "↑" : "↓"}</span></button></div><div class="us2-tier-menu" role="menu" hidden>${["all","T1","T2","T3"].map(t=>`<button role="menuitem" data-tier="${t}">${t==="all"?"全部":t}</button>`).join("")}</div><div class="us2-radar-list scanner-body"></div><small class="us2-list-note" hidden></small></aside></div><dialog class="chart-tools-dialog us2-strategy-dialog" aria-label="雷達策略"><header><b>策略與股票池</b><button data-close-strategy aria-label="關閉策略">${icon("close")}</button></header><div class="us2-dialog-fields">${filters}</div><p class="us2-muted">OX 經典先確認有效壓力、當下方向與同向量能；T123 為品質分級，突破階段另列。其他策略各自篩選。</p></dialog>`;
@@ -535,16 +639,7 @@ export class USWorkspace {
     main.querySelector("[data-type]").value = this.state.type;
     main.querySelector("[data-search-open]").onclick = event => this.openSearch(event.currentTarget);
     main.querySelector("[data-data-open]").onclick = event => this.openData(event.currentTarget);
-    const layout = main.querySelector(".us2-radar-layout");
-    const collapse = () => {
-      this.state.collapsed = !this.state.collapsed;
-      layout.classList.toggle("is-collapsed", this.state.collapsed);
-      main.classList.toggle("ox-scanner-collapsed", this.state.collapsed);
-      this.chart?.root.querySelector("[data-collapse]")?.setAttribute("aria-expanded", String(!this.state.collapsed));
-      this.persist();
-    };
-    main.classList.toggle("ox-scanner-collapsed", !!this.state.collapsed);
-    this.toggleList = collapse;
+    this.toggleList = () => this.setScannerCollapsed(!this.state.collapsed);
     this.chartIn(
       main.querySelector(".us2-chart-root"),
       this.state.symbol,
@@ -552,7 +647,7 @@ export class USWorkspace {
     );
     this.updateIdentity();
     this.lookupQuote(this.state.symbol);
-    this.chart?.root.querySelector("[data-collapse]")?.setAttribute("aria-expanded", String(!this.state.collapsed));
+    this.setScannerCollapsed(this.state.collapsed);
     const menu = main.querySelector(".us2-tier-menu"),
       tier = main.querySelector(".us2-tier");
     let timer,
@@ -683,9 +778,14 @@ export class USWorkspace {
       value.textContent = widget ? "行情見圖表" : price(q?.price);
       value.hidden=widget;
       const homePrice=value.closest('.ox-home-price');if(homePrice)homePrice.hidden=widget;
+      if(homePrice)homePrice.querySelector('small').textContent=this.cap.currency||'USD';
     }
     if (change) {change.hidden=widget;change.textContent = widget ? "依圖表標示" : pct(q?.changePct);change.className = `us2-quote-change ${widget?'':tone(q?.changePct)}`;}
     if (volume) {volume.textContent = widget ? "見圖表" : q?.volume == null ? "—" : compact(q.volume); volume.title = q?.volumeScope || "成交量口徑未確認";}
+    if (!widget && Number.isFinite(q?.changePct)) {
+      main.dataset.priceDirection = q.changePct >= 0 ? 'up' : 'down';
+      main.dataset.glowLevel = String(Math.abs(q.changePct) >= 5 ? 3 : Math.abs(q.changePct) >= 2 ? 2 : 1);
+    } else { delete main.dataset.priceDirection; delete main.dataset.glowLevel; }
     const identity = main.querySelector(".us2-selected-identity");
     if (identity)
       identity.innerHTML = `<b>${e(symbol)}</b><small>${e(item?.alias || item?.name || q?.name || "美股")} · ${e(item?.type || "股票")} · ${e(item?.exchange || q?.exchange || "")}</small>`;
@@ -709,6 +809,9 @@ export class USWorkspace {
     const list = this.root?.querySelector(".us2-radar-list");
     if (!list) return;
     const y = list.scrollTop;
+    const summary = this.root.querySelectorAll('.radar-analysis-cell strong');
+    if (summary[0]) summary[0].textContent = {classic:'OX 經典',ma:'均線排列',breakout:'放量突破',gap:'跳空觀察',rs:'相對 SPY 強弱'}[this.state.mode] || 'OX 經典';
+    if (summary[1]) summary[1].textContent = this.state.scanInterval;
     const referenceOnly = catalogueMode(this.snapshot);
     const tierButton=this.root.querySelector('.us2-tier');
     const sideButton=this.root.querySelector('[data-side]');
@@ -739,7 +842,7 @@ export class USWorkspace {
     else if (this.state.watchOnly)
       rows = [...this.watch].map(
         (symbol) =>
-          (this.snapshot?.analyses || []).find((x) => x.symbol === symbol) || {
+          analyses.find((x) => x.symbol === symbol) || {
             ...this.directory.find((x) => x.symbol === symbol),
             ...this.quotes.get(symbol),
             symbol,
@@ -766,10 +869,16 @@ export class USWorkspace {
       control.textContent =
         this.state.tier === "all" ? "全部" : this.state.tier;
     this.root.querySelector(".us2-list-note").textContent =
-      `${rows.length} 個結果 · 每組最多10檔 · ${combination?.enabled?combination.rules.map(r=>r.frame+' '+r.tier).join(combination.match==='any'?'／':'＋'):this.state.scanInterval} 已收線分析${this.snapshot?.sessionDate ? " · 交易日 " + this.snapshot.sessionDate : ""}`;
+      `${rows.length} 個結果 · ${combination?.enabled?combination.rules.map(r=>r.frame+' '+r.tier).join(combination.match==='any'?'／':'＋'):this.state.scanInterval} 已收線分析${this.snapshot?.sessionDate ? " · 交易日 " + this.snapshot.sessionDate : ""}`;
   }
   renderHome(main) {
     main.innerHTML = `<div class="ox-editorial-home"><section class="ox-home-main" aria-label="美股市場主圖與摘要"><article class="ox-home-chart us2-home-chart"><div class="ox-home-quote"><div class="ox-home-identity"><div><span class="ox-home-ticker us2-home-symbol">${e(this.state.homeSymbol)}</span><small>美股 ETF · <span class="us2-display-source">收盤資料</span> <button class="us2-data-brief" data-data-open>盤後</button></small></div></div><div class="ox-home-price"><strong class="us2-quote-value">—</strong><small>USD</small><span class="us2-quote-change">—</span></div></div><div class="ox-chart-heading"><nav class="us2-benchmarks" role="group" aria-label="市場基準 ETF">${["SPY","QQQ","IWM"].map(s=>`<button data-benchmark="${s}" aria-pressed="${this.state.homeSymbol===s}"><b>${s}</b></button>`).join("")}</nav><div class="v34-home-main-toolbar" aria-label="首頁主圖週期">${EOD_INTERVALS.map(tf=>`<button class="v34-home-mini-tf ${this.state.homeInterval===tf?"active":""}" type="button" data-us-home-tf="${tf}">${tf}</button>`).join("")}</div><button class="ox-text-button" data-home-analyze aria-label="在雷達分析目前 ETF">↗</button></div><div class="btc-premium-chart-wrap"><div class="us2-chart-root"></div></div></article><section class="ox-home-t1" aria-label="自選與類股摘要"><div class="ox-home-t1-side"><div class="ox-home-t1-head"><span>自選摘要</span><button class="ox-text-button" data-home-watch aria-label="查看自選雷達">↗</button></div><div class="us2-home-watch ox-home-t1-list"></div></div><div class="ox-home-t1-side"><div class="ox-home-t1-head"><span>類股 ETF</span><small>代理指標</small></div><div class="us2-home-sectors ox-home-t1-list"></div></div></section><aside class="ox-home-analysis"><div class="ox-analysis-heading"><h2>重要事件</h2><button class="ox-text-button" data-home-events aria-label="查看美股事件">↗</button></div><div class="us2-home-events"></div></aside></section></div>`;
+    // Match Crypto's chart / paired candidates / market readings arrangement.
+    // Public widget mode keeps its existing event and reference-only content.
+    const events = main.querySelector('.ox-home-analysis');
+    events.className = 'us2-home-events-section';
+    events.insertAdjacentHTML('beforebegin', `<aside class="ox-home-analysis us2-home-native-analysis" aria-label="美股收盤市場強度" hidden><div class="ox-analysis-heading"><div><span class="ox-eyebrow">MARKET INTELLIGENCE</span><h2>市場強度</h2></div><button type="button" class="ox-text-button" data-home-indicators aria-label="查看美股市場指標">↗</button></div><div class="ox-strength-duo">${[['advance','上漲家數比'],['ma','站上 20 日線']].map(([key,label])=>`<div class="ox-strength-reading"><svg class="ox-strength-gauge" viewBox="0 0 160 104" aria-hidden="true"><path class="ox-gauge-track" d="M15 85 A67 67 0 1 1 145 85" pathLength="100"/><path class="ox-gauge-value" data-home-arc="${key}" d="M15 85 A67 67 0 1 1 145 85" pathLength="100" stroke-dasharray="0 100"/></svg><small>${label}</small><div><strong data-home-ratio="${key}">—</strong><span>%</span></div><span data-home-ratio-note="${key}">等待收盤資料</span></div>`).join('')}</div><div class="ox-strength-context"><span data-home-breadth-note>依有行情的股票觀察池計算</span><span data-home-session-note>收盤資料待取得</span></div><div class="ox-score-panel"><span class="ox-eyebrow">OX RADAR <span class="ox-score-index">收盤觀察池</span></span><div class="ox-score-reading"><strong data-home-pool-count>—</strong><span>檔</span></div><span class="us2-home-pool-note" data-home-pool-note>等待真實行情</span><div class="ox-meter" role="meter" aria-label="觀察池上漲比例" aria-valuemin="0" aria-valuemax="100"><i data-home-breadth-meter></i></div></div></aside>`);
+    main.querySelector('[data-home-indicators]').onclick = () => window.switchAppView?.('strength');
     main.querySelector("[data-data-open]").onclick = event => this.openData(event.currentTarget);
     this.chartIn(
       main.querySelector(".us2-chart-root"),
@@ -813,13 +922,15 @@ export class USWorkspace {
       ),
       node = this.root.querySelector(".us2-home-watch");
     if (!node) return;
+    this.updateHomeMarket(rows);
     if (this.cap.chartMode !== 'widget') {
       this.renderHomeCandidates(rows, node, 'long');
       this.renderHomeCandidates(rows, this.root.querySelector('.us2-home-sectors'), 'short');
       const headings = this.root.querySelectorAll('.ox-home-t1-head');
-      headings[0].querySelector('span').textContent = '上漲 · T1/T2/T3';
-      headings[1].querySelector('span').textContent = '下跌 · T1/T2/T3';
-      headings[1].querySelector('small').textContent = '已收線型態';
+      headings[0].querySelector('span').textContent = '上漲 · T1 / T2 / T3';
+      headings[1].querySelector('span').textContent = '下跌 · T1 / T2 / T3';
+      headings[1].querySelector('small').hidden = true;
+      this.root.querySelector('.ox-home-t1').setAttribute('aria-label', 'T1 T2 T3 上漲與下跌候選');
       const shortcut = this.root.querySelector('[data-home-watch]');
       shortcut.setAttribute('aria-label', '查看上漲候選雷達');
       shortcut.onclick = () => {
@@ -828,6 +939,11 @@ export class USWorkspace {
         window.switchAppView?.('radar');
       };
     } else {
+    const headings = this.root.querySelectorAll('.ox-home-t1-head');
+    headings[0].querySelector('span').textContent = '自選摘要';
+    headings[1].querySelector('span').textContent = '類股 ETF';
+    headings[1].querySelector('small').hidden = false;
+    this.root.querySelector('.ox-home-t1').setAttribute('aria-label', '自選與類股摘要');
     const watched = [...this.watch]
       .slice(0, 5)
       .map(
@@ -872,6 +988,32 @@ export class USWorkspace {
           .join("")
       : '<div class="us2-empty">目前沒有來源已確認的近期事件。</div>';
   }
+  updateHomeMarket(rows) {
+    const panel = this.root.querySelector('.us2-home-native-analysis');
+    if (!panel) return;
+    panel.hidden = this.cap.chartMode === 'widget';
+    if (panel.hidden) return;
+    const data = usHomeMarketMetrics(rows);
+    for (const [key, value, note] of [
+      ['advance', data.advanceRatio, data.total ? `${data.advancing} 漲 · ${data.declining} 跌 · ${data.unchanged} 平` : '尚無有效收盤資料'],
+      ['ma', data.aboveMARatio, data.maTotal ? `${data.aboveMA} / ${data.maTotal} 檔站上均線` : '尚無足夠日 K 線'],
+    ]) {
+      panel.querySelector(`[data-home-ratio="${key}"]`).textContent = value === null ? '—' : value.toFixed(0);
+      panel.querySelector(`[data-home-ratio-note="${key}"]`).textContent = note;
+      panel.querySelector(`[data-home-arc="${key}"]`).setAttribute('stroke-dasharray', `${value ?? 0} 100`);
+    }
+    panel.querySelector('[data-home-pool-count]').textContent = data.total ? data.total.toLocaleString() : '—';
+    panel.querySelector('[data-home-pool-note]').textContent = data.total ? `${data.advancing} 檔上漲 · ${data.declining} 檔下跌` : '等待真實行情';
+    panel.querySelector('[data-home-breadth-note]').textContent = data.total ? `觀察池 ${data.total.toLocaleString()} 檔股票 · 不含 ETF` : '依有行情的股票觀察池計算';
+    const freshness = eodFreshness(this.snapshot?.sessionDate);
+    panel.querySelector('[data-home-session-note]').textContent = this.cap.mode==='perpetual'
+      ? (this.snapshot?.asOf?'幣安合約 · 已完成 UTC 日 K':'合約日 K 資料待取得')
+      : this.snapshot?.sessionDate ? `${this.snapshot.sessionDate} 已收盤${freshness.status === 'stale' ? ' · 待更新' : ''}` : '收盤資料待取得';
+    const meter = panel.querySelector('[data-home-breadth-meter]');
+    meter.style.width = `${data.advanceRatio ?? 0}%`;
+    if (data.advanceRatio === null) meter.parentElement.removeAttribute('aria-valuenow');
+    else meter.parentElement.setAttribute('aria-valuenow', data.advanceRatio.toFixed(1));
+  }
   renderHomeCandidates(rows, box, side) {
     if (!box) return;
     const candidates = tierResults(rows, { side, mode: 'classic', type: 'stock' })
@@ -886,7 +1028,7 @@ export class USWorkspace {
       row.type = 'button'; row.className = `ox-home-t1-row${starts ? ' is-tier-start' : ''}`;
       row.dataset.symbol = candidate.symbol; row.dataset.interval = '1D';
       row.dataset.homeTier = candidate.tier;
-      row.title = `${candidate.symbol} · ${candidate.setup} · 距關鍵位 ${candidate.distance.toFixed(2)}%`;
+      row.title = `${candidate.symbol} ${candidate.name || ''} · ${candidate.setup} · 距關鍵位 ${Number.isFinite(candidate.distance) ? candidate.distance.toFixed(2) + ' ATR' : '—'}`;
       const markup = `<small class="ox-home-row-tier" ${starts ? '' : 'hidden'}>${e(candidate.tier)}</small><span class="ox-home-t1-identity"><strong>${e(candidate.symbol)}</strong></span><small>距 ${Number.isFinite(candidate.distance)?candidate.distance.toFixed(2)+" ATR":"—"}</small><em class="${tone(candidate.changePct)}">${pct(candidate.changePct)}</em>`;
       if (row._markup !== markup) { row.innerHTML = markup; row._markup = markup; }
       displayed.push(row);
@@ -933,25 +1075,39 @@ export class USWorkspace {
     if (this.state.view === "home") this.updateHome();
   }
   async refreshSnapshot() {
-    if (!this.active) return;
+    if (!this.active || this.refreshingSnapshot) return;
+    this.refreshingSnapshot = true;
+    const signal = this.controller.signal;
+    const refresh = this.root.querySelector('[data-eod-refresh]');
+    if (refresh) { refresh.disabled = true; refresh.setAttribute('aria-busy', 'true'); }
+    this.root.querySelector('.us2-eod-summary')?.classList.add('is-refreshing');
     if (this.directoryError || !this.directory.length) this.loadDirectory();
     try {
-      const s = await USAdapter.snapshot({ signal: this.controller.signal });
-      if (this.active) {
+      const s = await USAdapter.snapshot({ signal });
+      if (this.active && !signal.aborted) {
         this.snapshotError=s.error||null;
         this.snapshot = s;
         this.cap={...this.cap,sessionDate:s.sessionDate};
         this.chart?.setCapabilities(this.cap);
         this.chart?.load(true);
-        this.quotes.clear();
-        for (const q of s.quotes || []) this.quotes.set(q.symbol,q);
+        this.acceptSnapshotQuotes(s);
         this.updateIdentity();
         this.updateCounts();
         this.updateSections();
         this.updateLive();
       }
-    } catch {}
+    } catch (error) {
+      if (this.active && !signal.aborted) {
+        this.snapshotError = error.message || '收盤資料更新失敗';
+        this.updateCounts();
+      }
+    } finally {
+      this.refreshingSnapshot = false;
+      if (refresh) { refresh.disabled = false; refresh.removeAttribute('aria-busy'); }
+      this.root?.querySelector('.us2-eod-summary')?.classList.remove('is-refreshing');
+    }
     // Closing snapshots refresh on entry or explicit user action, never intraday polling.
+    this.scheduleSnapshot();
   }
 }
 

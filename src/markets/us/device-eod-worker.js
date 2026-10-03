@@ -1,4 +1,4 @@
-import { buildDeviceDataset } from './device-eod-core.js?v=20261002-rank8';
+import { buildDeviceDataset } from './device-eod-core.js?v=20261003-us-live1';
 self.onmessage = async ({ data }) => {
   try {
     const dataset = await buildDeviceDataset(data, { progress:percent => self.postMessage({ percent }) });

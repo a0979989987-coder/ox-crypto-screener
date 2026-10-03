@@ -1,8 +1,8 @@
 import { getUSApiBase } from "./api.js?v=20261001-us-eod1";
-import { mergeCandles } from "./model.js?v=20261001-us-eod1";
+import { mergeCandles } from "./model.js?v=20261003-us-live1";
 import { aggregate4H, aggregateMonthly } from "./aggregate.js?v=20261001-us-eod1";
 import { EOD_CAPABILITIES } from "./eod.js";
-import { DeviceEOD } from "./device-eod.js?v=20261002-rank8";
+import { DeviceEOD } from "./device-eod.js?v=20261003-us-live1";
 import { deviceRecord } from "./device-storage.js?v=20261001-us-device1";
 const cache = new Map();
 const quoteCache = new Map();
@@ -49,6 +49,7 @@ export const USAdapter = {
   deviceReady() { return DeviceEOD.restore(); },
   async directory(options) {
     if (DeviceEOD.active) return { schemaVersion:2, items:DeviceEOD.active.packet.directory, receivedAt:Date.parse(DeviceEOD.active.packet.collectedAt) };
+    if (options?.capabilities?.source === 'binance-equity') return validDirectory(await endpoint('directory',{},options));
     if (directoryCache) return directoryCache;
     let saved;
     try { saved = await deviceRecord('directory'); if (saved) validDirectory(saved); } catch { saved = null; }
@@ -118,7 +119,7 @@ export const USAdapter = {
     if (capabilities.dataScope === 'device') throw Error('本機盤後資料已移除，請重新選擇盤後檔。');
     const key = `${capabilities.source || "finance-query-eod"}:${capabilities.sessionDate || "pending"}:${symbol}:${interval}:${extendedHours}:${to || ""}`,
       hit = cache.get(key);
-    if (hit && !force && Date.now() - hit.receivedAt < 86400000 &&
+    if (hit && !force && Date.now() - hit.receivedAt < (capabilities.mode === 'perpetual' ? 5000 : 86400000) &&
       (hit.bars.length >= limit || hit.historyExhausted)) return hit;
     let result;
     try {
