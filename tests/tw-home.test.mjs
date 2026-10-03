@@ -78,7 +78,8 @@ test('manual refresh bypasses cache and fetches sources even before publication;
  const failure=await refreshHomeSection('core',seed.core,now,{core:async()=>{throw Error('offline');}});assert.equal(failure.status,'stale');assert.equal(failure.data.savedAt,seed.core.savedAt);assert.equal(failure.error,'offline');
 });
 test('05:30 Taipei briefing publishes new data independently of the cash close gate and preserves partial sources',async()=>{
- const date='2026-10-02',now=new Date(date+'T05:30:00+08:00');
+ const next=new Date(seed.briefing.date+'T00:00:00Z');next.setUTCDate(next.getUTCDate()+1);
+ const date=next.toISOString().slice(0,10),now=new Date(date+'T05:30:00+08:00');
  const fresh={...seed.briefing,date,collectedAt:now.toISOString()};
  const morning=await refreshHomeSection('briefing',seed.briefing,now,{briefing:async()=>fresh});assert.equal(morning.data,fresh);assert.equal(morning.publication,'published');
  const partial={...fresh,complete:false,rows:fresh.rows.map((r,i)=>i===0?{...r,status:'stale',error:'upstream timeout'}:r)};
