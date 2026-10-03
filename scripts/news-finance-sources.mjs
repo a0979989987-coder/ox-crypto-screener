@@ -24,9 +24,6 @@ export const FINANCE_FEEDS = [
   {id:'cna',name:'中央通訊社',url:'https://feeds.feedburner.com/rsscna/finance',hosts:['www.cna.com.tw'],markets:['tw'],verified:'publisher-feed',usage:'個人／非營利之非商業用途；標示中央通訊社，不轉載全文',termsUrl:'https://www.cna.com.tw/about/rss.aspx'},
   {id:'investing',name:'Investing',url:'https://www.investing.com/rss/news_14.rss',hosts:['www.investing.com'],markets:['tw','us'],verified:'publisher-feed',timezone:'UTC'}
 ];
-export const RESTRICTED_FINANCE_SOURCES = [
-  {id:'jin10',name:'金十數據',markets:['tw'],status:'not-connected',access:'authorization-required',message:'網站声明限制未授權之商業使用；需先確認授權，未自動收集。',termsUrl:'https://www.jin10.com/',siteUrl:'https://xnews.jin10.com/'}
-];
 export function publisherMatches(url, domain){
   try {const host=new URL(url).hostname.toLowerCase();return host===domain||host.endsWith(`.${domain}`);}catch{return false;}
 }

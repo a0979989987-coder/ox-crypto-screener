@@ -7,7 +7,7 @@ import { pathToFileURL } from 'node:url';
 import { XMLParser } from 'fast-xml-parser';
 import { CRYPTO_ASSETS, identifyAssets, issuerAssets, dividends, holidays, paymentEvents, governanceEvents, spansFor, tpexDividends } from './news-providers.mjs';
 import { collectConferences } from './news-conferences.mjs';
-import { FINANCE_SOURCES, FINANCE_FEEDS, RESTRICTED_FINANCE_SOURCES, publisherMatches, financeHeadline } from './news-finance-sources.mjs';
+import { FINANCE_SOURCES, FINANCE_FEEDS, publisherMatches, financeHeadline } from './news-finance-sources.mjs';
 
 // Public publisher and explicitly identified aggregation feeds. Only dated
 // headlines and source links are retained; article bodies are never republished.
@@ -231,7 +231,6 @@ export async function collect() {
       if (!response.ok) throw Error(`HTTP ${response.status}`); const body = await response.json(); if (body.errors || !Array.isArray(body.data?.proposals)) throw Error('Governance response has no verified proposals'); return governanceEvents(body.data.proposals, stamp);
     }]
   ];
-  sources.push(...RESTRICTED_FINANCE_SOURCES);
   sources.push({ id: 'mops-payments', status: 'not-connected', message: '已查核官方股利表，但不含除息交易日與現金發放日，無法生成可靠日期事件。' });
   sources.push({ id: 'decrypt', status: 'not-connected', message: '已驗證 RSS，但官方服務條款限制自動收集；未取得許可，因此不啟用。', termsUrl: 'https://decrypt.co/terms-of-service' });
   const eventResults = await Promise.allSettled(providers.map(async ([id, load]) => ({ id, items: await load() })));

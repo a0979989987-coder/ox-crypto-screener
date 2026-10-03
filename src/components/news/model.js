@@ -1,4 +1,4 @@
-import { SOURCE_CATALOG, MARKET_CATEGORIES, EVENT_PROVIDERS } from './config.js';
+import { SOURCE_CATALOG, MARKET_CATEGORIES, EVENT_PROVIDERS } from './config.js?v=20261003-sources1';
 export const validDate = value => { if (!/^\d{4}-\d{2}-\d{2}$/.test(value || '')) return false; const date = new Date(`${value}T00:00:00Z`); return Number.isFinite(date.getTime()) && date.toISOString().slice(0, 10) === value; };
 export const safeLink = value => { try { const u = new URL(value); return u.protocol === 'https:' && !u.username && !u.password ? u.href : null; } catch { return null; } };
 export const plain = value => String(value ?? '').replace(/<[^>]*>/g, '').replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g, '').trim();

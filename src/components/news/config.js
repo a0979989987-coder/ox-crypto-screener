@@ -18,7 +18,7 @@ export const SOURCE_CATALOG = [
   source('wantgoo', '玩股網', ['tw']), source('google-news', 'Google 新聞', ['tw'], { aggregator: true }),
   source('ltn', '自由時報', ['tw']), source('cna', '中央通訊社', ['tw']), source('udn', '經濟日報', ['tw']),
   source('ctee', '工商時報', ['tw']), source('cmoney', 'CMoney 投資網誌', ['tw']), source('chinatimes', '中時新聞網', ['tw']),
-  source('168', '168 財經', ['tw']), source('jin10', '金十數據', ['tw']), source('investing', 'Investing', ['tw','us']),
+  source('168', '168 財經', ['tw']), source('investing', 'Investing', ['tw','us']),
   source('forexfactory', 'Forex Factory', ['tw']), source('moneydj', 'MoneyDJ 理財網', ['tw']),
   source('pchome', 'PChome 股市', ['tw']), source('ebc', '東森財經新聞網', ['tw']), source('msn', 'MSN 財經', ['tw'], { aggregator: true }),
   source('coindesk', 'CoinDesk', ['crypto']), source('cointelegraph', 'Cointelegraph', ['crypto']), source('decrypt', 'Decrypt', ['crypto']),
