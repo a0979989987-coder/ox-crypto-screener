@@ -95,8 +95,9 @@ export function normalizeQuote(raw, receivedAt = Date.now(), cap = {}) {
 }
 export function quoteStatus(q, now = Date.now()) {
   if (q?.mode === 'perpetual') {
-    if(q.stale || now-q.marketTime*1000>30000)return '幣安合約 · 報價待更新';
-    return q.transport==='websocket'?'幣安合約 · 串流更新':'幣安合約 · 定時更新';
+    const exchange=q.source==='bitget-equity'?'Bitget':'幣安';
+    if(q.stale || now-q.marketTime*1000>30000)return exchange+'合約 · 報價待更新';
+    return exchange+(q.transport==='websocket'?'合約 · 串流更新':'合約 · 定時更新');
   }
   if (q?.mode === 'eod') {
     try { return q.asOf === completedSession(now) ? `已收盤 · ${q.asOf}` : `前次收盤 · ${q.asOf} · 待更新`; }
@@ -163,7 +164,7 @@ export function mergeCandles(old, next) {
 }
 export function closedCandles(bars, interval = "1D", now = Date.now()) {
   return bars.filter((c) => {
-    if (c.source === 'binance-equity') return Number.isFinite(c.closeTime) && c.closeTime < now;
+    if (['binance-equity','bitget-equity'].includes(c.source)) return Number.isFinite(c.closeTime) && c.closeTime < now;
     const end = candleEnd(c, interval);
     return end !== null && end <= now / 1000;
   });

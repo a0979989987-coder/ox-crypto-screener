@@ -9,15 +9,24 @@ const portFlag = process.argv.indexOf('--port');
 const hostFlag = process.argv.indexOf('--host');
 const port = Number(portFlag >= 0 ? process.argv[portFlag + 1] : process.env.PORT) || 4173;
 const privateUS = process.argv.includes('--us-private');
+const liveUS = process.argv.includes('--us-live');
+if(liveUS && privateUS)throw Error('Choose one US data mode.');
+const liveHandler=liveUS?(await import('../api/v1/us/[endpoint].js')).default:null;
 if (privateUS && hostFlag >= 0 && process.argv[hostFlag + 1] !== '127.0.0.1')
   throw Error('私人美股驗證僅能綁定 127.0.0.1。');
-const host = privateUS ? '127.0.0.1' : hostFlag >= 0 ? process.argv[hostFlag + 1] : '0.0.0.0';
+const host = privateUS || liveUS ? '127.0.0.1' : hostFlag >= 0 ? process.argv[hostFlag + 1] : '0.0.0.0';
 const privateAPI = privateUS ? privateUSPreview({ snapshotPath: process.env.US_PRIVATE_INPUT }) : null;
 const types = { ".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".css": "text/css; charset=utf-8", ".json": "application/json; charset=utf-8", ".svg": "image/svg+xml", ".png": "image/png", ".jpg": "image/jpeg", ".webp": "image/webp" };
 
 createServer(async (request, response) => {
   try {
     const pathname = decodeURIComponent(new URL(request.url, `http://127.0.0.1:${port}`).pathname);
+    if(liveHandler && pathname.startsWith('/api/v1/us/')){
+      const url=new URL(request.url,`http://127.0.0.1:${port}`);
+      request.query={...Object.fromEntries(url.searchParams),endpoint:pathname.split('/').at(-1)};
+      response.status=code=>{response.statusCode=code;return response;};
+      await liveHandler(request,response);return;
+    }
     if (privateAPI && pathname.startsWith('/api/v1/us/')) {
       response.setHeader('Cache-Control', 'private, no-store');
       response.setHeader('Content-Type', 'application/json; charset=utf-8');
@@ -44,7 +53,7 @@ createServer(async (request, response) => {
     if (!(await stat(file)).isFile()) throw new Error("Not a file");
     response.writeHead(200, { "Content-Type": types[extname(file)] || "application/octet-stream" });
     const body = await readFile(file);
-    response.end(privateUS && file === resolve(root, 'index.html')
+    response.end((privateUS || liveUS) && file === resolve(root, 'index.html')
       ? body.toString().replace('<head>', `<head><script>window.OX_US_DATA_API_BASE=location.origin+'/api';</script>`)
       : body);
   } catch {

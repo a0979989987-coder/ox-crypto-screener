@@ -1,7 +1,7 @@
 import {BubbleField} from '../crypto/bubbles/field.js?v=20261002-finance4';
 import {mountBubbles} from '../crypto/bubbles/view.js?v=20261003-us-parity1';
-import {patternDataAllowed} from './patterns/source.js?v=20261003-us-live1';
-import {e,price,compact,pct} from './view-utils.js?v=20261003-us-live1';
+import {patternDataAllowed} from './patterns/source.js?v=20261003-us-bitget1';
+import {e,price,compact,pct} from './view-utils.js?v=20261003-us-bitget1';
 
 export const US_BUBBLE_METRICS = Object.freeze([['change','收盤漲跌'],['volume','成交量'],['liquidity','平均成交額'],['rvol','量比']]);
 const usableNumber = value => typeof value === 'number' && Number.isFinite(value);
@@ -33,8 +33,9 @@ export function usBubbleText(value,metric) {
 export function mountUSBubbles(host,{getContext,watching,onOpenRadar,refresh=()=>{}}) {
  host.dataset.bubbleMarket='us';
  const perpetual=getContext().capabilities?.mode==='perpetual';
+ const exchange=getContext().capabilities?.exchange||'幣安';
  const changeLabel=perpetual?'合約24h漲跌':'收盤漲跌';
- const adapter={marketLabel:perpetual?'幣安股票合約':'美股',metrics:US_BUBBLE_METRICS.map(([key,label])=>[key,key==='change'?changeLabel:label]),format:usBubbleText,
+ const adapter={marketLabel:perpetual?exchange+'股票合約':'美股',metrics:US_BUBBLE_METRICS.map(([key,label])=>[key,key==='change'?changeLabel:label]),format:usBubbleText,
   palette:{up:'#00b8d4',down:'#ff3078'},radiusForRows:usBubbleRadii,watching,
   displayName:row=>`${row.symbol} ${row.name}`,
   rows:options=>usBubbleRows(getContext(),options),
@@ -44,7 +45,7 @@ export function mountUSBubbles(host,{getContext,watching,onOpenRadar,refresh=()=
     '先在美股雷達收藏股票，這裡會顯示你的自選':!context.snapshot?.quotes?.length?'尚未取得行情':
     metric==='rvol'?'目前沒有可驗證的完整日量比':`目前沒有符合${direction==='long'?'看多':direction==='short'?'看空':'篩選'}條件的股票`;
   },
-  detail:row=>`<strong class="oxb-price">${price(row.price)}<small> ${perpetual?'USDT':'USD'}</small></strong><dl><div><dt>${changeLabel}</dt><dd class="${row.change>=0?'up':'down'}">${pct(row.change)}</dd></div><div><dt>${perpetual?'24h合約成交量':'成交股數'}</dt><dd>${compact(row.volume)} ${perpetual?'合約':'股'}</dd></div><div><dt>完整日量比</dt><dd>${usBubbleText(row.rvol,'rvol')}</dd></div><div><dt>20日平均估算成交額</dt><dd>${compact(row.liquidity)} ${perpetual?'USDT':'USD'}</dd></div></dl><small class="oxb-note">${perpetual?'幣安股票永續合約 · 非美股現貨':'交易日 '+e(row.dataDate)+' · 已收盤'}<br>${perpetual?'漲跌與成交量為合約滾動24小時；量比及平均成交額依完整 UTC 日 K 計算。':'成交額以每日收盤價 × 成交股數估算；泡泡大小依20日平均估算成交額。'}</small>`,
+  detail:row=>`<strong class="oxb-price">${price(row.price)}<small> ${perpetual?'USDT':'USD'}</small></strong><dl><div><dt>${changeLabel}</dt><dd class="${row.change>=0?'up':'down'}">${pct(row.change)}</dd></div><div><dt>${perpetual?'24h合約成交量':'成交股數'}</dt><dd>${compact(row.volume)} ${perpetual?'合約':'股'}</dd></div><div><dt>完整日量比</dt><dd>${usBubbleText(row.rvol,'rvol')}</dd></div><div><dt>20日平均估算成交額</dt><dd>${compact(row.liquidity)} ${perpetual?'USDT':'USD'}</dd></div></dl><small class="oxb-note">${perpetual?e(exchange)+'股票永續合約 · 非美股現貨':'交易日 '+e(row.dataDate)+' · 已收盤'}<br>${perpetual?'漲跌與成交量為合約滾動24小時；量比及平均成交額依完整 UTC 日 K 計算。':'成交額以每日收盤價 × 成交股數估算；泡泡大小依20日平均估算成交額。'}</small>`,
   start(){return ()=>{};},refresh,
  };
  const mounted=mountBubbles(host,{adapter,onOpenRadar});

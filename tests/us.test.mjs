@@ -6,7 +6,7 @@ import { deriveUSRiskRegime } from "../src/markets/us/home.js";
 
 test("US module uses its configured backend and keeps secrets server-side", () => {
   assert.equal(usModule.id, "us");
-  assert.equal(usModule.status, "partial");
+  assert.equal(usModule.status, "ready");
   assert.equal(usProvider.available, true);
   assert.equal(usProvider.secretRequired, true);
   assert.equal(usProvider.frontendSecretAllowed, false);

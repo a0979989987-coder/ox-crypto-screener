@@ -3,6 +3,9 @@ import assert from 'node:assert/strict';
 import { FREE_US_DISPLAY, widgetSymbol, chartWidgetSettings, usDisplayCapabilities } from '../src/markets/us/widget-config.js';
 import { capabilities, handleUS2 } from '../server/markets/us/service.js';
 import handler from '../api/v1/us/[endpoint].js';
+// Exercise the retained, unconfirmed legacy provider explicitly. Production
+// now defaults to Bitget's public equity-contract market data.
+process.env.US_DATA_PROVIDER='finance-query';
 
 test('free display does not claim raw OHLCV, redistribution rights or complete-market realtime',()=>{
   assert.equal(capabilities().chartMode,'native');

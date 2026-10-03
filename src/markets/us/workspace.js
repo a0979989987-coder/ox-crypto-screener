@@ -14,21 +14,22 @@ import {
   sectorETF,
   sourceInfo,
   nativeAllowed,
-} from "./view-utils.js?v=20261003-us-live1";
-import { toolsViews } from "./tools.js?v=20261003-us-live1";
-import { newsViews } from "./news.js?v=20261003-us-live1";
-import { USAdapter, fetchJSON } from "./provider.js?v=20261003-us-live1";
-import { subscribeEquity } from './live-equity.js?v=20261003-us-live1';
-import { DeviceEOD } from "./device-eod.js?v=20261003-us-live1";
-import { USChart } from "./chart.js?v=20261003-us-live1";
+} from "./view-utils.js?v=20261003-us-bitget1";
+import { toolsViews } from "./tools.js?v=20261003-us-bitget1";
+import { newsViews } from "./news.js?v=20261003-us-bitget1";
+import { USAdapter, fetchJSON } from "./provider.js?v=20261003-us-bitget1";
+import { subscribeEquity } from './live-equity.js?v=20261003-us-bitget1';
+import { BITGET_CAPABILITIES } from './bitget-equity.js?v=20261003-us-bitget1';
+import { DeviceEOD } from "./device-eod.js?v=20261003-us-bitget1";
+import { USChart } from "./chart.js?v=20261003-us-bitget1";
 import { USWidgetChart } from "./widget-chart.js?v=20261001-tiercomb1";
-import { usDisplayCapabilities } from "./widget-config.js?v=20261001-us-device1";
+import { usDisplayCapabilities } from "./widget-config.js?v=20261003-us-bitget1";
 import { EOD_CAPABILITIES, EOD_INTERVALS, eodFreshness } from "./eod.js?v=20261003-us-parity1";
-import { searchDirectory, quoteStatus } from "./model.js?v=20261003-us-live1";
+import { searchDirectory, quoteStatus } from "./model.js?v=20261003-us-bitget1";
 import { sessionAt, nyParts } from "./calendar.js?v=20261001-us-eod1";
 import { catalogueMode, cataloguePage, stockName } from "./directory-view.js?v=20261001-us-names1";
 
-import { tierResults, timeframeTierResults, stockClassic } from "./analysis.js?v=20261003-us-live1";
+import { tierResults, timeframeTierResults, stockClassic } from "./analysis.js?v=20261003-us-bitget1";
 import { icon, openDialog, closeDialog } from "./ui.js?v=20261001-us-eod1";
 
 // These are measured breadth ratios for the available stock pool, not a
@@ -100,7 +101,7 @@ export class USWorkspace {
     const signal = this.controller.signal;
     await USAdapter.deviceReady();
     if (signal.aborted || !this.active) return;
-    const initialCap = usDisplayCapabilities(DeviceEOD.active?.capabilities || EOD_CAPABILITIES);
+    const initialCap = usDisplayCapabilities(DeviceEOD.active?.capabilities || BITGET_CAPABILITIES);
     if (initialCap.chartMode !== this.cap.chartMode) this.renderedView = null;
     this.cap = initialCap;
     this.show(view || this.state.view);
@@ -111,7 +112,7 @@ export class USWorkspace {
         const displayCap = usDisplayCapabilities(c);
         const changedMode = this.cap.chartMode !== displayCap.chartMode;
         this.cap = {...displayCap,sessionDate:this.snapshot?.sessionDate};
-        if(c.source==='binance-equity'&&c.rawDataAvailable) this.loadDirectory(signal);
+        if(c.mode==='perpetual'&&c.rawDataAvailable) this.loadDirectory(signal);
         this.root?.querySelectorAll('[data-us-home-tf]').forEach(button => {
           button.hidden = Boolean(c.intervals && !c.intervals.includes(button.dataset.usHomeTf));
         });
@@ -136,6 +137,7 @@ export class USWorkspace {
           this.cap={...this.cap,sessionDate:s.sessionDate};
           this.chart?.setCapabilities(this.cap);
           this.acceptSnapshotQuotes(s);
+          this.startQuoteStream();
           this.updateIdentity();
           this.updateCounts();
           this.updateSections();
@@ -211,11 +213,18 @@ export class USWorkspace {
     save(prefsKey, this.state);
   }
   startQuoteStream() {
-    this.quoteStreamStop?.();this.quoteStreamStop=null;
-    if(this.cap.stream!=='binance-equity'||!nativeAllowed(this.cap)||!this.active)return;
-    const items=this.directory.filter(row=>row.source==='binance-equity'&&row.contractSymbol);
+    if(!['binance-equity','bitget-equity'].includes(this.cap.stream)||!nativeAllowed(this.cap)||!this.active)return;
+    let items=this.directory.filter(row=>row.source===this.cap.source&&row.contractSymbol);
+    // Keep mobile socket traffic bounded. The selected chart has its own live
+    // stream; all other listings also receive the 15-second REST quote refresh.
+    if(this.cap.source==='bitget-equity')items=items.sort((a,b)=>
+      Number(this.watch.has(b.symbol))-Number(this.watch.has(a.symbol))||
+      (this.quotes.get(b.symbol)?.quoteVolume||0)-(this.quotes.get(a.symbol)?.quoteVolume||0)).slice(0,80);
     if(!items.length)return;
-    this.quoteStreamStop=subscribeEquity({items,onReconnect:()=>this.refreshSnapshot(),
+    const key=this.cap.source+':'+items.map(item=>item.contractSymbol).join(',');
+    if(this.quoteStreamStop&&this.quoteStreamKey===key)return;
+    clearTimeout(this.quotePoll);this.quoteStreamStop?.();this.quoteStreamStop=null;this.quoteStreamKey=key;
+    this.quoteStreamStop=subscribeEquity({source:this.cap.source,items,onReconnect:()=>this.refreshSnapshot(),
       onQuote:quote=>{
         if(!this.active)return;
         const old=this.quotes.get(quote.symbol);
@@ -233,6 +242,21 @@ export class USWorkspace {
           }
         },500);
       }});
+    this.scheduleQuotes();
+  }
+  scheduleQuotes() {
+    clearTimeout(this.quotePoll);
+    if(!this.active||this.cap.source!=='bitget-equity')return;
+    this.quotePoll=setTimeout(async()=>{
+      const source=this.cap.source,signal=this.controller.signal;
+      try{if(!document.hidden&&!this.root?.hidden){
+        const data=await USAdapter.quotes({signal});
+        if(this.active&&!signal.aborted&&this.cap.source===source){
+          this.acceptSnapshotQuotes({mode:'perpetual',quotes:data.quotes});
+          this.updateIdentity();this.updateLive();this.bubbles?.draw();
+        }
+      }}catch{}finally{if(!signal.aborted)this.scheduleQuotes();}
+    },15000);
   }
   scheduleSnapshot() {
     clearTimeout(this.refreshTimer);
@@ -277,6 +301,7 @@ export class USWorkspace {
     this.renderedView = null;
     this.controller?.abort();
     clearTimeout(this.refreshTimer);
+    clearTimeout(this.quotePoll);
     this.quoteStreamStop?.();this.quoteStreamStop=null;clearTimeout(this.quotePaint);this.quotePaint=null;
     this.destroyTools();
     delete document.body.dataset.usWorkspace;
@@ -285,6 +310,7 @@ export class USWorkspace {
   }
   suspend() {
     this.destroyTools();
+    clearTimeout(this.quotePoll);
     this.quoteStreamStop?.();this.quoteStreamStop=null;clearTimeout(this.quotePaint);this.quotePaint=null;
     if (this.root) this.root.hidden = true;
   }
@@ -348,9 +374,9 @@ export class USWorkspace {
     this.root.querySelector('[data-eod-refresh]')?.setAttribute('aria-label',widget?'重新連線圖表與更新盤後快照':'更新收盤快照');
     if(this.cap.mode==='perpetual'&&!widget) {
       if(heading)heading.textContent='美股合約';
-      if(dateNode)dateNode.textContent=this.snapshotError||`幣安 · ${counts?.quoted??0} 檔 · 24h 漲跌`;
+      if(dateNode)dateNode.textContent=this.snapshotError||`${this.cap.exchange||"幣安"} · ${counts?.quoted??0} 檔 · 24h 漲跌`;
       if(dateNode)dateNode.title='股票永續合約價格與成交量；非美股現貨。K 線使用 UTC，雷達使用已完成日 K。';
-      node.textContent=`幣安合約 ${this.directory.length} · 有報價 ${counts?.quoted??0} · 已完成日 K 分析 ${counts?.scanned??0}`;
+      node.textContent=`${this.cap.exchange||"幣安"}合約 ${this.directory.length} · 有報價 ${counts?.quoted??0} · 已完成日 K 分析 ${counts?.scanned??0}`;
       this.root.querySelector('[data-eod-refresh]')?.setAttribute('aria-label','更新合約行情與掃描');
     }
     this.updateDataBrief();
@@ -369,7 +395,7 @@ export class USWorkspace {
     if (live) {
       if(this.cap.mode==='perpetual'&&this.cap.chartMode!=='widget') {
         const quotes=['SPY','QQQ',this.state.symbol].filter((s,i,a)=>a.indexOf(s)===i).map(s=>this.quotes.get(s)).filter(Boolean);
-        live.textContent=`幣安股票永續合約 · USDT · 24h ${quotes.map(q=>`${q.symbol} ${price(q.price)} ${pct(q.changePct)}`).join(' ｜ ')||'等待行情連線'}`;
+        live.textContent=`${this.cap.exchange||"幣安"}股票永續合約 · USDT · 24h ${quotes.map(q=>`${q.symbol} ${price(q.price)} ${pct(q.changePct)}`).join(' ｜ ')||'等待行情連線'}`;
         live.title=live.textContent;live.dataset.usText=live.textContent;return;
       }
       if (this.cap.mode === 'eod' && this.cap.chartMode !== 'widget') {
@@ -412,7 +438,7 @@ export class USWorkspace {
     const provider=this.root?.querySelector(".us2-provider-detail");
     if(provider)provider.textContent=this.cap.chartMode === "widget" ? "TradingView 官方免費圖表。價格、行情時間與延遲狀態由圖表標示；不將單一交易所資料稱為全市場。搜尋目錄沿用既有公司資料，實際涵蓋以圖表為準。免費圖表不提供原始 K 線給 OX 掃描。" : `來源 ${q?.source||this.cap?.source||"盤後資料源"} · feed ${q?.feed||"未確認"} · ${q?.volumeScope||"成交量口徑未確認"} · ${this.snapshotError||"共用掃描快照狀態可查閱上方統計"}`;
     if (provider && this.cap.dataScope === 'device') provider.textContent = `本機盤後檔 · ${this.cap.feed} · 交易日 ${this.snapshot?.sessionDate || this.cap.sessionDate} · 只供個人使用 · 日／週／月線依完整收盤資料計算。資料不會上傳；匯入新檔可更新。`;
-    if(provider&&this.cap.mode==='perpetual'&&this.cap.chartMode!=='widget')provider.textContent='來源：幣安股票永續合約。USDT 計價；漲跌為滾動 24 小時，成交量為合約量。原生圖表以 WebSocket 更新，斷線時定時補抓。掃描使用已完成 UTC 日 K；美股休市時合約仍可能波動。';
+    if(provider&&this.cap.mode==='perpetual'&&this.cap.chartMode!=='widget')provider.textContent='來源：'+(this.cap.exchange||'幣安')+'股票永續合約。USDT 計價；漲跌為滾動 24 小時，成交量為合約量。原生圖表以 WebSocket 更新，斷線時定時補抓。掃描使用已完成 UTC 日 K；美股休市時合約仍可能波動。';
   }
   bindSearch() {
     const form = this.root.querySelector("form"),
@@ -1007,7 +1033,7 @@ export class USWorkspace {
     panel.querySelector('[data-home-breadth-note]').textContent = data.total ? `觀察池 ${data.total.toLocaleString()} 檔股票 · 不含 ETF` : '依有行情的股票觀察池計算';
     const freshness = eodFreshness(this.snapshot?.sessionDate);
     panel.querySelector('[data-home-session-note]').textContent = this.cap.mode==='perpetual'
-      ? (this.snapshot?.asOf?'幣安合約 · 已完成 UTC 日 K':'合約日 K 資料待取得')
+      ? (this.snapshot?.asOf?(this.cap.exchange||'幣安')+'合約 · 已完成 UTC 日 K':'合約日 K 資料待取得')
       : this.snapshot?.sessionDate ? `${this.snapshot.sessionDate} 已收盤${freshness.status === 'stale' ? ' · 待更新' : ''}` : '收盤資料待取得';
     const meter = panel.querySelector('[data-home-breadth-meter]');
     meter.style.width = `${data.advanceRatio ?? 0}%`;
@@ -1091,6 +1117,7 @@ export class USWorkspace {
         this.chart?.setCapabilities(this.cap);
         this.chart?.load(true);
         this.acceptSnapshotQuotes(s);
+        this.startQuoteStream();
         this.updateIdentity();
         this.updateCounts();
         this.updateSections();

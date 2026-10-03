@@ -1,8 +1,13 @@
-import { BINANCE_INTERVALS, binanceBars, binanceQuote } from './binance-equity.js?v=20261003-us-live1';
+import { BINANCE_INTERVALS, binanceBars, binanceQuote } from './binance-equity.js?v=20261003-us-bitget1';
+import { subscribeBitget } from './live-bitget.js?v=20261003-us-bitget1';
+
+export function subscribeEquity(options={}) {
+  return options.source==='bitget-equity'?subscribeBitget(options):subscribeBinance(options);
+}
 
 // The selected chart or a verified equity quote list. Closing it, switching
 // symbol/frame or hiding the page prevents obsolete messages from updating UI.
-export function subscribeEquity({symbol,contractSymbol,interval,items=null,onBar=()=>{},onQuote=()=>{},
+function subscribeBinance({symbol,contractSymbol,interval,items=null,onBar=()=>{},onQuote=()=>{},
   onStatus=()=>{},onReconnect=()=>{},WebSocketImpl=globalThis.WebSocket,
   documentImpl=globalThis.document,now=Date.now,setTimer=setTimeout,clearTimer=clearTimeout}={}) {
   const aggregate=Array.isArray(items)&&items.length>0;

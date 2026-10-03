@@ -1,4 +1,4 @@
-import { US_MODULE_CONFIG } from "./config.js?v=20261001-us-eod1";
+import { US_MODULE_CONFIG } from "./config.js?v=20261003-us-bitget1";
 
 /*
  * OX v4.0 Modular

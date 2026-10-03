@@ -5,10 +5,10 @@ import {
   tone,
   compact,
   toolNames,
-} from "./view-utils.js?v=20261003-us-live1";
-import { mountUSBubbles } from "./visuals.js?v=20261003-us-live1";
+} from "./view-utils.js?v=20261003-us-bitget1";
+import { mountUSBubbles } from "./visuals.js?v=20261003-us-bitget1";
 import { mountPatternSearch } from "../crypto/patterns/view.js?v=20261003-us-parity1";
-import { createUSPatternSource, patternSourceKey } from "./patterns/source.js?v=20261003-us-live1";
+import { createUSPatternSource, patternSourceKey } from "./patterns/source.js?v=20261003-us-bitget1";
 import { createToolsRail } from "../../components/strength/tools-rail.js?v=20261001-tiercomb1";
 import { createToolChart } from "../crypto/analytics/tools-charts.js";
 export const toolsViews = {

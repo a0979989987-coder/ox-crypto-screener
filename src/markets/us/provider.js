@@ -1,8 +1,8 @@
 import { getUSApiBase } from "./api.js?v=20261001-us-eod1";
-import { mergeCandles } from "./model.js?v=20261003-us-live1";
+import { mergeCandles } from "./model.js?v=20261003-us-bitget1";
 import { aggregate4H, aggregateMonthly } from "./aggregate.js?v=20261001-us-eod1";
 import { EOD_CAPABILITIES } from "./eod.js";
-import { DeviceEOD } from "./device-eod.js?v=20261003-us-live1";
+import { DeviceEOD } from "./device-eod.js?v=20261003-us-bitget1";
 import { deviceRecord } from "./device-storage.js?v=20261001-us-device1";
 const cache = new Map();
 const quoteCache = new Map();
@@ -49,7 +49,7 @@ export const USAdapter = {
   deviceReady() { return DeviceEOD.restore(); },
   async directory(options) {
     if (DeviceEOD.active) return { schemaVersion:2, items:DeviceEOD.active.packet.directory, receivedAt:Date.parse(DeviceEOD.active.packet.collectedAt) };
-    if (options?.capabilities?.source === 'binance-equity') return validDirectory(await endpoint('directory',{},options));
+    if (options?.capabilities?.mode === 'perpetual') return validDirectory(await endpoint('directory',{},options));
     if (directoryCache) return directoryCache;
     let saved;
     try { saved = await deviceRecord('directory'); if (saved) validDirectory(saved); } catch { saved = null; }
@@ -72,7 +72,7 @@ export const USAdapter = {
   },
   async snapshot(options) {
     if (DeviceEOD.active) return DeviceEOD.active.snapshot;
-    const j = await endpoint("snapshot", {}, options);
+    const j = await endpoint("snapshot", {}, {timeout:60000,...options});
     if (j.schemaVersion !== 2 || !Array.isArray(j.analyses))
       throw Error("掃描快照格式錯誤。");
     return j;
@@ -86,6 +86,7 @@ export const USAdapter = {
       return { ...EOD_CAPABILITIES, capabilitiesOffline: true };
     }
   },
+  async quotes(options) { return endpoint('quotes',{},options); },
   async quote(symbol, options = {}) {
     if (DeviceEOD.active) return DeviceEOD.quote(symbol);
     if (options.capabilities?.dataScope === 'device') throw Error('本機盤後資料已移除，請重新選擇盤後檔。');

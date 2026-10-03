@@ -1,5 +1,5 @@
 import { evaluateClassic, qualifyClassicRow, compareClassic, compactClassic, CLASSIC_VERSION, CLASSIC_TIER_LIMITS, rankClassicTiers } from '../../core/classic.js?v=20261002-rank8';
-import { closedCandles, relativeStrength } from "./model.js?v=20261003-us-live1";
+import { closedCandles, relativeStrength } from "./model.js?v=20261003-us-bitget1";
 const mean = (a) => a.reduce((s, x) => s + x, 0) / a.length;
 export function pivots(bars, radius = 3) {
   const p = [];

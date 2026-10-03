@@ -1,4 +1,4 @@
-import { tierResults, matchPath } from "./analysis.js?v=20261003-us-live1";
+import { tierResults, matchPath } from "./analysis.js?v=20261003-us-bitget1";
 self.onmessage = ({ data }) => {
   try {
     self.postMessage({

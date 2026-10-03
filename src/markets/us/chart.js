@@ -1,11 +1,11 @@
 import { evaluateClassic, compareClassic } from '../../core/classic.js?v=20261002-rank8';
-import { USAdapter } from "./provider.js?v=20261003-us-live1";
+import { USAdapter } from "./provider.js?v=20261003-us-bitget1";
 import { INTERVALS, countdown, sessionAt, nyParts } from "./calendar.js?v=20261001-us-eod1";
-import { mergeCandles, movingAverage, vwap } from "./model.js?v=20261003-us-live1";
+import { mergeCandles, movingAverage, vwap } from "./model.js?v=20261003-us-bitget1";
 import { icon, positionTimeframe, openDialog, closeDialog } from "./ui.js?v=20261001-us-eod1";
-import { sourceInfo, nativeAllowed } from "./view-utils.js?v=20261003-us-live1";
-import { subscribeEquity } from './live-equity.js?v=20261003-us-live1';
-import { perpetualCountdown } from './binance-equity.js?v=20261003-us-live1';
+import { sourceInfo, nativeAllowed } from "./view-utils.js?v=20261003-us-bitget1";
+import { subscribeEquity } from './live-equity.js?v=20261003-us-bitget1';
+import { perpetualCountdown } from './binance-equity.js?v=20261003-us-bitget1';
 const UP = "#00b8d4",
   DOWN = "#ff3078";
 const esc = (s) =>
@@ -525,11 +525,11 @@ export class USChart {
     this.liveVersions=new Map();
   }
   startLive(result) {
-    if(this.capabilities.stream!=='binance-equity'||!nativeAllowed(this.capabilities)||!result.contractSymbol)return;
+    if(!['binance-equity','bitget-equity'].includes(this.capabilities.stream)||!nativeAllowed(this.capabilities)||!result.contractSymbol)return;
     const key=`${result.contractSymbol}:${this.interval}`;
     if(this.liveKey===key)return;
     this.stopLive();this.liveKey=key;
-    this.liveStop=subscribeEquity({symbol:this.symbol,contractSymbol:result.contractSymbol,interval:this.interval,
+    this.liveStop=subscribeEquity({source:this.capabilities.source,symbol:this.symbol,contractSymbol:result.contractSymbol,interval:this.interval,
       onStatus:status=>{this.liveStatus=status;this.priceTimer();},
       onReconnect:()=>{if(!this.disposed)this.load(true);},
       onQuote:quote=>{if(!this.disposed&&this.liveKey===key)this.onState({quote,stream:true,symbol:this.symbol});},

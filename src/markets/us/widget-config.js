@@ -20,7 +20,7 @@ export const FREE_US_DISPLAY = Object.freeze({
 // Display capability is independent of the server's raw-data entitlement.
 // Keep confirmed/native and private EOD validation paths intact.
 export function usDisplayCapabilities(cap) {
-  if (cap.externalDisplayConfirmed === true || cap.privateValidation === true ||
+  if (cap.publicMarketData === true || cap.externalDisplayConfirmed === true || cap.privateValidation === true ||
     (cap.dataScope === 'device' && cap.localDataAvailable === true)) return { ...cap };
   return { ...cap, chartMode: 'widget', widgetDisplayAvailable: true,
     displaySource: FREE_US_DISPLAY.source, intervals: EOD_INTERVALS };
