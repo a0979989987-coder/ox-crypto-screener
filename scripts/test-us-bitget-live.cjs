@@ -28,7 +28,7 @@ const view=async(page,name,width)=>{await page.locator((width<800?'.app-dock':'.
    page.on('pageerror',e=>errors.push(e.message));
    page.on('response',async r=>{if(r.url().includes('/api/v1/us/')&&r.status()>=400)responses.push({url:r.url(),status:r.status()});});
    page.on('websocket',ws=>{if(ws.url().includes('ws.bitget.com'))ws.on('framereceived',({payload})=>{
-    try{const p=JSON.parse(String(payload));if(!p.data)return;if(p.arg?.channel==='ticker')socketData.ticker++;else if(p.arg?.channel?.startsWith('candle'))socketData.candle++;}catch{}
+    try{const p=JSON.parse(String(payload));if(!p.data||!['AAPLUSDT','SPYUSDT'].includes(p.arg?.instId))return;if(p.arg?.channel==='ticker')socketData.ticker++;else if(p.arg?.channel?.startsWith('candle'))socketData.candle++;}catch{}
    });});
    await page.goto(base,{waitUntil:'domcontentloaded'});await page.click('#ox-control-open');await page.click('[data-market-choice="us"]');await page.click('#ox-control-close');
    await page.waitForFunction(()=>document.querySelector('[data-eod-date]')?.textContent.includes('281')||/有報價 [1-9]/.test(document.querySelector('.us2-root')?.textContent||''),null,{timeout:90000});
