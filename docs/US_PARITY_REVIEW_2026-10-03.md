@@ -4,7 +4,7 @@
 
 **Not a complete public US-market release.** Native UI integration is ready for review, but an authorized automatic public OHLCV source has not been connected. This branch must not be presented as an automatically updating US product. It does not restore intraday data, add Twelve Data, purchase a service, or publish the private validation dataset.
 
-Base: `f0faf91009120942dcd258c0914193c2788785c6`. Existing Crypto, Taiwan, news, and account work is preserved.
+Initial base: `f0faf91009120942dcd258c0914193c2788785c6`. Latest main `941b3ed2984a9ce1c8cf405504a11d2fc485c94e` was also incorporated, preserving its centered mobile Crypto tabs and news-source removal. The adjacent script-version conflict retains both the new US entry and latest Crypto entry. Existing Crypto, Taiwan, news, and account work is preserved.
 
 ## Changes
 
@@ -20,6 +20,7 @@ Base: `f0faf91009120942dcd258c0914193c2788785c6`. Existing Crypto, Taiwan, news,
 - `npm test`: 76 test files passed.
 - `npm run check`: passed, 96 local assets and 171 unique IDs.
 - `git diff --check`: passed.
+- After incorporating latest main, the 76 test files and build check passed again. Its mobile-tool-rail browser regression also passed at 320/375/390/430/600/1363px.
 - Genuine private EOD acceptance uses 335 symbols dated 2026-09-30. It is deliberately marked stale on 2026-10-03. This is neither current automatic data nor proof of whole-market coverage.
 - Browser acceptance: 390px, 430px, and 1366px passed. The desktop freehand assertion checks that a completed path searches the index; recognizing a named preset is not required for a valid sketch.
 - Acceptance verifies exact SPY closing values, 400 daily / 91 weekly / 21 monthly bars, native cyan/red OX candles, scanner controls, persisted drawings, home candidates, shared bubbles, shared pattern counts/details/freehand search, selected-frame navigation, reload recovery, invalid-file preservation, no horizontal overflow, no runtime errors, no file uploads, and no raw-US-backend calls after import.

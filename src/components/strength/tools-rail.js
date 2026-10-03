@@ -8,6 +8,12 @@ export function createToolsRail({ tabs, selected, label, attribute = 'data-tool'
   if(equal){const style=document.createElement('style');style.textContent='@media(max-width:600px){.tw-radar-root .twr-mode-rail{width:max-content;min-width:100%;flex-wrap:nowrap}.tw-radar-root .twr-mode-rail button{flex:1 0 auto;min-width:72px;white-space:nowrap}}';shadow.append(style);}
   const life = new AbortController();
   if(mobileCompact){const style=document.createElement('style');style.textContent='@media(max-width:600px){.tw-radar-root .twr-mode-viewport{overflow:hidden}.tw-radar-root .twr-mode-rail{display:flex;width:100%;min-width:0;flex-wrap:nowrap;gap:1px;padding:3px}.tw-radar-root .twr-mode-rail button{flex:1 1 0;min-width:0;min-height:36px;white-space:nowrap;padding:6px 2px;font-size:11px}.tw-radar-root .twr-mode-indicator{display:block}.tw-radar-root .twr-mode-rail button.active{border:1px solid #c6cccc80;background:linear-gradient(130deg,#c1c4c439,#999d9d18);box-shadow:inset 0 0 10px #ffffff18;color:#fff}}';shadow.append(style);}
+  // Six tools still fit in one centered mobile row; desktop sizes are unchanged.
+  if (mobileCompact && tabs.length > 5) {
+    const style = document.createElement('style');
+    style.textContent = `@media(max-width:600px){.tw-radar-root .twr-mode-rail{display:grid;grid-template-columns:repeat(${tabs.length},minmax(0,1fr))}.tw-radar-root .twr-mode-rail button{box-sizing:border-box;width:100%;font-size:clamp(8px,2.4vw,10px);padding-inline:1px;text-align:center;justify-content:center}}`;
+    shadow.append(style);
+  }
   revealStyledShadow(shadow, life.signal, '.tw-radar-root', 41);
   function position() {
     const rail = shadow.querySelector('.twr-mode-rail'), button = rail.querySelector('.active');

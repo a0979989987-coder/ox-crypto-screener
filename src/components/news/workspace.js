@@ -1,6 +1,6 @@
 import { createToolsRail } from '../strength/tools-rail.js';
-import { MARKET_NAMES, CATEGORY_NAMES, MARKET_CATEGORIES, TIME_CHOICES, sourceName } from './config.js';
-import { defaultState, taipeiDay, monthGrid, shiftMonth, eventDay, eventCategory, importance, newsBase, filterNews, hotWords, ranking, sourcesFor, coverage, safeLink, plain, agendaDays } from './model.js?v=20261002-tw3';
+import { MARKET_NAMES, CATEGORY_NAMES, MARKET_CATEGORIES, TIME_CHOICES, sourceName } from './config.js?v=20261003-sources1';
+import { defaultState, taipeiDay, monthGrid, shiftMonth, eventDay, eventCategory, importance, newsBase, filterNews, hotWords, ranking, sourcesFor, coverage, safeLink, plain, agendaDays } from './model.js?v=20261003-sources1';
 import { node, button, anchoredPanel, modal } from './layers.js';
 const fmt = value => Number.isFinite(Date.parse(value)) ? new Intl.DateTimeFormat('zh-TW', { timeZone: 'Asia/Taipei', dateStyle: 'short', timeStyle: 'short', hour12: false }).format(new Date(value)) : '時間待確認';
 const label = item => item.titleZh || item.title || '標題資料未提供';
@@ -63,7 +63,7 @@ export function mountNewsWorkspace(host, api) {
       const time = button('時間', '多選新聞時間', () => multi(time, '時間', 'times', TIME_CHOICES.map(([id, text]) => ({ id, label: text })), ['24'], '時間採聯集並去重，依發布時間篩選。'), 'oxn-pill');
       const source = button('來源', '多選新聞來源', () => {
         const available = sourcesFor(data.snapshot, scope()).filter(s => !s.id.includes('calendar') && !['aptos', 'twse-dividends', 'twse-holidays', 'mops-payments', 'mops-conferences', 'tpex-dividends', 'tpex-dividends-daily', 'twse-conferences', 'aave-governance'].includes(s.id));
-        multi(source, '來源', 'sources', available.map(s => ({ id: s.id, label: s.name, disabled: s.status === 'not-connected', hint: `${sourceState(s)}${s.scopeLabel?'・'+s.scopeLabel:s.aggregator ? '・聚合入口' : ''}`, description:s.message })), null, '公開標題與原文連結，非全文轉載；聚合接入不代表官方 API。中央通訊社 RSS 限個人／非營利的非商業用途；金十需先確認授權。來源失敗保留最後成功資料。');
+        multi(source, '來源', 'sources', available.map(s => ({ id: s.id, label: s.name, disabled: s.status === 'not-connected', hint: `${sourceState(s)}${s.scopeLabel?'・'+s.scopeLabel:s.aggregator ? '・聚合入口' : ''}`, description:s.message })), null, '公開標題與原文連結，非全文轉載；聚合接入不代表官方 API。中央通訊社 RSS 限個人／非營利的非商業用途；來源失敗保留最後成功資料。');
       }, 'oxn-pill');
       const words = button('關鍵字', '搜尋與熱門關鍵字', () => showPanel(words, '關鍵字', (body, layer) => {
         const input = node('input', 'oxn-search'); input.type = 'search'; input.placeholder = '關鍵字、名稱、代號'; input.value = state.query; input.setAttribute('aria-label', '搜尋新聞');
