@@ -35,7 +35,7 @@ if (section) {
     if (dialog) return;
     dialog = document.createElement('dialog');
     dialog.setAttribute('aria-label', 'Crypto 全螢幕圖表');
-    dialog.style.cssText = 'inset:0;width:100vw;max-width:none;height:100dvh;max-height:none;margin:0;padding:0;border:0;background:#0d1215;';
+    dialog.style.cssText = 'inset:0;width:100vw;max-width:none;height:100dvh;max-height:none;margin:0;padding:0;border:0;background:var(--ox-light-bg,#0d1215);';
     dialog.append(host); document.body.append(dialog);
     previousOverflow = document.body.style.overflow; document.body.style.overflow = 'hidden';
     dialog.addEventListener('cancel', e => { e.preventDefault(); instance?.closeInner(); });

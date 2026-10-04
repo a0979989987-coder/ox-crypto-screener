@@ -70,7 +70,7 @@ const HomeChartVariant = (()=>{
   let chart=null, series=null, volumeSeries=null, period="1H", liveFeed=null, candles=[], request=0, ro=null;
   const theme=()=>document.body.classList.contains("theme-light");
   const chartColors=()=> theme() ? {
-    bg:"rgba(255,255,255,0)", text:"#777d79",
+    bg:"rgba(255,255,255,0)", text:"#726c61",
     grid:"rgba(65,72,68,.10)", cross:"rgba(65,72,68,.24)"
   } : {
     bg:"rgba(0,0,0,0)", text:"#a2a8a3",
@@ -103,8 +103,8 @@ const HomeChartVariant = (()=>{
       handleScale:{axisPressedMouseMove:false,mouseWheel:true,pinch:true}
     });
     series=chart.addCandlestickSeries({
-      upColor:theme()?"#00778a":"#00b8d4",downColor:theme()?"#b81550":"#ff3078",
-      borderVisible:false,wickUpColor:theme()?"#00778a":"#00b8d4",wickDownColor:theme()?"#b81550":"#ff3078",
+      upColor:theme()?"#246ba2":"#00b8d4",downColor:theme()?"#b83859":"#ff3078",
+      borderVisible:false,wickUpColor:theme()?"#246ba2":"#00b8d4",wickDownColor:theme()?"#b83859":"#ff3078",
       priceLineVisible:true,lastValueVisible:true
     });
     volumeSeries=chart.addHistogramSeries({
@@ -124,7 +124,7 @@ const HomeChartVariant = (()=>{
   const applyThemeHome=()=>{
     if(!chart) return;
     const c=chartColors();
-    const up=theme()?"#00778a":"#00b8d4",down=theme()?"#b81550":"#ff3078";
+    const up=theme()?"#246ba2":"#00b8d4",down=theme()?"#b83859":"#ff3078";
     series?.applyOptions({upColor:up,downColor:down,wickUpColor:up,wickDownColor:down});
     chart.applyOptions({
       layout:{background:{type:"solid",color:c.bg},textColor:c.text,fontSize:9},

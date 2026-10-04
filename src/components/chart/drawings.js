@@ -54,8 +54,9 @@ window.OXChartDrawings = function mountChartDrawings({box,chartEl,state,market='
   const expanded = isExpanded || (() => document.body.classList.contains('chart-focus') || document.fullscreenElement === box || document.webkitFullscreenElement === box);
   const scope = () => `${state.symbol}:${state.period}`;
   const current = () => Array.isArray(drawings[scope()]) ? drawings[scope()] : [];
-  const schedule = () => { if (!raf) raf = requestAnimationFrame(draw); };
-  const colorOf = item => item.color || prefs.color;
+  const schedule = () => { if (!life.signal.aborted && !raf) raf = requestAnimationFrame(draw); };
+  const colorOf = item => {const color=item.color||prefs.color;return document.body.classList.contains('theme-light')&&['#f3f1e9','#f4f0e8'].includes(color)?'#8d6b2c':color;};
+  listen(document,'ox:themechange',schedule);
   const points = item => {
     const ts = state.chart.timeScale(), series = state.candleSeries;
     return [ts.timeToCoordinate(item.a.time), series.priceToCoordinate(item.a.price),
@@ -106,7 +107,7 @@ window.OXChartDrawings = function mountChartDrawings({box,chartEl,state,market='
   }
   function draw() {
     raf=0;
-    if (!state.chart || !state.candleSeries) return;
+    if (life.signal.aborted || !state.chart || !state.candleSeries) return;
     width=Math.max(0,chartEl.clientWidth-(state.chartPriceAxisWidth||state.chart.priceScale('right').width?.()||0));
     height=Math.max(0,chartEl.clientHeight-(state.chart.timeScale().height?.()||0));
     layer.style.width=`${width}px`; layer.style.height=`${height}px`;

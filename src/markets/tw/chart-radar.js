@@ -166,6 +166,14 @@ export function mountTWChartRadar(host,{state:marketState,watchlist=new Set()}={
  function provider(original){const info=original();return state.chartPriceViewport?{...info,priceRange:state.chartPriceViewport,margins:{above:0,below:0}}:info;}
  function getRange(){const h=el.clientHeight-state.chart.timeScale().height(),maxValue=state.candleSeries.coordinateToPrice(0),minValue=state.candleSeries.coordinateToPrice(h-1);return Number.isFinite(maxValue)&&maxValue>minValue?{minValue,maxValue}:null;}
  function setRange(range){const margins=state.chart.priceScale('right').options().scaleMargins,h=el.clientHeight-state.chart.timeScale().height(),span=range.maxValue-range.minValue;state.chartPriceViewport={minValue:range.minValue+span*h*margins.bottom/(h-1),maxValue:range.maxValue-span*h*margins.top/(h-1)};refreshRange();}
+ function syncChartTheme(){
+  const light=document.body.classList.contains('theme-light');
+  state.chart?.applyOptions({layout:{background:{color:light?'#fffefa':'#101216'},textColor:light?'#726c61':'#a9abb1'},grid:{horzLines:{color:light?'#a18c601a':'#ffffff12'}},timeScale:{borderColor:light?'#d8cfbe':'#ffffff1a'},rightPriceScale:{borderColor:light?'#d8cfbe':'#ffffff1a'},crosshair:{vertLine:{labelBackgroundColor:light?'#8d6b2c':'#4c525e'},horzLine:{labelBackgroundColor:light?'#8d6b2c':'#4c525e'}}});
+  if(state.candleData.length)levels();
+  const up=light?'#bd4050':UP,down=light?'#177c59':DOWN;
+  state.candleSeries?.applyOptions({upColor:up,downColor:down,borderUpColor:up,borderDownColor:down,wickUpColor:up,wickDownColor:down});
+ }
+ listen(document,'ox:themechange',syncChartTheme);
  function ensureChart(){
   if(state.chart)return true;
   const lib=window.LightweightCharts;if(!lib){$('.twcr-status').textContent='圖表元件載入中，請稍後重試';return false;}
@@ -173,7 +181,7 @@ export function mountTWChartRadar(host,{state:marketState,watchlist=new Set()}={
   state.candleSeries=state.chart.addCandlestickSeries({upColor:UP,downColor:DOWN,borderUpColor:UP,borderDownColor:DOWN,wickUpColor:UP,wickDownColor:DOWN,autoscaleInfoProvider:provider});
   state.volumeSeries=state.chart.addHistogramSeries({priceFormat:{type:'volume'},priceScaleId:'volume',lastValueVisible:false,priceLineVisible:false});state.chart.priceScale('volume').applyOptions({scaleMargins:{top:.85,bottom:0},visible:false});
   gestures=window.OXChartGestures?.({container:el,state,formatPrice:num,getRange,setRange,refreshRange,isDrawing:()=>el.querySelector('.chart-drawing-layer.is-editing')});
-  drawings=window.OXChartDrawings?.({box,chartEl:el,state,market:'tw',isExpanded:()=>focus});return true;
+  drawings=window.OXChartDrawings?.({box,chartEl:el,state,market:'tw',isExpanded:()=>focus});syncChartTheme();return true;
  }
  function levels(){
   for(const line of levelLines)state.candleSeries?.removePriceLine(line);levelLines=[];
@@ -181,8 +189,9 @@ export function mountTWChartRadar(host,{state:marketState,watchlist=new Set()}={
   if(!$('[data-levels]').checked||!state.candleData.length)return;
   const signals=['long','short'].map(side=>evaluateClassic(state.candleData,{side,frame}));
   const signal=signals.filter(s=>s.eligible).sort(compareClassic)[0]||signals[side==='short'?1:0];
-  for(const [title,level,color]of [['觸發',signal.pressure,'#eee7df'],['下一目標',signal.target,'#f7bd52'],['結構失效',signal.invalidation,'#5ca5ff']]){
+  for(const [title,level,darkColor]of [['觸發',signal.pressure,'#eee7df'],['下一目標',signal.target,'#f7bd52'],['結構失效',signal.invalidation,'#5ca5ff']]){
    if(!level)continue;
+   const color=document.body.classList.contains('theme-light')?({'#eee7df':'#8d6b2c','#f7bd52':'#987020','#5ca5ff':'#246ba2'}[darkColor]||darkColor):darkColor;
    if(level.kind==='diagonal'){
     const line=state.chart.addLineSeries({color,lineWidth:1,lineStyle:2,priceLineVisible:false,lastValueVisible:false,autoscaleInfoProvider:()=>null});
     line.setData(level.points.map(p=>({time:p.time,value:p.price})));classicSeries.push(line);

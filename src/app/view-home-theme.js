@@ -350,15 +350,17 @@ function applyTheme(themeMode = "system") {
   document.dispatchEvent(new CustomEvent("ox:themechange", { detail: { mode, resolved } }));
 
   if (state.candleSeries) {
-    const up = light ? "#00778a" : "#00b8d4", down = light ? "#b81550" : "#ff3078";
+    const up = light ? "#246ba2" : "#00b8d4", down = light ? "#b83859" : "#ff3078";
     state.candleSeries.applyOptions({upColor:up,downColor:down,wickUpColor:up,wickDownColor:down});
   }
+  for (const line of state.classicLevelSeries || []) line.applyOptions({color:light?"#8d6b2c":"#eee7df"});
   if (state.chart) {
     state.chart.applyOptions({
-      layout: { background: { type: "solid", color: light ? "#f3f1eb" : "#121417" }, textColor: light ? "#626e66" : "#929995" },
-      grid: { vertLines: { color: light ? "rgba(90,100,92,.12)" : "#202725" }, horzLines: { color: light ? "rgba(90,100,92,.12)" : "#202725" } },
-      rightPriceScale: { borderColor: light ? "#c8cec7" : "#343b37" },
-      timeScale: { borderColor: light ? "#c8cec7" : "#343b37" }
+      layout: { background: { type: "solid", color: light ? "#fffefa" : "#121417" }, textColor: light ? "#726c61" : "#929995" },
+      grid: { vertLines: { color: light ? "rgba(141,107,44,.10)" : "#202725" }, horzLines: { color: light ? "rgba(141,107,44,.10)" : "#202725" } },
+      crosshair: { vertLine:{labelBackgroundColor:light?"#8d6b2c":"#4c525e"}, horzLine:{labelBackgroundColor:light?"#8d6b2c":"#4c525e"} },
+      rightPriceScale: { borderColor: light ? "#d8cfbe" : "#343b37" },
+      timeScale: { borderColor: light ? "#d8cfbe" : "#343b37" }
     });
   }
 }
