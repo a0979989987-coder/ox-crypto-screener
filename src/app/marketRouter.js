@@ -1,4 +1,4 @@
-import { MARKET_IDS } from "../core/config.js?v=20261001-loading1";
+import { MARKET_IDS } from "../core/config.js?v=20261004-markets2";
 
 export function createMarketRouter() {
   const modules = new Map();

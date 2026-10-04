@@ -4,7 +4,7 @@
   const initialNewsHash = /^#news(?:\/[^?]*)?(?:\?|$)/.test(location.hash || '') ? location.hash : '';
   let restoringInitialRoute = Boolean(initialNewsHash);
   const state = { snapshot: null, candidate: null, pending: null, lastError: null, request: 0, previous: null, route: {}, navigating: false, workspace: null, scope: null };
-  const markets = ['crypto', 'tw', 'us'];
+  const markets = ['crypto', 'tw'];
   const currentMarket = () => markets.includes(document.body.dataset.market) ? document.body.dataset.market : 'crypto';
   const preferences = () => { try { return JSON.parse(localStorage.getItem(SAVED_KEY) || '{}'); } catch { return {}; } };
   const save = patch => { try { localStorage.setItem(SAVED_KEY, JSON.stringify({ ...preferences(), ...patch })); } catch {} };
@@ -40,11 +40,10 @@
     const view = document.querySelector('.app-view.active')?.dataset.appView;
     if (!['news', 'data'].includes(view)) { state.workspace?.suspend(); return; }
     // US keeps its existing Data workspace. Cross-market news remains available from the news menu.
-    if (view === 'data' && currentMarket() === 'us') { state.workspace?.suspend(); return; }
     const scope = document.body.dataset.newsMode === '1' ? 'all' : currentMarket();
     const host = document.querySelector(`[data-news-surface="${scope === 'all' ? 'all' : 'market'}"]`);
     if (!host) return;
-    const { mountNewsWorkspace } = await import('./workspace.js?v=20261003-sources1');
+    const { mountNewsWorkspace } = await import('./workspace.js?v=20261004-markets2');
     if (token !== generation || !host.isConnected) return;
     if (state.scope !== scope || state.workspace?.host !== host) {
       state.workspace?.destroy(); state.scope = scope;

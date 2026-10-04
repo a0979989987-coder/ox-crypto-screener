@@ -1,5 +1,5 @@
 import { createToolsRail } from '../strength/tools-rail.js';
-import { MARKET_NAMES, CATEGORY_NAMES, MARKET_CATEGORIES, TIME_CHOICES, sourceName } from './config.js?v=20261003-sources1';
+import { MARKET_NAMES, CATEGORY_NAMES, MARKET_CATEGORIES, TIME_CHOICES, sourceName } from './config.js?v=20261004-markets2';
 import { defaultState, taipeiDay, monthGrid, shiftMonth, eventDay, eventCategory, importance, newsBase, filterNews, hotWords, ranking, sourcesFor, coverage, safeLink, plain, agendaDays } from './model.js?v=20261003-sources1';
 import { node, button, anchoredPanel, modal } from './layers.js';
 const fmt = value => Number.isFinite(Date.parse(value)) ? new Intl.DateTimeFormat('zh-TW', { timeZone: 'Asia/Taipei', dateStyle: 'short', timeStyle: 'short', hour12: false }).format(new Date(value)) : '時間待確認';
@@ -12,12 +12,13 @@ export function mountNewsWorkspace(host, api) {
   const key = `ox-news-v2-${api.scope}`;
   let saved; try { saved = JSON.parse(sessionStorage.getItem(key) || 'null'); } catch {}
   const state = { ...defaultState(), ...saved }, life = new AbortController();
+  if (!Object.hasOwn(MARKET_NAMES, state.market)) state.market = 'all';
   let data = {}, panel = null, detail = null, detailKey = '', countdown = null, restorePosition = true;
   const root = node('section', 'oxn-root'); root.dataset.scope = api.scope;
   const header = node('div', 'oxn-header'), exit = button('‹', '返回先前頁面', api.exit, 'oxn-close');
   header.append(exit, node('span', 'oxn-title', api.scope === 'all' ? '新聞總頁' : `${MARKET_NAMES[api.scope]}新聞`));
   const marketChoice = button('全部市場', '篩選新聞總頁市場', () => showPanel(marketChoice, '市場', body => {
-    const tags = node('div', 'oxn-tags'); for (const id of ['all', 'crypto', 'tw', 'us']) { const tag = button(id === 'all' ? '全部市場' : MARKET_NAMES[id], '', () => { state.market = id; state.sources = null; state.categories = null; persist(); renderContent(); panel.destroy(); }); tag.setAttribute('aria-pressed', String(state.market === id)); tags.append(tag); } body.append(tags);
+    const tags = node('div', 'oxn-tags'); for (const id of ['all', 'crypto', 'tw']) { const tag = button(id === 'all' ? '全部市場' : MARKET_NAMES[id], '', () => { state.market = id; state.sources = null; state.categories = null; persist(); renderContent(); panel.destroy(); }); tag.setAttribute('aria-pressed', String(state.market === id)); tags.append(tag); } body.append(tags);
   }), 'oxn-pill'); if (api.scope === 'all') header.append(marketChoice);
   const more = button('⋯', '閱讀偏好與快照更新', () => showPanel(more, '閱讀偏好', body => {
     const tags = node('div', 'oxn-tags'); for (const [id, text] of [['all', '全部閱讀狀態'], ['unread', '僅未讀'], ['following', '追蹤來源']]) { const b = button(text, '', () => { state.reader = id; persist(); renderContent(); [...tags.children].forEach(n => n.setAttribute('aria-pressed', String(n === b))); }); b.setAttribute('aria-pressed', String((state.reader || 'all') === id)); tags.append(b); }

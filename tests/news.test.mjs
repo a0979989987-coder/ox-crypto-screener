@@ -3,11 +3,11 @@ import assert from 'node:assert/strict';
 import { FEEDS, impact, normalizeFeed, parseBlsCalendar } from '../scripts/collect-news.mjs';
 
 test('news normalization retains only dated HTTPS source headlines', () => {
-  const feed = { id: 'bls-cpi', name: 'BLS', url: 'https://www.bls.gov/feed/cpi.rss', markets: ['us','tw'] };
+  const feed = { id: 'bls-cpi', name: 'BLS', url: 'https://www.bls.gov/feed/cpi.rss', markets: ['crypto','tw'] };
   const xml = '<feed><entry><title>Consumer Price Index released</title><link href="https://www.bls.gov/one"/><published>2026-09-24T12:30:00Z</published></entry><entry><title>Undated</title><link href="https://www.bls.gov/two"/></entry></feed>';
   const items = normalizeFeed(xml, feed);
   assert.equal(items.length, 1);
-  assert.deepEqual(items[0].markets, ['us','tw']);
+  assert.deepEqual(items[0].markets, ['crypto','tw']);
   assert.equal(items[0].impact.stars, null);
 });
 

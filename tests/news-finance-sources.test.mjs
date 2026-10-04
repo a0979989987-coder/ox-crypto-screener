@@ -99,9 +99,3 @@ test('portal attribution does not invent an original publisher',()=>{
  const portal=render({aggregation:'Yahoo RSS',source:'Yahoo'});assert.match(portal,/入口來源：Yahoo/);assert.doesNotMatch(portal,/原始發布者/);
  const publisher=render({aggregation:'Google News RSS',source:'Google 新聞',publisher:'玩股網'});assert.match(publisher,/原始發布者：玩股網/);assert.doesNotMatch(publisher,/入口來源/);
 });
-test('US news shell does not label all third-party financial reporting as official announcements',()=>{
- const source=readFileSync(new URL('../src/markets/us/news.js',import.meta.url),'utf8');
- assert.doesNotMatch(source,/"官方消息"|讀取官方美股消息|查看美股官方消息/);
- assert.match(source,/讀取美股市場消息/);
- assert.match(source,/官方排程已確認/,'confirmed official event schedules retain their precise label');
-});

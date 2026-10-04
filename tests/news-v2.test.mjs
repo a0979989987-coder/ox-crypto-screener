@@ -101,7 +101,7 @@ test('untrusted XML declarations, unsafe protocols and mismatched publisher link
 test('preview collection is isolated from production writes and does not alter global market IDs', async () => {
   const workflow = await readFile(new URL('../.github/workflows/news-preview.yml', import.meta.url),'utf8'); assert.match(workflow,/contents: read/); assert.doesNotMatch(workflow,/git push|HEAD:main|schedule:/);
   const quick = await readFile(new URL('../src/components/navigation/market-quick-switch.js', import.meta.url),'utf8'); const declared=quick.slice(quick.indexOf('const MARKETS'),quick.indexOf('const MENU_ID')); assert.match(declared,/id: "crypto"/);assert.match(declared,/id: "tw"/);assert.doesNotMatch(declared,/id: "us"|id: "news"/);
-  assert.match(await readFile(new URL('../src/core/config.js',import.meta.url),'utf8'),/"us"/);
+  assert.doesNotMatch(await readFile(new URL('../src/core/config.js',import.meta.url),'utf8'),/"us"/);
 });
 test('official conference table uses meeting time after registration and validates dates', () => {
   const row = values => `<w:tr>${values.map(v => `<w:tc><w:p><w:r><w:t>${v}</w:t></w:r></w:p></w:tc>`).join('')}</w:tr>`;

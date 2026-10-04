@@ -1,17 +1,17 @@
 import { marketRouter } from "./marketRouter.js?v=20261002-nav6";
+import './storage-migrations.js?v=20261004-markets2';
 import { cryptoModule } from "../markets/crypto/index.js";
-import { usModule } from "../markets/us/index.js?v=20261004-us-repair1";
-import { twModule } from "../markets/tw/index.js?v=20261004-us-repair1";
+import { twModule } from "../markets/tw/index.js?v=20261004-markets2";
 
 export function bootOXModules(modules = []) {
   modules.forEach(module => marketRouter.register(module));
   return marketRouter;
 }
 
-const router = bootOXModules([cryptoModule, usModule, twModule]);
+const router = bootOXModules([cryptoModule, twModule]);
 let currentView = document.body.dataset.view || "home";
 let renderToken = 0;
-const isMarketView = () => ["home", "strength", "radar"].includes(currentView) || (document.body.dataset.market === "us" && ["data", "media"].includes(currentView));
+const isMarketView = () => ["home", "strength", "radar"].includes(currentView);
 
 function scheduleMarketView() {
   const token = ++renderToken;
@@ -40,7 +40,7 @@ function scheduleMarketView() {
   // US and Taiwan replace the temporary market placeholder with their own
   // stable shell before awaiting data. Mount it in the same task as the market
   // switch so mobile users never land on the centered architecture screen.
-  if (["us", "tw"].includes(document.body.dataset.market)) activate();
+  if (document.body.dataset.market === "tw") activate();
   else requestAnimationFrame(() => requestAnimationFrame(activate));
 }
 

@@ -24,7 +24,6 @@
     {id:"ox",title:"OX 指標",keywords:["ox","ox 指標","指標","突破","signal"],category:"雷達",icon:"OX",target:"#chk-ox-markers",view:"radar"},
     {id:"levels",title:"前高前低",keywords:["前高","前低","前高前低","支撐","壓力","swing"],category:"雷達",icon:"↕",target:"#chk-key-levels",view:"radar"},
     {id:"watch",title:"收藏 / 觀察列表",keywords:["收藏","觀察","watchlist","watch"],category:"雷達",icon:"☆",target:'.tab-btn[data-tab="watch"]',view:"radar",action:"watch"},
-    {id:"us",title:"美股",keywords:["美股","us","stock"],category:"市場",icon:"US",available:false},
     {id:"tw",title:"台股",keywords:["台股","tw"],category:"市場",icon:"TW",available:false},
     {id:"pro",title:"OX PRO",keywords:["pro","專業版"],category:"版本",icon:"P",available:false},
     {id:"simple",title:"簡單版",keywords:["簡單版","簡易","simple"],category:"版本",icon:"S",available:false},
