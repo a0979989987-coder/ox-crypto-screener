@@ -8,7 +8,9 @@ export function savedHome(){
 }
 function accept(section,data){
  const fresh=acceptHomeSection(section,data);if(!fresh)return;
- const old=value[section],date=section==='core'?'date':section==='night'?'tradeDate':'date';
+ // Night attribution can be a future trading day; actual completed sessions
+ // determine quote freshness in exactly the same way as the collector.
+ const old=value[section],date=section==='night'?'sessionEnd':'date';
  const time=section==='core'?'savedAt':'collectedAt';
  if(!old||fresh[date]>old[date]||fresh[date]===old[date]&&Date.parse(fresh[time])>=Date.parse(old[time]))value[section]=fresh;
  if(section==='core'&&old?.date===fresh.date){

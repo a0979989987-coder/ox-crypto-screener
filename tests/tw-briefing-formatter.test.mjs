@@ -11,6 +11,16 @@ const before = {
   strongSectors:[{date:'2026-10-01',us:'半導體',tw:'半導體',changePct:1.58}],
   foreignShort:{date:'2026-10-01',change:1000}, fx:{date:'2026-10-02',pair:'USD/TWD',changePct:-0.034}
 };
+const officialNight = {
+  contract:'202610',tradeDate:'2026-10-05',sessionStart:'2026-10-02T15:00:00+08:00',sessionEnd:'2026-10-03T05:00:00+08:00',
+  close:48475,change:223,changePct:.46,open:48300,high:48661,low:48210,volume:37554,status:'ok',
+  source:'臺灣期貨交易所',collectedAt:'2026-10-03T05:30:00+08:00'
+};
+const morningHome = (date,night=officialNight) => ({
+  briefing:{date,rows:[{id:'^SOX',marketDate:'2026-10-02',changePct:1.58,status:'ok'},
+    {id:'TSM',marketDate:'2026-10-02',changePct:.7,status:'ok'}]},
+  briefingStatus:{reportDate:date},night,nightStatus:{status:'ok',checkedAt:`${date}T07:00:00+08:00`}
+});
 test('premarket keeps 50–100 characters, three axes and a measurable final action',()=>{
   const report=buildPremarketBriefing({...before,us:undefined});
   assert.equal(report.complete,true);assert([...report.text].length>=50&&[...report.text].length<=100);
@@ -27,6 +37,75 @@ test('stale or after-08:30 evidence cannot support the morning prediction',()=>{
   const report=buildPremarketBriefing({...before,sox:{...before.sox,date:'2026-09-24'},night:{...before.night,date:'2026-10-01'},fx:{...before.fx,quotedAt:'2026-10-02T15:00:00+08:00'},foreignShort:{...before.foreignShort,status:'stale'}});
   assert.match(report.text,/費半待補/);assert.match(report.text,/夜盤待補/);assert.match(report.text,/空單待補/);assert.match(report.text,/開盤方向待確認/);assert(!report.text.includes('台幣升'));
   assert(report.missing.includes('08:30 前台幣匯率'));
+});
+test('official weekday night keeps the completed session date and trade attribution separate',()=>{
+  const night={...officialNight,tradeDate:'2026-10-02',sessionStart:'2026-10-01T15:00:00+08:00',
+    sessionEnd:'2026-10-02T05:00:00+08:00',collectedAt:'2026-10-02T05:30:00+08:00'};
+  const input=homeBriefingInput(morningHome('2026-10-02',night),'before');
+  const report=buildPremarketBriefing(input);
+  assert.equal(input.night.date,night.tradeDate);assert.equal(input.night.quotedAt,night.sessionEnd);
+  assert.match(report.text,/夜盤\+223點收48475/);assert(!report.text.includes('下次'));
+  assert.match(report.basis,/夜盤收盤 2026-10-02／交易歸屬 2026-10-02/);
+});
+test('Friday night is usable on the weekend and Monday only through its verified official attribution',()=>{
+  for(const date of ['2026-10-03','2026-10-04','2026-10-05']){
+    const input=homeBriefingInput(morningHome(date),'before'),report=buildPremarketBriefing(input);
+    assert.equal(input.night.date,'2026-10-05');assert.equal(input.night.sessionEnd,'2026-10-03T05:00:00+08:00');
+    assert.match(report.text,/夜盤\+223點收48475/);assert(!report.missing.includes('適用交易日已完成夜盤'));
+    assert.match(report.basis,/夜盤收盤 2026-10-03／交易歸屬 2026-10-05/);
+    assert([...report.text].length<=100);
+    if(date<'2026-10-05'){assert.match(report.text,/下次偏開高/);assert.match(report.basis,/下次開盤/);}
+    else{assert.match(report.text,/偏開高/);assert(!report.text.includes('下次'));}
+  }
+  for(const date of ['2026-10-02','2026-10-06']){
+    const report=buildPremarketBriefing(homeBriefingInput(morningHome(date),'before'));
+    assert.match(report.text,/夜盤待補/);assert.match(report.text,/開盤方向待確認/);
+  }
+  const old={...officialNight,tradeDate:'2026-10-02',sessionStart:'2026-10-01T15:00:00+08:00',sessionEnd:'2026-10-02T05:00:00+08:00'};
+  assert.match(buildPremarketBriefing(homeBriefingInput(morningHome('2026-10-04',old),'before')).text,/夜盤待補/);
+});
+test('a source-verified long holiday attribution remains usable without guessing holiday dates',()=>{
+  const night={...officialNight,contract:'202602',tradeDate:'2026-02-23',sessionStart:'2026-02-12T15:00:00+08:00',
+    sessionEnd:'2026-02-13T05:00:00+08:00',collectedAt:'2026-02-13T05:30:00+08:00'};
+  for(const date of ['2026-02-13','2026-02-18','2026-02-23']){
+    const report=buildPremarketBriefing(homeBriefingInput(morningHome(date,night),'before'));
+    assert.match(report.text,/夜盤\+223點收48475/);assert.match(report.basis,/夜盤收盤 2026-02-13／交易歸屬 2026-02-23/);
+  }
+  assert.match(buildPremarketBriefing(homeBriefingInput(morningHome('2026-02-24',night),'before')).text,/夜盤待補/);
+});
+test('official night rejects unhealthy sources, missing session evidence, and incomplete or future observations',()=>{
+  const reject=home=>assert.match(buildPremarketBriefing(homeBriefingInput(home,'before')).text,/夜盤待補/);
+  for(const patch of [
+    {status:'stale'},{status:'unavailable'},{status:'pending'},{error:'offline'},
+    {tradeDate:undefined},{tradeDate:'2026-02-30'},{sessionStart:undefined},{sessionEnd:undefined},{collectedAt:undefined},
+    {sessionEnd:'2026-10-03T04:59:00+08:00'},{sessionStart:'2026-10-02T15:01:00+08:00'},
+    {collectedAt:'2026-10-03T04:59:00+08:00'},{volume:0},{close:50000},
+    {quotedAt:'2026-10-03T04:59:00+08:00'},{quotedAt:'2026-10-04T08:30:01+08:00'},
+    {quotedAt:'2026-10-05T05:00:00+08:00'},{quotedAt:'invalid'}
+  ])reject(morningHome('2026-10-04',{...officialNight,...patch}));
+  for(const nightStatus of [{status:'stale'},{status:'unavailable'},{status:'ok',error:'offline'}]){
+    reject({...morningHome('2026-10-04'),nightStatus:{checkedAt:'2026-10-04T07:00:00+08:00',...nightStatus}});
+  }
+  for(const checkedAt of ['2026-10-03T04:59:00+08:00','invalid']){
+    reject({...morningHome('2026-10-03'),nightStatus:{status:'ok',checkedAt}});
+  }
+  const future={...officialNight,sessionStart:'2026-10-04T15:00:00+08:00',sessionEnd:'2026-10-05T05:00:00+08:00',collectedAt:'2026-10-05T05:30:00+08:00'};
+  reject(morningHome('2026-10-04',future));
+  const invalidDate={...officialNight,tradeDate:'2026-03-03',sessionStart:'2026-02-30T15:00:00+08:00',
+    sessionEnd:'2026-03-03T05:00:00+08:00',collectedAt:'2026-03-03T05:30:00+08:00'};
+  reject(morningHome('2026-03-03',invalidDate));
+  const unattributed=buildPremarketBriefing({...before,date:'2026-10-04',night:{date:'2026-10-05',change:223,close:48475}});
+  assert.match(unattributed.text,/夜盤待補/);
+});
+test('night quote cutoff accepts 08:30 exactly and never masks a future source quote',()=>{
+  const home=morningHome('2026-10-05',{...officialNight,quotedAt:'2026-10-05T08:30:00+08:00',collectedAt:'2026-10-05T08:31:00+08:00'});
+  home.nightStatus.checkedAt='2026-10-05T08:31:00+08:00';
+  assert.match(buildPremarketBriefing(homeBriefingInput(home,'before')).text,/夜盤\+223點收48475/);
+  home.night.quotedAt='2026-10-05T08:30:01+08:00';
+  assert.equal(homeBriefingInput(home,'before').night.quotedAt,home.night.quotedAt);
+  assert.match(buildPremarketBriefing(homeBriefingInput(home,'before')).text,/夜盤待補/);
+  home.night.quotedAt='2026-10-05T08:00:00+08:00';home.nightStatus.checkedAt='2026-10-05T07:59:59+08:00';
+  assert.match(buildPremarketBriefing(homeBriefingInput(home,'before')).text,/夜盤待補/);
 });
 test('long supplied sector names cannot expand the compact morning body beyond 100 characters',()=>{
   const report=buildPremarketBriefing({...before,strongSectors:[{date:'2026-10-01',us:'美國大型科技半導體設計族群',tw:'台灣半導體製造設備產業鏈',changePct:2.12}],foreignShort:{date:'2026-10-01',change:12345}});

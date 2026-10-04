@@ -1,5 +1,6 @@
 // Pure, source-backed text builders. A report date is explicit: the formatter
 // never substitutes the machine clock or turns an old snapshot into today's.
+import {validNight} from './home-model.js';
 const finite = value => typeof value === 'number' && Number.isFinite(value);
 const day = value => /^\d{4}-\d{2}-\d{2}$/.test(value || '') && Number.isFinite(Date.parse(`${value}T12:00:00Z`)) &&
   new Date(`${value}T12:00:00Z`).toISOString().slice(0, 10) === value;
@@ -18,9 +19,25 @@ const overnight = (value, date) => day(date) && usable(value) && day(value.date)
   value.date < date && (Date.parse(date) - Date.parse(value.date)) <= 4 * 86400000;
 const beforeCutoff = (value, date) => !value?.quotedAt ||
   Number.isFinite(Date.parse(value.quotedAt)) && Date.parse(value.quotedAt) <= Date.parse(`${date}T08:30:00+08:00`);
+const applicableNight = (value, date, observedAt) => {
+  if (!day(date) || !usable(value) || value.error || value.status && value.status !== 'ok' ||
+    !beforeCutoff(value, date) || !finite(value.change) || !finite(value.close)) return false;
+  // Preserve the explicit same-date input contract. Cross-calendar snapshots
+  // need the full official session, including its distinct trade attribution.
+  if (!value.tradeDate && !value.sessionStart && !value.sessionEnd) return value.date === date;
+  const collected = Date.parse(value.collectedAt), observed = observedAt ? Date.parse(observedAt) : collected;
+  const cutoff = Math.min(Date.parse(`${date}T08:30:00+08:00`), collected, observed);
+  // TAIFEX attribution bridges weekends/holidays without a guessed calendar.
+  // The evidence is no longer applicable once that official tradeDate passes.
+  return value.status === 'ok' && value.date === value.tradeDate && validNight(value, cutoff) &&
+    day(value.sessionStart?.slice(0, 10)) && day(value.sessionEnd?.slice(0, 10)) &&
+    value.sessionEnd.slice(0, 10) <= date && date <= value.tradeDate &&
+    (!value.quotedAt || Date.parse(value.quotedAt) >= Date.parse(value.sessionEnd) && Date.parse(value.quotedAt) <= cutoff);
+};
 
 // Explicit inputs: target date; dated sox/adr changePct; completed night
-// close/change; strongSectors[{us,tw,changePct,date}]; prior Taiwan session date
+// close/change (official snapshots retain tradeDate/session bounds/collection
+// time and an optional observedAt snapshot bound); strongSectors[{us,tw,changePct,date}]; prior Taiwan session date
 // plus foreignShort.change in contracts; fx.pair='USD/TWD' and its changePct.
 export function buildPremarketBriefing(input = {}) {
   const date = day(input.date) ? input.date : null;
@@ -34,9 +51,8 @@ export function buildPremarketBriefing(input = {}) {
   };
   const sox = previous(input.sox, '費城半導體');
   const adr = previous(input.adr, '台積電 ADR');
-  const night = onDate(input.night, date) && beforeCutoff(input.night, date) &&
-    finite(input.night.change) && finite(input.night.close) ? input.night : null;
-  if (!night) missing.push('當日已完成夜盤');
+  const night = applicableNight(input.night, date, input.observedAt) ? input.night : null;
+  if (!night) missing.push('適用交易日已完成夜盤');
   const sector = (input.strongSectors || []).find(value => overnight(value, date) && value.date === usDate &&
     beforeCutoff(value, date) && finite(value.changePct) && value.changePct > 0 && clean(value.us) && clean(value.tw));
   if (!sector) missing.push('美股強勢族群與台股對應');
@@ -47,8 +63,8 @@ export function buildPremarketBriefing(input = {}) {
   if (!shorts) missing.push('外資期貨空單增減');
   const fx = onDate(input.fx, date) && input.fx.pair === 'USD/TWD' && beforeCutoff(input.fx, date) && finite(input.fx.changePct) && input.fx.changePct > -100 ? input.fx : null;
   if (!fx) missing.push('08:30 前台幣匯率');
-  const direction = sox && adr && night ? sox.changePct > 0 && adr.changePct > 0 && night.change > 0 ? '偏開高' :
-    sox.changePct < 0 && adr.changePct < 0 && night.change < 0 ? '偏開低' : '開盤方向分歧' : '開盤方向待確認';
+  const direction = (night?.tradeDate > date ? '下次' : '') + (sox && adr && night ? sox.changePct > 0 && adr.changePct > 0 && night.change > 0 ? '偏開高' :
+    sox.changePct < 0 && adr.changePct < 0 && night.change < 0 ? '偏開低' : '開盤方向分歧' : '開盤方向待確認');
   const market = `費半${sox ? signed(sox.changePct) + '%' : '待補'}、ADR${adr ? signed(adr.changePct) + '%' : '待補'}；`;
   const futures = night ? `夜盤${night.change > 0 ? '+' : ''}${compact(night.change)}點收${compact(night.close)}。` : '夜盤待補。';
   const theme = sector ? `美股${short(sector.us)}強，留意台股${short(sector.tw)}；` : '強勢族群待補；';
@@ -66,7 +82,7 @@ export function buildPremarketBriefing(input = {}) {
     text = '費半、ADR與夜盤數值格式待確認；強勢族群及外資空單請見明確輸入。開盤方向待確認；前15分鐘先看量，未高於昨同期不追價。';
   }
   return { title: '08:30 盤前快訊', date, text, missing, complete: Boolean(date) && missing.length === 0,
-    basis: `${usDate ? `美股 ${usDate}；` : ''}方向：費半、台積電ADR＋已完成夜盤推估` };
+    basis: `${usDate ? `美股 ${usDate}；` : ''}${night?.tradeDate ? `夜盤收盤 ${night.sessionEnd.slice(0, 10)}／交易歸屬 ${night.tradeDate}；` : ''}${night?.tradeDate > date ? '下次開盤' : '方向'}：費半、台積電ADR＋已完成夜盤推估` };
 }
 
 export function buildAftermarketBriefing(input = {}) {
@@ -116,10 +132,12 @@ export function homeBriefingInput(home = {}, phase = 'after', research = null) {
     const date = home.briefingStatus?.reportDate || home.briefing?.date;
     const rows = home.briefing?.rows || [];
     const quote = id => { const row = rows.find(value => value.id === id); return row ? { ...row, date: row.marketDate } : null; };
-    const night = home.night ? { ...home.night, date: home.night.sessionEnd?.slice(0, 10),
-      quotedAt: home.night.sessionEnd, status: home.nightStatus?.error ? 'stale' : home.night.status } : null;
+    const night = home.night ? { ...home.night, date: home.night.tradeDate,
+      quotedAt: home.night.quotedAt ?? home.night.sessionEnd,
+      status: home.nightStatus?.error || ['stale', 'unavailable'].includes(home.nightStatus?.status) ? 'stale' : home.night.status } : null;
     const fx = quote('TWD=X');
-    return { date, sox: quote('^SOX'), adr: quote('TSM'), us: quote('^GSPC'), night, fx: fx ? { ...fx, pair: 'USD/TWD' } : null };
+    return { date, observedAt: home.nightStatus?.checkedAt || home.night?.checkedAt || home.night?.collectedAt,
+      sox: quote('^SOX'), adr: quote('TSM'), us: quote('^GSPC'), night, fx: fx ? { ...fx, pair: 'USD/TWD' } : null };
   }
   const date = home.coreStatus?.reportDate || home.core?.date;
   const index = home.core?.index ? { ...home.core.index, date: home.core.date, status: home.coreStatus?.error ? 'stale' : 'ok' } : null;

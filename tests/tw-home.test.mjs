@@ -47,8 +47,8 @@ test('night excludes weekly/spread/day sessions, accepts only actually completed
  assert(!validNight({...r,collectedAt:now.toISOString(),close:Infinity},now.getTime()));
 });
 test('night walks holidays and a full upstream failure retains the previous completed session',async()=>{
- let calls=0;const now=new Date('2026-10-02T14:00:00+08:00');
- const r=await collectNight(seed.night,now,async()=>({text:async()=>++calls===1?'holiday':nightHtml()}));assert.equal(calls,2);assert.equal(r.tradeDate,'2026-10-01');
+ const calls=[],now=new Date('2026-10-02T14:00:00+08:00');
+ const r=await collectNight(null,now,async url=>{const date=new URL(url).searchParams.get('queryDate');calls.push(date);return {text:async()=>date==='2026/10/02'?'holiday':nightHtml()};});assert.deepEqual(calls,[null,'2026/10/02']);assert.equal(r.tradeDate,'2026-10-01');
  const failed=await collectNight(seed.night,now,async()=>{throw Error('offline');});assert.equal(failed.status,'stale');assert.equal(failed.close,seed.night.close);assert.equal(failed.collectedAt,seed.night.collectedAt);assert(failed.checkedAt);
 });
 test('yields are percentages with bp changes, future dates excluded, unavailable is null and stale Asia stays bounded',()=>{
@@ -101,7 +101,7 @@ test('briefing accepts quotes acquired after collection starts, while rejecting 
 test('home renders only one actual change field, estimates, independent dates, native market groups and bp/units',()=>{
  const html=coreContent(seed,false)+briefingContent(seed,false);
  assert(!html.includes('當日加權指數實際漲跌'));assert.equal((html.match(/今日大盤漲跌/g)||[]).length,1);assert(html.includes('十二大權值股淨貢獻'));assert(html.includes('估算'));assert(html.includes('上漲貢獻合計'));assert(html.includes('下跌拖累合計'));assert(!html.includes('<iframe'));
- assert(html.includes('台指期盤後／夜盤'));assert(!html.includes('交易歸屬日'));assert(!html.includes('資料取得'));assert(!html.includes('TX 近月'));assert(!html.includes('Yahoo Finance'));assert(html.includes('USD/桶'));assert(html.includes(' bp'));
+ assert(html.includes('台指期盤後／夜盤'));assert(html.includes('交易歸屬日'));assert(html.includes('資料取得'));assert(html.includes(seed.night.sessionEnd.slice(0,10)));assert(!html.includes('TX 近月'));assert(!html.includes('Yahoo Finance'));assert(html.includes('USD/桶'));assert(html.includes(' bp'));
  const blank=coreContent({},false);assert(!blank.includes('0.00'));assert(blank.includes('—'));
  assert.throws(()=>acceptHomeSection('briefing',{...seed.briefing,rows:seed.briefing.rows.map(row=>row.group==='asia'?{...row,marketDate:seed.briefing.date}:row)}),/驗證/);
 });

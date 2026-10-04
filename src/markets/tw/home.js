@@ -1,2 +1,2 @@
-import { renderResearch } from './research-page.js?v=20261002-nav6';
+import { renderResearch } from './research-page.js?v=20261004-night1';
 export function renderTWHome(state) { return renderResearch('home', state); }

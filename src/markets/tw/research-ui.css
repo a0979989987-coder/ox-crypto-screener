@@ -73,6 +73,7 @@
 .twx-contribution-list button{border:0;background:none;text-align:left;padding:0;font-size:11px}
 .twx-contribution-list b{text-align:right;font-weight:500;white-space:nowrap}
 .twx-briefing{margin-top:26px}.twx-briefing-head h2{margin:0 0 4px;font-size:16px;font-weight:600}.twx-briefing-head>small{text-align:right}
+.twx-briefing-meta{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:3px 14px;margin:0 2px 12px;color:var(--tx-muted);font-size:11px;line-height:1.6}.twx-briefing-meta small{font-size:10px}.twx-briefing-meta time,.twx-night-dates time{white-space:nowrap}
 .twx-briefing-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;align-items:stretch}
 .twx-night{grid-column:1/-1}
 .twx-night-close{display:flex;justify-content:space-between;align-items:center;gap:16px}
@@ -81,9 +82,10 @@
 .twx-night-close>div:last-child{text-align:right;font-size:13px}
 .twx-night-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;border-top:1px solid #ffffff16;border-bottom:1px solid #ffffff16;margin:15px 0;padding:11px 0}
 .twx-night-metrics>div{display:flex;flex-direction:column;gap:4px}.twx-night-metrics b{font-size:14px;font-weight:500}
-.twx-night-dates{display:flex;flex-wrap:wrap;gap:4px 24px}.twx-night-dates small{font-size:10px}
+.twx-night-dates{display:flex;flex-wrap:wrap;gap:4px 24px;line-height:1.7}.twx-night-dates small{font-size:10px}.twx-night-session{flex-basis:100%}
 .twx-briefing-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:3px 12px;border-top:1px solid #ffffff10;padding:12px 0 10px}
 .twx-briefing-name,.twx-briefing-value{display:flex;flex-direction:column;gap:3px}.twx-briefing-name b{font-weight:500;font-size:12px}.twx-briefing-name small{font-size:10px}
+.twx-source-date{line-height:1.5}.twx-source-date time{white-space:nowrap}
 .twx-briefing-value{text-align:right}.twx-briefing-value strong{font-size:14px;font-weight:500;overflow-wrap:anywhere}.twx-briefing-value span{font-size:11px}
 .twx-quote-time{grid-column:1/-1}.twx-briefing-note{display:block;margin:14px 0;font-size:10px!important}
 @media(min-width:900px){.twx-home-grid>.twx-glass:not(.twx-market,.twx-outlook){grid-column:span 2}}
