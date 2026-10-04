@@ -9,7 +9,7 @@ export function revealStyledShadow(shadow, signal, selector = 'main', minHeight 
   document.addEventListener('ox:themechange', syncTheme, { signal });
   const lightSheet = document.createElement('link');
   lightSheet.rel = 'stylesheet';
-  lightSheet.href = sheet.href.replace(/\.css(?:\?.*)?$/, '-light.css?v=20261004-whitegold2');
+  lightSheet.href = sheet.href.replace(/\.css(?:\?.*)?$/, '-light.css?v=20261005-whiteclear1');
   shadow.append(lightSheet);
   const cloak = document.createElement('style');
   cloak.textContent = `${selector}{display:none!important}.ox-style-loading{box-sizing:border-box;min-height:${minHeight}px;display:grid;place-items:center;padding:10px;border:1px solid #8883;border-radius:12px;color:var(--ox-light-muted,#969ba3);background:var(--ox-light-panel,#101216);font:13px/1.6 system-ui}`;
