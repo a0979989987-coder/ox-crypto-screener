@@ -1,7 +1,21 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { USWorkspace, usHomeMarketMetrics } from '../src/markets/us/workspace.js';
-import { USAdapter } from '../src/markets/us/provider.js?v=20261003-us-live1';
+import { USAdapter } from '../src/markets/us/provider.js?v=20261003-us-bitget1';
+
+test('quotes bootstrap tools independently and never replace a completed radar snapshot',async()=>{
+  const original=USAdapter.quotes, workspace=new USWorkspace();
+  workspace.active=true;workspace.cap={mode:'perpetual',source:'bitget-equity'};
+  for(const method of ['updateSections','startQuoteStream','updateIdentity','updateCounts'])workspace[method]=()=>{};
+  USAdapter.quotes=async()=>({source:'bitget-equity',quotes:[{symbol:'SPY',price:600,marketTime:1}]});
+  try{
+    await workspace.loadQuoteSnapshot();
+    assert.equal(workspace.snapshot.analysisPending,true);
+    assert.equal(workspace.snapshot.quotes.length,1);
+    const complete={analyses:[{symbol:'SPY'}]};workspace.snapshot=complete;
+    await workspace.loadQuoteSnapshot();assert.equal(workspace.snapshot,complete);
+  }finally{USAdapter.quotes=original;}
+});
 
 test('US home breadth describes the actual daily stock pool and valid MA coverage', () => {
   const common = { interval: '1D', type: 'stock', price: 100, ma20: 90 };
@@ -78,6 +92,10 @@ test('replacing a public widget with a native chart retains the collapsed scanne
   };
   for (const method of ['show','updateIdentity','updateCounts','paintList','updateSections','updateLive','lookupQuote','persist']) workspace[method] = () => {};
   workspace.loadDirectory = async () => {};
+  workspace.loadQuoteSnapshot = async () => {};
+  // activate renders the initial public native mode before capabilities settle.
+  // Model that render instead of retaining the obsolete widget in a no-op show.
+  workspace.show = () => {workspace.chart.destroy();workspace.chartIn();workspace.setScannerCollapsed(true);};
   USAdapter.deviceReady = async () => null;
   USAdapter.capabilities = async () => ({chartMode:'native',externalDisplayConfirmed:true,mode:'eod'});
   USAdapter.snapshot = async () => ({quotes:[],sessionDate:'2026-09-30'});

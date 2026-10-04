@@ -43,7 +43,9 @@ async function show(s) {
     s.host.textContent = '';
     const onOpenRadar=symbol=>{
       document.dispatchEvent(new CustomEvent('ox:tw-chart-symbol',{detail:{symbol}}));
-      document.querySelector('.dock-btn[data-view-target="radar"]')?.click();
+      // The mobile radar button owns a gesture recognizer and deliberately
+      // suppresses synthetic clicks. Navigation must use the app API.
+      window.switchAppView?.('radar');
     };
     s.instance=selected==='bubbles'?mountTWBubbles(s.host,{onOpenRadar}):mountPatternSearch(s.host,{source,cache,onOpenRadar});
   } catch (error) {

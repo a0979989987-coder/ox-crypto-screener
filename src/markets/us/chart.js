@@ -727,7 +727,7 @@ export class USChart {
     const timer = this.capabilities.mode === 'perpetual' ? perpetualCountdown(c) : this.capabilities.mode === "eod" ? `收盤 ${c.periodEnd || c.date}` : countdown(c, this.interval, this.extended);
     const compactTimer = {"正常盤已收線":"已收線","等待成交／收線校正":"待校正","交易日曆待更新":"日曆未知"}[timer] || timer;
     const delay = this.capabilities.mode==='perpetual' ? ({live:'串流',connecting:'連線中',reconnecting:'重連中',paused:'暫停',stale:'待更新'}[this.liveStatus]||'定時更新') : this.result?.delaySeconds === null ? "未確認" : this.result?.delaySeconds > 0 ? `延${Math.round(this.result.delaySeconds / 60)}分` : "輪詢";
-    const timerText = this.error || this.result?.stale ? "舊資料" : this.capabilities.mode === "eod" ? timer : `${compactTimer}·${delay}`;
+    const timerText = this.error || this.result?.stale ? "舊資料" : this.capabilities.mode === "eod" ? timer : compactTimer;
     if (priceNode.textContent !== priceText) priceNode.textContent = priceText;
     if (timerNode.textContent !== timerText) timerNode.textContent = timerText;
     node.title = `${this.error ? "更新失敗，保留舊資料" : timer} · ${delay}`;

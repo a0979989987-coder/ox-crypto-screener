@@ -15,6 +15,20 @@ const packet = {format:'ox-us-device-eod',version:1,mode:'eod',sessionDate:'2026
   directory:[{symbol:'SPY',name:'Benchmark fixture',type:'ETF'}],histories:{SPY:histories}};
 const dataset = await buildDeviceDataset(packet,{now:Date.parse('2026-10-01T08:00:00Z')});
 let serial=0;
+test('directory arrival invalidates an empty drawing session',()=>{
+  const value={capabilities:{source:'bitget-equity'},snapshot:{asOf:'2026-10-04'},directory:[]};
+  const before=patternSourceKey(value);
+  value.directory=[{symbol:'SPY',name:'SPY'}];
+  assert.notEqual(patternSourceKey(value),before);
+});
+test('perpetual drawing universe works before the daily radar scan finishes',async()=>{
+  const value={capabilities:{source:'bitget-equity',mode:'perpetual',rawDataAvailable:true,publicMarketData:true},
+    directory:[{symbol:'AAPL',name:'Apple'},{symbol:'SPY',name:'SPY'}],
+    snapshot:{mode:'perpetual',asOf:'2026-10-04T00:00:00Z',analyses:[],analysisPending:true,
+      quotes:[{symbol:'AAPL',price:200,quoteVolume:100},{symbol:'SPY',price:600,quoteVolume:200}]}};
+  const {source}=createUSPatternSource({getContext:()=>value});
+  assert.deepEqual((await source.fetchUniverse()).tickers.map(row=>row.symbol),['SPY','AAPL']);
+});
 function context() {
   return {capabilities:{...dataset.capabilities},directory:dataset.packet.directory,
     snapshot:{...dataset.snapshot,createdAt:new Date(Date.parse(packet.collectedAt)+ ++serial *1000).toISOString()}};

@@ -16,12 +16,12 @@ function snapshotRevision(snapshot) {
 
 // A file replacement, new close or change of access scope gets a separate
 // pattern session. An old personal dataset must never surface on the public feed.
-export function patternSourceKey({ capabilities = {}, snapshot } = {}) {
+export function patternSourceKey({ capabilities = {}, snapshot, directory = [] } = {}) {
   return JSON.stringify(['us', capabilities.dataScope || 'public', capabilities.source || '',
     capabilities.rawDataAvailable === true, capabilities.externalDisplayConfirmed === true,capabilities.publicMarketData === true,
     capabilities.localDataAvailable === true, capabilities.privateValidation === true,
     snapshot?.sessionDate || '', snapshot?.createdAt || snapshot?.asOf || '',
-    snapshot?.counts?.quoted || 0, snapshotRevision(snapshot)]);
+    snapshot?.counts?.quoted || 0, snapshotRevision(snapshot), directory.length]);
 }
 
 export function patternDataAllowed(capabilities) {
@@ -74,7 +74,7 @@ export function createUSPatternSource({ getContext, adapter = USAdapter }) {
         if (!item?.name || item.complex) return [];
         seen.add(quote.symbol);
         return [{ ...item, symbol:quote.symbol, name:item.name, quote,
-          turnover:finite(row?.liquidity) ? row.liquidity : null,
+          turnover:perpetual && finite(quote.quoteVolume) ? quote.quoteVolume : finite(row?.liquidity) ? row.liquidity : null,
           change:finite(quote.changePct) ? quote.changePct : null }];
       }).sort((a,b) => (b.turnover ?? -Infinity) - (a.turnover ?? -Infinity) || a.symbol.localeCompare(b.symbol));
       if (!allTickers.length) throw Error('尚無可用的美股盤後股票資料。');

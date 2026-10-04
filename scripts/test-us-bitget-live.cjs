@@ -12,7 +12,7 @@ const view=async(page,name,width)=>{await page.locator((width<800?'.app-dock':'.
 (async()=>{let browser;
  try{
   if(server)await new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(Error('server timeout')),10000);server.stdout.once('data',()=>{clearTimeout(timer);resolve();});});
-  browser=await chromium.launch({headless:true,executablePath:process.env.OX_BROWSER_PATH,args:['--no-sandbox']});mkdirSync(output,{recursive:true});
+  browser=await chromium.launch({headless:true,executablePath:process.env.OX_BROWSER_PATH,proxy:process.env.HTTPS_PROXY?{server:process.env.HTTPS_PROXY,bypass:'127.0.0.1,localhost'}:undefined,args:['--no-sandbox']});mkdirSync(output,{recursive:true});
   const widths=(process.env.OX_US_LIVE_WIDTHS||'390,1366').split(',').map(Number);
   for(const width of widths){
    const context=await browser.newContext({ignoreHTTPSErrors:true,viewport:{width,height:932},isMobile:width<800,hasTouch:true});
