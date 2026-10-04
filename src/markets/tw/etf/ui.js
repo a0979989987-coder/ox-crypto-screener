@@ -1,4 +1,4 @@
-import { revealStyledShadow } from '../../../components/style-ready.js?v=20261004-whitegold2';
+import { revealStyledShadow } from '../../../components/style-ready.js?v=20261005-whiteclear1';
 export const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export const fmt=(n,d=2)=>Number.isFinite(n)?n.toLocaleString('zh-TW',{maximumFractionDigits:d,minimumFractionDigits:d}):'—';
 export const signed=(n,d=2)=>Number.isFinite(n)?(n>0?'+':'')+fmt(n,d):'—';
@@ -10,7 +10,7 @@ export const iconSearch='<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx=
 export function shell(host,title){
   const node=document.createElement('div');host.append(node);const shadow=node.attachShadow({mode:'open'}), life=new AbortController();
   shadow.innerHTML=`<link rel="stylesheet" href="${new URL('./style.css?v=20261002-compact1',import.meta.url)}"><main aria-label="${esc(title)}"><div class="loading" role="status">正在載入 ${esc(title)}…</div></main>`;
-  node.style.setProperty('--ox-light-up','#bd4050');node.style.setProperty('--ox-light-down','#177c59');
+  node.style.setProperty('--ox-light-up','#ce3c4d');node.style.setProperty('--ox-light-down','#168366');
   revealStyledShadow(shadow,life.signal,'main',360);
   return {node,shadow,life,main:shadow.querySelector('main'),destroy(){life.abort();node.remove();}};
 }
