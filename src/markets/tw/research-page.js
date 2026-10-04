@@ -1,9 +1,9 @@
-import {savedHome,loadHome} from './home-data.js?v=20261002-tw3';
-import {coreContent,briefingContent,institutionContent} from './home-content.js?v=20261001-twhome1';
+import {savedHome,loadHome} from './home-data.js?v=20261004-night1';
+import {coreContent,briefingContent,institutionContent} from './home-content.js?v=20261004-night1';
 import { savedResearch, loadResearch, selectSectors, readWatchlist, quadrant } from './research-data.js?v=20261001-twhome1';
 import { escape, number, pct, money, direction, segments, mountResearch, stockRows } from './research-ui.js';
 import { bubbleChart, bubblePoints } from './research-bubbles.js?v=20261001-twhome1';
-import { closeResearchDetails, showSector, showStock, watchClick, showHomeHighlights, updateHomeHighlights } from './research-detail.js?v=20261002-nav6';
+import { closeResearchDetails, showSector, showStock, watchClick, showHomeHighlights, updateHomeHighlights } from './research-detail.js?v=20261004-night1';
 const prefs = { tab: 'bubble', scope: 'all', market: 'ALL', mode: 'auto', density: 'top', zoom: 1, panX: 0, panY: 0, sort: 'buy', query: '', quadrant: null, help: false, replayIndex: null };
 let session, data = savedResearch(), loading = false, error = null, lastFetch = 0;
 let home=savedHome(),homeLoading=false,homeFetched=0,homeSession='after';
