@@ -1,0 +1,1159 @@
+{
+  "fixtureData": true,
+  "engine": "chromium",
+  "screens": [
+    {
+      "label": "crypto-390-home",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "crypto-390-radar",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "crypto-390-strength",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "crypto-390-data",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "crypto-390-media",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "crypto-390-search",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "crypto-390-settings",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "crypto-390-account",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "crypto-390-radar-control-0",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "crypto-390-radar-control-1",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "crypto-390-chart-expanded",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "crypto-390-drawing-menu",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "crypto-390-drawing-settings",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "crypto-390-timeframe-menu",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "crypto-390-tool-patterns",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "crypto-390-pattern-patterns",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "crypto-390-pattern-timeframes",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "crypto-390-tool-bubbles",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "crypto-390-bubble-menu",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "crypto-390-tool-strength",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "crypto-390-tool-heatmap",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "crypto-390-heatmap-help",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "crypto-390-tool-rotation",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "crypto-390-rotation-help",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "crypto-390-tool-flow",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "crypto-390-flow-help",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "crypto-390-news-calendar",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "crypto-390-news-calendar-control-0",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "crypto-390-news-calendar-control-1",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "crypto-390-news-calendar-control-2",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "crypto-390-news-calendar-control-3",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "crypto-390-news-key",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "crypto-390-news-key-control-0",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "crypto-390-news-key-control-1",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "crypto-390-news-key-control-2",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "crypto-390-news-key-control-3",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "crypto-390-news-expanded",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "crypto-390-reader-preferences",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-390-home",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-390-radar",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-390-strength",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-390-data",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-390-media",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-390-search",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-390-settings",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-390-account",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-390-radar-control-0",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-390-radar-control-1",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-390-chart-expanded",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-390-drawing-menu",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-390-drawing-settings",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-390-timeframe-menu",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-390-tool-patterns",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-390-pattern-patterns",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-390-pattern-timeframes",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-390-tool-bubbles",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-390-bubble-menu",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-390-bubble-detail",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-390-tool-rotation",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-390-tool-etf",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-390-etf-rank",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-390-etf-hot",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-390-etf-hot-new",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-390-etf-hot-active",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-390-etf-hot-offering",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-390-etf-hot-radar",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-390-etf-stock",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-390-etf-stock-all",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-390-etf-stock-cap",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-390-etf-stock-dividend",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-390-etf-stock-theme",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-390-etf-bond",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-390-etf-bond-all",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-390-etf-bond-treasury",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-390-etf-bond-investment",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-390-etf-bond-emerging",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-390-etf-bond-highyield",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-390-etf-detail",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-390-etf-expanded-data",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-390-tool-savings",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-390-savings-life",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-390-savings-life-result",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-390-savings-single",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-390-savings-single-result",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-390-savings-dividend",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-390-savings-reinvest",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-390-savings-portfolio",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-390-savings-portfolio-result",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-390-savings-compare",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-390-radar-chart",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-390-radar-risk",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-390-radar-risk-detail",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-390-radar-disposal",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-390-radar-disposal-detail",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-390-radar-release",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-390-radar-release-detail",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-390-radar-watchlist",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-390-radar-screener",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-390-screener-filters",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-390-screener-expanded",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-390-screener-detail",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-390-news-calendar",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-390-news-calendar-control-0",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-390-news-calendar-control-1",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-390-news-calendar-control-2",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-390-news-calendar-control-3",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-390-news-key",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-390-news-key-control-0",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-390-news-key-control-1",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-390-news-key-control-2",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-390-news-key-control-3",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-390-news-expanded",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-390-reader-preferences",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "crypto-1440-home",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "crypto-1440-radar",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "crypto-1440-strength",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "crypto-1440-data",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "crypto-1440-media",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "crypto-1440-search",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "crypto-1440-settings",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "crypto-1440-account",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "crypto-1440-radar-control-0",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "crypto-1440-radar-control-1",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "crypto-1440-chart-expanded",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "crypto-1440-drawing-menu",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "crypto-1440-drawing-settings",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "crypto-1440-timeframe-menu",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "crypto-1440-tool-patterns",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "crypto-1440-pattern-patterns",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "crypto-1440-pattern-timeframes",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "crypto-1440-tool-bubbles",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "crypto-1440-bubble-menu",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "crypto-1440-tool-strength",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "crypto-1440-tool-heatmap",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "crypto-1440-heatmap-help",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "crypto-1440-tool-rotation",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "crypto-1440-rotation-help",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "crypto-1440-tool-flow",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "crypto-1440-flow-help",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "crypto-1440-news-calendar",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "crypto-1440-news-calendar-control-0",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "crypto-1440-news-calendar-control-1",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "crypto-1440-news-calendar-control-2",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "crypto-1440-news-calendar-control-3",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "crypto-1440-news-key",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "crypto-1440-news-key-control-0",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "crypto-1440-news-key-control-1",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "crypto-1440-news-key-control-2",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "crypto-1440-news-key-control-3",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "crypto-1440-news-expanded",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "crypto-1440-reader-preferences",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-1440-home",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-1440-radar",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-1440-strength",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-1440-data",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-1440-media",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-1440-search",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-1440-settings",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-1440-account",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-1440-radar-control-0",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-1440-radar-control-1",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-1440-chart-expanded",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-1440-drawing-menu",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-1440-drawing-settings",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-1440-timeframe-menu",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-1440-tool-patterns",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-1440-pattern-patterns",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-1440-pattern-timeframes",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-1440-tool-bubbles",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-1440-bubble-menu",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-1440-bubble-detail",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-1440-tool-rotation",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-1440-tool-etf",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-1440-etf-rank",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-1440-etf-rank-volume",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-1440-etf-rank-aum",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-1440-etf-rank-holders",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-1440-etf-rank-yield",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-1440-etf-rank-return1y",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-1440-etf-hot",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-1440-etf-hot-new",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-1440-etf-hot-active",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-1440-etf-hot-offering",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-1440-etf-hot-radar",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-1440-etf-stock",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-1440-etf-stock-all",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-1440-etf-stock-cap",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-1440-etf-stock-dividend",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-1440-etf-stock-theme",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-1440-etf-bond",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-1440-etf-bond-all",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-1440-etf-bond-treasury",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-1440-etf-bond-investment",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-1440-etf-bond-emerging",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-1440-etf-bond-highyield",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-1440-etf-detail",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-1440-tool-savings",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-1440-savings-life",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-1440-savings-single",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-1440-savings-dividend",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-1440-savings-reinvest",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-1440-savings-portfolio",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-1440-savings-compare",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-1440-radar-chart",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-1440-radar-risk",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-1440-radar-risk-detail",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-1440-radar-disposal",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-1440-radar-disposal-detail",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-1440-radar-release",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-1440-radar-release-detail",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-1440-radar-watchlist",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-1440-radar-screener",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-1440-screener-detail",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-1440-news-calendar",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-1440-news-calendar-control-0",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-1440-news-calendar-control-1",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-1440-news-calendar-control-2",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-1440-news-calendar-control-3",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-1440-news-key",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-1440-news-key-control-0",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-1440-news-key-control-1",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-1440-news-key-control-2",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-1440-news-key-control-3",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-1440-news-expanded",
+      "overflow": 0,
+      "dark": []
+    },
+    {
+      "label": "tw-1440-reader-preferences",
+      "overflow": 0,
+      "dark": []
+    }
+  ],
+  "checks": [
+    "crypto/390: live native chart changes palette without remount or viewport reset",
+    "crypto/390: menu, search routing, settings, account, all indicator tabs, nested tools and radar modes",
+    "tw/390: live native chart changes palette without remount or viewport reset",
+    "tw/390: menu, search routing, settings, account, all indicator tabs, nested tools and radar modes",
+    "390: shadow tools follow dark/light/system without remount",
+    "390: search resolves TW, ETF, savings, crypto and lazy pattern tools",
+    "crypto/1440: live native chart changes palette without remount or viewport reset",
+    "crypto/1440: menu, search routing, settings, account, all indicator tabs, nested tools and radar modes",
+    "tw/1440: live native chart changes palette without remount or viewport reset",
+    "tw/1440: menu, search routing, settings, account, all indicator tabs, nested tools and radar modes",
+    "1440: shadow tools follow dark/light/system without remount",
+    "1440: search resolves TW, ETF, savings, crypto and lazy pattern tools"
+  ],
+  "errors": [],
+  "passed": true,
+  "viewports": [
+    {
+      "width": 390,
+      "height": 844
+    },
+    {
+      "width": 1440,
+      "height": 900
+    }
+  ],
+  "baseCommit": "75b7941a63a70a087555c3c40c90123aae9898a1",
+  "note": "Controlled UI fixtures; representative screenshots are committed separately. Full screenshots are reproduced by npm run test:light-theme."
+}

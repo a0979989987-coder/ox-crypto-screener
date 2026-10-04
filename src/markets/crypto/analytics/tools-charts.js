@@ -15,8 +15,8 @@ export function createToolChart(canvas,{onSelect=()=>{},signal,heatColors=['116,
  const position=e=>{const r=canvas.getBoundingClientRect();return {x:e.clientX-r.left,y:e.clientY-r.top};};
  function zoomAt(next,x=w/2,y=h/2){next=Math.max(1,Math.min(20,next));const ratio=next/scale;panX=x-(x-panX)*ratio;panY=y-(y-panY)*ratio;scale=next;canvas.dataset.zoom=String(scale);clampPan();schedule();}
  function seedGesture(){const ps=[...pointers.values()];gesture=ps.length>=2?{x:(ps[0].x+ps[1].x)/2,y:(ps[0].y+ps[1].y)/2,d:Math.hypot(ps[0].x-ps[1].x,ps[0].y-ps[1].y)}:ps.length?{...ps[0]}:null;}
- const text=(s,x,y,{align='left',size=11,color='#a4b0b4'}={})=>{ctx.font=`${size}px Inter,-apple-system,"Noto Sans CJK TC",sans-serif`;ctx.fillStyle=color;ctx.textAlign=align;ctx.fillText(String(s),x,y);};
- const line=(x1,y1,x2,y2,color='#2a373e')=>{ctx.strokeStyle=color;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();};
+ const text=(s,x,y,{align='left',size=11,color='#a4b0b4'}={})=>{ctx.font=`${size}px Inter,-apple-system,"Noto Sans CJK TC",sans-serif`;ctx.fillStyle=document.body.classList.contains('theme-light')?(color==='#a4b0b4'?'#726c61':['#eee','#cdd2ce','#d4d8d1','#c6cbc5'].includes(color)?'#302e29':color):color;ctx.textAlign=align;ctx.fillText(String(s),x,y);};
+ const line=(x1,y1,x2,y2,color='#2a373e')=>{ctx.strokeStyle=document.body.classList.contains('theme-light')&&['#2a373e','#202c32'].includes(color)?'#d8cfbe':color;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();};
  function draw(){raf=0;if(!w||!h)return;const d=Math.min(devicePixelRatio||1,2);canvas.width=Math.round(w*d);canvas.height=Math.round(h*d);ctx.setTransform(d,0,0,d,0,0);ctx.clearRect(0,0,w,h);hits=[];
   const {type}=current;
   if(type==='heatmap'){
@@ -24,9 +24,9 @@ export function createToolChart(canvas,{onSelect=()=>{},signal,heatColors=['116,
    const value=r=>current.weight==='cap'?r.cap:current.weight==='equal'?1:r.volume;
    const valid=current.rows.filter(r=>value(r)>0).sort((a,b)=>value(b)-value(a));
    let tiles=[];
-   if(current.grouped){const groups=[...new Set(valid.map(r=>r.sector))].map(sector=>({sector,rows:valid.filter(r=>r.sector===sector)}));for(const g of partition(groups,[0,0,w*scale,h*scale],g=>g.rows.reduce((s,r)=>s+value(r),0))){const [x,y,ww,hh]=g.rect;ctx.fillStyle='#202c31';ctx.fillRect(x+1,y+1,ww-2,hh-2);if(ww>70&&hh>45)text(g.sector,x+9,y+18,{size:11,color:'#cdd2ce'});tiles.push(...partition(g.rows,[x+2,y+25,Math.max(0,ww-4),Math.max(0,hh-27)],value));}}
+   if(current.grouped){const groups=[...new Set(valid.map(r=>r.sector))].map(sector=>({sector,rows:valid.filter(r=>r.sector===sector)}));for(const g of partition(groups,[0,0,w*scale,h*scale],g=>g.rows.reduce((s,r)=>s+value(r),0))){const [x,y,ww,hh]=g.rect;ctx.fillStyle=document.body.classList.contains('theme-light')?'#eee8da':'#202c31';ctx.fillRect(x+1,y+1,ww-2,hh-2);if(ww>70&&hh>45)text(g.sector,x+9,y+18,{size:11,color:'#cdd2ce'});tiles.push(...partition(g.rows,[x+2,y+25,Math.max(0,ww-4),Math.max(0,hh-27)],value));}}
    else tiles=partition(valid,[0,0,w*scale,h*scale],value);
-   for(const r of tiles){const [x,y,ww,hh]=r.rect;if(ww<2||hh<2)continue;const intensity=Math.min(.68,.18+Math.abs(r.returnPct)/10);ctx.fillStyle=`rgba(${heatColors[r.returnPct>=0?0:1]},${intensity})`;ctx.fillRect(x+1,y+1,ww-2,hh-2);if(current.selected===r.symbol){ctx.strokeStyle='#eeeadd';ctx.strokeRect(x+2,y+2,ww-4,hh-4);}const cx=x+ww/2,cy=y+hh/2;
+   for(const r of tiles){const [x,y,ww,hh]=r.rect;if(ww<2||hh<2)continue;const intensity=Math.min(.68,.18+Math.abs(r.returnPct)/10);ctx.fillStyle=`rgba(${heatColors[r.returnPct>=0?0:1]},${intensity})`;ctx.fillRect(x+1,y+1,ww-2,hh-2);if(current.selected===r.symbol){ctx.strokeStyle=document.body.classList.contains('theme-light')?'#8d6b2c':'#eeeadd';ctx.strokeRect(x+2,y+2,ww-4,hh-4);}const cx=x+ww/2,cy=y+hh/2;
     if(ww>48&&hh>25){text(r.base,cx,cy-(hh>65?12:0),{align:'center',size:Math.min(27,Math.max(12,ww/10)),color:'#eee'});if(hh>45)text(signed(r.returnPct,2)+'%',cx,cy+(hh>65?9:16),{align:'center',size:12,color:'#eee'});if(hh>95&&ww>85)text(r.price.toLocaleString('en-US',{maximumFractionDigits:r.price<1?5:2}),cx,cy+30,{align:'center',size:11});}
     hits.push({x,y,w:ww,h:hh,value:r.symbol});
    }
@@ -51,6 +51,7 @@ export function createToolChart(canvas,{onSelect=()=>{},signal,heatColors=['116,
  const end=e=>{if(!pointers.delete(e.pointerId))return;if(canvas.hasPointerCapture(e.pointerId))canvas.releasePointerCapture(e.pointerId);seedGesture();};
  for(const type of ['pointerup','pointercancel','lostpointercapture'])canvas.addEventListener(type,end,{signal:life.signal});
  canvas.addEventListener('click',e=>{if(Date.now()<suppressClickUntil)return;const r=canvas.getBoundingClientRect(),x=e.clientX-r.left-(current.type==='heatmap'?panX:0),y=e.clientY-r.top-(current.type==='heatmap'?panY:0);const hit=hits.find(p=>x>=p.x&&x<=p.x+p.w&&y>=p.y&&y<=p.y+p.h);if(hit)onSelect(hit.value);},{signal:life.signal});
+ document.addEventListener('ox:themechange',schedule,{signal:life.signal});
  const destroy=()=>{life.abort();observer.disconnect();cancelAnimationFrame(raf);pointers.clear();};
  signal?.addEventListener('abort',destroy,{once:true});
  return {update(options){if(options.type!==current.type){scale=1;panX=panY=0;}current=options;canvas.style.touchAction=options.type==='heatmap'?'none':'';canvas.dataset.zoom=String(scale);schedule();},zoom(factor){zoomAt(scale*factor);},reset(){scale=1;panX=panY=0;canvas.dataset.zoom='1';schedule();},viewport(){return {scale,x:panX,y:panY};},destroy};

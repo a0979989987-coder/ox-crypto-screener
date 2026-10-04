@@ -9,6 +9,8 @@
   document.body.append(dialog);
   const stage=dialog.querySelector('.ox-home-preview-chart'),title=dialog.querySelector('[data-title]'),status=dialog.querySelector('[data-status]');
   let chart=null,series=null,selected=null,frame='1H',request=0,focusBefore=null,liveFeed=null,candles=[];
+  function syncTheme(){const light=document.body.classList.contains('theme-light');chart?.applyOptions({layout:{background:{type:'solid',color:light?'#fffefa':'#15191d'},textColor:light?'#726c61':'#aeb3b3'},grid:{horzLines:{color:light?'#a18c601a':'#ffffff0b'}},crosshair:{vertLine:{labelBackgroundColor:light?'#8d6b2c':'#4c525e'},horzLine:{labelBackgroundColor:light?'#8d6b2c':'#4c525e'}}});const up=light?'#246ba2':'#00b8d4',down=light?'#b83859':'#ff3078';series?.applyOptions({upColor:up,downColor:down,wickUpColor:up,wickDownColor:down});}
+  document.addEventListener('ox:themechange',syncTheme);
   function resize(){if(chart&&dialog.open)chart.resize(stage.clientWidth,stage.clientHeight);}
   new ResizeObserver(resize).observe(stage);
   async function load(){
@@ -39,7 +41,7 @@
       chart=LightweightCharts.createChart(stage,{width:stage.clientWidth,height:stage.clientHeight,layout:{background:{type:'solid',color:'#15191d'},textColor:'#aeb3b3',attributionLogo:false},grid:{vertLines:{visible:false},horzLines:{color:'#ffffff0b'}},rightPriceScale:{autoScale:true,scaleMargins:{top:.12,bottom:.12}},timeScale:{timeVisible:true,rightOffset:5},handleScroll:{pressedMouseMove:true,horzTouchDrag:true,vertTouchDrag:false},handleScale:{pinch:true,mouseWheel:true,axisPressedMouseMove:{price:true,time:true}}});
       series=chart.addCandlestickSeries({upColor:'#00b8d4',downColor:'#ff3078',borderVisible:false,wickUpColor:'#00b8d4',wickDownColor:'#ff3078',priceFormat:{type:'custom',minMove:.00000001,formatter:p=>Number(p).toFixed(chartAxisPrecision(p)).replace(/(\.\d*?)0+$/,'$1').replace(/\.$/,'')}});
     }
-    resize();load();
+    syncTheme();resize();load();
   }
   dialog.addEventListener('click',e=>{
     const button=e.target.closest('button');
