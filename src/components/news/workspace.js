@@ -5,6 +5,7 @@ import { macroResult, macroValue } from './macro.js?v=20261005-macro1';
 import { node, button, anchoredPanel, modal } from './layers.js';
 const fmt = value => Number.isFinite(Date.parse(value)) ? new Intl.DateTimeFormat('zh-TW', { timeZone: 'Asia/Taipei', dateStyle: 'short', timeStyle: 'short', hour12: false }).format(new Date(value)) : '時間待確認';
 const label = item => item.titleZh || item.title || '標題資料未提供';
+const calendarTone = category => ({ macro: 'red', regulation: 'red', unlock: 'yellow', 'dividend-preview': 'yellow', payment: 'yellow', dividend: 'green', earnings: 'blue', exchange: 'blue', listing: 'blue', network: 'blue', governance: 'green', airdrop: 'green', burn: 'gray', holiday: 'gray' }[category] || 'gray');
 const statusLabel = item => item.announcementStatus === 'cancelled' ? '已取消' : item.announcementStatus === 'estimated' || item.kind === 'token-unlock' && item.date ? '預估排程' : item.announcementStatus === 'preview' ? '預告' : item.status === 'confirmed' || item.announcementStatus === 'confirmed' ? '已公告' : '狀態待確認';
 const sourceState = source => source.access === 'authorization-required' ? '需取得授權' : source.status === 'not-connected' ? '尚未接入' : source.status === 'error' ? '更新失敗' : source.lastSuccessAt && Date.now() - Date.parse(source.lastSuccessAt) > 18 * 3600000 ? '資料過期' : source.status === 'ready' && source.count === 0 ? '成功・零篇' : source.status === 'ready' ? source.access==='public-aggregated-rss'?'聚合接入':'已接入' : '尚未載入';
 function link(text, url) { const safe = safeLink(url); if (!safe) return null; const a = node('a', '', text); a.href = safe; a.target = '_blank'; a.rel = 'noopener noreferrer'; return a; }
@@ -13,7 +14,7 @@ export function mountNewsWorkspace(host, api) {
   const key = `ox-news-v2-${api.scope}`;
   let saved; try { saved = JSON.parse(sessionStorage.getItem(key) || 'null'); } catch {}
   const state = { ...defaultState(), ...saved }, life = new AbortController();
-  if (typeof state.importance !== 'boolean') state.importance = null;
+  if (state.importance !== true) state.importance = null;
   if (!Object.hasOwn(MARKET_NAMES, state.market)) state.market = 'all';
   let monthExpanded = false;
   let data = {}, panel = null, detail = null, detailKey = '', countdown = null, restorePosition = true;
@@ -60,13 +61,15 @@ export function mountNewsWorkspace(host, api) {
       const events = button('事件', '多選事件類別', () => {
         const c = coverage(data.snapshot, scope(), state.month).categories;
         multi(events, '事件類別', 'categories', MARKET_CATEGORIES[scope()].map(id => ({ id, label: CATEGORY_NAMES[id], hint: c.find(i => i.category === id)?.spans.length ? '有資料・覆蓋依月份' : c.find(i => i.category === id)?.known ? '部分排程' : c.find(i => i.category === id)?.connected.length ? '已接入・依來源排程' : '尚未接入' })), null, '沒有覆蓋的類別不會填入示範事件。');
-      }, 'oxn-pill'); const level = button('重要性', '重要性開關：開顯示有星事件，關顯示無星事件', () => { state.importance = state.importance !== true; persist(); renderControls(); renderContent(); }, 'oxn-pill oxn-importance-switch');
-      level.setAttribute('role', 'switch'); level.setAttribute('aria-checked', String(state.importance === true));
-      level.append(node('span', 'oxn-switch-track'));
+      }, 'oxn-pill'); const level = button('重要性', '僅顯示重要事件', () => { state.importance = state.importance === true ? null : true; persist(); renderControls(); renderContent(); }, 'oxn-pill oxn-importance-toggle');
+      level.setAttribute('aria-pressed', String(state.importance === true));
+      level.title = state.importance === true ? '目前僅顯示重要事件；點一下恢復全部' : '目前顯示全部事件；點一下只顯示重要事件';
       events.classList.toggle('is-filtered', state.categories !== null); level.classList.toggle('is-filtered', state.importance !== null);
       const monthNav = node('div', 'oxn-month-nav'); monthNav.append(prev, month, next);
       viewSwitch.classList.add('oxn-calendar-switch');
-      controls.append(monthNav, viewSwitch, events, level);
+      controls.append(monthNav);
+      if (innerWidth > 600) controls.append(viewSwitch);
+      controls.append(events, level);
     } else {
       const time = button('時間', '多選新聞時間', () => multi(time, '時間', 'times', TIME_CHOICES.map(([id, text]) => ({ id, label: text })), ['24'], '時間採聯集並去重，依發布時間篩選。'), 'oxn-pill');
       const source = button('來源', '多選新聞來源', () => {
@@ -146,7 +149,7 @@ export function mountNewsWorkspace(host, api) {
       if (cell.outside) b.classList.add('is-outside'); if (cell.date === taipeiDay()) { b.classList.add('is-today'); b.setAttribute('aria-current', 'date'); }
       b.append(button(String(cell.day), `${cell.date}，${entries.length} 個已收錄事件`, e => { e.stopPropagation(); selectDay(); if(!mobile)api.navigate({day:cell.date}); }, 'oxn-day-number'));
       if(entries.length)b.append(button(`${entries.length} 件`,`${cell.date}，查看下方 ${entries.length} 個事件`,e=>{e.stopPropagation();selectDay();requestAnimationFrame(()=>content.querySelector('.oxn-day-events')?.scrollIntoView({block:'center',behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'instant':'smooth'}));},'oxn-day-count'));
-      for (const item of entries.slice(0, 2)) { const short = button(item.shortTitle || label(item).replace(/美國 \d{4} 年 \d+ 月/, ''), `${CATEGORY_NAMES[eventCategory(item)] || '事件'}：${label(item)}`, e => { e.stopPropagation(); api.navigate({ day: cell.date, event: item.id }); }, 'oxn-calendar-event'); short.title = label(item); short.dataset.category = eventCategory(item) || ''; b.append(short); }
+      for (const item of entries.slice(0, 2)) { const short = button(item.shortTitle || label(item).replace(/美國 \d{4} 年 \d+ 月/, ''), `${CATEGORY_NAMES[eventCategory(item)] || '事件'}：${label(item)}`, e => { e.stopPropagation(); api.navigate({ day: cell.date, event: item.id }); }, 'oxn-calendar-event'); short.title = label(item); short.dataset.category = eventCategory(item) || ''; short.dataset.tone = calendarTone(eventCategory(item)); b.append(short); }
       if (entries.length>2) b.append(node('span', 'oxn-day-more', `＋${entries.length-2}`)); grid.append(b);
     }
     const cover = coverage(data.snapshot, scope(), state.month);

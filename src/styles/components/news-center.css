@@ -384,13 +384,29 @@ body[data-news-mode="1"] #market-unavailable-card {display:none!important}
 .oxn-event-values{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;width:100%;margin-top:10px}
 .oxn-event-values>span{display:flex;gap:6px;flex-wrap:wrap}.oxn-event-values small{color:var(--muted)}
 .oxn-event-description{white-space:pre-wrap;line-height:1.7}
-.oxn-switch-track{display:inline-block;width:24px;height:14px;flex:none;border-radius:10px;background:#737983;position:relative;margin-left:4px}
-.oxn-switch-track:after{content:"";position:absolute;width:10px;height:10px;top:2px;left:2px;border-radius:50%;background:white}
-.oxn-importance-switch[aria-checked="true"] .oxn-switch-track{background:#4878d8}.oxn-importance-switch[aria-checked="true"] .oxn-switch-track:after{left:12px}
-.oxn-importance-switch:after{display:none!important}
+.oxn-root .oxn-importance-toggle:after{display:none!important}
+.oxn-root .oxn-importance-toggle[aria-pressed="false"]{border-color:var(--oxn-line);box-shadow:none!important}
+.oxn-root .oxn-importance-toggle[aria-pressed="true"],body.theme-light.theme-light .oxn-root .oxn-importance-toggle[aria-pressed="true"]{border:1px solid #fff!important;box-shadow:0 0 3px #fff,0 0 11px #ffffff70,inset 0 0 5px #ffffff38!important}
+body.theme-light.theme-light .oxn-root .oxn-importance-toggle[aria-pressed="false"]{border-color:#c4c8d0!important;box-shadow:none!important}
+body.theme-light.theme-light .oxn-root .oxn-importance-toggle[aria-pressed="true"]{background:#e2e5eb!important;outline:1px solid #adb4bf;outline-offset:1px}
+@media(min-width:601px){
+ .oxn-root .oxn-calendar-switch,body.theme-light.theme-light .oxn-root .oxn-calendar-switch{border:1px solid #91bcff!important;box-shadow:0 0 4px #84b4ff,0 0 12px #6c9fff55,inset 0 0 5px #93c2ff22!important}
+ .oxn-root .oxn-calendar-event[data-tone="red"]{--event-ink:#ff949b;--event-fill:#ff60601a}
+ .oxn-root .oxn-calendar-event[data-tone="yellow"]{--event-ink:#f1cf72;--event-fill:#edbd481a}
+ .oxn-root .oxn-calendar-event[data-tone="blue"]{--event-ink:#91bdff;--event-fill:#649dff1a}
+ .oxn-root .oxn-calendar-event[data-tone="green"]{--event-ink:#80dbad;--event-fill:#4cc88e1a}
+ .oxn-root .oxn-calendar-event[data-tone="gray"]{--event-ink:#b9c0ca;--event-fill:#aeb6c01a}
+ body.theme-light .oxn-root .oxn-calendar-event[data-tone="red"]{--event-ink:#ab2839;--event-fill:#ffe9eb}
+ body.theme-light .oxn-root .oxn-calendar-event[data-tone="yellow"]{--event-ink:#795500;--event-fill:#fff4d6}
+ body.theme-light .oxn-root .oxn-calendar-event[data-tone="blue"]{--event-ink:#235baa;--event-fill:#eaf2ff}
+ body.theme-light .oxn-root .oxn-calendar-event[data-tone="green"]{--event-ink:#176b46;--event-fill:#e5f5ec}
+ body.theme-light .oxn-root .oxn-calendar-event[data-tone="gray"]{--event-ink:#525d6a;--event-fill:#edf0f4}
+ .oxn-root .oxn-calendar-event[data-tone],body.theme-light.theme-light .oxn-root .oxn-calendar-event[data-tone]{color:var(--event-ink)!important;background:var(--event-fill)!important;border:0!important;border-left:3px solid var(--event-ink)!important;border-radius:3px;padding:2px 5px;margin-top:2px;line-height:18px;min-width:0}
+}
 @media(max-width:600px){
- .oxn-root .oxn-controls[data-tab="calendar"]{grid-template-columns:minmax(0,1fr) 44px 48px 88px}
- .oxn-root .oxn-importance-switch{display:flex;justify-content:center;align-items:center;font-size:12px;padding:0 4px}
+ .oxn-root .oxn-controls[data-tab="calendar"]{grid-template-columns:minmax(0,1fr) 56px 72px;gap:6px}
+ .oxn-root .oxn-calendar-switch{display:none!important}
+ .oxn-root .oxn-importance-toggle{display:flex;justify-content:center;align-items:center;font-size:12px;padding:0 4px}
  .oxn-mobile-dates{margin:4px 0 12px}
  .oxn-week-strip{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
  .oxn-week-date{display:flex;flex-direction:column;align-items:center;gap:8px;border:0;background:transparent;color:inherit;padding:8px 0;border-radius:9px;min-height:64px}
