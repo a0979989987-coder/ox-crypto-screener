@@ -1,6 +1,6 @@
 import {escape,number,pct,money,direction} from './research-ui.js';
 import {taipeiTime} from './home-content.js';
-import {buildPremarketBriefing,buildAftermarketBriefing,homeBriefingInput} from './briefing-formatter.js?v=20261002-nav6';
+import {buildPremarketBriefing,buildAftermarketBriefing,homeBriefingInput} from './briefing-formatter.js?v=20261005-briefingdate';
 const finite=n=>typeof n==='number'&&Number.isFinite(n);
 const signed=(n,digits=2)=>finite(n)?`${n>0?'+':''}${number(n,digits)}`:'—';
 const sourceLink=url=>{try{const u=new URL(url);return u.protocol==='https:'&&!u.username&&!u.password?u.href:null;}catch{return null;}};
@@ -12,7 +12,7 @@ export function homeHighlights(home,phase='after',research=null){
  const entries=[],before=phase==='before';
  if(before){
   const n=home.night;
-  if(n?.status!=='unavailable'&&finite(n?.close))entries.push(entry('台指期夜盤',`收盤 ${number(n.close)} 點，${signed(n.change)} 點（${pct(n.changePct)}）；最高 ${number(n.high)}、最低 ${number(n.low)}，成交 ${number(n.volume,0)} 口。`,{date:n.sessionEnd?.slice(0,10),source:n.source,url:n.sourceUrl,stale:n.status==='stale'||Boolean(home.nightStatus?.error),tone:direction(n.change)}));
+  if(n?.status!=='unavailable'&&finite(n?.close))entries.push(entry('台指期夜盤',`收盤 ${number(n.close)} 點，${signed(n.change)} 點（${pct(n.changePct)}）；最高 ${number(n.high)}、最低 ${number(n.low)}，成交 ${number(n.volume,0)} 口。`,{date:n.tradeDate||n.sessionEnd?.slice(0,10),source:n.source,url:n.sourceUrl,stale:n.status==='stale'||Boolean(home.nightStatus?.error),tone:direction(n.change)}));
   for(const group of ['us','indicators','commodities','fx','yields','asia','crypto']){
    const rows=(home.briefing?.rows||[]).filter(r=>r.group===group&&finite(r.value));
    if(!rows.length)continue;
@@ -40,7 +40,7 @@ export function homeHighlights(home,phase='after',research=null){
 }
 export function highlightsContent(home,phase,research){
  const report=homeHighlights(home,phase,research);
- const brief=report.summary,summary=`<article class="twx-highlight twx-highlight-summary"><h3>【${escape(brief.title)}】</h3><p>${escape(brief.text)}</p>${brief.missing.length?`<small>缺項：${escape(brief.missing.join('、'))}</small>`:''}<footer><span>${escape(brief.date||'日期待確認')}</span><small>${escape(brief.basis)}</small></footer></article>`;
+ const brief=report.summary,summary=`<article class="twx-highlight twx-highlight-summary"><h3>【${escape(brief.title)}】</h3><p>${escape(brief.text||'尚無可核對的摘要資料，請查看下方來源狀態。')}</p><footer><span>${escape(brief.date||'—')}</span><small>${escape(brief.basis)}</small></footer></article>`;
  const rows=report.entries.map(item=>`<article class="twx-highlight"><h3 class="${item.tone}">${escape(item.title)}</h3><p>${escape(item.text)}</p><footer><span>${escape(item.date||'日期待公布')}${item.stale?' · 上次有效資料':''}</span>${sourceLink(item.url)?`<a href="${escape(sourceLink(item.url))}" target="_blank" rel="noopener noreferrer">${escape(item.source||'資料來源')} ↗</a>`:`<small>${escape(item.source||'')}</small>`}</footer></article>`).join('');
  return `<div class="twx-highlights-meta"><span>${escape(report.date||'等待資料')}</span><small>更新 ${escape(taipeiTime(report.updated))}</small></div>${summary}${rows||'<div class="twx-empty">資料尚未取得，更新後會整理重點。</div>'}`;
 }

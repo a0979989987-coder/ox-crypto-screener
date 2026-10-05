@@ -2,7 +2,7 @@ import { twProvider } from './api.js?v=20261001-tiercomb1';
 import { renderTWCandles } from './radar-card.js';
 import { escape, number, pct, money, direction, stockRows } from './research-ui.js';
 import { readWatchlist, toggleWatch } from './research-data.js?v=20261001-twhome1';
-import {highlightsContent} from './home-highlights.js?v=20261002-nav6';
+import {highlightsContent} from './home-highlights.js?v=20261005-briefingdate';
 export function closeResearchDetails() { document.querySelectorAll('.twx-dialog').forEach(d => { d.close(); d.remove(); }); }
 function dialog(title) {
   closeResearchDetails();

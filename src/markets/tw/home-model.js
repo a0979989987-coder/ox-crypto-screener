@@ -14,7 +14,8 @@ export function validNight(r,now=Date.now()){
  return !!r&&/^\d{6}$/.test(r.contract||'')&&validDate(r.tradeDate)&&/T15:00:00\+08:00$/.test(r.sessionStart||'')&&/T05:00:00\+08:00$/.test(r.sessionEnd||'')&&Date.parse(r.sessionEnd)-Date.parse(r.sessionStart)===14*3600000&&Date.parse(r.sessionEnd)<=now&&r.sessionEnd.slice(0,10)<=r.tradeDate&&r.close>0&&r.low>0&&r.high>=r.low&&r.close>=r.low&&r.close<=r.high&&Number.isInteger(r.volume)&&r.volume>0&&finite(r.change)&&finite(r.changePct)&&Number.isFinite(Date.parse(r.collectedAt));
 }
 export function validBriefing(r){
- return !!r&&validDate(r.date)&&Array.isArray(r.rows)&&r.rows.length===22&&new Set(r.rows.map(row=>row.id)).size===22&&r.rows.every(row=>HOME_GROUPS.some(([group])=>group===row.group)&&(!finite(row.value)||validDate(row.marketDate))&&(row.group!=='asia'||!finite(row.value)||row.marketDate<r.date&&row.quoteKind==='previous-close'));
+ const expected=r?.rows?.length===23&&r.rows.some(row=>row.id==='TSM')?23:22;
+ return !!r&&validDate(r.date)&&Array.isArray(r.rows)&&r.rows.length===expected&&new Set(r.rows.map(row=>row.id)).size===expected&&r.rows.every(row=>HOME_GROUPS.some(([group])=>group===row.group)&&(!finite(row.value)||validDate(row.marketDate))&&(row.group!=='asia'||!finite(row.value)||row.marketDate<r.date&&row.quoteKind==='previous-close'));
 }
 export function acceptHomeSection(section,value){
  if(value==null)return null;
