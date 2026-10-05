@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {revealStyledShadow} from '../src/components/style-ready.js';
-function element(tag){return Object.assign(new EventTarget(),{tag,sheet:null,children:[],style:{},setAttribute(){},removeAttribute(){},append(...nodes){this.children.push(...nodes);},remove(){this.removed=true;}});}
+function element(tag){return Object.assign(new EventTarget(),{tag,sheet:null,children:[],dataset:{},style:{},setAttribute(){},removeAttribute(){},append(...nodes){this.children.push(...nodes);},remove(){this.removed=true;}});}
 function fixture(){const sheet=element('link');sheet.href='https://example.test/tool.css?v=old';const nodes=[],main=element('main'),host={dataset:{},style:{}};const shadow={host,querySelector:s=>s==='main'?main:sheet,prepend:n=>nodes.unshift(n),append:n=>nodes.push(n)};return {sheet,nodes,shadow,host,main};}
 const load=sheet=>{sheet.sheet={cssRules:[{}]};sheet.dispatchEvent(new Event('load'));};
 test('cold tools preserve canvas geometry, wait for all CSS, recover errors and stop stale navigation',()=>{
