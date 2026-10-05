@@ -1,4 +1,4 @@
-import { revealStyledShadow } from '../style-ready.js?v=20261005-softvisual3';
+import { revealStyledShadow } from '../style-ready.js?v=20261005-risknav4';
 // Both markets use one rail, including the sliding white glass indicator.
 export function createToolsRail({ tabs, selected, label, attribute = 'data-tool', equal = false, mobileCompact = false, onSelect }) {
   const element = document.createElement('div');

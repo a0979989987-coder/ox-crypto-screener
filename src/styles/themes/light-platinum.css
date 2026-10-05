@@ -207,3 +207,8 @@ body.ox-terminal.theme-light.theme-light.theme-light.theme-light.theme-light .st
 body.ox-terminal.theme-light.theme-light.theme-light.theme-light.theme-light :is(#btc-strength-needle,#alt-strength-needle) {background:#8794a5!important}
 body.ox-terminal.theme-light.theme-light.theme-light.theme-light.theme-light .tws-title>div {display:none!important}
 body.ox-terminal.theme-light.theme-light.theme-light.theme-light.theme-light #view-home .ox-kicker {display:none!important}
+
+/* White-theme feedback: luminous disposal marker and frameless desktop menu. */
+body.ox-terminal.theme-light.theme-light.theme-light .tw-radar-root .tw-stock-risk-icon.known {color:#efbd27!important;text-shadow:0 0 1px #a77900,0 0 5px #ffe36e66!important}
+body.ox-terminal.theme-light.theme-light.theme-light.theme-light.theme-light .ox-desktop-nav,
+body.ox-terminal.theme-light.theme-light.theme-light.theme-light.theme-light .ox-desktop-nav button {background:transparent!important;border:0!important;outline:0!important;box-shadow:none!important}

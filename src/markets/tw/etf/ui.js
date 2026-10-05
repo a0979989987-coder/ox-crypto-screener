@@ -1,4 +1,4 @@
-import { revealStyledShadow } from '../../../components/style-ready.js?v=20261005-softvisual3';
+import { revealStyledShadow } from '../../../components/style-ready.js?v=20261005-risknav4';
 export const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export const fmt=(n,d=2)=>Number.isFinite(n)?n.toLocaleString('zh-TW',{maximumFractionDigits:d,minimumFractionDigits:d}):'—';
 export const signed=(n,d=2)=>Number.isFinite(n)?(n>0?'+':'')+fmt(n,d):'—';
