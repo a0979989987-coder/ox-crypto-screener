@@ -1,3 +1,5 @@
+import { createFeatureAPIGate } from '../../../server/account/feature-access.js';
+const featureAPIGate = createFeatureAPIGate();
 import { getOfficialTWResearch } from '../../../server/markets/tw/research-provider.js';
 import { getHomeSection } from '../../../server/markets/tw/home-provider.js';
 import { handleTWOutlook } from '../../../server/markets/tw/outlook.js';
@@ -1435,12 +1437,14 @@ async function handleIndicators(
 /* Main handler                                                               */
 /* ========================================================================== */
 
-export default async function handler(
+export async function handleTWRequest(
   req,
-  res
+  res,
+  accessGate = featureAPIGate
 ) {
 
   if (stringParam(req.query?.endpoint).toLowerCase() === 'outlook') {
+    if (!(await accessGate(req,res,'outlook'))) return;
     return handleTWOutlook(req, res);
   }
 
@@ -1495,6 +1499,8 @@ export default async function handler(
     )
       .toLowerCase();
 
+
+  if (!(await accessGate(req,res,endpoint))) return;
 
   try {
 
@@ -1751,3 +1757,5 @@ export default async function handler(
 
   }
 }
+
+export default function handler(req,res){return handleTWRequest(req,res);}

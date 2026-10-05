@@ -23,6 +23,7 @@ export function createToolsRail({ tabs, selected, label, attribute = 'data-tool'
   }
   shadow.addEventListener('click', event => {
     const button = event.target.closest(`[${attribute}]`); if (!button) return;
+    if (window.OXFeatures && !window.OXFeatures.enterTool(button.getAttribute(attribute), attribute, () => button.click())) return;
     shadow.querySelectorAll('button').forEach(item => {
       const active = item === button;
       item.classList.toggle('active', active); item.setAttribute('aria-selected', active); item.tabIndex = active ? 0 : -1;
@@ -37,6 +38,8 @@ export function createToolsRail({ tabs, selected, label, attribute = 'data-tool'
     if (next === null) return;
     event.preventDefault(); buttons[next].focus(); buttons[next].click();
   }, { signal: life.signal });
+  document.addEventListener('ox:feature-tool-return', event => { const market=attribute==='data-tw-tool'?'tw':attribute==='data-crypto-tool'?'crypto':null; if(market===event.detail?.market) shadow.querySelector(`[${attribute}="${event.detail.tool}"]`)?.click(); }, {signal:life.signal});
+  document.addEventListener('ox:feature-news-return', event => { if(attribute==='data-news-tab') shadow.querySelector(`[${attribute}="${event.detail.tab}"]`)?.click(); }, {signal:life.signal});
   shadow.querySelector('link').addEventListener('load', position, { signal: life.signal });
   const resize = new ResizeObserver(position); resize.observe(element);
   return { element, shadow, position, select(id){[...shadow.querySelectorAll('button')].find(b=>b.getAttribute(attribute)===id)?.click();}, destroy() { life.abort(); resize.disconnect(); } };

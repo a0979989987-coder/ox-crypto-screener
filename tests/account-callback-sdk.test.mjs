@@ -44,7 +44,7 @@ test('real SDK restores PKCE from encrypted flow cookie and exchanges matching c
   const result = response(); await flow.handler(req, result);
   assert.equal(flow.exchanges, 1);
   assert.equal(result.statusCode, 303);
-  assert.equal(result.headers.Location, '/?market=tw#radar');
+  assert.equal(result.headers.Location, '/?market=tw&ox_auth=success#radar');
   const access = result.headers['Set-Cookie'].find(value => value.startsWith(cookieName('access') + '='));
   assert.equal(unseal(access.split(';')[0].split('=')[1], secret, 'access'), 'synthetic-access');
 });
@@ -65,7 +65,7 @@ test('successful retry strips previous error and code while keeping market/view 
   const cookie = await flow.start('/?market=tw&ox_auth=error&ox_auth_reason=flow_missing&code=synthetic-old#radar');
   const req = request('callback'); req.query.code = 'synthetic-code'; req.headers.cookie = cookie;
   const result = response(); await flow.handler(req, result);
-  assert.equal(result.headers.Location, '/?market=tw#radar');
+  assert.equal(result.headers.Location, '/?market=tw&ox_auth=success#radar');
 });
 
 test('callback uses signed SDK flow id rather than an untrusted URL flow id', async () => {
@@ -74,7 +74,7 @@ test('callback uses signed SDK flow id rather than an untrusted URL flow id', as
   assert.match(payload.flowId, /^[a-zA-Z0-9_-]{8,64}$/);
   const req = request('callback'); req.query.code = 'synthetic-code'; req.query.sb_flow_id = 'untrusted-flow-id'; req.headers.cookie = cookie;
   const result = response(); await flow.handler(req, result);
-  assert.equal(result.headers.Location, '/'); assert.equal(flow.exchanges, 1);
+  assert.equal(result.headers.Location, '/?ox_auth=success'); assert.equal(flow.exchanges, 1);
 });
 
 test('missing/tampered flow cookies fail before provider and do not clear an existing session', async () => {
@@ -105,4 +105,9 @@ test('provider callback exposes only allowlisted codes before cookie or token ex
     assert.equal(result.headers.Location, '/?ox_auth=error&ox_auth_reason=provider_callback_error&ox_auth_provider=' + expected);
     assert.ok(!JSON.stringify(result).includes('synthetic-private'));
   }
+});
+
+test('expired email link error remains generic and redacts raw details',async()=>{
+ const flow=setup();const req=request('callback');req.query.error='access_denied';req.query.error_code='otp_expired';req.query.error_description='synthetic-private-email';
+ const result=response();await flow.handler(req,result);assert.equal(result.headers.Location,'/?ox_auth=error&ox_auth_reason=authorization_expired&ox_auth_provider=otp_expired');assert.equal(flow.exchanges,0);assert.ok(!JSON.stringify(result).includes('synthetic-private-email'));
 });

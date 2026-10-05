@@ -48,6 +48,7 @@ if (section) {
   async function sync() {
     nav.hidden = !active();
     if (!active()) { delete section.dataset.cryptoTool; unmount(); return; }
+    if(window.OXFeatures&&!window.OXFeatures.enterTool(selected,'data-crypto-tool',sync))return;
     section.dataset.cryptoTool=selected; positionIndicator();
     if(selected==='strength'){unmount();return;}
     slot.hidden = false;

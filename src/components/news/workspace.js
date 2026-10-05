@@ -14,6 +14,7 @@ export function mountNewsWorkspace(host, api) {
   const key = `ox-news-v2-${api.scope}`;
   let saved; try { saved = JSON.parse(sessionStorage.getItem(key) || 'null'); } catch {}
   const state = { ...defaultState(), ...saved }, life = new AbortController();
+  if(window.OXFeatures)state.tab=window.OXFeatures.newsTab;
   state.selectedDay = taipeiDay(); state.month = state.selectedDay.slice(0,7);
   if (saved?.timePresetVersion !== 2) { state.times = ['week']; state.customTime = null; state.timePresetVersion = 2; }
   if (state.importance !== true) state.importance = null;
@@ -116,6 +117,7 @@ export function mountNewsWorkspace(host, api) {
     else if (!data.snapshot) notification.append(node('p', 'oxn-caption', data.pending ? '正在讀取來源快照…' : '尚未載入'));
   }
   function renderContent() {
+    if(window.OXFeatures&&!window.OXFeatures.enterTool(state.tab,'data-news-tab',renderContent))return;
     content.replaceChildren(); marketChoice.textContent = state.market === 'all' ? '全部市場' : MARKET_NAMES[state.market]; status();
     if (!data.snapshot) { content.append(node('div', 'oxn-empty', data.error ? '暫時無法讀取資料，請重試。' : '載入新聞與事件…')); return; }
     if (state.tab === 'calendar') {if(innerWidth<=600)renderMobileCalendar();else if(state.calendarView==='agenda')renderAgenda();else renderCalendar();} else renderNews();
