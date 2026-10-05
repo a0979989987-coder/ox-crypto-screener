@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {randomUUID} from 'node:crypto';
 import {Client} from 'pg';
+import {initializeFeatureFixture} from '../scripts/lib/feature-access-fixtures.mjs';
 import {initializeCandidate} from '../scripts/lib/admin-review-candidate-fixtures.mjs';
 import {fixtureIDs as ids} from '../scripts/lib/admin-review-fixtures.mjs';
 const config={host:'127.0.0.1',port:Number(process.env.OX_NATIVE_PG_PORT||55439),user:'ox_fixture_owner',database:'postgres'};
@@ -25,7 +26,7 @@ test('native PostgreSQL candidate RPC with independent connections and real data
     const deadline=Date.now()+5000;while(Date.now()<deadline){const rows=(await owner.query("select wait_event_type from pg_stat_activity where pid=$1",[pid])).rows;if(rows[0]?.wait_event_type==='Lock')return;await new Promise(r=>setTimeout(r,15));}throw Error('Expected a real DB lock wait');
   }
   try {
-    await initializeCandidate(db);
+    await initializeCandidate(db);await initializeFeatureFixture(db);await owner.query('revoke usage on schema auth from ox_review_executor');await owner.query(readFileSync(new URL('../docs/account/review-claims-compatibility.sql',import.meta.url),'utf8'));
     await t.test('unsafe existing executor attributes and transitive membership fail closed',async()=>{
       const guard=readFileSync(new URL('../supabase/migrations/20261002033814_ox_admin_review_candidate.sql',import.meta.url),'utf8').match(/do \$\$begin[\s\S]*?end;\$\$;/)[0];
       for(const attribute of ['SUPERUSER','LOGIN','INHERIT','CREATEROLE','CREATEDB','REPLICATION','BYPASSRLS']) {

@@ -29,6 +29,11 @@ test('candidate migration executes with non-superuser database owner and explici
   assert.equal((await connection.query("select has_schema_privilege($1,'public','CREATE') allowed",[executor])).rows[0].allowed,false);
   assert.equal((await connection.query("select has_sequence_privilege('anon','ox_review_live.feature_audit_sequence_seq','SELECT,USAGE,UPDATE') allowed")).rows[0].allowed,false);
   assert.equal((await connection.query("select count(*)::int n from ox_review_live.features where mode='public'")).rows[0].n,18);
+  await connection.query('revoke usage on schema auth from '+executor);
+  await connection.query(readFileSync(new URL('../docs/account/review-claims-compatibility.sql',import.meta.url),'utf8').replaceAll('ox_review_executor',executor));await connection.query('set role '+role);
+  assert.equal((await connection.query("select has_schema_privilege($1,'auth','USAGE') allowed",[executor])).rows[0].allowed,false);
+  assert.equal((await connection.query("select has_schema_privilege($1,'public','CREATE') allowed",[executor])).rows[0].allowed,false);
+  assert.equal((await connection.query("select has_table_privilege($1,'auth.users','SELECT') allowed",[executor])).rows[0].allowed,false);
   await connection.query('alter table auth.users add column email text;create table auth.identities(user_id uuid,provider text,identity_data jsonb);alter table auth.users add column email_confirmed_at timestamptz');
   await connection.query('update auth.users set email=$1,email_confirmed_at=now() where id=$2',['admin@example.test',fixtureIDs.admin]);await connection.query("insert into auth.identities values($1,'google','{\"email\":\"admin@example.test\",\"email_verified\":true}')",[fixtureIDs.admin]);
   await connection.query(readFileSync(new URL('../docs/account/admin-release/02-bootstrap.sql',import.meta.url),'utf8').replaceAll('REPLACE_WITH_VERIFIED_GOOGLE_EMAIL','admin@example.test'));

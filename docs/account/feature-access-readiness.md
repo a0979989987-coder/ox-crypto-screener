@@ -26,6 +26,16 @@ Google provider manual configuration, if still absent, belongs to the user: http
 
 - Original local attachment matches SHA256 501a61ade6d39ca70bf12b04fa216f3d8588c1b33e6c851002c6ddd86f224e49, 1,172,044 bytes.
 - npm test: 476 passed. npm run check: 99 assets, 173 IDs.
-- Native PostgreSQL: 22 passed, including independent-client conflict handling, restricted executor ownership and fresh non-superuser migration application.
+- Native PostgreSQL: 24 passed, including independent-client conflict handling, restricted executor ownership and fresh non-superuser migration application.
 - Production-transport synthetic UI, local admin UI, dark/light desktop/mobile product access and actual calendar workspace/CSS, Account and Email synthetic UI passed. Calendar checks cover Taipei today initialization, closure markers, upcoming events with empty days omitted per latest main, event detail dialogs, current-week saved-state migration and custom dates. Transport tests use actual router/handler/SDK/SQL with a synthetic provider; they are not real Google/Email acceptance.
 - Latest calendar source is preserved; news/workspace.js differs from main only by the two feature-access hooks. No conflict remains against the fixed baseline. Bitget helper and radar/navigation implementation have no changes from the integrated base. Only the new admin adapter/UI and product entry guards were added.
+
+## Production compatibility prerequisite — parent-controlled
+
+Parent reports feature tables/defaults and private owner bootstrap applied, but real RPC smoke exposed an auth schema ACL restriction: the trusted migration role cannot grant auth USAGE because it is owned by supabase_admin. The deployment remains paused until real RPC acceptance passes. Do not repeat bootstrap, initial feature creation or ineffective auth grants.
+
+Apply only review-claims-compatibility.sql after parent review. Private SECURITY INVOKER claim_uid/claim_jwt helpers mirror the supplied Supabase helper definitions and read only PostgREST-validated request settings. Empty claims remain anonymous; malformed JSON/UUID fails closed. Metadata never grants administrator status. Four existing executor-owned functions are replaced from their existing definitions with only auth.uid/auth.jwt calls changed: require_admin, claim_changed, ox_admin_review_rpc, ox_feature_access_rpc. Own-account RLS and UID-binding policy definitions remain unchanged.
+
+Helpers grant EXECUTE only to the existing executor. Existing schema CREATE permission is temporarily granted inside the transaction solely to replace owned functions, then revoked; no auth schema/table grant, role attribute/inheritance change, administrator change or membership approval occurs. Native tests keep auth USAGE false, prove no auth.users SELECT, exercise all existing admin race/rebind/audit cases under compatibility helpers, empty/malformed claims, member metadata spoof rejection, version/audit checks and transaction rollback. The non-superuser migration application test also passes.
+
+Next gate: parent must verify production anonymous catalog/access and records rejection, ordinary-member admin denial and owner-admin success before releasing the exact PR head. Nonsecret BG rollout flag still needs configuration through supported Vercel tooling; existing credentials remain untouched.
