@@ -195,6 +195,7 @@ export function mountNewsWorkspace(host, api) {
     const symbol = item.assets?.[0]?.symbol || item.symbols?.[0];
     const icon = flag || ({BTC:'₿',ETH:'◆',SOL:'◎',APT:'A',AAVE:'A'}[symbol]) || ({macro:'◷',unlock:'🔓',network:'⚙',listing:'⇄',governance:'🗳',airdrop:'🎁',burn:'🔥',regulation:'⚖',dividend:'💰',payment:'💵',earnings:'📊',holiday:'🗓'}[eventCategory(item)] || '🗓');
     const identity=node('span','oxn-event-icon',icon);
+    if(flag==='🇺🇸'){const img=node('img');img.src=new URL('../../assets/flags/us.svg',import.meta.url).href;img.alt='美國國旗';img.width=28;img.height=20;identity.replaceChildren(img);}
     if(!flag&&symbol&&typeof OX_COIN_LOGOS!=='undefined'){ const path=OX_COIN_LOGOS[String(symbol).toLowerCase()];if(path){const img=node('img');img.src=new URL(path,document.baseURI).href;img.alt=symbol;img.width=28;img.height=28;img.addEventListener('error',()=>identity.replaceChildren(document.createTextNode(icon)),{once:true});identity.replaceChildren(img);} }
     const meta=node('div','oxn-event-meta');meta.append(identity,node('time','',item.date?item.originalTimezone==='America/New_York'?'美東交易日':item.allDay?'全天':'時間待公布':fmt(item.occursAt)),node('span','oxn-event-type',CATEGORY_NAMES[eventCategory(item)]||'事件'),rating);
     b.append(meta,title);
