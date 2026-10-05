@@ -240,6 +240,7 @@ test('old high grades are requalified even when the candle cache is current or p
  const bars=cleanRisingSupport(),context=prepareCandles(bars),current=indexPrepared(context);
  const data={candles:bars,classic:current.classic,preclassified:current.matches};
  assert.equal(classificationCurrent({version:INDEX_VERSION,data,matches:current.matches},INDEX_VERSION),true);
+ assert.equal(classificationCurrent({version:INDEX_VERSION,data,matches:current.matches,classifying:true},INDEX_VERSION),false);
  assert.equal(classificationCurrent({version:8,data,matches:current.matches},INDEX_VERSION),false);
  const stale={...data,classic:{...data.classic,long:{...data.classic.long,version:CLASSIC_VERSION-1}}};
  assert.equal(classificationCurrent({version:INDEX_VERSION,data:stale,matches:current.matches},INDEX_VERSION),false);

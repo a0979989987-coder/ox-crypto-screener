@@ -144,7 +144,7 @@ export function prepareCandles(candles) {
 const targets=new Map(PATTERNS.map(p=>[p.id,resample(p.points)]));
 // Cached geometry and grades must be requalified together, including preclassified feeds.
 export function classificationCurrent(entry,indexVersion){
- return entry?.version===indexVersion && ['long','short'].every(side=>entry.data?.classic?.[side]?.version===CLASSIC_VERSION) &&
+ return !entry?.classifying && entry?.version===indexVersion && ['long','short'].every(side=>entry.data?.classic?.[side]?.version===CLASSIC_VERSION) &&
   Object.values(entry.matches||{}).every(match=>match.classicSignal?.version===CLASSIC_VERSION);
 }
 export function validLevelGeometry(candles,level,side,volatility){
