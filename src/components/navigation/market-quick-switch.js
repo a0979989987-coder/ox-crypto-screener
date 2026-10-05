@@ -50,6 +50,7 @@
   let desktopRadar = null;
   let menuAnchor = null;
   let hoverCloseTimer = null;
+  let hoverOpenTimer = null;
   let menu = null;
 
   let holdTimer = null;
@@ -1153,6 +1154,7 @@ body.theme-light
      ========================================================= */
 
   function openMenu(anchor = radar, { hover = false } = {}) {
+    clearTimeout(hoverOpenTimer);
     menuAnchor = anchor;
     clearTimeout(hoverCloseTimer);
     pauseAutoClose();
@@ -1974,6 +1976,7 @@ body.theme-light
      ========================================================= */
 
   function leaveDesktopMenu() {
+    clearTimeout(hoverOpenTimer);
     clearTimeout(hoverCloseTimer);
     hoverCloseTimer = setTimeout(() => {
       if (!pointerHover && !menu?.contains(document.activeElement)) closeMenu();
@@ -1990,7 +1993,11 @@ body.theme-light
     desktopRadar.addEventListener('pointerenter', event => {
       if (event.pointerType !== 'mouse') return;
       pointerHover = true;
-      openMenu(desktopRadar, { hover: true });
+      clearTimeout(hoverOpenTimer);
+      hoverOpenTimer = setTimeout(() => {
+        hoverOpenTimer = null;
+        if (pointerHover && desktopRadar.matches(':hover')) openMenu(desktopRadar, { hover: true });
+      }, 350);
     });
     desktopRadar.addEventListener('pointerleave', () => {
       pointerHover = false;

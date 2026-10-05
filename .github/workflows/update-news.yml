@@ -3,7 +3,7 @@ name: Update verified news
 on:
   push:
     branches: [main]
-    paths: ['scripts/collect-news.mjs', 'scripts/news-finance-sources.mjs', 'tests/news.test.mjs']
+    paths: ['scripts/collect-news.mjs', 'scripts/news-finance-sources.mjs', 'tests/news.test.mjs', 'scripts/news-providers.mjs', 'tests/tw-institution-detail.test.mjs']
   workflow_dispatch:
   schedule:
     - cron: '23 */6 * * *'

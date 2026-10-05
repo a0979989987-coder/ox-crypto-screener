@@ -43,7 +43,7 @@ test('Safari toolbar resizes do not repeatedly redraw an unchanged chart', () =>
   assert.deepEqual(range, originalRange, 'layout resize preserves the visible candle range');
 });
 
-function quickSwitchHarness() {
+function quickSwitchHarness({desktop=false}={}) {
   const nodes = new Map(), timers = new Map();
   let now = 0, nextTimer = 0;
   function element(id = '') {
@@ -65,13 +65,14 @@ function quickSwitchHarness() {
     };
     return node;
   }
-  const radar = element('radar'), viewport = element('viewport');
+  const radar = element('radar'), viewport = element('viewport'), desktopRadar=element('desktop');
+  desktopRadar.matches=()=>true;
   const body = element('body'); body.dataset.market = 'crypto';
   viewport.setAttribute('content', 'width=device-width,initial-scale=1');
   const document = Object.assign(element(), {
     body, head: element('head'), readyState: 'complete', hidden: false,
     getElementById: id => nodes.get(id), createElement: () => element(),
-    querySelector: selector => selector.includes('viewport') ? viewport : selector.includes('.dock-radar') ? radar : null
+    querySelector: selector => selector.includes('viewport') ? viewport : selector.includes('.dock-radar') ? radar : desktop&&selector.includes('.ox-desktop-nav')?desktopRadar:null
   });
   const views = [];
   const window = Object.assign(element(), { innerHeight: 844, switchAppView: v => views.push(v) });
@@ -93,8 +94,18 @@ function quickSwitchHarness() {
   });
   const start = () => radar.emit('touchstart', { touches: [{ identifier: 1 }], changedTouches: [{ identifier: 1, clientX: 185, clientY: 660 }] });
   const end = () => document.emit('touchend', { changedTouches: [{ identifier: 1, clientX: 185, clientY: 660 }] });
-  return { document, window, radar, viewport, nodes, advance, start, end, views };
+  return { document, window, radar, desktopRadar, viewport, nodes, advance, start, end, views };
 }
+
+test('desktop Radar requires 0.35 seconds of continuous hover and cancels when the pointer leaves',()=>{
+ const h=quickSwitchHarness({desktop:true});
+ h.desktopRadar.emit('pointerenter',{pointerType:'mouse'});h.advance(349);
+ assert.notEqual(h.nodes.get('ox-market-quick-switch')?.attrs.get('aria-hidden'),'false');
+ h.desktopRadar.emit('pointerleave');h.advance(350);
+ assert.notEqual(h.nodes.get('ox-market-quick-switch')?.attrs.get('aria-hidden'),'false');
+ h.desktopRadar.emit('pointerenter',{pointerType:'mouse'});h.advance(350);
+ assert.equal(h.nodes.get('ox-market-quick-switch').attrs.get('aria-hidden'),'false');
+});
 
 test('Radar initialization leaves viewport and page-wide native gestures alone', () => {
   const h = quickSwitchHarness();

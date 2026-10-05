@@ -1,12 +1,12 @@
 import { renderResearch, stopResearch } from './research-page.js?v=20261002-nav6';
 import { mountResearch } from './research-ui.js';
-import { createToolsRail } from '../../components/strength/tools-rail.js?v=20261005-mobilefix1';
+import { createToolsRail } from '../../components/strength/tools-rail.js?v=20261005-touch1';
 import { createTWMarketState } from './engine.js?v=20261002-rank8';
 let selected = 'patterns', session = null, modules;
 export function preloadTWStrength() {
   return modules ??= Promise.all([
-    import('../crypto/patterns/view.js?v=20261002-quiet1'),
-    import('./patterns/source.js?v=20261002-rank8'), import('./patterns/index-cache.js?v=20261002-rank8'),import('./bubbles/view.js?v=20261005-mobilefix1')
+    import('../crypto/patterns/view.js?v=20261005-touch1'),
+    import('./patterns/source.js?v=20261002-rank8'), import('./patterns/index-cache.js?v=20261002-rank8'),import('./bubbles/view.js?v=20261005-touch1')
   ]).catch(error => { modules = null; throw error; });
 }
 export function stopTWStrength() {
@@ -28,7 +28,7 @@ async function show(s) {
     if(window.OXLoading)OXLoading.render(s.host,selected==='etf'?'載入 ETF 精選':'載入存股計算');
     else s.host.textContent='介面載入中…';
     try{
-      const module=selected==='etf'?await import('./etf/view.js?v=20261002-compact1'):await import('./etf/savings.js?v=20261002-compact1');
+      const module=selected==='etf'?await import('./etf/view.js?v=20261005-spacing6'):await import('./etf/savings.js?v=20261005-spacing6');
       if(session!==s||generation!==s.generation)return;
       s.host.replaceChildren();
       s.instance=selected==='etf'?module.mountETF(s.host,{onSavings(selection){s.savingsInitial=selection;s.rail.select('savings');}}):module.mountSavings(s.host,{initialSelection:s.savingsInitial});

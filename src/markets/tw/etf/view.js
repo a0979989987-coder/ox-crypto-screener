@@ -1,7 +1,7 @@
 import { etfRequest, rememberHistory, knownHistory } from './api.js?v=20261002-etffast1';
 import { matchesCategory } from './model.js';
-import { shell, esc, fmt, money, signed, pct, color, tabs, sourceNote, iconSearch } from './ui.js?v=20261002-compact1';
-import { fundCards, labelMobileTables } from './mobile.js?v=20261002-compact1';
+import { shell, esc, fmt, money, signed, pct, color, tabs, sourceNote, iconSearch } from './ui.js?v=20261005-spacing6';
+import { fundCards, labelMobileTables } from './mobile.js?v=20261005-weeklist4';
 const mainTabs=[['rank','排行榜'],['hot','熱門資訊'],['stock','股票型'],['bond','債券型']];
 const groups={rank:[['volume','今日熱門'],['aum','資產規模'],['holders','持股人數'],['yield','殖利率'],['return1y','一年報酬']],hot:[['new','新上市'],['active','主動式'],['offering','新募集'],['radar','熱股雷達']],stock:[['all','全部'],['cap','市值'],['dividend','高股息'],['theme','主題']],bond:[['all','全部'],['treasury','長期公債'],['investment','投資級'],['emerging','新興市場'],['highyield','非投資級']]};
 const columns=[['price','收盤價'],['changePct','漲跌幅'],['volume','成交量（股）'],['turnover','成交金額'],['yield','殖利率'],['return3m','3 個月報酬'],['return1y','1 年報酬'],['returnTotal','上市以來報酬'],['aum','規模（億元）'],['holders','持股人數'],['years','成立年數'],['expense','年度費用率'],['region','投資區域']];

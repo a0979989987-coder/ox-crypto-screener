@@ -282,3 +282,5 @@
     }
     .toast.show { transform: translateY(0); opacity: 1; visibility: visible; }
 
+
+@media(max-width:700px),(pointer:coarse){html,body{scrollbar-width:none}html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{display:none;width:0;height:0}*{scrollbar-width:none}body{ -webkit-user-select:none;user-select:none;-webkit-touch-callout:none}button,[role="tab"],a{touch-action:manipulation}input,textarea,[contenteditable="true"]{-webkit-user-select:text;user-select:text;-webkit-touch-callout:default;font-size:max(16px,1em)}}

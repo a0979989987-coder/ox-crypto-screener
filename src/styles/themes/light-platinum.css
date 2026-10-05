@@ -222,3 +222,31 @@ body.ox-terminal.theme-light.theme-light.theme-light.theme-light.theme-light #vi
 body.ox-terminal.theme-light.theme-light.theme-light.theme-light.theme-light #view-radar .scanner-tabs .tab-btn.active {
  background:linear-gradient(145deg,#eef0f3,#e6e8eb)!important;border-color:#d4d9e0!important;color:#30343b!important;box-shadow:inset 0 1px #ffffffb3!important;
 }
+
+/* Risk/disposal/release cards need a continuous visible edge on white. */
+body.ox-terminal.theme-light.theme-light.theme-light .tw-radar-root .tw-stock-card {
+ border:1px solid #ccd3dd!important;background:#fff!important;box-shadow:0 3px 12px #30343b0a!important;
+}
+body.ox-terminal.theme-light.theme-light.theme-light .tw-radar-root .tw-stock-card::before {display:none!important}
+
+/* Latest mobile feedback: neutral radar signals and framed home sections. */
+body.ox-terminal.theme-light.theme-light.theme-light.theme-light.theme-light #view-home :is(.ox-home-chart,.ox-home-analysis,.ox-home-t1,.ox-score-panel) {
+ border:1px solid #ccd3dd!important;box-shadow:none!important;background:#fff!important;
+}
+body.ox-terminal.theme-light.theme-light.theme-light.theme-light.theme-light #view-radar :is(.chart-box,.market-line-card,.workspace>aside.panel,#ox-detail-panel) {
+ border-color:#ccd3dd!important;box-shadow:none!important;background:#fff!important;
+}
+body.ox-terminal.theme-light.theme-light.theme-light.theme-light.theme-light #view-radar :is(.chart-box,.market-line-card,.workspace>aside.panel,#ox-detail-panel)::before,
+body.ox-terminal.theme-light.theme-light.theme-light.theme-light.theme-light #view-radar :is(.chart-box,.market-line-card,.workspace>aside.panel,#ox-detail-panel)::after {display:none!important}
+body.ox-terminal.theme-light.theme-light.theme-light.theme-light.theme-light #view-radar :is(.coin-card,#ox-detail-panel .metric-card) {background:#fff!important;box-shadow:none!important;border-color:#dde1e6!important}
+body.ox-terminal.theme-light.theme-light.theme-light.theme-light.theme-light #view-radar .coin-card.selected {background:#f4f6f8!important;border-left-color:#aeb8c6!important;box-shadow:none!important}
+body.ox-terminal.theme-light.theme-light.theme-light.theme-light.theme-light #view-radar :is(.coin-card,.chart-controls)::before,
+body.ox-terminal.theme-light.theme-light.theme-light.theme-light.theme-light #view-radar :is(.coin-card,.chart-controls)::after {display:none!important}
+body.ox-terminal.theme-light.theme-light.theme-light.theme-light.theme-light #view-radar .chart-controls {background:#fff!important;box-shadow:none!important}
+body[data-view="radar"] .app-dock .ox-dock-indicator {display:none!important}
+
+body.ox-terminal.theme-light.theme-light.theme-light #view-radar {--radar-price-rgb:174,184,198!important}
+body.ox-terminal.theme-light.theme-light.theme-light.theme-light.theme-light #view-radar .coin-card.ox-coin-new-selection {animation:none!important}
+body.ox-terminal.theme-light.theme-light.theme-light.theme-light.theme-light #view-radar #ox-detail-panel .detail-cell {background:#fff!important;border-color:#dde1e6!important;box-shadow:none!important}
+
+body.ox-terminal.theme-light.theme-light.theme-light.theme-light.theme-light #view-home .ox-home-analysis {padding:12px!important;border-radius:20px!important}

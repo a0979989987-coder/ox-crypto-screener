@@ -76,3 +76,23 @@ body.theme-light #view-radar:has(#direction-toggle.is-long) .market-line-card{bo
 #view-radar:has(#direction-toggle.is-short) .market-line-card{border-color:rgba(239,76,105,.46)!important;box-shadow:inset 3px 0 0 rgba(239,76,105,.65),inset 0 0 44px rgba(239,76,105,.075),0 0 25px rgba(239,76,105,.10),0 10px 25px rgba(0,0,0,.16)!important;}
 body.theme-light #view-radar:has(#direction-toggle.is-short) .market-line-card{border-color:rgba(202,56,84,.43)!important;box-shadow:inset 3px 0 0 rgba(204,58,85,.62),inset 0 0 38px rgba(204,58,85,.065),0 0 21px rgba(204,58,85,.075),0 9px 22px rgba(66,56,60,.065)!important;}
 /* STEP 4.5 REGRESSION FIX END */
+
+/* Neutral black/white search surface, matching the current control panel. */
+body.ox-terminal .ox-feature-search-wrap{position:relative;background:transparent!important;padding:0!important;margin:0 0 16px}
+body.ox-terminal .ox-feature-search-box{min-height:44px;padding:10px 12px;border:1px solid #777d8666!important;border-radius:12px!important;background:#ffffff08!important;box-shadow:none!important;gap:10px}
+body.ox-terminal .ox-feature-search-box:focus-within{border-color:#bec4cd!important;box-shadow:0 0 0 2px #ffffff12!important}
+body.ox-terminal .ox-feature-search-box input{font-size:14px!important;color:#f0f1f3!important}.ox-feature-search-box input::placeholder{color:#959ba5!important}
+body.ox-terminal .ox-feature-results{margin-top:8px;background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;backdrop-filter:none!important}
+body.ox-terminal .ox-feature-result{min-height:56px;padding:10px 4px;grid-template-columns:30px minmax(0,1fr) 18px;gap:10px;color:#eef0f3!important;border-bottom:1px solid #ffffff13!important;border-radius:0!important}
+body.ox-terminal .ox-feature-result:hover,body.ox-terminal .ox-feature-result:focus-visible{background:#ffffff09!important}
+body.ox-terminal .ox-feature-result-icon{width:28px;height:28px;background:transparent!important;border:0!important;border-radius:0!important;color:#c5c9d0}
+.ox-feature-result-icon svg{width:21px;height:21px}
+body.ox-terminal .ox-feature-result-copy b{font-size:13px!important;font-weight:600}.ox-feature-result-copy small{font-size:11px!important;line-height:1.4;color:#949aa4!important;margin-top:3px}
+body.ox-terminal .ox-feature-result-state{border:0!important;background:transparent!important;font-size:19px!important;padding:0;color:#9299a4}
+body.ox-terminal .ox-feature-empty{font-size:13px!important;padding:20px 6px}
+body.ox-terminal.theme-light .ox-feature-search-box{background:#ffffffd9!important;border-color:#b5bbc5!important}
+body.ox-terminal.theme-light .ox-feature-search-box input,body.ox-terminal.theme-light .ox-feature-result{color:#303640!important}
+body.ox-terminal.theme-light .ox-feature-result-icon{color:#535a64!important}
+body.ox-terminal.theme-light .ox-feature-result{border-bottom-color:#d4d8df!important}
+body.ox-terminal.theme-light .ox-feature-result:hover,body.ox-terminal.theme-light .ox-feature-result:focus-visible{background:#e5e8ed!important}
+body.ox-terminal.theme-light .ox-feature-result-copy small{color:#707883!important}

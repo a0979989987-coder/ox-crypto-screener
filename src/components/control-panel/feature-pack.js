@@ -46,6 +46,7 @@ const OXControlPanel = (() => {
     overlay.classList.add("is-open");
     overlay.setAttribute("aria-hidden", "false");
     openBtn?.setAttribute("aria-expanded", "true");
+    q("#ox-dock-menu")?.setAttribute("aria-expanded", "true");
     document.body.classList.add("ox-control-open");
     setView("main");
     syncTheme();
@@ -61,6 +62,7 @@ const OXControlPanel = (() => {
     overlay.classList.remove("is-open");
     overlay.setAttribute("aria-hidden", "true");
     openBtn?.setAttribute("aria-expanded", "false");
+    q("#ox-dock-menu")?.setAttribute("aria-expanded", "false");
     document.body.classList.remove("ox-control-open");
     setView("main");
   };
@@ -73,6 +75,8 @@ const OXControlPanel = (() => {
     if (!overlay || !panel || !openBtn || !closeBtn) return;
 
     openBtn.addEventListener("click", open);
+    q("#ox-dock-menu")?.addEventListener("click", open);
+    q("#ox-control-media")?.addEventListener("click", () => { close(); switchAppView("media"); });
     closeBtn.addEventListener("click", close);
     overlay.addEventListener("click", e => { if (e.target === overlay) close(); });
     panel.addEventListener("click", e => e.stopPropagation());
