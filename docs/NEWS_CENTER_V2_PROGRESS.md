@@ -7,7 +7,7 @@
 - 現有 main 已包含畫板掃描／介面修正及 Bitget UID 入口，不重新合併舊新聞分支。
 - 沒有 AGENTS.md。README／ARCHITECTURE／CURRENT_STATE 已讀，舊市場占位描述不作為刪除新版功能的依據。
 - 施工範圍：news 元件與資料轉接、news CSS、新聞入口、雷達底部市場快捷選单、收集器與隔離工作流、驗收測試。
-- 不改雷達策略、評分、量能、圖表、OXLIVE、帳號、美股資料供應。
+- 不改雷達策略、評分、量能、圖表、OXLIVE、帳號。
 
 ## 基線驗證
 - `npm test`：372 通過，0 失敗。
@@ -27,7 +27,7 @@
 - 高密度新聞、真實來源／發布時間、翻譯狀態／原文／次級閱讀偏好；去重標題資產提及、熱詞分詞／同義資產，註明來源子集而非全網。
 - 快照保留成功資料，來源單獨失敗、待譯、零筆、過期、未接入分開；舊市場慢回應不覆蓋目前市場，新快照先提示，未接受前保留閱讀位置。
 - 收集器沿用 schemaVersion 1，維持 news 繁中與既有 OXLIVE／US 消費端；新增 pendingNews／assetCatalog／eventCoverage。沒有 key 到前端／日誌。
-- 未更換前端框架／行情供應；保留原 CSS 中美股／首頁／圖表／觸控依賴，新增樣式只作用於 oxn workspace／layer。
+- 未更換前端框架／行情供應；保留原 CSS 中首頁／圖表／觸控依賴，新增樣式只作用於 oxn workspace／layer。
 
 ## 真實資料與未完成項目
 參見 [NEWS_CENTER_V2_SOURCES.md](NEWS_CENTER_V2_SOURCES.md)，逐來源列出實測數量／狀態／接口／限制。
@@ -43,7 +43,6 @@
 - `npm run check`：通過（96 資產／171 唯一 ID）。
 - `npm run test:news-v2` Chromium：通過；詳見 [qa-chromium.json](qa/news-v2/qa-chromium.json)，五尺寸、五／六週、嵌套返回／前進／reload、手勢、各市場狀態、多選、慢回應／空／503、來源失敗、更新保留閱讀、橫式／reduced motion。
 - 原 `npm run test:e2e`：与施工前相同 `long: strict T1 capacity or exclusion failed`，progressive radar 通過；未改 T1 策略或放寬檢查。後续整站檢查因該失敗未抵達，不宣稱全面綠燈。
-- 新聞 QA 另驗證原美股 data 工作區、home／strength 入口、五顆 dock 與控制入口。帳號真實會員／付費行情／Bitget 驗證沒有執行外部帳號操作。
 - WebKit 已下載，啟動因缺 GTK／GStreamer 等系統 library 阻擋；安裝依賴受環境檔案權限阻擋，因此沒有 WebKit 通過結果。沒有 iPhone 實機驗證。
 - 本地 QA 使用真實 data/news.json，部分錯誤情境明確隔離於 route fixture。圖表 vendor 是實際官方 JS bytes，帳號 config 为明確未配置 guest；未把 fixture 寫入快照。
 - [實際截图與測試紀錄](qa/news-v2/)：桌面／手機行事曆、關鍵新聞、兩市場詳情、多選、桌面／手機入口、兩市場雷達選單與小手機六週。

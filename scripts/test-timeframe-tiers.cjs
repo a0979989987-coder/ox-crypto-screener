@@ -5,13 +5,11 @@ const server=spawn(process.execPath,['scripts/dev-server.mjs','--port',String(po
 async function bounds(page,selector){return page.locator(selector).evaluate(e=>{const b=e.getBoundingClientRect(),s=e.querySelector('svg')?.getBoundingClientRect();return {x:b.x,y:b.y,w:b.width,h:b.height,cx:s?Math.abs(s.x+s.width/2-b.x-b.width/2):0,cy:s?Math.abs(s.y+s.height/2-b.y-b.height/2):0};});}
 (async()=>{try{
  await new Promise((resolve,reject)=>{server.stdout.once('data',resolve);server.once('exit',code=>reject(Error('server exit '+code)));});
- const {handleUS2}=await import('../server/markets/us/service.js');
  browser=await chromium.launch({executablePath:process.env.OX_BROWSER_PATH,headless:true,args:['--no-sandbox']});mkdirSync('/tmp/ox-timeframe-qa',{recursive:true});
  for(const width of [390,430,1363]){
-  const context=await browser.newContext({viewport:{width,height:932},hasTouch:true,isMobile:width<600});const {page,audit}=await preparePage(context,{width,height:932});let radarCalls=0,marketCalls=0;
+  const context=await browser.newContext({viewport:{width,height:932},hasTouch:true,isMobile:width<600});const {page,audit}=await preparePage(context,{width,height:932});let radarCalls=0;
   if(process.env.OX_REAL_CHART)await page.route('https://unpkg.com/**',route=>route.fulfill({contentType:'text/javascript',body:readFileSync(process.env.OX_REAL_CHART,'utf8')}));
   await page.route('**/api/v1/tw/**',route=>{const endpoint=new URL(route.request().url()).pathname.split('/').at(-1);if(endpoint==='radar'&&++radarCalls>1)return route.fulfill({json:{ok:true,data:snapshot.data}});return route.fulfill({status:403,json:{ok:false,error:{code:'TW_DATA_HTTP_ERROR',message:'QA temporary source outage'}}});});
-  await page.route('**/api/v1/us/**',async route=>{const url=new URL(route.request().url()),endpoint=url.pathname.split('/').at(-1);if(['chart-v2','quote-v2'].includes(endpoint))marketCalls++;try{await route.fulfill({json:{ok:true,data:await handleUS2(endpoint,Object.fromEntries(url.searchParams))}});}catch(e){await route.fulfill({status:e.status||503,json:{ok:false,error:{message:e.message,code:e.code}}});}});
   await page.route('https://www.tradingview-widget.com/**',route=>route.fulfill({contentType:'text/html',body:'<!doctype html><title>Provider frame test boundary</title><body>TradingView frame boundary</body>'}));
   await page.goto(base);await selectView(page,'radar');
   await page.locator('#chart-indicator-open').click();await page.locator('[data-filter-mode="timeframes"]').click();
@@ -31,9 +29,6 @@ async function bounds(page,selector){return page.locator(selector).evaluate(e=>{
   await page.waitForFunction(()=>document.querySelector('.twcr-results')?.childElementCount>0);const matched=await page.evaluate(()=>[...document.querySelectorAll('.twcr-card')].map(e=>e.dataset.symbol));
   const valid=await page.evaluate(async symbols=>{const {bundleState,bundleClassification}=await import('/src/markets/tw/patterns/bundle.js?v=20261001-twhome1');const {patternFrameTier}=await import('/src/markets/tw/timeframe-tiers.js?v=20261001-tiercomb1');return symbols.every(symbol=>patternFrameTier(bundleClassification(symbol,'1D',bundleState().date),'long')?.tier==='T1'&&patternFrameTier(bundleClassification(symbol,'1W',bundleState().date),'long')?.tier==='T2');},matched);assert(valid);
   await selectView(page,'home');await page.waitForSelector('.twx-home-toolbar');await page.locator('[data-home-refresh]').click({force:true});await page.waitForTimeout(200);assert.equal(await page.locator('.twx-market .ox-loading,.twx .ox-region-loading').count(),0);
-  await selectView(page,'radar');await selectMarket(page,'us');await page.locator('#ox-control-close').click();await page.locator('.us2-directory-row').first().waitFor();await page.locator('[data-widget-info]').click();const us=page.locator('[data-us-tier-filter]');await us.locator('[data-tier-mode="combined"]').click();await us.locator('[data-tier-add]').click();await us.locator('[data-tier-frame="1"]').selectOption('1W');await us.locator('[data-tier-value="1"]').selectOption('T2');
-  close=await bounds(page,'[data-close-widget-info]');assert(close.cx<=1&&close.cy<=1);await page.screenshot({path:`/tmp/ox-timeframe-qa/us-${width}.png`});await page.locator('[data-close-widget-info]').click();
-  assert.equal(marketCalls,0);assert.equal(await page.locator('.us2-directory-row').count(),50);assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
-  assert.deepEqual(audit.pageErrors,[]);console.log(JSON.stringify({width,cachedRiskFirstPaintMs:firstPaint,automaticRadarRequests:radarCalls,timeframeMatches:matched.length,historyControlsRemoved:true,homeLoaderRemoved:true,usMarketDataCalls:marketCalls,errors:audit.pageErrors}));await context.close();
+  assert.deepEqual(audit.pageErrors,[]);console.log(JSON.stringify({width,cachedRiskFirstPaintMs:firstPaint,automaticRadarRequests:radarCalls,timeframeMatches:matched.length,historyControlsRemoved:true,homeLoaderRemoved:true,errors:audit.pageErrors}));await context.close();
  }
 }finally{await browser?.close();server.kill();}})().catch(e=>{console.error(e);process.exitCode=1;});

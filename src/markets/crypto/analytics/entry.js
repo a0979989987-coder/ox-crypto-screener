@@ -1,10 +1,10 @@
-import { createToolsRail } from "../../../components/strength/tools-rail.js?v=20261002-rail1";
+import { createToolsRail } from "../../../components/strength/tools-rail.js?v=20261005-mobilefix1";
 // Crypto-only inline tools. Preserve the existing strength calculations and DOM.
 const section = document.querySelector('#view-strength .strength-page');
 if (section) {
   const tabs = [['patterns','型態搜尋'],['bubbles','泡泡圖'],['strength','強弱對比'],['heatmap','熱力圖'],['rotation','板塊輪動'],['flow','主動買賣']];
   let selected = 'patterns';
-  const rail = createToolsRail({ tabs, selected, label:'Crypto 指標分類', attribute:'data-crypto-tool', equal:true, onSelect(id){selected=id;unmount();sync();} });
+  const rail = createToolsRail({ tabs, selected, label:'Crypto 指標分類', attribute:'data-crypto-tool', equal:true, mobileCompact:true, onSelect(id){selected=id;unmount();sync();} });
   const nav = rail.element; nav.id='ox-crypto-tools-nav'; nav.hidden=true;
   const ns = rail.shadow;
   section.prepend(nav);
@@ -35,7 +35,7 @@ if (section) {
     if (dialog) return;
     dialog = document.createElement('dialog');
     dialog.setAttribute('aria-label', 'Crypto 全螢幕圖表');
-    dialog.style.cssText = 'inset:0;width:100vw;max-width:none;height:100dvh;max-height:none;margin:0;padding:0;border:0;background:#0d1215;';
+    dialog.style.cssText = 'inset:0;width:100vw;max-width:none;height:100dvh;max-height:none;margin:0;padding:0;border:0;background:var(--ox-light-bg,#0d1215);';
     dialog.append(host); document.body.append(dialog);
     previousOverflow = document.body.style.overflow; document.body.style.overflow = 'hidden';
     dialog.addEventListener('cancel', e => { e.preventDefault(); instance?.closeInner(); });
@@ -55,7 +55,7 @@ if (section) {
     pending = true;loading.hidden=false;loading.innerHTML=window.OXLoading?.markup('工具載入中')||'工具載入中…';const token = ++generation;
     try {
       if(selected==='bubbles'){
-        const { mountCryptoBubbles } = await import('../bubbles/view.js?v=20261002-finance4');
+        const { mountCryptoBubbles } = await import('../bubbles/view.js?v=20261005-mobilefix1');
         if(token!==generation||!active())return;
         instance=mountCryptoBubbles(host);
         return;

@@ -20,7 +20,6 @@
   if(view==='radar'&&['crypto','tw'].includes(market))return null;
   if(market==='crypto')return document.querySelector(view==='radar'?'#radar-scanner-panel':view==='home'?'.ox-home-t1':':not(*)');
   if(market==='tw')return document.querySelector(view==='radar'?'.twcr-scanner':':not(*)');
-  if(market==='us')return document.querySelector('#market-unavailable-card .us2-main');
   return null;
  }
  function paint(){

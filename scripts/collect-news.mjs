@@ -7,7 +7,7 @@ import { pathToFileURL } from 'node:url';
 import { XMLParser } from 'fast-xml-parser';
 import { CRYPTO_ASSETS, identifyAssets, issuerAssets, dividends, holidays, paymentEvents, governanceEvents, spansFor, tpexDividends } from './news-providers.mjs';
 import { collectConferences } from './news-conferences.mjs';
-import { FINANCE_SOURCES, FINANCE_FEEDS, RESTRICTED_FINANCE_SOURCES, publisherMatches, financeHeadline } from './news-finance-sources.mjs';
+import { FINANCE_SOURCES, FINANCE_FEEDS, publisherMatches, financeHeadline } from './news-finance-sources.mjs';
 
 // Public publisher and explicitly identified aggregation feeds. Only dated
 // headlines and source links are retained; article bodies are never republished.
@@ -19,13 +19,13 @@ export const FEEDS = [
   { id: 'coindesk', name: 'CoinDesk', url: 'https://www.coindesk.com/arc/outboundfeeds/rss/?outputType=xml', markets: ['crypto'], verified: 'publisher-feed' },
   { id: 'cointelegraph', name: 'Cointelegraph', url: 'https://cointelegraph.com/rss', markets: ['crypto'], verified: 'publisher-feed' },
   { id: 'twse', name: '臺灣證券交易所', url: 'https://www.twse.com.tw/rwd/zh/news/feed?type=rss', markets: ['tw'] },
-  { id: 'fed', name: 'Federal Reserve', url: 'https://www.federalreserve.gov/feeds/press_monetary.xml', markets: ['us'] },
-  { id: 'bls-cpi', name: 'U.S. BLS · CPI', url: 'https://www.bls.gov/feed/cpi.rss', markets: ['us'] },
-  { id: 'bls-jobs', name: 'U.S. BLS · Employment', url: 'https://www.bls.gov/feed/empsit.rss', markets: ['us'] },
-  { id: 'sec', name: 'U.S. SEC', url: 'https://www.sec.gov/news/pressreleases.rss', markets: ['us','crypto'] },
+  { id: 'fed', name: 'Federal Reserve', url: 'https://www.federalreserve.gov/feeds/press_monetary.xml', markets: ['tw'] },
+  { id: 'bls-cpi', name: 'U.S. BLS · CPI', url: 'https://www.bls.gov/feed/cpi.rss', markets: ['tw'] },
+  { id: 'bls-jobs', name: 'U.S. BLS · Employment', url: 'https://www.bls.gov/feed/empsit.rss', markets: ['tw'] },
+  { id: 'sec', name: 'U.S. SEC', url: 'https://www.sec.gov/news/pressreleases.rss', markets: ['crypto'] },
   { id: 'ethereum', name: 'Ethereum Foundation', url: 'https://blog.ethereum.org/feed.xml', markets: ['crypto'] },
   { id: 'kraken', name: 'Kraken', url: 'https://blog.kraken.com/feed', markets: ['crypto'] },
-  { id: 'cftc', name: 'U.S. CFTC', url: 'https://www.cftc.gov/RSS/RSSGP/rssgp.xml', markets: ['us','crypto'] },
+  { id: 'cftc', name: 'U.S. CFTC', url: 'https://www.cftc.gov/RSS/RSSGP/rssgp.xml', markets: ['crypto'] },
   { id: 'bitcoin-core', name: 'Bitcoin Core', url: 'https://github.com/bitcoin/bitcoin/releases.atom', markets: ['crypto'] }
 ];
 const OFFICIAL_HOSTS = new Set(['technews.tw', 'abmedia.io', 'www.blocktempo.com', 'www.coindesk.com', 'cointelegraph.com', 'decrypt.co', 'www.twse.com.tw', 'www.federalreserve.gov', 'www.bls.gov', 'www.ecb.europa.eu', 'www.sec.gov', 'blog.ethereum.org', 'blog.kraken.com', 'www.cftc.gov']);
@@ -89,7 +89,7 @@ export function normalizeFeed(xml, feed) {
     if (!title || !link || !verifiedForFeed(link, feed) || !publishedAt) return null;
     if (feed.id === 'kraken' && /VIP château|APY on AUSD|Pre-IPO Challenge/i.test(title)) return null;
     if (['abmedia','blocktempo','decrypt'].includes(feed.id) && !cryptoRelevant(title)) return null;
-    const relevantMarkets = ['sec','cftc'].includes(feed.id) && !/bitcoin|crypto|digital asset|spot etf|exchange.traded fund/i.test(title) ? ['us'] : feed.markets;
+    const relevantMarkets = ['sec','cftc'].includes(feed.id) && !/bitcoin|crypto|digital asset|spot etf|exchange.traded fund/i.test(title) ? ['tw'] : feed.markets;
     return { id: hash(feed.aggregator ? `${feed.id}:${link}` : link), title, link, publishedAt, source: feed.name, sourceId: feed.id,
       ...(feed.aggregator?{aggregation:'Google News RSS',publisher,publisherUrl}:{}),
       ...(feed.portal?{aggregation:`${feed.name} RSS`,feedUrl:feed.url}:{}),
@@ -133,7 +133,7 @@ export function parseBlsCalendar(html, now = Date.now()) {
     const occursAt = iso(`${date} ${time} ${eastern === 'EDT' ? 'EDT' : 'EST'}`);
     if (!occursAt) continue; // Full-month lookup also needs releases that have already occurred.
     events.push({ id: hash(`bls:${date}:${title}`), title, link: 'https://www.bls.gov/schedule/news_release/current_year.asp', sourceUrl: 'https://www.bls.gov/schedule/news_release/current_year.asp', occursAt,
-      source: 'U.S. BLS', sourceId: 'bls-calendar', markets: ['us','crypto','tw'], category: 'macro', country: '美國', symbols: [], kind: 'event', status: 'confirmed', originalTimezone: 'America/New_York', previous: null, consensus: null, actual: null, revised: null, updatedAt: null, impact: impact(title, 'bls-calendar', 'https://www.bls.gov/schedule/news_release/current_year.asp') });
+      source: 'U.S. BLS', sourceId: 'bls-calendar', markets: ['crypto','tw'], category: 'macro', country: '美國', symbols: [], kind: 'event', status: 'confirmed', originalTimezone: 'America/New_York', previous: null, consensus: null, actual: null, revised: null, updatedAt: null, impact: impact(title, 'bls-calendar', 'https://www.bls.gov/schedule/news_release/current_year.asp') });
   }
   return events.sort((a,b) => a.occursAt.localeCompare(b.occursAt));
 }
@@ -231,7 +231,6 @@ export async function collect() {
       if (!response.ok) throw Error(`HTTP ${response.status}`); const body = await response.json(); if (body.errors || !Array.isArray(body.data?.proposals)) throw Error('Governance response has no verified proposals'); return governanceEvents(body.data.proposals, stamp);
     }]
   ];
-  sources.push(...RESTRICTED_FINANCE_SOURCES);
   sources.push({ id: 'mops-payments', status: 'not-connected', message: '已查核官方股利表，但不含除息交易日與現金發放日，無法生成可靠日期事件。' });
   sources.push({ id: 'decrypt', status: 'not-connected', message: '已驗證 RSS，但官方服務條款限制自動收集；未取得許可，因此不啟用。', termsUrl: 'https://decrypt.co/terms-of-service' });
   const eventResults = await Promise.allSettled(providers.map(async ([id, load]) => ({ id, items: await load() })));
@@ -258,7 +257,7 @@ export async function collect() {
   if (!news.length && !events.size) throw Error('No verified source data; snapshot not replaced');
   const snapshot = { schemaVersion: 1, generatedAt: sources.some(s => s.status === 'ready') ? stamp : old?.generatedAt || null, attemptedAt: stamp, sources,
     news: translations, pendingNews, events: [...events.values()], eventCoverage, assetCatalog: catalog,
-    methodology: { news: '公開 RSS 標題與原文連結；不轉載全文。', ranking: '目前快照去重文章的標題資產提及；同篇同資產只計一次。', history: '逐次收集累積，RSS 數量有限，非完整 30 日資料庫。', importance: '1–2/5→低；3/5→中；4–5/5→高；保留原始值及來源規則。', frequencyHours: 6 } };
+    methodology: { news: '公開 RSS 標題與原文連結；不轉載全文。', ranking: '目前快照去重文章的標題資產提及；同篇同資產只計一次。', history: '逐次收集累積，RSS 數量有限，非完整 30 日資料庫。', importance: '保留 1–5 星與來源規則；重要性開＝有星、關＝無星。星級不代表多空。', frequencyHours: 6 } };
   await mkdir(new URL('../data/', import.meta.url), { recursive: true });
   const temp = new URL('../data/news.next.json', import.meta.url);
   await writeFile(temp, JSON.stringify(snapshot, null, 2) + '\n');

@@ -88,18 +88,17 @@ async function dragPressure(page,market){
    if(width===390||width===1440)await shot(page,`agenda-${width}.png`);
    const firstEvent=page.locator('.oxn-agenda-event').first();if(await firstEvent.count()){await firstEvent.click();await page.locator('.oxn-modal').waitFor();await page.getByRole('button',{name:'返回上一層',exact:true}).click();await page.locator('.oxn-modal').waitFor({state:'hidden'});await page.locator('.oxn-agenda').waitFor();}
    await page.getByRole('button',{name:'切換為月份格',exact:true}).click();await page.locator('.oxn-calendar-grid').waitFor();
-   for(const market of ['crypto','us','tw']){await page.evaluate(m=>window.OXMarketController.setMarket(m),market);await pause(200);assert.equal((await page.locator('.app-dock [data-view-target="data"]').innerText()).trim(),'資訊');}
+   for(const market of ['crypto','tw']){await page.evaluate(m=>window.OXMarketController.setMarket(m),market);await pause(200);assert.equal((await page.locator('.app-dock [data-view-target="data"]').innerText()).trim(),'資訊');}
    report.viewports.push(width);await context.close();
   }
-  for(const market of ['crypto','tw','us']){
+  for(const market of ['crypto','tw']){
    console.log('Checking bubbles',market);
    const {context,page}=await setup(browser,{width:390,height:844});
-   await page.route(base+'/__bubble-fixture',r=>r.fulfill({contentType:'text/html',body:`<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{margin:0;padding:12px;background:#101216;color:#eee;font-family:system-ui}canvas.us2-bubble-plot{width:100%;height:500px;display:block}</style><body data-market="${market}" data-view="strength"><div id="bubble"></div></body>`}));
+   await page.route(base+'/__bubble-fixture',r=>r.fulfill({contentType:'text/html',body:`<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{margin:0;padding:12px;background:#101216;color:#eee;font-family:system-ui}canvas{width:100%;height:500px;display:block}</style><body data-market="${market}" data-view="strength"><div id="bubble"></div></body>`}));
    await page.goto(base+'/__bubble-fixture');
    await page.evaluate(async market=>{
     const host=document.getElementById('bubble');
     if(market==='tw'){const {mountTWBubbles}=await import('/src/markets/tw/bubbles/view.js');window.mounted=mountTWBubbles(host);const {preloadBundle}=await import('/src/markets/tw/patterns/bundle.js?v=20261002-rank8');await preloadBundle();}
-    else if(market==='us'){const {USBubbles}=await import('/src/markets/us/visuals.js');window.mounted=new USBubbles(host,[{symbol:'SPY',changePct:1.25,liquidity:1e9},{symbol:'QQQ',changePct:-.8,liquidity:5e8}],()=>{});}
     else{const {mountCryptoBubbles}=await import('/src/markets/crypto/bubbles/view.js');window.mounted=mountCryptoBubbles(host,{quotes:['BTC','ETH','SOL','XRP','ADA','LINK'].map((s,i)=>({symbol:s+'USDT',baseCoin:s,lastPr:100+i,change24h:i%2?.06:-.04,usdtVolume:1e8-i*1e6,ts:Date.now()})),caps:[]});}
    },market);
    await page.waitForFunction(()=>window.__fields?.at(-1)?.nodes.length>=2);await page.locator('canvas').first().waitFor({state:'visible'});await pause(180);

@@ -75,103 +75,103 @@ body > header .brand-logo-svg {width:29px;height:29px;color:#e6e2d8;flex:none}
 .ox-live-window {color:#c4c8c4!important}
 
 /* Home: quote, chart, analysis, candidates, events. */
-:is(#view-home,.us2-home-pane) .ox-editorial-home {display:grid;gap:0;padding-bottom:32px}
-:is(#view-home,.us2-home-pane) .ox-editorial-home :where(h1,h2,p) {margin:0}
-:is(#view-home,.us2-home-pane) .ox-eyebrow {display:block;font-size:10px;letter-spacing:.04em;font-weight:600;color:#a2a7a5}
-:is(#view-home,.us2-home-pane) .ox-home-quote {display:grid;grid-template-columns:minmax(160px,.9fr) minmax(215px,1fr) minmax(340px,1.6fr);align-items:center;gap:clamp(14px,2vw,32px);min-height:106px;border-bottom:1px solid #3b4040;padding:12px 0 18px}
-:is(#view-home,.us2-home-pane) .ox-home-identity {display:flex;gap:16px;align-items:center;min-width:0}
-:is(#view-home,.us2-home-pane) .ox-home-coin {display:grid;place-items:center;flex:none;width:52px;height:52px;background:#3b4142;border:1px solid #515757;border-radius:50%;font-size:30px;font-weight:600}
-:is(#view-home,.us2-home-pane) .ox-home-identity>div {display:grid;min-width:0}
-:is(#view-home,.us2-home-pane) .ox-home-ticker {font:600 29px/1.1 var(--ox-font-display)}
-:is(#view-home,.us2-home-pane) .ox-home-identity small {font-size:11px;color:#a9aeac;white-space:nowrap}
-:is(#view-home,.us2-home-pane) .ox-home-price {display:flex;align-items:baseline;flex-wrap:wrap;column-gap:9px;font-variant-numeric:tabular-nums}
-:is(#view-home,.us2-home-pane) .ox-home-price strong {font:normal clamp(31px,3.3vw,50px)/1 var(--ox-font-display);letter-spacing:-.035em;white-space:nowrap}
-:is(#view-home,.us2-home-pane) .ox-home-price small {color:#a3a8a6;font-size:11px}
-:is(#view-home,.us2-home-pane) .ox-home-price span {flex-basis:100%;font-size:15px;margin-top:4px}
-:is(#view-home,.us2-home-pane) .ox-home-quote-metrics {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0}
-:is(#view-home,.us2-home-pane) .ox-home-quote-metrics>div {border-left:1px solid #34393a;padding-left:clamp(12px,2vw,28px);min-width:0}
-:is(#view-home,.us2-home-pane) .ox-home-quote-metrics small {display:block;font-size:11px;color:#939997;white-space:nowrap}
-:is(#view-home,.us2-home-pane) .ox-home-quote-metrics strong {display:block;margin-top:5px;font-size:clamp(14px,1.3vw,20px);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
-:is(#view-home,.us2-home-pane) .ox-home-main {display:grid;grid-template-columns:minmax(0,1.7fr) minmax(320px,.95fr);gap:18px;align-items:stretch;margin-top:20px}
-:is(#view-home,.us2-home-pane) .ox-home-chart {min-width:0;min-height:440px;border-radius:10px;padding:20px 24px 14px;display:flex;flex-direction:column;overflow:hidden;contain:paint}
-:is(#view-home,.us2-home-pane) .ox-chart-heading {display:flex;justify-content:space-between;align-items:center;gap:14px}
-:is(#view-home,.us2-home-pane) .ox-chart-heading h1 {font:600 clamp(21px,2vw,30px)/1.25 var(--ox-font-display);margin-top:4px}
-:is(#view-home,.us2-home-pane) .ox-chart-heading h1 span {color:#777e7c}
-:is(#view-home,.us2-home-pane) .v34-home-main-toolbar {display:flex!important;gap:4px!important;padding:2px!important;background:none!important;border:0!important;box-shadow:none!important}
-:is(#view-home,.us2-home-pane) .v34-home-mini-tf {min-width:43px!important;height:33px!important;padding:4px 7px!important;border:1px solid #3d4343!important;border-radius:var(--ox-radius-xs)!important;background:transparent!important;color:#aeb3b1!important;font-size:12px!important;box-shadow:none!important}
-:is(#view-home,.us2-home-pane) .v34-home-mini-tf.active {background:#dedbd2!important;color:#1b2021!important;border-color:#dedbd2!important}
-:is(#view-home,.us2-home-pane) .btc-premium-chart-wrap {margin:18px 0 8px!important;flex:1;min-height:330px!important;height:330px!important;cursor:pointer;border:0!important;background:none!important}
-:is(#view-home,.us2-home-pane) #home-btc-mini-chart {height:100%!important;min-height:330px!important}
-:is(#view-home,.us2-home-pane) .ox-chart-foot {display:flex;align-items:center;gap:13px;min-width:0;border-top:1px solid #3a4040;padding-top:9px;color:#aab0ad;font-size:11px}
-:is(#view-home,.us2-home-pane) #home-btc-note {overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
-:is(#view-home,.us2-home-pane) #home-btc-market-state {white-space:nowrap;margin-left:auto}
-:is(#view-home,.us2-home-pane) .v34-home-open-radar {border:0!important;background:none!important;color:#e4e1d8!important;font-size:11px!important;font-weight:500!important;white-space:nowrap;padding:4px 0!important;box-shadow:none!important}
-:is(#view-home,.us2-home-pane) .ox-home-analysis {display:flex;flex-direction:column;min-width:0;border:1px solid #363c3c;border-radius:var(--ox-radius-sm);padding:20px 22px;background:#15191b}
-:is(#view-home,.us2-home-pane) .ox-analysis-heading h2 {font:600 25px/1.3 var(--ox-font-display);margin-top:4px}
-:is(#view-home,.us2-home-pane) .ox-strength-duo {display:grid;grid-template-columns:1fr 1fr;gap:0;margin:18px 0 12px}
-:is(#view-home,.us2-home-pane) .ox-strength-reading {padding:0 15px 0 0;min-width:0}
-:is(#view-home,.us2-home-pane) .ox-strength-reading+ .ox-strength-reading {border-left:1px solid #383e3d;padding:0 0 0 17px}
-:is(#view-home,.us2-home-pane) .ox-strength-reading small {font-size:12px;color:#a9aeab}
-:is(#view-home,.us2-home-pane) .ox-strength-reading>div:nth-child(2) {margin-top:3px;display:flex;align-items:baseline;gap:5px}
-:is(#view-home,.us2-home-pane) .ox-strength-reading strong {font:normal clamp(38px,4vw,57px)/1.05 var(--ox-font-display)}
-:is(#view-home,.us2-home-pane) .ox-strength-reading span {font-size:11px;color:#a3a8a5}
-:is(#view-home,.us2-home-pane) .ox-strength-context {display:grid;grid-template-columns:1fr 1fr;gap:18px;font-size:10px;line-height:1.5;color:#8f9592;margin:2px 0 16px}
-:is(#view-home,.us2-home-pane) .ox-meter {display:block;height:3px;background:#373d3c;border-radius:2px;overflow:hidden;margin-top:12px}
-:is(#view-home,.us2-home-pane) .ox-meter i {display:block;height:100%;background:#e4e0d5;border-radius:2px;max-width:100%}
-:is(#view-home,.us2-home-pane) .ox-score-panel {border-radius:var(--ox-radius-xs);padding:16px 18px;margin-top:auto;min-height:130px}
-:is(#view-home,.us2-home-pane) .ox-score-reading {display:flex;align-items:baseline;gap:6px;margin:8px 0 0}
-:is(#view-home,.us2-home-pane) .ox-score-reading strong {font:normal 51px/1 var(--ox-font-display)}
-:is(#view-home,.us2-home-pane) .ox-score-reading span,:is(#view-home,.us2-home-pane) .ox-score-panel>span:not(.ox-eyebrow) {font-size:11px;color:#abb0ad}
-:is(#view-home,.us2-home-pane) .ox-analysis-benchmark {display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;gap:5px 12px;border-top:1px solid #383e3e;padding:12px 0 0;margin-top:14px;cursor:pointer}
-:is(#view-home,.us2-home-pane) .ox-analysis-benchmark>span:first-child {font:normal 18px var(--ox-font-display)}
-:is(#view-home,.us2-home-pane) .ox-analysis-benchmark small {font:11px system-ui,-apple-system,sans-serif;color:#9da39f}
-:is(#view-home,.us2-home-pane) .ox-analysis-benchmark strong {font-size:15px;font-weight:500}
-:is(#view-home,.us2-home-pane) .ox-analysis-eth-note {grid-column:1 / 3;color:#8f9593;font-size:10px}
-:is(#view-home,.us2-home-pane) .ox-analysis-benchmark .ox-meter {width:100%;margin:0}
-:is(#view-home,.us2-home-pane) .ox-home-tiers {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;margin-top:22px;border-top:1px solid #444a49;border-bottom:1px solid #444a49}
-:is(#view-home,.us2-home-pane) .ox-tier-column {min-width:0;padding:13px 16px 15px}
-:is(#view-home,.us2-home-pane) .ox-tier-column:first-child {padding-left:0}
-:is(#view-home,.us2-home-pane) .ox-tier-column+ .ox-tier-column {border-left:1px solid #3c4241}
-:is(#view-home,.us2-home-pane) .ox-tier-title {display:flex;align-items:baseline;gap:8px;white-space:nowrap;min-width:0;margin-bottom:7px}
-:is(#view-home,.us2-home-pane) .ox-tier-title>span {font:600 22px var(--ox-font-display)}
-:is(#view-home,.us2-home-pane) .ox-tier-title h2 {font-size:16px;font-weight:600;letter-spacing:.03em}
-:is(#view-home,.us2-home-pane) .ox-tier-title small {font-size:10px;color:#919894;overflow:hidden;text-overflow:ellipsis}
-:is(#view-home,.us2-home-pane) .ox-tier-title button {margin-left:auto;flex:none;border:0;background:none;color:#a9aeab;padding:0;font-size:11px}
-:is(#view-home,.us2-home-pane) .ox-tier-row {display:grid;grid-template-columns: minmax(45px,.55fr) minmax(50px,1.3fr) auto auto;gap:8px;align-items:center;width:100%;min-height:37px;background:transparent;border:0;border-top:1px solid #2e3434;color:#ebe8df;text-align:left;padding:4px 2px;cursor:pointer}
-:is(#view-home,.us2-home-pane) .ox-tier-row:hover,:is(#view-home,.us2-home-pane) .ox-event-list button:hover {background:#252b2b}
-:is(#view-home,.us2-home-pane) .ox-tier-row strong {font-size:12px;font-weight:600}
-:is(#view-home,.us2-home-pane) .ox-tier-row small {color:#8f9693;font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-:is(#view-home,.us2-home-pane) .ox-tier-row span {font-size:11px;color:#b9bfbb}
-:is(#view-home,.us2-home-pane) .ox-tier-row em {font-size:12px;font-style:normal;text-align:right;font-variant-numeric:tabular-nums}
-:is(#view-home,.us2-home-pane) .ox-home-events {display:grid;grid-template-columns:190px minmax(0,1fr);gap:18px;border-bottom:1px solid #363b3b;padding:16px 0}
-:is(#view-home,.us2-home-pane) .ox-home-events-head h2 {font:600 19px var(--ox-font-display);margin-top:5px}
-:is(#view-home,.us2-home-pane) .ox-home-events-head button {padding:0;border:0;background:none;color:#a9aeab;font-size:11px;margin-top:12px}
-:is(#view-home,.us2-home-pane) .ox-event-list {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0}
-:is(#view-home,.us2-home-pane) .ox-event-list>:nth-child(n+4) {display:none}
-:is(#view-home,.us2-home-pane) .ox-event-list>.v33-event-row {border:0!important;border-left:1px solid #3b4140!important;border-radius:0!important;box-shadow:none!important;background:transparent!important;padding:4px 14px!important;min-width:0;display:flex;align-items:center;gap:8px;color:#e7e4dc}
-:is(#view-home,.us2-home-pane) .ox-event-list .v33-event-icon {display:none}
-:is(#view-home,.us2-home-pane) .ox-event-list .v33-row-main {min-width:0}
-:is(#view-home,.us2-home-pane) .ox-event-list .v33-row-main b {display:block;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-:is(#view-home,.us2-home-pane) .ox-event-list .v33-row-main small {display:block;font-size:10px;color:#8f9592;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-:is(#view-home,.us2-home-pane) .ox-event-list .v33-row-pill {margin-left:auto;font-size:10px;color:#b5bab5}
-:is(#view-home,.us2-home-pane) .ox-home-more {border-bottom:1px solid #333939;margin-top:8px}
-:is(#view-home,.us2-home-pane) .ox-home-more>summary {display:flex;align-items:center;justify-content:space-between;list-style:none;padding:15px 0;cursor:pointer;color:#e4e0d7;font-size:12px}
-:is(#view-home,.us2-home-pane) .ox-home-more>summary::-webkit-details-marker {display:none}
-:is(#view-home,.us2-home-pane) .ox-home-more>summary span {color:#8f9592}
-:is(#view-home,.us2-home-pane) .ox-home-more-content {display:grid;gap:18px;padding:5px 0 20px}
-:is(#view-home,.us2-home-pane) .ox-home-more-content>section {border-top:1px solid #373d3d;padding-top:12px}
-:is(#view-home,.us2-home-pane) .ox-home-more-content h2 {font:600 18px var(--ox-font-display);margin-bottom:9px}
-:is(#view-home,.us2-home-pane) .ox-summary-inline {display:flex;flex-wrap:wrap;gap:8px 28px}
-:is(#view-home,.us2-home-pane) .ox-summary-inline>div {display:grid;gap:3px}
-:is(#view-home,.us2-home-pane) .ox-summary-inline small,:is(#view-home,.us2-home-pane) .ox-summary-inline span {font-size:10px;color:#999f9b}
-:is(#view-home,.us2-home-pane) .ox-summary-inline strong {font-size:18px;font-weight:500}
-:is(#view-home,.us2-home-pane) .ox-home-detail-grid {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
-:is(#view-home,.us2-home-pane) .ox-home-detail-grid>div+div {border-left:1px solid #3c4241;padding-left:16px}
-:is(#view-home,.us2-home-pane) .ox-home-shortcuts .v33-actions {display:flex;flex-wrap:wrap;gap:8px}
-:is(#view-home,.us2-home-pane) .ox-home-shortcuts .v33-action {min-width:130px;min-height:0;padding:9px 12px;border:1px solid #414747;background:transparent!important;display:grid;text-align:left}
-:is(#view-home,.us2-home-pane) .ox-home-shortcuts .v33-action b {font-size:12px}
-:is(#view-home,.us2-home-pane) .ox-home-shortcuts .v33-action small {font-size:10px;color:#999f9b}
-:is(#view-home,.us2-home-pane) .v33-list-empty {font-size:11px;color:#888f8c;padding:14px 2px}
+#view-home .ox-editorial-home {display:grid;gap:0;padding-bottom:32px}
+#view-home .ox-editorial-home :where(h1,h2,p) {margin:0}
+#view-home .ox-eyebrow {display:block;font-size:10px;letter-spacing:.04em;font-weight:600;color:#a2a7a5}
+#view-home .ox-home-quote {display:grid;grid-template-columns:minmax(160px,.9fr) minmax(215px,1fr) minmax(340px,1.6fr);align-items:center;gap:clamp(14px,2vw,32px);min-height:106px;border-bottom:1px solid #3b4040;padding:12px 0 18px}
+#view-home .ox-home-identity {display:flex;gap:16px;align-items:center;min-width:0}
+#view-home .ox-home-coin {display:grid;place-items:center;flex:none;width:52px;height:52px;background:#3b4142;border:1px solid #515757;border-radius:50%;font-size:30px;font-weight:600}
+#view-home .ox-home-identity>div {display:grid;min-width:0}
+#view-home .ox-home-ticker {font:600 29px/1.1 var(--ox-font-display)}
+#view-home .ox-home-identity small {font-size:11px;color:#a9aeac;white-space:nowrap}
+#view-home .ox-home-price {display:flex;align-items:baseline;flex-wrap:wrap;column-gap:9px;font-variant-numeric:tabular-nums}
+#view-home .ox-home-price strong {font:normal clamp(31px,3.3vw,50px)/1 var(--ox-font-display);letter-spacing:-.035em;white-space:nowrap}
+#view-home .ox-home-price small {color:#a3a8a6;font-size:11px}
+#view-home .ox-home-price span {flex-basis:100%;font-size:15px;margin-top:4px}
+#view-home .ox-home-quote-metrics {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0}
+#view-home .ox-home-quote-metrics>div {border-left:1px solid #34393a;padding-left:clamp(12px,2vw,28px);min-width:0}
+#view-home .ox-home-quote-metrics small {display:block;font-size:11px;color:#939997;white-space:nowrap}
+#view-home .ox-home-quote-metrics strong {display:block;margin-top:5px;font-size:clamp(14px,1.3vw,20px);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
+#view-home .ox-home-main {display:grid;grid-template-columns:minmax(0,1.7fr) minmax(320px,.95fr);gap:18px;align-items:stretch;margin-top:20px}
+#view-home .ox-home-chart {min-width:0;min-height:440px;border-radius:10px;padding:20px 24px 14px;display:flex;flex-direction:column;overflow:hidden;contain:paint}
+#view-home .ox-chart-heading {display:flex;justify-content:space-between;align-items:center;gap:14px}
+#view-home .ox-chart-heading h1 {font:600 clamp(21px,2vw,30px)/1.25 var(--ox-font-display);margin-top:4px}
+#view-home .ox-chart-heading h1 span {color:#777e7c}
+#view-home .v34-home-main-toolbar {display:flex!important;gap:4px!important;padding:2px!important;background:none!important;border:0!important;box-shadow:none!important}
+#view-home .v34-home-mini-tf {min-width:43px!important;height:33px!important;padding:4px 7px!important;border:1px solid #3d4343!important;border-radius:var(--ox-radius-xs)!important;background:transparent!important;color:#aeb3b1!important;font-size:12px!important;box-shadow:none!important}
+#view-home .v34-home-mini-tf.active {background:#dedbd2!important;color:#1b2021!important;border-color:#dedbd2!important}
+#view-home .btc-premium-chart-wrap {margin:18px 0 8px!important;flex:1;min-height:330px!important;height:330px!important;cursor:pointer;border:0!important;background:none!important}
+#view-home #home-btc-mini-chart {height:100%!important;min-height:330px!important}
+#view-home .ox-chart-foot {display:flex;align-items:center;gap:13px;min-width:0;border-top:1px solid #3a4040;padding-top:9px;color:#aab0ad;font-size:11px}
+#view-home #home-btc-note {overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+#view-home #home-btc-market-state {white-space:nowrap;margin-left:auto}
+#view-home .v34-home-open-radar {border:0!important;background:none!important;color:#e4e1d8!important;font-size:11px!important;font-weight:500!important;white-space:nowrap;padding:4px 0!important;box-shadow:none!important}
+#view-home .ox-home-analysis {display:flex;flex-direction:column;min-width:0;border:1px solid #363c3c;border-radius:var(--ox-radius-sm);padding:20px 22px;background:#15191b}
+#view-home .ox-analysis-heading h2 {font:600 25px/1.3 var(--ox-font-display);margin-top:4px}
+#view-home .ox-strength-duo {display:grid;grid-template-columns:1fr 1fr;gap:0;margin:18px 0 12px}
+#view-home .ox-strength-reading {padding:0 15px 0 0;min-width:0}
+#view-home .ox-strength-reading+ .ox-strength-reading {border-left:1px solid #383e3d;padding:0 0 0 17px}
+#view-home .ox-strength-reading small {font-size:12px;color:#a9aeab}
+#view-home .ox-strength-reading>div:nth-child(2) {margin-top:3px;display:flex;align-items:baseline;gap:5px}
+#view-home .ox-strength-reading strong {font:normal clamp(38px,4vw,57px)/1.05 var(--ox-font-display)}
+#view-home .ox-strength-reading span {font-size:11px;color:#a3a8a5}
+#view-home .ox-strength-context {display:grid;grid-template-columns:1fr 1fr;gap:18px;font-size:10px;line-height:1.5;color:#8f9592;margin:2px 0 16px}
+#view-home .ox-meter {display:block;height:3px;background:#373d3c;border-radius:2px;overflow:hidden;margin-top:12px}
+#view-home .ox-meter i {display:block;height:100%;background:#e4e0d5;border-radius:2px;max-width:100%}
+#view-home .ox-score-panel {border-radius:var(--ox-radius-xs);padding:16px 18px;margin-top:auto;min-height:130px}
+#view-home .ox-score-reading {display:flex;align-items:baseline;gap:6px;margin:8px 0 0}
+#view-home .ox-score-reading strong {font:normal 51px/1 var(--ox-font-display)}
+#view-home .ox-score-reading span,#view-home .ox-score-panel>span:not(.ox-eyebrow) {font-size:11px;color:#abb0ad}
+#view-home .ox-analysis-benchmark {display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;gap:5px 12px;border-top:1px solid #383e3e;padding:12px 0 0;margin-top:14px;cursor:pointer}
+#view-home .ox-analysis-benchmark>span:first-child {font:normal 18px var(--ox-font-display)}
+#view-home .ox-analysis-benchmark small {font:11px system-ui,-apple-system,sans-serif;color:#9da39f}
+#view-home .ox-analysis-benchmark strong {font-size:15px;font-weight:500}
+#view-home .ox-analysis-eth-note {grid-column:1 / 3;color:#8f9593;font-size:10px}
+#view-home .ox-analysis-benchmark .ox-meter {width:100%;margin:0}
+#view-home .ox-home-tiers {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;margin-top:22px;border-top:1px solid #444a49;border-bottom:1px solid #444a49}
+#view-home .ox-tier-column {min-width:0;padding:13px 16px 15px}
+#view-home .ox-tier-column:first-child {padding-left:0}
+#view-home .ox-tier-column+ .ox-tier-column {border-left:1px solid #3c4241}
+#view-home .ox-tier-title {display:flex;align-items:baseline;gap:8px;white-space:nowrap;min-width:0;margin-bottom:7px}
+#view-home .ox-tier-title>span {font:600 22px var(--ox-font-display)}
+#view-home .ox-tier-title h2 {font-size:16px;font-weight:600;letter-spacing:.03em}
+#view-home .ox-tier-title small {font-size:10px;color:#919894;overflow:hidden;text-overflow:ellipsis}
+#view-home .ox-tier-title button {margin-left:auto;flex:none;border:0;background:none;color:#a9aeab;padding:0;font-size:11px}
+#view-home .ox-tier-row {display:grid;grid-template-columns: minmax(45px,.55fr) minmax(50px,1.3fr) auto auto;gap:8px;align-items:center;width:100%;min-height:37px;background:transparent;border:0;border-top:1px solid #2e3434;color:#ebe8df;text-align:left;padding:4px 2px;cursor:pointer}
+#view-home .ox-tier-row:hover,#view-home .ox-event-list button:hover {background:#252b2b}
+#view-home .ox-tier-row strong {font-size:12px;font-weight:600}
+#view-home .ox-tier-row small {color:#8f9693;font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#view-home .ox-tier-row span {font-size:11px;color:#b9bfbb}
+#view-home .ox-tier-row em {font-size:12px;font-style:normal;text-align:right;font-variant-numeric:tabular-nums}
+#view-home .ox-home-events {display:grid;grid-template-columns:190px minmax(0,1fr);gap:18px;border-bottom:1px solid #363b3b;padding:16px 0}
+#view-home .ox-home-events-head h2 {font:600 19px var(--ox-font-display);margin-top:5px}
+#view-home .ox-home-events-head button {padding:0;border:0;background:none;color:#a9aeab;font-size:11px;margin-top:12px}
+#view-home .ox-event-list {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0}
+#view-home .ox-event-list>:nth-child(n+4) {display:none}
+#view-home .ox-event-list>.v33-event-row {border:0!important;border-left:1px solid #3b4140!important;border-radius:0!important;box-shadow:none!important;background:transparent!important;padding:4px 14px!important;min-width:0;display:flex;align-items:center;gap:8px;color:#e7e4dc}
+#view-home .ox-event-list .v33-event-icon {display:none}
+#view-home .ox-event-list .v33-row-main {min-width:0}
+#view-home .ox-event-list .v33-row-main b {display:block;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#view-home .ox-event-list .v33-row-main small {display:block;font-size:10px;color:#8f9592;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#view-home .ox-event-list .v33-row-pill {margin-left:auto;font-size:10px;color:#b5bab5}
+#view-home .ox-home-more {border-bottom:1px solid #333939;margin-top:8px}
+#view-home .ox-home-more>summary {display:flex;align-items:center;justify-content:space-between;list-style:none;padding:15px 0;cursor:pointer;color:#e4e0d7;font-size:12px}
+#view-home .ox-home-more>summary::-webkit-details-marker {display:none}
+#view-home .ox-home-more>summary span {color:#8f9592}
+#view-home .ox-home-more-content {display:grid;gap:18px;padding:5px 0 20px}
+#view-home .ox-home-more-content>section {border-top:1px solid #373d3d;padding-top:12px}
+#view-home .ox-home-more-content h2 {font:600 18px var(--ox-font-display);margin-bottom:9px}
+#view-home .ox-summary-inline {display:flex;flex-wrap:wrap;gap:8px 28px}
+#view-home .ox-summary-inline>div {display:grid;gap:3px}
+#view-home .ox-summary-inline small,#view-home .ox-summary-inline span {font-size:10px;color:#999f9b}
+#view-home .ox-summary-inline strong {font-size:18px;font-weight:500}
+#view-home .ox-home-detail-grid {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+#view-home .ox-home-detail-grid>div+div {border-left:1px solid #3c4241;padding-left:16px}
+#view-home .ox-home-shortcuts .v33-actions {display:flex;flex-wrap:wrap;gap:8px}
+#view-home .ox-home-shortcuts .v33-action {min-width:130px;min-height:0;padding:9px 12px;border:1px solid #414747;background:transparent!important;display:grid;text-align:left}
+#view-home .ox-home-shortcuts .v33-action b {font-size:12px}
+#view-home .ox-home-shortcuts .v33-action small {font-size:10px;color:#999f9b}
+#view-home .v33-list-empty {font-size:11px;color:#888f8c;padding:14px 2px}
 
 /* Desktop: five links survive as a slim vertical rail, not a page-wide footer. */
 @media (min-width:1025px) {
@@ -193,9 +193,9 @@ body > header .brand-logo-svg {width:29px;height:29px;color:#e6e2d8;flex:none}
   body > header .nav {gap:10px}
   .brand-wordmark-sub {display:none}
   .nav-stats .live,#btn-force-rescan {display:none!important}
-  :is(#view-home,.us2-home-pane) .ox-home-quote {grid-template-columns:1fr 1.2fr;gap:13px}
-  :is(#view-home,.us2-home-pane) .ox-home-quote-metrics {grid-column:1 / -1}
-  :is(#view-home,.us2-home-pane) .ox-home-main {grid-template-columns:minmax(0,1.45fr) minmax(270px,1fr)}
+  #view-home .ox-home-quote {grid-template-columns:1fr 1.2fr;gap:13px}
+  #view-home .ox-home-quote-metrics {grid-column:1 / -1}
+  #view-home .ox-home-main {grid-template-columns:minmax(0,1.45fr) minmax(270px,1fr)}
 }
 @media (max-width:720px) {
   body {padding-bottom:88px!important}
@@ -205,49 +205,49 @@ body > header .brand-logo-svg {width:29px;height:29px;color:#e6e2d8;flex:none}
   .ox-market-nav {order:3;width:100%;margin:0;justify-content:space-between}
   .ox-market-tab {min-width:0;flex:1;padding:4px 2px;font-size:11px;min-height:29px}
   .ox-live-shell {padding:0 10px!important}
-  :is(#view-home,.us2-home-pane) .ox-editorial-home {padding:0 2px 18px}
-  :is(#view-home,.us2-home-pane) .ox-home-quote {display:grid;grid-template-columns:1fr;gap:5px;padding:12px 0 11px;min-height:0}
-  :is(#view-home,.us2-home-pane) .ox-home-identity {gap:8px}
-  :is(#view-home,.us2-home-pane) .ox-home-coin {width:29px;height:29px;font-size:17px}
-  :is(#view-home,.us2-home-pane) .ox-home-ticker {font-size:20px}
-  :is(#view-home,.us2-home-pane) .ox-home-identity small {font-size:9px}
-  :is(#view-home,.us2-home-pane) .ox-home-price {gap:5px 8px}
-  :is(#view-home,.us2-home-pane) .ox-home-price strong {font-size:34px}
-  :is(#view-home,.us2-home-pane) .ox-home-price span {flex-basis:auto;margin:0;font-size:12px}
-  :is(#view-home,.us2-home-pane) .ox-home-quote-metrics {grid-column:auto;margin-top:8px}
-  :is(#view-home,.us2-home-pane) .ox-home-quote-metrics>div {padding:0 5px;border-left:1px solid #343939}
-  :is(#view-home,.us2-home-pane) .ox-home-quote-metrics>div:first-child {border-left:0;padding-left:0}
-  :is(#view-home,.us2-home-pane) .ox-home-quote-metrics small {font-size:9px}
-  :is(#view-home,.us2-home-pane) .ox-home-quote-metrics strong {font-size:12px}
-  :is(#view-home,.us2-home-pane) .ox-home-main {grid-template-columns:1fr;gap:10px;margin-top:12px}
-  :is(#view-home,.us2-home-pane) .ox-home-chart {padding:13px 12px 10px;min-height:350px}
-  :is(#view-home,.us2-home-pane) .ox-chart-heading {align-items:flex-end}
-  :is(#view-home,.us2-home-pane) .ox-chart-heading h1 {font-size:19px}
-  :is(#view-home,.us2-home-pane) .ox-eyebrow {font-size:8px}
-  :is(#view-home,.us2-home-pane) .v34-home-mini-tf {min-width:34px!important;height:28px!important;font-size:10px!important;padding:3px!important}
-  :is(#view-home,.us2-home-pane) .btc-premium-chart-wrap {min-height:290px!important;height:290px!important;margin:10px 0 5px!important}
-  :is(#view-home,.us2-home-pane) #home-btc-mini-chart {min-height:290px!important}
-  :is(#view-home,.us2-home-pane) .ox-chart-foot {font-size:9px;gap:5px}
-  :is(#view-home,.us2-home-pane) #home-btc-market-state {display:none}
-  :is(#view-home,.us2-home-pane) .v34-home-open-radar {font-size:10px!important}
-  :is(#view-home,.us2-home-pane) .ox-home-analysis {padding:14px}
-  :is(#view-home,.us2-home-pane) .ox-analysis-heading h2 {font-size:21px}
-  :is(#view-home,.us2-home-pane) .ox-strength-duo {margin:10px 0}
-  :is(#view-home,.us2-home-pane) .ox-strength-reading strong {font-size:39px}
-  :is(#view-home,.us2-home-pane) .ox-score-panel {min-height:0}
-  :is(#view-home,.us2-home-pane) .ox-home-tiers {grid-template-columns:1fr;margin-top:17px}
-  :is(#view-home,.us2-home-pane) .ox-tier-column,:is(#view-home,.us2-home-pane) .ox-tier-column:first-child {padding:10px 0}
-  :is(#view-home,.us2-home-pane) .ox-tier-column+ .ox-tier-column {border-left:0;border-top:1px solid #343a39}
-  :is(#view-home,.us2-home-pane) .ox-tier-title {margin-bottom:3px}
-  :is(#view-home,.us2-home-pane) .ox-tier-row {min-height:32px}
-  :is(#view-home,.us2-home-pane) .ox-home-events {display:block;padding:14px 0}
-  :is(#view-home,.us2-home-pane) .ox-home-events-head {display:flex;align-items:baseline;justify-content:space-between;margin-bottom:8px}
-  :is(#view-home,.us2-home-pane) .ox-home-events-head button {margin:0}
-  :is(#view-home,.us2-home-pane) .ox-event-list {grid-template-columns:1fr}
-  :is(#view-home,.us2-home-pane) .ox-event-list>.v33-event-row {border-left:0!important;border-top:1px solid #323838!important;padding:8px 0!important}
-  :is(#view-home,.us2-home-pane) .ox-event-list>:nth-child(n+4) {display:none}
-  :is(#view-home,.us2-home-pane) .ox-home-detail-grid {grid-template-columns:1fr}
-  :is(#view-home,.us2-home-pane) .ox-home-detail-grid>div+div {border-left:0;padding-left:0}
+  #view-home .ox-editorial-home {padding:0 2px 18px}
+  #view-home .ox-home-quote {display:grid;grid-template-columns:1fr;gap:5px;padding:12px 0 11px;min-height:0}
+  #view-home .ox-home-identity {gap:8px}
+  #view-home .ox-home-coin {width:29px;height:29px;font-size:17px}
+  #view-home .ox-home-ticker {font-size:20px}
+  #view-home .ox-home-identity small {font-size:9px}
+  #view-home .ox-home-price {gap:5px 8px}
+  #view-home .ox-home-price strong {font-size:34px}
+  #view-home .ox-home-price span {flex-basis:auto;margin:0;font-size:12px}
+  #view-home .ox-home-quote-metrics {grid-column:auto;margin-top:8px}
+  #view-home .ox-home-quote-metrics>div {padding:0 5px;border-left:1px solid #343939}
+  #view-home .ox-home-quote-metrics>div:first-child {border-left:0;padding-left:0}
+  #view-home .ox-home-quote-metrics small {font-size:9px}
+  #view-home .ox-home-quote-metrics strong {font-size:12px}
+  #view-home .ox-home-main {grid-template-columns:1fr;gap:10px;margin-top:12px}
+  #view-home .ox-home-chart {padding:13px 12px 10px;min-height:350px}
+  #view-home .ox-chart-heading {align-items:flex-end}
+  #view-home .ox-chart-heading h1 {font-size:19px}
+  #view-home .ox-eyebrow {font-size:8px}
+  #view-home .v34-home-mini-tf {min-width:34px!important;height:28px!important;font-size:10px!important;padding:3px!important}
+  #view-home .btc-premium-chart-wrap {min-height:290px!important;height:290px!important;margin:10px 0 5px!important}
+  #view-home #home-btc-mini-chart {min-height:290px!important}
+  #view-home .ox-chart-foot {font-size:9px;gap:5px}
+  #view-home #home-btc-market-state {display:none}
+  #view-home .v34-home-open-radar {font-size:10px!important}
+  #view-home .ox-home-analysis {padding:14px}
+  #view-home .ox-analysis-heading h2 {font-size:21px}
+  #view-home .ox-strength-duo {margin:10px 0}
+  #view-home .ox-strength-reading strong {font-size:39px}
+  #view-home .ox-score-panel {min-height:0}
+  #view-home .ox-home-tiers {grid-template-columns:1fr;margin-top:17px}
+  #view-home .ox-tier-column,#view-home .ox-tier-column:first-child {padding:10px 0}
+  #view-home .ox-tier-column+ .ox-tier-column {border-left:0;border-top:1px solid #343a39}
+  #view-home .ox-tier-title {margin-bottom:3px}
+  #view-home .ox-tier-row {min-height:32px}
+  #view-home .ox-home-events {display:block;padding:14px 0}
+  #view-home .ox-home-events-head {display:flex;align-items:baseline;justify-content:space-between;margin-bottom:8px}
+  #view-home .ox-home-events-head button {margin:0}
+  #view-home .ox-event-list {grid-template-columns:1fr}
+  #view-home .ox-event-list>.v33-event-row {border-left:0!important;border-top:1px solid #323838!important;padding:8px 0!important}
+  #view-home .ox-event-list>:nth-child(n+4) {display:none}
+  #view-home .ox-home-detail-grid {grid-template-columns:1fr}
+  #view-home .ox-home-detail-grid>div+div {border-left:0;padding-left:0}
   .app-dock.glass-nav {background:#171c1e!important;border:1px solid #404747!important;box-shadow:0 8px 26px #0008!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
   .app-dock .dock-radar-orb {box-shadow:none!important;animation:none!important;background:#303637!important;border-color:#8a918d!important}
 }
@@ -336,16 +336,16 @@ body:not(.theme-light) :where(.us-market-home-content,#ox-tw-module) :where(.pag
 }
 
 /* The existing light theme remains usable as a quiet paper variation. */
-body.theme-light :is(#view-home,.us2-home-pane) .ox-editorial-home {color:#222825}
-body.theme-light :is(#view-home,.us2-home-pane) :where(.ox-home-chart,.ox-home-analysis,.ox-score-panel) {background:#f5f4ef!important;color:#222825!important;border-color:#c9ccc6!important;box-shadow:none!important}
-body.theme-light :is(#view-home,.us2-home-pane) :where(.ox-home-quote,.ox-home-tiers,.ox-home-events,.ox-home-more,.ox-tier-column,.ox-tier-row,.ox-chart-foot,.ox-analysis-benchmark,.ox-strength-reading+.ox-strength-reading) {border-color:#c9cdc7!important}
-body.theme-light :is(#view-home,.us2-home-pane) :where(.ox-eyebrow,.ox-home-identity small,.ox-home-quote-metrics small,.ox-strength-reading small,.ox-strength-context,.ox-tier-title small,.ox-tier-row small,.ox-home-more>summary span,.ox-home-events-head button) {color:#66716b!important}
-body.theme-light :is(#view-home,.us2-home-pane) :where(.ox-tier-row,.ox-home-more>summary) {color:#222825}
-body.theme-light :is(#view-home,.us2-home-pane) .ox-meter {background:#cdd1cb}
-body.theme-light :is(#view-home,.us2-home-pane) .ox-meter i {background:#626e66}
-body.theme-light :is(#view-home,.us2-home-pane) .v34-home-mini-tf {color:#424d46!important;border-color:#c5cac4!important}
-body.theme-light :is(#view-home,.us2-home-pane) .v34-home-mini-tf.active {color:#f5f4ef!important;background:#2c3530!important;border-color:#2c3530!important}
-body.theme-light :is(#view-home,.us2-home-pane) .v34-home-open-radar {color:#313b34!important}
+body.theme-light #view-home .ox-editorial-home {color:#222825}
+body.theme-light #view-home :where(.ox-home-chart,.ox-home-analysis,.ox-score-panel) {background:#f5f4ef!important;color:#222825!important;border-color:#c9ccc6!important;box-shadow:none!important}
+body.theme-light #view-home :where(.ox-home-quote,.ox-home-tiers,.ox-home-events,.ox-home-more,.ox-tier-column,.ox-tier-row,.ox-chart-foot,.ox-analysis-benchmark,.ox-strength-reading+.ox-strength-reading) {border-color:#c9cdc7!important}
+body.theme-light #view-home :where(.ox-eyebrow,.ox-home-identity small,.ox-home-quote-metrics small,.ox-strength-reading small,.ox-strength-context,.ox-tier-title small,.ox-tier-row small,.ox-home-more>summary span,.ox-home-events-head button) {color:#66716b!important}
+body.theme-light #view-home :where(.ox-tier-row,.ox-home-more>summary) {color:#222825}
+body.theme-light #view-home .ox-meter {background:#cdd1cb}
+body.theme-light #view-home .ox-meter i {background:#626e66}
+body.theme-light #view-home .v34-home-mini-tf {color:#424d46!important;border-color:#c5cac4!important}
+body.theme-light #view-home .v34-home-mini-tf.active {color:#f5f4ef!important;background:#2c3530!important;border-color:#2c3530!important}
+body.theme-light #view-home .v34-home-open-radar {color:#313b34!important}
 body.theme-light .ox-market-nav {border-color:#c8cec8}
 body.theme-light .ox-market-tab.active {color:#19231d;background:#e1e5de}
 body.theme-light .ox-live-strip {background:#f3f3ed!important}
@@ -413,106 +413,106 @@ body.ox-terminal #ox-live-text {font-size:10px!important}
 body.ox-terminal .app-dock {display:none!important}
 body.ox-terminal .ox-news-dock {display:none!important}
 /* Home cover */
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-editorial-home {padding:0 0 32px!important;gap:0!important}
+body.ox-terminal #view-home .ox-editorial-home {padding:0 0 32px!important;gap:0!important}
 body.ox-terminal .ox-page-caption {display:flex;align-items:center;justify-content:space-between;color:var(--muted);font-size:9px;letter-spacing:.04em;padding:25px 0 0}
 body.ox-terminal .ox-page-caption>span:last-child {letter-spacing:0;font-size:10px}
 body.ox-terminal .ox-caption-separator {margin:0 10px;color:var(--line)}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-quote {grid-template-columns:minmax(160px,.75fr) minmax(245px,1.25fr) minmax(370px,1.65fr);gap:30px;padding:26px 0 28px;min-height:0;border-color:var(--line)}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-identity {gap:15px}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-coin {width:48px;height:48px;background:var(--panel-alt);border:1px solid var(--line);color:var(--ink);font-size:29px;border-radius:50%}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-ticker {font:600 30px/1.2 var(--ox-font-display);color:var(--ink)}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-identity small {font-size:10px;color:var(--muted);margin-top:5px}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-price strong {font:450 clamp(32px,3.2vw,42px)/1 var(--ox-font-display);letter-spacing:-.045em;color:var(--ink)}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-price>span {flex-basis:auto;font-size:14px;margin-top:0;margin-left:4px}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-price small {font-size:10px;color:var(--muted)}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-quote-metrics>div {border-color:var(--line);padding-left:25px}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-quote-metrics strong {font:400 21px/1.2 var(--ox-font-display);margin-top:9px;color:var(--ink)}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-quote-metrics small {color:var(--muted);font-size:10px}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-main {grid-template-columns:minmax(0,1.92fr) minmax(300px,.95fr);gap:32px;margin-top:28px}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-chart {padding:23px 25px 15px;min-height:485px;border-radius:var(--ox-radius-xl);background:radial-gradient(ellipse at 0 0,#ffffff0c,transparent 62%),linear-gradient(145deg,#ffffff12,#292e3538 42%,#1c1f2355)!important;border:1px solid #ffffff51!important;box-shadow:inset 0 1px 0 #ffffffab,inset 1px 0 0 #ffffff2b,inset 0 -1px 0 #ffffff52,0 0 8px #ffffff19,0 0 26px #ffffff20,0 16px 40px #0003!important;backdrop-filter:blur(14px) saturate(120%)!important;-webkit-backdrop-filter:blur(14px) saturate(120%)!important}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-chart-heading h1 {font:600 29px/1.2 var(--ox-font-display);letter-spacing:-.015em;color:var(--ink);margin-top:7px}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-chart-heading h1 span {color:var(--muted)}
-body.ox-terminal :is(#view-home,.us2-home-pane) .v34-home-main-toolbar {padding:0!important;gap:0!important}
-body.ox-terminal :is(#view-home,.us2-home-pane) .v34-home-mini-tf {border:0!important;border-bottom:1px solid var(--line)!important;min-width:41px!important;height:30px!important;border-radius:0!important;color:var(--muted)!important;background:transparent!important}
-body.ox-terminal :is(#view-home,.us2-home-pane) .v34-home-mini-tf.active {color:var(--ink)!important;border-bottom:2px solid var(--ink)!important;background:#ffffff08!important}
-body.ox-terminal :is(#view-home,.us2-home-pane) .btc-premium-chart-wrap {margin:20px 0 12px!important;min-height:365px!important;height:365px!important;flex:1!important;border-radius:0!important}
-body.ox-terminal :is(#view-home,.us2-home-pane) #home-btc-mini-chart {min-height:365px!important;height:365px!important;background:transparent!important;box-shadow:none!important;border:0!important;border-radius:0!important}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-chart-foot {color:var(--muted);border-color:var(--line);font-size:10px;padding-top:12px}
-body.ox-terminal :is(#view-home,.us2-home-pane) .v34-home-open-radar {color:var(--ink)!important;font-size:10px!important}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-analysis {padding:0!important;border:0!important;border-radius:0!important;background:none!important;gap:0}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-analysis-heading {display:flex;justify-content:space-between;align-items:center;padding:0 0 6px}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-analysis-heading h2 {font:600 25px/1.4 var(--ox-font-display);color:var(--ink);margin-top:5px}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-analysis-heading .ox-text-button {font-size:20px;padding:0 3px}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-strength-duo {margin:14px 0 0;gap:10px}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-strength-reading {position:relative;text-align:center;padding:34px 0 8px!important;border:0!important;min-height:132px}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-strength-gauge {position:absolute;width:100%;height:116px;top:0;left:0;fill:none;overflow:visible;pointer-events:none}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-strength-gauge path {stroke-width:7;stroke-linecap:round}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-gauge-track {stroke:#2a302f}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-gauge-value {stroke:var(--gold)}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-strength-reading small {font-size:11px;color:var(--ink);position:relative}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-strength-reading>div:nth-of-type(1) {justify-content:center;gap:4px;position:relative;margin-top:4px}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-strength-reading strong {font:450 42px/1.1 var(--ox-font-display);letter-spacing:-.035em;color:var(--ink)}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-strength-reading>span {position:relative;display:block;color:var(--muted);font-size:9px;margin-top:6px}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-strength-reading .ox-meter {display:none}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-strength-context {gap:18px;margin:7px 0 18px;font-size:9px;line-height:1.7;color:var(--muted);min-height:31px}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-score-panel {position:relative;padding:18px 20px;margin-top:auto;min-height:160px;border:1px solid #ffffff61!important;border-radius:var(--ox-radius-xl);background:radial-gradient(ellipse at 100% 100%,#ffffff15,transparent 70%),linear-gradient(135deg,#ffffff19,#d0d3d80d 35%,#25282e4a)!important;box-shadow:inset 0 1px 0 #ffffffb3,inset 0 -1px 0 #ffffff57,0 0 8px #ffffff1f,0 0 25px #ffffff24!important;backdrop-filter:blur(14px) saturate(125%)!important;-webkit-backdrop-filter:blur(14px) saturate(125%)!important}
+body.ox-terminal #view-home .ox-home-quote {grid-template-columns:minmax(160px,.75fr) minmax(245px,1.25fr) minmax(370px,1.65fr);gap:30px;padding:26px 0 28px;min-height:0;border-color:var(--line)}
+body.ox-terminal #view-home .ox-home-identity {gap:15px}
+body.ox-terminal #view-home .ox-home-coin {width:48px;height:48px;background:var(--panel-alt);border:1px solid var(--line);color:var(--ink);font-size:29px;border-radius:50%}
+body.ox-terminal #view-home .ox-home-ticker {font:600 30px/1.2 var(--ox-font-display);color:var(--ink)}
+body.ox-terminal #view-home .ox-home-identity small {font-size:10px;color:var(--muted);margin-top:5px}
+body.ox-terminal #view-home .ox-home-price strong {font:450 clamp(32px,3.2vw,42px)/1 var(--ox-font-display);letter-spacing:-.045em;color:var(--ink)}
+body.ox-terminal #view-home .ox-home-price>span {flex-basis:auto;font-size:14px;margin-top:0;margin-left:4px}
+body.ox-terminal #view-home .ox-home-price small {font-size:10px;color:var(--muted)}
+body.ox-terminal #view-home .ox-home-quote-metrics>div {border-color:var(--line);padding-left:25px}
+body.ox-terminal #view-home .ox-home-quote-metrics strong {font:400 21px/1.2 var(--ox-font-display);margin-top:9px;color:var(--ink)}
+body.ox-terminal #view-home .ox-home-quote-metrics small {color:var(--muted);font-size:10px}
+body.ox-terminal #view-home .ox-home-main {grid-template-columns:minmax(0,1.92fr) minmax(300px,.95fr);gap:32px;margin-top:28px}
+body.ox-terminal #view-home .ox-home-chart {padding:23px 25px 15px;min-height:485px;border-radius:var(--ox-radius-xl);background:radial-gradient(ellipse at 0 0,#ffffff0c,transparent 62%),linear-gradient(145deg,#ffffff12,#292e3538 42%,#1c1f2355)!important;border:1px solid #ffffff51!important;box-shadow:inset 0 1px 0 #ffffffab,inset 1px 0 0 #ffffff2b,inset 0 -1px 0 #ffffff52,0 0 8px #ffffff19,0 0 26px #ffffff20,0 16px 40px #0003!important;backdrop-filter:blur(14px) saturate(120%)!important;-webkit-backdrop-filter:blur(14px) saturate(120%)!important}
+body.ox-terminal #view-home .ox-chart-heading h1 {font:600 29px/1.2 var(--ox-font-display);letter-spacing:-.015em;color:var(--ink);margin-top:7px}
+body.ox-terminal #view-home .ox-chart-heading h1 span {color:var(--muted)}
+body.ox-terminal #view-home .v34-home-main-toolbar {padding:0!important;gap:0!important}
+body.ox-terminal #view-home .v34-home-mini-tf {border:0!important;border-bottom:1px solid var(--line)!important;min-width:41px!important;height:30px!important;border-radius:0!important;color:var(--muted)!important;background:transparent!important}
+body.ox-terminal #view-home .v34-home-mini-tf.active {color:var(--ink)!important;border-bottom:2px solid var(--ink)!important;background:#ffffff08!important}
+body.ox-terminal #view-home .btc-premium-chart-wrap {margin:20px 0 12px!important;min-height:365px!important;height:365px!important;flex:1!important;border-radius:0!important}
+body.ox-terminal #view-home #home-btc-mini-chart {min-height:365px!important;height:365px!important;background:transparent!important;box-shadow:none!important;border:0!important;border-radius:0!important}
+body.ox-terminal #view-home .ox-chart-foot {color:var(--muted);border-color:var(--line);font-size:10px;padding-top:12px}
+body.ox-terminal #view-home .v34-home-open-radar {color:var(--ink)!important;font-size:10px!important}
+body.ox-terminal #view-home .ox-home-analysis {padding:0!important;border:0!important;border-radius:0!important;background:none!important;gap:0}
+body.ox-terminal #view-home .ox-analysis-heading {display:flex;justify-content:space-between;align-items:center;padding:0 0 6px}
+body.ox-terminal #view-home .ox-analysis-heading h2 {font:600 25px/1.4 var(--ox-font-display);color:var(--ink);margin-top:5px}
+body.ox-terminal #view-home .ox-analysis-heading .ox-text-button {font-size:20px;padding:0 3px}
+body.ox-terminal #view-home .ox-strength-duo {margin:14px 0 0;gap:10px}
+body.ox-terminal #view-home .ox-strength-reading {position:relative;text-align:center;padding:34px 0 8px!important;border:0!important;min-height:132px}
+body.ox-terminal #view-home .ox-strength-gauge {position:absolute;width:100%;height:116px;top:0;left:0;fill:none;overflow:visible;pointer-events:none}
+body.ox-terminal #view-home .ox-strength-gauge path {stroke-width:7;stroke-linecap:round}
+body.ox-terminal #view-home .ox-gauge-track {stroke:#2a302f}
+body.ox-terminal #view-home .ox-gauge-value {stroke:var(--gold)}
+body.ox-terminal #view-home .ox-strength-reading small {font-size:11px;color:var(--ink);position:relative}
+body.ox-terminal #view-home .ox-strength-reading>div:nth-of-type(1) {justify-content:center;gap:4px;position:relative;margin-top:4px}
+body.ox-terminal #view-home .ox-strength-reading strong {font:450 42px/1.1 var(--ox-font-display);letter-spacing:-.035em;color:var(--ink)}
+body.ox-terminal #view-home .ox-strength-reading>span {position:relative;display:block;color:var(--muted);font-size:9px;margin-top:6px}
+body.ox-terminal #view-home .ox-strength-reading .ox-meter {display:none}
+body.ox-terminal #view-home .ox-strength-context {gap:18px;margin:7px 0 18px;font-size:9px;line-height:1.7;color:var(--muted);min-height:31px}
+body.ox-terminal #view-home .ox-score-panel {position:relative;padding:18px 20px;margin-top:auto;min-height:160px;border:1px solid #ffffff61!important;border-radius:var(--ox-radius-xl);background:radial-gradient(ellipse at 100% 100%,#ffffff15,transparent 70%),linear-gradient(135deg,#ffffff19,#d0d3d80d 35%,#25282e4a)!important;box-shadow:inset 0 1px 0 #ffffffb3,inset 0 -1px 0 #ffffff57,0 0 8px #ffffff1f,0 0 25px #ffffff24!important;backdrop-filter:blur(14px) saturate(125%)!important;-webkit-backdrop-filter:blur(14px) saturate(125%)!important}
 body.ox-terminal .ox-score-index {float:right;font-size:10px;letter-spacing:0}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-score-reading {float:left;margin:14px 15px 13px 0}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-score-reading strong {font:450 clamp(38px,3.2vw,42px)/1 var(--ox-font-display);letter-spacing:-.06em;color:var(--ink)}
-body.ox-terminal :is(#view-home,.us2-home-pane) #home-market-state {display:block;padding-top:24px;font-size:12px;color:var(--ink)}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-score-panel>.ox-meter {clear:both;height:4px;background:#333b36;border-radius:0;margin-top:15px}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-score-panel>.ox-meter i {background:var(--gold);border-radius:0}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-analysis-benchmark {margin-top:17px;padding-top:13px;border-color:var(--line);font-size:10px;gap:7px 10px}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-analysis-benchmark>span:first-child {font-size:17px;color:var(--ink)}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-analysis-benchmark strong {font-weight:400;color:var(--ink)}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-analysis-eth-note {font-size:9px;color:var(--muted)}
+body.ox-terminal #view-home .ox-score-reading {float:left;margin:14px 15px 13px 0}
+body.ox-terminal #view-home .ox-score-reading strong {font:450 clamp(38px,3.2vw,42px)/1 var(--ox-font-display);letter-spacing:-.06em;color:var(--ink)}
+body.ox-terminal #view-home #home-market-state {display:block;padding-top:24px;font-size:12px;color:var(--ink)}
+body.ox-terminal #view-home .ox-score-panel>.ox-meter {clear:both;height:4px;background:#333b36;border-radius:0;margin-top:15px}
+body.ox-terminal #view-home .ox-score-panel>.ox-meter i {background:var(--gold);border-radius:0}
+body.ox-terminal #view-home .ox-analysis-benchmark {margin-top:17px;padding-top:13px;border-color:var(--line);font-size:10px;gap:7px 10px}
+body.ox-terminal #view-home .ox-analysis-benchmark>span:first-child {font-size:17px;color:var(--ink)}
+body.ox-terminal #view-home .ox-analysis-benchmark strong {font-weight:400;color:var(--ink)}
+body.ox-terminal #view-home .ox-analysis-eth-note {font-size:9px;color:var(--muted)}
 body.ox-terminal .ox-section-heading {display:flex;align-items:flex-end;justify-content:space-between;gap:20px;padding:0 0 15px}
 body.ox-terminal .ox-section-heading h2 {font:600 23px/1.3 var(--ox-font-display);color:var(--ink);margin:5px 0 0}
 body.ox-terminal .ox-section-heading>span {color:var(--muted);font-size:10px}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-section-heading {padding-top:31px}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-tiers {margin:0;border-color:var(--line);gap:0}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-tier-column {padding:17px 24px 6px}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-tier-column:first-child {padding-left:0}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-tier-column:last-child {padding-right:0}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-tier-column+.ox-tier-column {border-color:var(--line)}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-tier-title {gap:10px;margin:0 0 14px}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-tier-title>span {font:600 28px var(--ox-font-display);color:var(--ink)}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-tier-title h2 {font-size:13px;font-weight:500;color:var(--ink);letter-spacing:.04em}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-tier-title small {display:none}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-tier-title button {font-size:10px;color:var(--muted);background:none;border:0}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-tier-row {grid-template-columns:20px minmax(65px,1fr) minmax(50px,.7fr) 53px 65px;column-gap:8px;min-height:61px;padding:8px 0;border-color:var(--line);position:relative}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-tier-row:hover {background:var(--panel-alt)}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-tier-row .ox-tier-rank {font-size:9px;color:#69736d;align-self:start;padding-top:5px}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-tier-identity {display:grid;grid-template-columns:24px minmax(0,1fr);column-gap:7px;row-gap:4px;align-items:center;min-width:0}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-tier-identity strong {font:600 12px -apple-system,BlinkMacSystemFont,sans-serif;color:var(--ink);min-width:0;overflow-wrap:anywhere}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-tier-identity small {grid-column:2;max-width:110px;font-size:9px;color:var(--muted)}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-tier-price {font-size:11px;color:var(--ink);text-align:right;font-variant-numeric:tabular-nums}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-tier-row em {font-size:11px;text-align:right}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-tier-row>span:last-child {display:none}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-tier-spark {width:65px;height:30px;fill:none;stroke:currentColor;stroke-width:1.25;opacity:.9}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-events {grid-template-columns:160px 1fr;gap:30px;padding:24px 0;border-color:var(--line)}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-events h2 {font:600 18px var(--ox-font-display);color:var(--ink);margin-top:5px}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-event-list>.v33-event-row {border-color:var(--line)!important;color:var(--ink);padding:4px 18px!important}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-event-list .v33-row-main b {font-size:12px;line-height:1.8;font-weight:500}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-event-list .v33-row-main small {font-size:10px;color:var(--muted);line-height:1.8}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-more {border-color:var(--line);margin-top:16px}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-more>summary {color:var(--ink);font-size:15px;padding:20px 0}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-more>summary span {font-size:10px;color:var(--muted)}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-more-content {grid-template-columns:1fr 1fr;gap:24px;padding-bottom:24px}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-more-content>section {border-color:var(--line)}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-detail-grid,body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-shortcuts {grid-column:1/-1}
-body.ox-terminal :is(#view-home,.us2-home-pane) :where(.v33-watch-row,.v33-rank-row) {background:none!important;border:0!important;border-bottom:1px solid var(--line)!important;border-radius:0!important;box-shadow:none!important;color:var(--ink)!important;padding:11px 0!important}
-body.ox-terminal :is(#view-home,.us2-home-pane) :where(.v33-watch-row,.v33-rank-row) small {color:var(--muted)!important}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-shortcuts .v33-action {border:0!important;border-right:1px solid var(--line)!important;border-radius:0!important;padding:0 25px 0 0;flex:1;min-width:140px}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-shortcuts .v33-action:last-child {border-right:0!important}
+body.ox-terminal #view-home .ox-section-heading {padding-top:31px}
+body.ox-terminal #view-home .ox-home-tiers {margin:0;border-color:var(--line);gap:0}
+body.ox-terminal #view-home .ox-tier-column {padding:17px 24px 6px}
+body.ox-terminal #view-home .ox-tier-column:first-child {padding-left:0}
+body.ox-terminal #view-home .ox-tier-column:last-child {padding-right:0}
+body.ox-terminal #view-home .ox-tier-column+.ox-tier-column {border-color:var(--line)}
+body.ox-terminal #view-home .ox-tier-title {gap:10px;margin:0 0 14px}
+body.ox-terminal #view-home .ox-tier-title>span {font:600 28px var(--ox-font-display);color:var(--ink)}
+body.ox-terminal #view-home .ox-tier-title h2 {font-size:13px;font-weight:500;color:var(--ink);letter-spacing:.04em}
+body.ox-terminal #view-home .ox-tier-title small {display:none}
+body.ox-terminal #view-home .ox-tier-title button {font-size:10px;color:var(--muted);background:none;border:0}
+body.ox-terminal #view-home .ox-tier-row {grid-template-columns:20px minmax(65px,1fr) minmax(50px,.7fr) 53px 65px;column-gap:8px;min-height:61px;padding:8px 0;border-color:var(--line);position:relative}
+body.ox-terminal #view-home .ox-tier-row:hover {background:var(--panel-alt)}
+body.ox-terminal #view-home .ox-tier-row .ox-tier-rank {font-size:9px;color:#69736d;align-self:start;padding-top:5px}
+body.ox-terminal #view-home .ox-tier-identity {display:grid;grid-template-columns:24px minmax(0,1fr);column-gap:7px;row-gap:4px;align-items:center;min-width:0}
+body.ox-terminal #view-home .ox-tier-identity strong {font:600 12px -apple-system,BlinkMacSystemFont,sans-serif;color:var(--ink);min-width:0;overflow-wrap:anywhere}
+body.ox-terminal #view-home .ox-tier-identity small {grid-column:2;max-width:110px;font-size:9px;color:var(--muted)}
+body.ox-terminal #view-home .ox-tier-price {font-size:11px;color:var(--ink);text-align:right;font-variant-numeric:tabular-nums}
+body.ox-terminal #view-home .ox-tier-row em {font-size:11px;text-align:right}
+body.ox-terminal #view-home .ox-tier-row>span:last-child {display:none}
+body.ox-terminal #view-home .ox-tier-spark {width:65px;height:30px;fill:none;stroke:currentColor;stroke-width:1.25;opacity:.9}
+body.ox-terminal #view-home .ox-home-events {grid-template-columns:160px 1fr;gap:30px;padding:24px 0;border-color:var(--line)}
+body.ox-terminal #view-home .ox-home-events h2 {font:600 18px var(--ox-font-display);color:var(--ink);margin-top:5px}
+body.ox-terminal #view-home .ox-event-list>.v33-event-row {border-color:var(--line)!important;color:var(--ink);padding:4px 18px!important}
+body.ox-terminal #view-home .ox-event-list .v33-row-main b {font-size:12px;line-height:1.8;font-weight:500}
+body.ox-terminal #view-home .ox-event-list .v33-row-main small {font-size:10px;color:var(--muted);line-height:1.8}
+body.ox-terminal #view-home .ox-home-more {border-color:var(--line);margin-top:16px}
+body.ox-terminal #view-home .ox-home-more>summary {color:var(--ink);font-size:15px;padding:20px 0}
+body.ox-terminal #view-home .ox-home-more>summary span {font-size:10px;color:var(--muted)}
+body.ox-terminal #view-home .ox-home-more-content {grid-template-columns:1fr 1fr;gap:24px;padding-bottom:24px}
+body.ox-terminal #view-home .ox-home-more-content>section {border-color:var(--line)}
+body.ox-terminal #view-home .ox-home-detail-grid,body.ox-terminal #view-home .ox-home-shortcuts {grid-column:1/-1}
+body.ox-terminal #view-home :where(.v33-watch-row,.v33-rank-row) {background:none!important;border:0!important;border-bottom:1px solid var(--line)!important;border-radius:0!important;box-shadow:none!important;color:var(--ink)!important;padding:11px 0!important}
+body.ox-terminal #view-home :where(.v33-watch-row,.v33-rank-row) small {color:var(--muted)!important}
+body.ox-terminal #view-home .ox-home-shortcuts .v33-action {border:0!important;border-right:1px solid var(--line)!important;border-radius:0!important;padding:0 25px 0 0;flex:1;min-width:140px}
+body.ox-terminal #view-home .ox-home-shortcuts .v33-action:last-child {border-right:0!important}
 /* Radar: presentation only. Never reorder the chart, controls, tiers or symbols. */
-body.ox-terminal :is(#view-radar,.us2-radar-pane) .panel {border-radius:var(--ox-radius-xs)!important;background:var(--panel)!important}
-body.ox-terminal :is(#view-radar,.us2-radar-pane) :where(.panel-head,.chart-controls,.scanner-tabs,.chart-quickbar,.benchmark-bar) {background:transparent!important;border-color:var(--line)!important;box-shadow:none!important}
-body.ox-terminal :is(#view-radar,.us2-radar-pane) .coin-card {border:0!important;border-bottom:1px solid var(--line)!important;border-left:2px solid transparent!important;border-radius:0!important;margin:0!important;background:transparent!important;box-shadow:none!important}
-body.ox-terminal :is(#view-radar,.us2-radar-pane) .coin-card.selected {border-left-color:var(--ink)!important;background:var(--panel-alt)!important}
-body.ox-terminal :is(#view-radar,.us2-radar-pane) :where(.coin-name,.coin-sym,.panel-title) {color:var(--ink)!important}
-body.ox-terminal :is(#view-radar,.us2-radar-pane) .detail-cell {border:0!important;border-left:1px solid var(--line)!important;border-radius:0!important}
-body.ox-terminal :is(#view-radar,.us2-radar-pane) .market-line-card {border-color:var(--line)!important;box-shadow:none!important}
+body.ox-terminal #view-radar .panel {border-radius:var(--ox-radius-xs)!important;background:var(--panel)!important}
+body.ox-terminal #view-radar :where(.panel-head,.chart-controls,.scanner-tabs,.chart-quickbar,.benchmark-bar) {background:transparent!important;border-color:var(--line)!important;box-shadow:none!important}
+body.ox-terminal #view-radar .coin-card {border:0!important;border-bottom:1px solid var(--line)!important;border-left:2px solid transparent!important;border-radius:0!important;margin:0!important;background:transparent!important;box-shadow:none!important}
+body.ox-terminal #view-radar .coin-card.selected {border-left-color:var(--ink)!important;background:var(--panel-alt)!important}
+body.ox-terminal #view-radar :where(.coin-name,.coin-sym,.panel-title) {color:var(--ink)!important}
+body.ox-terminal #view-radar .detail-cell {border:0!important;border-left:1px solid var(--line)!important;border-radius:0!important}
+body.ox-terminal #view-radar .market-line-card {border-color:var(--line)!important;box-shadow:none!important}
 /* Indicator workspace, large comparative reading with a quiet data ledger. */
 body.ox-terminal .strength-page {display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:28px!important;padding-top:28px!important}
 body.ox-terminal .strength-page>.page-hero {grid-column:1/-1;padding:0 0 23px!important;border:0!important;border-bottom:1px solid var(--line)!important;background:none!important}
@@ -572,30 +572,30 @@ body.ox-terminal .ox-news-list.is-featured>.ox-news-card:first-child .ox-news-de
 body.ox-terminal .ox-news-status {font-size:10px!important;color:var(--muted)!important;line-height:1.7}
 body.ox-terminal .ox-news-empty {border:0!important;border-top:1px solid var(--line)!important;border-bottom:1px solid var(--line)!important;border-radius:0!important;background:none!important;padding:45px 0!important;text-align:left!important;color:var(--muted)!important}
 body.ox-terminal .ox-mini-calendar {max-width:620px!important;border:1px solid var(--line)!important;border-radius:0!important;box-shadow:none!important;background:var(--panel)!important}
-body.ox-terminal :is(#view-data,.us2-data-pane) .media-page {max-width:none!important;padding-top:30px!important}
-body.ox-terminal :is(#view-data,.us2-data-pane) .media-card {background:none!important;border:0!important;padding:0!important}
+body.ox-terminal :is(#view-data) .media-page {max-width:none!important;padding-top:30px!important}
+body.ox-terminal :is(#view-data) .media-card {background:none!important;border:0!important;padding:0!important}
 body.ox-terminal .ox-data-masthead {border-bottom:1px solid var(--line);padding-bottom:24px;margin-bottom:17px}
 body.ox-terminal .ox-data-masthead h1 {font:600 40px/1.2 var(--ox-font-display);margin:8px 0 0;color:var(--ink)}
-body.ox-terminal :is(#view-data,.us2-data-pane) .ox-data-caption {color:var(--muted)!important;font-size:11px!important;margin:6px 0!important}
+body.ox-terminal :is(#view-data) .ox-data-caption {color:var(--muted)!important;font-size:11px!important;margin:6px 0!important}
 body.ox-terminal #ox-data-heading {color:var(--ink)!important;font-size:15px!important}
-body.ox-terminal :is(#view-data,.us2-data-pane) [data-news-surface] {margin-top:25px}
+body.ox-terminal :is(#view-data) [data-news-surface] {margin-top:25px}
 /* Journal and settings use an editorial column system, not cards. */
-body.ox-terminal :is(#view-media,.us2-media-pane) .media-page {max-width:none!important;padding-top:35px!important}
-body.ox-terminal :is(#view-media,.us2-media-pane) .media-card {padding:0!important;background:none!important;border:0!important}
-body.ox-terminal :is(#view-media,.us2-media-pane) .media-intro {display:grid!important;grid-template-columns:180px minmax(0,1fr)!important;gap:55px!important;padding:24px 0 45px!important;border-bottom:1px solid var(--line)!important}
-body.ox-terminal :is(#view-media,.us2-media-pane) .media-logo {width:150px!important;height:150px!important;background:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;opacity:.8}
-body.ox-terminal :is(#view-media,.us2-media-pane) .media-intro h1 {font:600 clamp(36px,4.2vw,65px)/1.4 var(--ox-font-display)!important;letter-spacing:-.035em!important;color:var(--ink)!important;margin:17px 0!important}
-body.ox-terminal :is(#view-media,.us2-media-pane) .media-intro p {max-width:650px;font-size:13px!important;line-height:1.9!important;color:var(--muted)!important}
-body.ox-terminal :is(#view-media,.us2-media-pane) .media-intro :is(.page-kicker,h1,p) {display:block!important}
-body.ox-terminal :is(#view-media,.us2-media-pane) .ox-news-open {padding:10px 0!important;margin-top:16px;background:none!important;border:0!important;border-bottom:1px solid var(--ink)!important;border-radius:0!important;box-shadow:none!important;color:var(--ink)!important;font-size:12px!important}
-body.ox-terminal :is(#view-media,.us2-media-pane) .media-sections {display:grid!important;grid-template-columns:1fr 1fr!important;gap:0!important}
-body.ox-terminal :is(#view-media,.us2-media-pane) .media-section {padding:34px 0!important;border:0!important;border-bottom:1px solid var(--line)!important;border-radius:0!important;background:none!important}
-body.ox-terminal :is(#view-media,.us2-media-pane) .media-section:nth-child(2) {padding-left:45px!important}
-body.ox-terminal :is(#view-media,.us2-media-pane) .media-section h2 {font:600 24px var(--ox-font-display)!important;color:var(--ink)!important;margin-bottom:20px!important}
-body.ox-terminal :is(#view-media,.us2-media-pane) .media-section p {font-size:13px!important;line-height:2!important;color:var(--muted)!important;max-width:860px}
-body.ox-terminal :is(#view-media,.us2-media-pane) .media-section.full {grid-column:1/-1;display:grid;grid-template-columns:190px 1fr;gap:0 45px}
-body.ox-terminal :is(#view-media,.us2-media-pane) .media-section.full>p,body.ox-terminal :is(#view-media,.us2-media-pane) .media-social-links {grid-column:2}
-body.ox-terminal :is(#view-media,.us2-media-pane) .media-section .story-quote {font:400 24px/1.7 var(--ox-font-display)!important;color:var(--ink)!important;padding:0!important;border:0!important}
+body.ox-terminal #view-media .media-page {max-width:none!important;padding-top:35px!important}
+body.ox-terminal #view-media .media-card {padding:0!important;background:none!important;border:0!important}
+body.ox-terminal #view-media .media-intro {display:grid!important;grid-template-columns:180px minmax(0,1fr)!important;gap:55px!important;padding:24px 0 45px!important;border-bottom:1px solid var(--line)!important}
+body.ox-terminal #view-media .media-logo {width:150px!important;height:150px!important;background:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;opacity:.8}
+body.ox-terminal #view-media .media-intro h1 {font:600 clamp(36px,4.2vw,65px)/1.4 var(--ox-font-display)!important;letter-spacing:-.035em!important;color:var(--ink)!important;margin:17px 0!important}
+body.ox-terminal #view-media .media-intro p {max-width:650px;font-size:13px!important;line-height:1.9!important;color:var(--muted)!important}
+body.ox-terminal #view-media .media-intro :is(.page-kicker,h1,p) {display:block!important}
+body.ox-terminal #view-media .ox-news-open {padding:10px 0!important;margin-top:16px;background:none!important;border:0!important;border-bottom:1px solid var(--ink)!important;border-radius:0!important;box-shadow:none!important;color:var(--ink)!important;font-size:12px!important}
+body.ox-terminal #view-media .media-sections {display:grid!important;grid-template-columns:1fr 1fr!important;gap:0!important}
+body.ox-terminal #view-media .media-section {padding:34px 0!important;border:0!important;border-bottom:1px solid var(--line)!important;border-radius:0!important;background:none!important}
+body.ox-terminal #view-media .media-section:nth-child(2) {padding-left:45px!important}
+body.ox-terminal #view-media .media-section h2 {font:600 24px var(--ox-font-display)!important;color:var(--ink)!important;margin-bottom:20px!important}
+body.ox-terminal #view-media .media-section p {font-size:13px!important;line-height:2!important;color:var(--muted)!important;max-width:860px}
+body.ox-terminal #view-media .media-section.full {grid-column:1/-1;display:grid;grid-template-columns:190px 1fr;gap:0 45px}
+body.ox-terminal #view-media .media-section.full>p,body.ox-terminal #view-media .media-social-links {grid-column:2}
+body.ox-terminal #view-media .media-section .story-quote {font:400 24px/1.7 var(--ox-font-display)!important;color:var(--ink)!important;padding:0!important;border:0!important}
 body.ox-terminal .media-function-list {display:grid!important;grid-template-columns:1fr 1fr!important;gap:22px!important}
 body.ox-terminal .media-function-item {padding:0 0 18px!important;border:0!important;border-bottom:1px solid var(--line)!important;border-radius:0!important;background:none!important;box-shadow:none!important}
 body.ox-terminal .media-function-item b {font-size:14px!important;color:var(--ink)!important}
@@ -694,39 +694,39 @@ body.ox-terminal #ox-market-quick-switch .ox-mqs-item.is-selected {background:va
 body.ox-terminal #ox-market-quick-switch .ox-mqs-dot {background:var(--muted)!important;box-shadow:none!important}
 body.ox-terminal #ox-market-quick-switch .ox-mqs-item.is-current .ox-mqs-dot {background:var(--ink)!important}
 /* Responsive composition: mobile uses the same hierarchy, with the central Radar intact. */
-@media(min-width:1600px){body.ox-terminal :is(#view-home,.us2-home-pane) .btc-premium-chart-wrap,body.ox-terminal :is(#view-home,.us2-home-pane) #home-btc-mini-chart {height:410px!important;min-height:410px!important}}
+@media(min-width:1600px){body.ox-terminal #view-home .btc-premium-chart-wrap,body.ox-terminal #view-home #home-btc-mini-chart {height:410px!important;min-height:410px!important}}
 @media(max-width:1250px){
   body.ox-terminal .wrap {padding-left:26px!important;padding-right:26px!important}
-  body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-quote {grid-template-columns:.8fr 1.1fr 1.7fr;gap:17px}
-  body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-price strong {font-size:43px}
-  body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-quote-metrics>div {padding-left:17px}
-  body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-quote-metrics strong {font-size:18px}
-  body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-main {gap:24px;grid-template-columns:minmax(0,1.75fr) minmax(270px,1fr)}
-  body.ox-terminal :is(#view-home,.us2-home-pane) .ox-tier-column {padding-left:16px;padding-right:16px}
-  body.ox-terminal :is(#view-home,.us2-home-pane) .ox-tier-row {grid-template-columns:17px minmax(55px,1fr) minmax(40px,.7fr) 48px;gap:6px}
-  body.ox-terminal :is(#view-home,.us2-home-pane) .ox-tier-spark {display:none}
+  body.ox-terminal #view-home .ox-home-quote {grid-template-columns:.8fr 1.1fr 1.7fr;gap:17px}
+  body.ox-terminal #view-home .ox-home-price strong {font-size:43px}
+  body.ox-terminal #view-home .ox-home-quote-metrics>div {padding-left:17px}
+  body.ox-terminal #view-home .ox-home-quote-metrics strong {font-size:18px}
+  body.ox-terminal #view-home .ox-home-main {gap:24px;grid-template-columns:minmax(0,1.75fr) minmax(270px,1fr)}
+  body.ox-terminal #view-home .ox-tier-column {padding-left:16px;padding-right:16px}
+  body.ox-terminal #view-home .ox-tier-row {grid-template-columns:17px minmax(55px,1fr) minmax(40px,.7fr) 48px;gap:6px}
+  body.ox-terminal #view-home .ox-tier-spark {display:none}
   body.ox-terminal .ox-desktop-nav {gap:25px}
 }
 @media(max-width:900px){
   body.ox-terminal .wrap {padding-left:20px!important;padding-right:20px!important}
   body.ox-terminal .nav-stats .live,body.ox-terminal #btn-force-rescan {display:none!important}
-  body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-quote {grid-template-columns:1fr 1.5fr;gap:15px}
-  body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-quote-metrics {grid-column:1/-1;padding-top:7px}
-  body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-quote-metrics>div:first-child {border-left:0;padding-left:0}
-  body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-main {grid-template-columns:1fr;gap:28px}
-  body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-analysis {display:grid;grid-template-columns:1fr 1fr;gap:0 25px}
-  body.ox-terminal :is(#view-home,.us2-home-pane) .ox-analysis-heading {grid-column:1}
-  body.ox-terminal :is(#view-home,.us2-home-pane) .ox-strength-duo {grid-column:1;grid-row:2}
-  body.ox-terminal :is(#view-home,.us2-home-pane) .ox-strength-context {grid-column:1;grid-row:3}
-  body.ox-terminal :is(#view-home,.us2-home-pane) .ox-score-panel {grid-column:2;grid-row:1/4;margin:0;align-self:center;width:100%}
-  body.ox-terminal :is(#view-home,.us2-home-pane) .ox-analysis-benchmark {grid-column:1/-1}
-  body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-tiers {grid-template-columns:1fr 1fr 1fr}
-  body.ox-terminal :is(#view-home,.us2-home-pane) .ox-tier-row {grid-template-columns:15px 1fr 52px;gap:5px}
-  body.ox-terminal :is(#view-home,.us2-home-pane) .ox-tier-price {display:none}
-  body.ox-terminal :is(#view-home,.us2-home-pane) .ox-tier-title {gap:6px;flex-wrap:wrap}
-  body.ox-terminal :is(#view-home,.us2-home-pane) .ox-tier-title>span {font-size:24px}
-  body.ox-terminal :is(#view-home,.us2-home-pane) .ox-tier-title h2 {font-size:12px}
-  body.ox-terminal :is(#view-home,.us2-home-pane) .ox-tier-title button {display:none}
+  body.ox-terminal #view-home .ox-home-quote {grid-template-columns:1fr 1.5fr;gap:15px}
+  body.ox-terminal #view-home .ox-home-quote-metrics {grid-column:1/-1;padding-top:7px}
+  body.ox-terminal #view-home .ox-home-quote-metrics>div:first-child {border-left:0;padding-left:0}
+  body.ox-terminal #view-home .ox-home-main {grid-template-columns:1fr;gap:28px}
+  body.ox-terminal #view-home .ox-home-analysis {display:grid;grid-template-columns:1fr 1fr;gap:0 25px}
+  body.ox-terminal #view-home .ox-analysis-heading {grid-column:1}
+  body.ox-terminal #view-home .ox-strength-duo {grid-column:1;grid-row:2}
+  body.ox-terminal #view-home .ox-strength-context {grid-column:1;grid-row:3}
+  body.ox-terminal #view-home .ox-score-panel {grid-column:2;grid-row:1/4;margin:0;align-self:center;width:100%}
+  body.ox-terminal #view-home .ox-analysis-benchmark {grid-column:1/-1}
+  body.ox-terminal #view-home .ox-home-tiers {grid-template-columns:1fr 1fr 1fr}
+  body.ox-terminal #view-home .ox-tier-row {grid-template-columns:15px 1fr 52px;gap:5px}
+  body.ox-terminal #view-home .ox-tier-price {display:none}
+  body.ox-terminal #view-home .ox-tier-title {gap:6px;flex-wrap:wrap}
+  body.ox-terminal #view-home .ox-tier-title>span {font-size:24px}
+  body.ox-terminal #view-home .ox-tier-title h2 {font-size:12px}
+  body.ox-terminal #view-home .ox-tier-title button {display:none}
   body.ox-terminal .ox-us-workspace {gap:25px;grid-template-columns:1.6fr 1fr}
   body.ox-terminal .ox-us-context {padding-left:22px}
   body.ox-terminal .ox-us-secondary {gap:20px}
@@ -752,58 +752,58 @@ body.ox-terminal #ox-market-quick-switch .ox-mqs-item.is-current .ox-mqs-dot {ba
   body.ox-terminal .ox-live-badge {min-width:69px;padding:0 10px!important;font-size:8px!important}
   body.ox-terminal .ox-page-caption {padding-top:21px;font-size:8px;letter-spacing:.04em}
   body.ox-terminal .ox-page-caption>span:last-child {font-size:8px}
-  body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-quote {grid-template-columns:1fr;gap:12px;padding:20px 0;min-height:0}
-  body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-identity {gap:10px}
-  body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-coin {width:31px;height:31px;font-size:19px}
-  body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-ticker {font-size:23px}
-  body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-identity>div {display:flex;align-items:center;gap:10px}
-  body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-identity small {font-size:9px;margin:0}
-  body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-price {gap:8px}
-  body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-price strong {font-size:48px;letter-spacing:-.045em}
-  body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-price>span {font-size:13px;margin-left:auto}
-  body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-quote-metrics {grid-column:auto;padding-top:8px;margin:0}
-  body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-quote-metrics>div {padding-left:14px}
-  body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-quote-metrics strong {font-size:17px;margin-top:7px}
-  body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-quote-metrics small {font-size:9px}
-  body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-main {margin-top:20px;gap:28px}
-  body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-chart {padding:16px 11px 12px!important;min-height:360px!important}
-  body.ox-terminal :is(#view-home,.us2-home-pane) .ox-chart-heading {align-items:center}
-  body.ox-terminal :is(#view-home,.us2-home-pane) .ox-chart-heading h1 {font-size:22px;margin-top:5px}
-  body.ox-terminal :is(#view-home,.us2-home-pane) .ox-chart-heading .ox-eyebrow {font-size:8px!important}
-  body.ox-terminal :is(#view-home,.us2-home-pane) .v34-home-mini-tf {min-width:31px!important;font-size:10px!important}
-  body.ox-terminal :is(#view-home,.us2-home-pane) .btc-premium-chart-wrap,body.ox-terminal :is(#view-home,.us2-home-pane) #home-btc-mini-chart {height:290px!important;min-height:290px!important}
-  body.ox-terminal :is(#view-home,.us2-home-pane) .ox-chart-foot {font-size:9px;gap:7px}
-  body.ox-terminal :is(#view-home,.us2-home-pane) .v34-home-open-radar {font-size:9px!important}
-  body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-analysis {grid-template-columns:1fr;gap:0}
-  body.ox-terminal :is(#view-home,.us2-home-pane) .ox-analysis-heading {grid-column:auto}
-  body.ox-terminal :is(#view-home,.us2-home-pane) .ox-analysis-heading h2 {font-size:24px}
-  body.ox-terminal :is(#view-home,.us2-home-pane) .ox-strength-duo {grid-column:auto;grid-row:auto;gap:30px;margin:18px 0 2px}
-  body.ox-terminal :is(#view-home,.us2-home-pane) .ox-strength-gauge {height:124px}
-  body.ox-terminal :is(#view-home,.us2-home-pane) .ox-strength-reading {min-height:143px;padding-top:40px!important}
-  body.ox-terminal :is(#view-home,.us2-home-pane) .ox-strength-reading strong {font-size:44px}
-  body.ox-terminal :is(#view-home,.us2-home-pane) .ox-strength-context {grid-column:auto;grid-row:auto;font-size:9px;gap:30px;margin-bottom:20px}
-  body.ox-terminal :is(#view-home,.us2-home-pane) .ox-score-panel {grid-column:auto;grid-row:auto;min-height:158px;padding:20px!important}
-  body.ox-terminal :is(#view-home,.us2-home-pane) .ox-analysis-benchmark {grid-column:auto;margin-top:18px}
-  body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-tiers {display:block;margin:0}
-  body.ox-terminal :is(#view-home,.us2-home-pane) .ox-tier-column,body.ox-terminal :is(#view-home,.us2-home-pane) .ox-tier-column:first-child,body.ox-terminal :is(#view-home,.us2-home-pane) .ox-tier-column:last-child {padding:19px 0 12px;border:0;border-bottom:1px solid var(--line)}
-  body.ox-terminal :is(#view-home,.us2-home-pane) .ox-tier-title {margin-bottom:11px;gap:10px}
-  body.ox-terminal :is(#view-home,.us2-home-pane) .ox-tier-title>span {font-size:29px}
-  body.ox-terminal :is(#view-home,.us2-home-pane) .ox-tier-title h2 {font-size:14px}
-  body.ox-terminal :is(#view-home,.us2-home-pane) .ox-tier-title small {display:inline;font-size:9px}
-  body.ox-terminal :is(#view-home,.us2-home-pane) .ox-tier-title button {display:block;font-size:10px}
-  body.ox-terminal :is(#view-home,.us2-home-pane) .ox-tier-row {grid-template-columns:18px minmax(65px,1fr) 58px 55px 57px;gap:6px;min-height:59px}
-  body.ox-terminal :is(#view-home,.us2-home-pane) .ox-tier-price {display:block;font-size:11px}
-  body.ox-terminal :is(#view-home,.us2-home-pane) .ox-tier-spark {display:block;width:57px}
-  body.ox-terminal :is(#view-home,.us2-home-pane) .ox-tier-identity small {font-size:9px}
-  body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-events {display:block;padding:24px 0}
-  body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-events-head {margin-bottom:14px}
-  body.ox-terminal :is(#view-home,.us2-home-pane) .ox-event-list {grid-template-columns:1fr}
-  body.ox-terminal :is(#view-home,.us2-home-pane) .ox-event-list>.v33-event-row {border-left:0!important;border-top:1px solid var(--line)!important;padding:12px 0!important}
-  body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-more-content {grid-template-columns:1fr;gap:23px}
-  body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-detail-grid {grid-template-columns:1fr}
-  body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-more-content>section,body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-detail-grid>div {grid-column:auto}
-  body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-detail-grid>div+div {border:0;border-top:1px solid var(--line);padding:18px 0 0}
-  body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-shortcuts .v33-action {min-width:125px;padding:7px 15px 7px 0}
+  body.ox-terminal #view-home .ox-home-quote {grid-template-columns:1fr;gap:12px;padding:20px 0;min-height:0}
+  body.ox-terminal #view-home .ox-home-identity {gap:10px}
+  body.ox-terminal #view-home .ox-home-coin {width:31px;height:31px;font-size:19px}
+  body.ox-terminal #view-home .ox-home-ticker {font-size:23px}
+  body.ox-terminal #view-home .ox-home-identity>div {display:flex;align-items:center;gap:10px}
+  body.ox-terminal #view-home .ox-home-identity small {font-size:9px;margin:0}
+  body.ox-terminal #view-home .ox-home-price {gap:8px}
+  body.ox-terminal #view-home .ox-home-price strong {font-size:48px;letter-spacing:-.045em}
+  body.ox-terminal #view-home .ox-home-price>span {font-size:13px;margin-left:auto}
+  body.ox-terminal #view-home .ox-home-quote-metrics {grid-column:auto;padding-top:8px;margin:0}
+  body.ox-terminal #view-home .ox-home-quote-metrics>div {padding-left:14px}
+  body.ox-terminal #view-home .ox-home-quote-metrics strong {font-size:17px;margin-top:7px}
+  body.ox-terminal #view-home .ox-home-quote-metrics small {font-size:9px}
+  body.ox-terminal #view-home .ox-home-main {margin-top:20px;gap:28px}
+  body.ox-terminal #view-home .ox-home-chart {padding:16px 11px 12px!important;min-height:360px!important}
+  body.ox-terminal #view-home .ox-chart-heading {align-items:center}
+  body.ox-terminal #view-home .ox-chart-heading h1 {font-size:22px;margin-top:5px}
+  body.ox-terminal #view-home .ox-chart-heading .ox-eyebrow {font-size:8px!important}
+  body.ox-terminal #view-home .v34-home-mini-tf {min-width:31px!important;font-size:10px!important}
+  body.ox-terminal #view-home .btc-premium-chart-wrap,body.ox-terminal #view-home #home-btc-mini-chart {height:290px!important;min-height:290px!important}
+  body.ox-terminal #view-home .ox-chart-foot {font-size:9px;gap:7px}
+  body.ox-terminal #view-home .v34-home-open-radar {font-size:9px!important}
+  body.ox-terminal #view-home .ox-home-analysis {grid-template-columns:1fr;gap:0}
+  body.ox-terminal #view-home .ox-analysis-heading {grid-column:auto}
+  body.ox-terminal #view-home .ox-analysis-heading h2 {font-size:24px}
+  body.ox-terminal #view-home .ox-strength-duo {grid-column:auto;grid-row:auto;gap:30px;margin:18px 0 2px}
+  body.ox-terminal #view-home .ox-strength-gauge {height:124px}
+  body.ox-terminal #view-home .ox-strength-reading {min-height:143px;padding-top:40px!important}
+  body.ox-terminal #view-home .ox-strength-reading strong {font-size:44px}
+  body.ox-terminal #view-home .ox-strength-context {grid-column:auto;grid-row:auto;font-size:9px;gap:30px;margin-bottom:20px}
+  body.ox-terminal #view-home .ox-score-panel {grid-column:auto;grid-row:auto;min-height:158px;padding:20px!important}
+  body.ox-terminal #view-home .ox-analysis-benchmark {grid-column:auto;margin-top:18px}
+  body.ox-terminal #view-home .ox-home-tiers {display:block;margin:0}
+  body.ox-terminal #view-home .ox-tier-column,body.ox-terminal #view-home .ox-tier-column:first-child,body.ox-terminal #view-home .ox-tier-column:last-child {padding:19px 0 12px;border:0;border-bottom:1px solid var(--line)}
+  body.ox-terminal #view-home .ox-tier-title {margin-bottom:11px;gap:10px}
+  body.ox-terminal #view-home .ox-tier-title>span {font-size:29px}
+  body.ox-terminal #view-home .ox-tier-title h2 {font-size:14px}
+  body.ox-terminal #view-home .ox-tier-title small {display:inline;font-size:9px}
+  body.ox-terminal #view-home .ox-tier-title button {display:block;font-size:10px}
+  body.ox-terminal #view-home .ox-tier-row {grid-template-columns:18px minmax(65px,1fr) 58px 55px 57px;gap:6px;min-height:59px}
+  body.ox-terminal #view-home .ox-tier-price {display:block;font-size:11px}
+  body.ox-terminal #view-home .ox-tier-spark {display:block;width:57px}
+  body.ox-terminal #view-home .ox-tier-identity small {font-size:9px}
+  body.ox-terminal #view-home .ox-home-events {display:block;padding:24px 0}
+  body.ox-terminal #view-home .ox-home-events-head {margin-bottom:14px}
+  body.ox-terminal #view-home .ox-event-list {grid-template-columns:1fr}
+  body.ox-terminal #view-home .ox-event-list>.v33-event-row {border-left:0!important;border-top:1px solid var(--line)!important;padding:12px 0!important}
+  body.ox-terminal #view-home .ox-home-more-content {grid-template-columns:1fr;gap:23px}
+  body.ox-terminal #view-home .ox-home-detail-grid {grid-template-columns:1fr}
+  body.ox-terminal #view-home .ox-home-more-content>section,body.ox-terminal #view-home .ox-home-detail-grid>div {grid-column:auto}
+  body.ox-terminal #view-home .ox-home-detail-grid>div+div {border:0;border-top:1px solid var(--line);padding:18px 0 0}
+  body.ox-terminal #view-home .ox-home-shortcuts .v33-action {min-width:125px;padding:7px 15px 7px 0}
   body.ox-terminal .app-dock.glass-nav {display:grid!important;position:fixed!important;left:0!important;right:0!important;bottom:0!important;top:auto!important;transform:none!important;width:100%!important;max-width:none!important;min-height:66px!important;height:calc(66px + env(safe-area-inset-bottom))!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:0!important;border:0!important;border-top:1px solid var(--line)!important;border-radius:0!important;background:#121618f7!important;padding:5px 8px calc(5px + env(safe-area-inset-bottom))!important;box-shadow:none!important;backdrop-filter:blur(12px)!important}
   body.ox-terminal .app-dock.glass-nav>.dock-btn {position:relative!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;height:55px!important;min-height:55px!important;gap:5px!important;border:0!important;border-radius:0!important;background:none!important;color:#7f8983!important;padding:4px!important;font-size:9px!important;box-shadow:none!important}
   body.ox-terminal .app-dock.glass-nav>.dock-btn.active {color:var(--ink)!important;background:none!important}
@@ -833,12 +833,12 @@ body.ox-terminal #ox-market-quick-switch .ox-mqs-item.is-current .ox-mqs-dot {ba
   body.ox-terminal .ox-news-list.is-featured>.ox-news-card:first-child h3 {font-size:27px!important}
   body.ox-terminal .ox-news-card h3 {font-size:20px!important}
   body.ox-terminal .ox-data-masthead h1 {font-size:24px}
-  body.ox-terminal :is(#view-media,.us2-media-pane) .media-intro {grid-template-columns:1fr!important;gap:20px!important;padding:0 0 30px!important}
-  body.ox-terminal :is(#view-media,.us2-media-pane) .media-logo {width:54px!important;height:54px!important}
-  body.ox-terminal :is(#view-media,.us2-media-pane) .media-intro h1 {font-size:26px!important}
-  body.ox-terminal :is(#view-media,.us2-media-pane) .media-sections {display:block!important}
-  body.ox-terminal :is(#view-media,.us2-media-pane) .media-section,body.ox-terminal :is(#view-media,.us2-media-pane) .media-section:nth-child(2) {padding:26px 0!important}
-  body.ox-terminal :is(#view-media,.us2-media-pane) .media-section.full {display:block}
+  body.ox-terminal #view-media .media-intro {grid-template-columns:1fr!important;gap:20px!important;padding:0 0 30px!important}
+  body.ox-terminal #view-media .media-logo {width:54px!important;height:54px!important}
+  body.ox-terminal #view-media .media-intro h1 {font-size:26px!important}
+  body.ox-terminal #view-media .media-sections {display:block!important}
+  body.ox-terminal #view-media .media-section,body.ox-terminal #view-media .media-section:nth-child(2) {padding:26px 0!important}
+  body.ox-terminal #view-media .media-section.full {display:block}
   body.ox-terminal .media-function-list {grid-template-columns:1fr!important}
   body.ox-terminal .settings-grid {display:block!important}
   body.ox-terminal :where(.us-market-home-header,.tw-home-topbar) {padding:25px 0 21px!important;align-items:flex-start!important;gap:15px!important;flex-wrap:wrap}
@@ -865,7 +865,7 @@ body.ox-terminal #ox-market-quick-switch .ox-mqs-item.is-current .ox-mqs-dot {ba
   body.ox-terminal .tw-home-root .tw-theme-list {grid-template-columns:1fr!important}
 }
 @media(prefers-reduced-motion:reduce){body.ox-terminal * {scroll-behavior:auto!important;transition:none!important}}
-body.ox-terminal.theme-light :is(#view-home,.us2-home-pane) .ox-home-chart,body.ox-terminal.theme-light :is(#view-home,.us2-home-pane) .ox-score-panel {background:var(--panel)!important;border-color:var(--line)!important}
+body.ox-terminal.theme-light #view-home .ox-home-chart,body.ox-terminal.theme-light #view-home .ox-score-panel {background:var(--panel)!important;border-color:var(--line)!important}
 body.ox-terminal.theme-light .ox-strength-gauge .ox-gauge-track {stroke:var(--line)}
 
 /* Final control surfaces, shared with the compact mobile menu. */
@@ -878,14 +878,14 @@ body.ox-terminal .ox-news-control-row {display:flex!important;justify-content:fl
 body.ox-terminal .ox-news-control-row>button {flex:0 0 auto!important;width:auto!important;min-width:100px!important;padding:0 18px!important}
 body.ox-terminal .market-unavailable-icon {background:none!important;color:var(--muted)!important;border:0!important;border-radius:0!important;box-shadow:none!important}
 
-body.ox-terminal :is(#view-radar,.us2-radar-pane) :is(.tf-group,.toggle-lbl,.direction-toggle-btn,.watch-star) {background:transparent!important;border-radius:var(--ox-radius-xs)!important;box-shadow:none!important;border-color:var(--line)!important}
-body.ox-terminal :is(#view-radar,.us2-radar-pane) .chart-controls .toggle-lbl:has(input:checked) {background:var(--panel-alt)!important;border-color:var(--muted)!important;color:var(--ink)!important}
-body.ox-terminal :is(#view-radar,.us2-radar-pane) .chart-controls .toggle-lbl input:checked {background:var(--muted)!important;border-color:var(--ink)!important}
-body.ox-terminal :is(#view-radar,.us2-radar-pane) .chart-controls .toggle-lbl input:checked::after {background:var(--ink)!important;box-shadow:none!important}
+body.ox-terminal #view-radar :is(.tf-group,.toggle-lbl,.direction-toggle-btn,.watch-star) {background:transparent!important;border-radius:var(--ox-radius-xs)!important;box-shadow:none!important;border-color:var(--line)!important}
+body.ox-terminal #view-radar .chart-controls .toggle-lbl:has(input:checked) {background:var(--panel-alt)!important;border-color:var(--muted)!important;color:var(--ink)!important}
+body.ox-terminal #view-radar .chart-controls .toggle-lbl input:checked {background:var(--muted)!important;border-color:var(--ink)!important}
+body.ox-terminal #view-radar .chart-controls .toggle-lbl input:checked::after {background:var(--ink)!important;box-shadow:none!important}
 @media(max-width:620px){
- body.ox-terminal :is(#view-radar,.us2-radar-pane) .coin-top {grid-template-columns:minmax(0,1fr) 30px!important}
- body.ox-terminal :is(#view-radar,.us2-radar-pane) .coin-top-right {width:30px!important;min-width:30px!important;grid-template-columns:1fr!important}
- body.ox-terminal :is(#view-radar,.us2-radar-pane) .coin-symbol-mobile {max-width:100%!important}
+ body.ox-terminal #view-radar .coin-top {grid-template-columns:minmax(0,1fr) 30px!important}
+ body.ox-terminal #view-radar .coin-top-right {width:30px!important;min-width:30px!important;grid-template-columns:1fr!important}
+ body.ox-terminal #view-radar .coin-symbol-mobile {max-width:100%!important}
 }
 
 body.ox-terminal .tw-home-root .tw-home-notice {border:0!important;border-top:1px solid var(--line)!important;border-bottom:1px solid var(--line)!important;border-radius:0!important;background:none!important;color:var(--muted)!important;padding:12px 0!important}
@@ -897,45 +897,45 @@ body.ox-terminal .tw-home-root .tw-money-row {display:flex!important;justify-con
 body.ox-terminal:not(.theme-light)[data-view="home"] {
  background:radial-gradient(ellipse 900px 550px at 10% 24%,#62687329,transparent 72%),radial-gradient(ellipse 540px 400px at 92% 38%,#80838b1c,transparent 72%),var(--bg)!important;
 }
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-chart,body.ox-terminal :is(#view-home,.us2-home-pane) .ox-score-panel {position:relative}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-chart::after,body.ox-terminal :is(#view-home,.us2-home-pane) .ox-score-panel::after {
+body.ox-terminal #view-home .ox-home-chart,body.ox-terminal #view-home .ox-score-panel {position:relative}
+body.ox-terminal #view-home .ox-home-chart::after,body.ox-terminal #view-home .ox-score-panel::after {
  content:""!important;display:block!important;position:absolute;inset:0 0 auto;height:1px;
  background:linear-gradient(90deg,transparent,#ffffff 18%,#ffffff99 40%,transparent 75%);box-shadow:0 0 6px #ffffffbb,0 0 13px #ffffff47;pointer-events:none;z-index:2;
 }
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-coin-logo {grid-column:1;grid-row:1/3;position:relative;display:grid;place-items:center;width:24px;height:24px;flex:none;border-radius:50%;background:#363a42;color:#f0f1f4;font:600 8px/1 -apple-system,BlinkMacSystemFont,sans-serif;overflow:hidden}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-coin-logo img {position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:var(--bg)}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-gauge-track {stroke:#3e434b}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-gauge-value {stroke:#efe4c6}
+body.ox-terminal #view-home .ox-coin-logo {grid-column:1;grid-row:1/3;position:relative;display:grid;place-items:center;width:24px;height:24px;flex:none;border-radius:50%;background:#363a42;color:#f0f1f4;font:600 8px/1 -apple-system,BlinkMacSystemFont,sans-serif;overflow:hidden}
+body.ox-terminal #view-home .ox-coin-logo img {position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:var(--bg)}
+body.ox-terminal #view-home .ox-gauge-track {stroke:#3e434b}
+body.ox-terminal #view-home .ox-gauge-value {stroke:#efe4c6}
 body.ox-terminal .us-positive,body.ox-terminal .tw-up {color:var(--green)!important}
 body.ox-terminal .us-negative,body.ox-terminal .tw-down {color:var(--red)!important}
-body.ox-terminal :is(#btn-chart-fullscreen,.us2-expand-control) {display:inline-grid!important;place-items:center!important;width:32px!important;height:32px!important;min-width:32px!important;min-height:32px!important;padding:6px!important;flex:none!important;border:0!important;background:transparent!important;color:var(--ink)!important}
-body.ox-terminal :is(#btn-chart-fullscreen,.us2-expand-control) svg {width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
-body.ox-terminal :is(#btn-chart-fullscreen,.us2-expand-control):hover {background:var(--panel-alt)!important}
+body.ox-terminal :is(#btn-chart-fullscreen) {display:inline-grid!important;place-items:center!important;width:32px!important;height:32px!important;min-width:32px!important;min-height:32px!important;padding:6px!important;flex:none!important;border:0!important;background:transparent!important;color:var(--ink)!important}
+body.ox-terminal :is(#btn-chart-fullscreen) svg {width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+body.ox-terminal :is(#btn-chart-fullscreen):hover {background:var(--panel-alt)!important}
 @media(min-width:621px) and (max-width:1050px){
- body.ox-terminal :is(#view-home,.us2-home-pane) .ox-tier-row {grid-template-columns:14px minmax(70px,1fr) 52px!important;column-gap:5px}
- body.ox-terminal :is(#view-home,.us2-home-pane) .ox-tier-price,body.ox-terminal :is(#view-home,.us2-home-pane) .ox-tier-spark {display:none}
- body.ox-terminal :is(#view-home,.us2-home-pane) .ox-tier-identity {grid-template-columns:20px minmax(0,1fr);column-gap:5px}
- body.ox-terminal :is(#view-home,.us2-home-pane) .ox-coin-logo {width:20px;height:20px}
+ body.ox-terminal #view-home .ox-tier-row {grid-template-columns:14px minmax(70px,1fr) 52px!important;column-gap:5px}
+ body.ox-terminal #view-home .ox-tier-price,body.ox-terminal #view-home .ox-tier-spark {display:none}
+ body.ox-terminal #view-home .ox-tier-identity {grid-template-columns:20px minmax(0,1fr);column-gap:5px}
+ body.ox-terminal #view-home .ox-coin-logo {width:20px;height:20px}
 }
 @media(max-width:620px){
- body.ox-terminal :is(#view-home,.us2-home-pane) .ox-tier-row {grid-template-columns:15px minmax(90px,1fr) 54px 55px 43px;gap:5px}
- body.ox-terminal :is(#view-home,.us2-home-pane) .ox-tier-spark {width:43px}
+ body.ox-terminal #view-home .ox-tier-row {grid-template-columns:15px minmax(90px,1fr) 54px 55px 43px;gap:5px}
+ body.ox-terminal #view-home .ox-tier-spark {width:43px}
 }
-@media(max-width:360px){body.ox-terminal :is(#view-home,.us2-home-pane) .ox-tier-row {grid-template-columns:12px minmax(82px,1fr) 50px 53px;gap:4px}body.ox-terminal :is(#view-home,.us2-home-pane) .ox-tier-spark {display:none}}
+@media(max-width:360px){body.ox-terminal #view-home .ox-tier-row {grid-template-columns:12px minmax(82px,1fr) 50px 53px;gap:4px}body.ox-terminal #view-home .ox-tier-spark {display:none}}
 
 /* Fine white neon accents mark section boundaries without enclosing every row. */
-body.ox-terminal:not(.theme-light) :is(#view-home,.us2-home-pane) .ox-home-tiers,
-body.ox-terminal:not(.theme-light) :is(#view-home,.us2-home-pane) .ox-home-events {position:relative}
-body.ox-terminal:not(.theme-light) :is(#view-home,.us2-home-pane) .ox-home-tiers::before,
-body.ox-terminal:not(.theme-light) :is(#view-home,.us2-home-pane) .ox-home-events::before {
+body.ox-terminal:not(.theme-light) #view-home .ox-home-tiers,
+body.ox-terminal:not(.theme-light) #view-home .ox-home-events {position:relative}
+body.ox-terminal:not(.theme-light) #view-home .ox-home-tiers::before,
+body.ox-terminal:not(.theme-light) #view-home .ox-home-events::before {
  content:"";position:absolute;top:0;left:0;width:min(240px,45%);height:1px;pointer-events:none;
  background:linear-gradient(90deg,#ffffffb3,#ffffff55 45%,transparent);
  box-shadow:0 -2px 8px #ffffff24,0 2px 7px #ffffff1a;
 }
 body.ox-terminal:not(.theme-light) .ox-control-panel {border-top-color:#ffffff66!important;box-shadow:inset 0 1px 0 #ffffff66,0 0 18px #ffffff10,0 20px 60px #0008!important}
 @media(max-width:720px){
- body.ox-terminal:not(.theme-light) :is(#view-home,.us2-home-pane) .ox-home-tiers::before,
- body.ox-terminal:not(.theme-light) :is(#view-home,.us2-home-pane) .ox-home-events::before {opacity:.7}
+ body.ox-terminal:not(.theme-light) #view-home .ox-home-tiers::before,
+ body.ox-terminal:not(.theme-light) #view-home .ox-home-events::before {opacity:.7}
 }
 
 /* Finish shared controls: no legacy blue capsules or ornamental corner shapes. */
@@ -965,14 +965,14 @@ body.ox-terminal .strength-arc {filter:none!important;opacity:.86!important;back
 body.ox-terminal .strength-arc::after {background:var(--bg)!important}
 body.ox-terminal .strength-compare-scale i.btc {background:var(--meter-mid)!important}
 body.ox-terminal .strength-compare-scale i.alt {background:var(--meter-strong)!important}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-gauge-value {stroke:var(--meter-color,var(--meter-mid))!important}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-meter i {background:var(--meter-color,var(--meter-mid))!important}
+body.ox-terminal #view-home .ox-gauge-value {stroke:var(--meter-color,var(--meter-mid))!important}
+body.ox-terminal #view-home .ox-meter i {background:var(--meter-color,var(--meter-mid))!important}
 
 /* Focus the cover on price; keep the existing candidate tier layout. */
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-quote {grid-template-columns:minmax(180px,1fr) minmax(240px,2fr)!important}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-coin {object-fit:contain!important;background:#f7931a!important;border:0!important;box-shadow:none!important;padding:0!important;filter:none!important}
+body.ox-terminal #view-home .ox-home-quote {grid-template-columns:minmax(180px,1fr) minmax(240px,2fr)!important}
+body.ox-terminal #view-home .ox-home-coin {object-fit:contain!important;background:#f7931a!important;border:0!important;box-shadow:none!important;padding:0!important;filter:none!important}
 @media(max-width:720px){
- body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-quote {grid-template-columns:1fr!important}
+ body.ox-terminal #view-home .ox-home-quote {grid-template-columns:1fr!important}
 }
 /* Market identity lives in navigation; keep only useful quote controls above data. */
 body.ox-terminal :is(.us-market-home-header,.tw-home-topbar)>div:first-child {display:none!important}
@@ -999,8 +999,8 @@ body.ox-terminal .tw-research>summary {padding:18px 0;font-size:14px;color:var(-
 body.ox-terminal .tw-research-grid {display:grid;grid-template-columns:1fr 1fr;gap:0 30px}
 body.ox-terminal .tw-research-grid .tw-theme {grid-column:1/-1}
 /* News begins with functional controls; the calendar opens only when requested. */
-body.ox-terminal :is(#view-data,.us2-data-pane) .media-page {padding-top:8px!important}
-body.ox-terminal :is(#view-data,.us2-data-pane) .media-card {padding-top:0!important}
+body.ox-terminal :is(#view-data) .media-page {padding-top:8px!important}
+body.ox-terminal :is(#view-data) .media-card {padding-top:0!important}
 body.ox-terminal .ox-news-controls {margin-top:0!important}
 body.ox-terminal .ox-calendar-disclosure {border-bottom:1px solid var(--line);padding:10px 0;margin-bottom:18px}
 body.ox-terminal .ox-calendar-disclosure>summary {cursor:pointer;font-size:13px;color:var(--ink)}
@@ -1027,39 +1027,39 @@ body.ox-terminal .twi-header-count {display:flex!important;align-items:baseline!
 body.ox-terminal .twi-header-count strong {font-size:20px!important}
 
 /* BTC quote and chart share one compact surface and one live market edge. */
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-main {margin-top:14px!important}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-chart {min-height:0!important;align-self:start!important;padding:17px 20px 12px!important;gap:0}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-chart .ox-home-quote {display:flex!important;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px 20px;min-height:0!important;padding:0 0 13px!important;margin:0 0 12px;border:0!important;border-bottom:1px solid var(--line)!important}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-chart .ox-home-price {justify-content:flex-end;gap:6px 9px}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-chart .ox-home-price strong {font-size:clamp(30px,3vw,43px)}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-chart .ox-home-price>span {margin-left:4px}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-chart-heading {min-height:30px}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-chart-heading>div:first-child {display:none}
-body.ox-terminal :is(#view-home,.us2-home-pane) .v34-home-main-toolbar {margin-left:auto}
-body.ox-terminal :is(#view-home,.us2-home-pane) .btc-premium-chart-wrap,
-body.ox-terminal :is(#view-home,.us2-home-pane) #home-btc-mini-chart {height:245px!important;min-height:245px!important;flex:none!important}
-body.ox-terminal :is(#view-home,.us2-home-pane) .btc-premium-chart-wrap {margin:7px 0 9px!important}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-chart.ox-market-up {border-color:#80b8a5!important;box-shadow:inset 0 1px 0 #ffffff9c,0 0 0 1px #80b8a538,0 0 22px #69b99b30,0 13px 32px #0003!important}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-chart.ox-market-down {border-color:#c78991!important;box-shadow:inset 0 1px 0 #ffffff9c,0 0 0 1px #c7899138,0 0 22px #bc6f7d30,0 13px 32px #0003!important}
-body.ox-terminal.theme-light :is(#view-home,.us2-home-pane) .ox-home-chart.ox-market-up {border-color:#579681!important;box-shadow:0 0 0 1px #57968130,0 8px 22px #39786117!important}
-body.ox-terminal.theme-light :is(#view-home,.us2-home-pane) .ox-home-chart.ox-market-down {border-color:#ac6974!important;box-shadow:0 0 0 1px #ac697430,0 8px 22px #93424f17!important}
+body.ox-terminal #view-home .ox-home-main {margin-top:14px!important}
+body.ox-terminal #view-home .ox-home-chart {min-height:0!important;align-self:start!important;padding:17px 20px 12px!important;gap:0}
+body.ox-terminal #view-home .ox-home-chart .ox-home-quote {display:flex!important;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px 20px;min-height:0!important;padding:0 0 13px!important;margin:0 0 12px;border:0!important;border-bottom:1px solid var(--line)!important}
+body.ox-terminal #view-home .ox-home-chart .ox-home-price {justify-content:flex-end;gap:6px 9px}
+body.ox-terminal #view-home .ox-home-chart .ox-home-price strong {font-size:clamp(30px,3vw,43px)}
+body.ox-terminal #view-home .ox-home-chart .ox-home-price>span {margin-left:4px}
+body.ox-terminal #view-home .ox-chart-heading {min-height:30px}
+body.ox-terminal #view-home .ox-chart-heading>div:first-child {display:none}
+body.ox-terminal #view-home .v34-home-main-toolbar {margin-left:auto}
+body.ox-terminal #view-home .btc-premium-chart-wrap,
+body.ox-terminal #view-home #home-btc-mini-chart {height:245px!important;min-height:245px!important;flex:none!important}
+body.ox-terminal #view-home .btc-premium-chart-wrap {margin:7px 0 9px!important}
+body.ox-terminal #view-home .ox-home-chart.ox-market-up {border-color:#80b8a5!important;box-shadow:inset 0 1px 0 #ffffff9c,0 0 0 1px #80b8a538,0 0 22px #69b99b30,0 13px 32px #0003!important}
+body.ox-terminal #view-home .ox-home-chart.ox-market-down {border-color:#c78991!important;box-shadow:inset 0 1px 0 #ffffff9c,0 0 0 1px #c7899138,0 0 22px #bc6f7d30,0 13px 32px #0003!important}
+body.ox-terminal.theme-light #view-home .ox-home-chart.ox-market-up {border-color:#579681!important;box-shadow:0 0 0 1px #57968130,0 8px 22px #39786117!important}
+body.ox-terminal.theme-light #view-home .ox-home-chart.ox-market-down {border-color:#ac6974!important;box-shadow:0 0 0 1px #ac697430,0 8px 22px #93424f17!important}
 @media(min-width:1600px){
- body.ox-terminal :is(#view-home,.us2-home-pane) .btc-premium-chart-wrap,body.ox-terminal :is(#view-home,.us2-home-pane) #home-btc-mini-chart {height:285px!important;min-height:285px!important}
+ body.ox-terminal #view-home .btc-premium-chart-wrap,body.ox-terminal #view-home #home-btc-mini-chart {height:285px!important;min-height:285px!important}
 }
 @media(max-width:620px){
- body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-main {margin-top:9px!important}
- body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-chart {padding:13px 12px 10px!important}
- body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-chart .ox-home-quote {gap:7px!important;padding-bottom:10px!important;margin-bottom:7px}
- body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-chart .ox-home-identity>div {display:flex;align-items:baseline;gap:7px}
- body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-chart .ox-home-price {width:100%;justify-content:flex-start;flex-wrap:nowrap}
- body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-chart .ox-home-price strong {font-size:clamp(30px,9vw,39px)}
- body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-chart .ox-home-price>span {margin-left:auto}
- body.ox-terminal :is(#view-home,.us2-home-pane) .btc-premium-chart-wrap,body.ox-terminal :is(#view-home,.us2-home-pane) #home-btc-mini-chart {height:190px!important;min-height:190px!important}
- body.ox-terminal :is(#view-home,.us2-home-pane) .btc-premium-chart-wrap {margin:3px 0 7px!important}
+ body.ox-terminal #view-home .ox-home-main {margin-top:9px!important}
+ body.ox-terminal #view-home .ox-home-chart {padding:13px 12px 10px!important}
+ body.ox-terminal #view-home .ox-home-chart .ox-home-quote {gap:7px!important;padding-bottom:10px!important;margin-bottom:7px}
+ body.ox-terminal #view-home .ox-home-chart .ox-home-identity>div {display:flex;align-items:baseline;gap:7px}
+ body.ox-terminal #view-home .ox-home-chart .ox-home-price {width:100%;justify-content:flex-start;flex-wrap:nowrap}
+ body.ox-terminal #view-home .ox-home-chart .ox-home-price strong {font-size:clamp(30px,9vw,39px)}
+ body.ox-terminal #view-home .ox-home-chart .ox-home-price>span {margin-left:auto}
+ body.ox-terminal #view-home .btc-premium-chart-wrap,body.ox-terminal #view-home #home-btc-mini-chart {height:190px!important;min-height:190px!important}
+ body.ox-terminal #view-home .btc-premium-chart-wrap {margin:3px 0 7px!important}
 }
 
 /* T1 takes the space beside BTC; the existing strength and OX readings follow below. */
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-t1 {
+body.ox-terminal #view-home .ox-home-t1 {
  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));min-width:0;border:1px solid #ffffff88;border-radius:var(--ox-radius-xl);
  background:linear-gradient(145deg,#ffffff10,#25292f55 55%,#16191f77);
  box-shadow:inset 0 1px 0 #ffffffbd,inset 0 -1px 0 #ffffff56,0 0 9px #ffffff35,0 0 26px #ffffff2c;
@@ -1089,39 +1089,39 @@ body.ox-terminal :is(.twi-search input,.twr-search input,.twr-filter-field selec
  body.ox-terminal #market-unavailable-card .us-radar-price,
  body.ox-terminal .twr-price {font-size:clamp(30px,9vw,42px)!important}
 }
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-t1-side {min-width:0;padding:19px 14px 16px;display:flex;flex-direction:column;gap:16px}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-t1-side+ .ox-home-t1-side {border-left:1px solid #ffffff8a;box-shadow:inset 1px 0 0 #ffffff23}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-t1-head {display:flex;align-items:baseline;justify-content:space-between;gap:4px;padding-bottom:12px;border-bottom:1px solid #ffffff35;color:var(--ink);font-size:12px;letter-spacing:.04em}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-t1-head strong {font:400 24px/1 var(--ox-font-display);color:var(--ink)}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-t1-list {display:grid;align-content:start;gap:9px;min-width:0}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-t1-row {min-width:0;display:grid;grid-template-columns:1fr auto;gap:4px;border:0;border-bottom:1px solid #ffffff26;background:transparent;color:var(--ink);padding:5px 0 10px;text-align:left;cursor:pointer}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-t1-identity {min-width:0;display:flex;align-items:center;gap:7px}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-t1-identity .ox-coin-logo {width:21px;height:21px;flex:none}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-t1-identity .ox-coin-logo img {width:100%;height:100%;object-fit:contain}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-t1-row strong {min-width:0;overflow:hidden;text-overflow:ellipsis;font-size:13px}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-t1-row small {grid-column:1;color:var(--muted);font-size:10px}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-t1-row em {grid-column:2;grid-row:1/3;align-self:center;font-size:11px;font-style:normal;font-variant-numeric:tabular-nums}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-t1-empty {color:var(--muted);font-size:11px;line-height:1.6}
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-analysis {grid-column:1/-1}
+body.ox-terminal #view-home .ox-home-t1-side {min-width:0;padding:19px 14px 16px;display:flex;flex-direction:column;gap:16px}
+body.ox-terminal #view-home .ox-home-t1-side+ .ox-home-t1-side {border-left:1px solid #ffffff8a;box-shadow:inset 1px 0 0 #ffffff23}
+body.ox-terminal #view-home .ox-home-t1-head {display:flex;align-items:baseline;justify-content:space-between;gap:4px;padding-bottom:12px;border-bottom:1px solid #ffffff35;color:var(--ink);font-size:12px;letter-spacing:.04em}
+body.ox-terminal #view-home .ox-home-t1-head strong {font:400 24px/1 var(--ox-font-display);color:var(--ink)}
+body.ox-terminal #view-home .ox-home-t1-list {display:grid;align-content:start;gap:9px;min-width:0}
+body.ox-terminal #view-home .ox-home-t1-row {min-width:0;display:grid;grid-template-columns:1fr auto;gap:4px;border:0;border-bottom:1px solid #ffffff26;background:transparent;color:var(--ink);padding:5px 0 10px;text-align:left;cursor:pointer}
+body.ox-terminal #view-home .ox-home-t1-identity {min-width:0;display:flex;align-items:center;gap:7px}
+body.ox-terminal #view-home .ox-home-t1-identity .ox-coin-logo {width:21px;height:21px;flex:none}
+body.ox-terminal #view-home .ox-home-t1-identity .ox-coin-logo img {width:100%;height:100%;object-fit:contain}
+body.ox-terminal #view-home .ox-home-t1-row strong {min-width:0;overflow:hidden;text-overflow:ellipsis;font-size:13px}
+body.ox-terminal #view-home .ox-home-t1-row small {grid-column:1;color:var(--muted);font-size:10px}
+body.ox-terminal #view-home .ox-home-t1-row em {grid-column:2;grid-row:1/3;align-self:center;font-size:11px;font-style:normal;font-variant-numeric:tabular-nums}
+body.ox-terminal #view-home .ox-home-t1-empty {color:var(--muted);font-size:11px;line-height:1.6}
+body.ox-terminal #view-home .ox-home-analysis {grid-column:1/-1}
 @media(min-width:901px){
- body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-analysis {display:grid;grid-template-columns:minmax(0,1fr) minmax(280px,.75fr);column-gap:32px}
- body.ox-terminal :is(#view-home,.us2-home-pane) .ox-analysis-heading,body.ox-terminal :is(#view-home,.us2-home-pane) .ox-strength-duo,body.ox-terminal :is(#view-home,.us2-home-pane) .ox-strength-context {grid-column:1}
- body.ox-terminal :is(#view-home,.us2-home-pane) .ox-score-panel {grid-column:2;grid-row:1/4;align-self:center;width:100%;margin:0}
- body.ox-terminal :is(#view-home,.us2-home-pane) .ox-analysis-benchmark {grid-column:1/-1}
+ body.ox-terminal #view-home .ox-home-analysis {display:grid;grid-template-columns:minmax(0,1fr) minmax(280px,.75fr);column-gap:32px}
+ body.ox-terminal #view-home .ox-analysis-heading,body.ox-terminal #view-home .ox-strength-duo,body.ox-terminal #view-home .ox-strength-context {grid-column:1}
+ body.ox-terminal #view-home .ox-score-panel {grid-column:2;grid-row:1/4;align-self:center;width:100%;margin:0}
+ body.ox-terminal #view-home .ox-analysis-benchmark {grid-column:1/-1}
 }
-body.ox-terminal:not(.theme-light) :is(#view-home,.us2-home-pane) .ox-home-chart.ox-market-up {border-color:#94cdb8!important;box-shadow:inset 0 1px 0 #ffffffbd,inset 0 -1px 0 #ffffff6b,0 0 8px #ffffff30,0 0 25px #ffffff24,0 0 26px #80b8a55c,0 13px 32px #0003!important}
-body.ox-terminal:not(.theme-light) :is(#view-home,.us2-home-pane) .ox-home-chart.ox-market-down {border-color:#e3a2ad!important;box-shadow:inset 0 1px 0 #ffffffbd,inset 0 -1px 0 #ffffff6b,0 0 8px #ffffff30,0 0 25px #ffffff24,0 0 26px #dc89975c,0 13px 32px #0003!important}
-body.ox-terminal.theme-light :is(#view-home,.us2-home-pane) .ox-home-t1 {background:var(--panel);border-color:var(--line);box-shadow:none}
-body.ox-terminal.theme-light :is(#view-home,.us2-home-pane) .ox-home-t1-side+ .ox-home-t1-side {border-left-color:var(--line);box-shadow:none}
-body.ox-terminal.theme-light :is(#view-home,.us2-home-pane) .ox-home-t1-head,body.ox-terminal.theme-light :is(#view-home,.us2-home-pane) .ox-home-t1-row {border-bottom-color:var(--line)}
+body.ox-terminal:not(.theme-light) #view-home .ox-home-chart.ox-market-up {border-color:#94cdb8!important;box-shadow:inset 0 1px 0 #ffffffbd,inset 0 -1px 0 #ffffff6b,0 0 8px #ffffff30,0 0 25px #ffffff24,0 0 26px #80b8a55c,0 13px 32px #0003!important}
+body.ox-terminal:not(.theme-light) #view-home .ox-home-chart.ox-market-down {border-color:#e3a2ad!important;box-shadow:inset 0 1px 0 #ffffffbd,inset 0 -1px 0 #ffffff6b,0 0 8px #ffffff30,0 0 25px #ffffff24,0 0 26px #dc89975c,0 13px 32px #0003!important}
+body.ox-terminal.theme-light #view-home .ox-home-t1 {background:var(--panel);border-color:var(--line);box-shadow:none}
+body.ox-terminal.theme-light #view-home .ox-home-t1-side+ .ox-home-t1-side {border-left-color:var(--line);box-shadow:none}
+body.ox-terminal.theme-light #view-home .ox-home-t1-head,body.ox-terminal.theme-light #view-home .ox-home-t1-row {border-bottom-color:var(--line)}
 @media(max-width:620px){
- body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-main {gap:12px!important}
- body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-t1-side {padding:14px 10px 15px;gap:13px}
- body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-t1-head {font-size:11px}
- body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-t1-head strong {font-size:21px}
- body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-t1-row strong {font-size:12px}
- body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-t1-row em {font-size:10px}
- body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-t1 {margin-bottom:12px}
+ body.ox-terminal #view-home .ox-home-main {gap:12px!important}
+ body.ox-terminal #view-home .ox-home-t1-side {padding:14px 10px 15px;gap:13px}
+ body.ox-terminal #view-home .ox-home-t1-head {font-size:11px}
+ body.ox-terminal #view-home .ox-home-t1-head strong {font-size:21px}
+ body.ox-terminal #view-home .ox-home-t1-row strong {font-size:12px}
+ body.ox-terminal #view-home .ox-home-t1-row em {font-size:10px}
+ body.ox-terminal #view-home .ox-home-t1 {margin-bottom:12px}
 }
 
 /* A small persistent homepage density switch beside the icon-only menu. */
@@ -1131,9 +1131,9 @@ body.ox-terminal .ox-ui-mode button[aria-pressed="true"] {background:#ffffff1d;c
 body.ox-terminal.theme-light .ox-ui-mode button[aria-pressed="true"] {background:var(--panel-alt)}
 body.ox-terminal #ox-control-open {width:32px!important;min-width:32px!important}
 body.ox-terminal #ox-control-open>.ox-menu-glyph {display:block!important;color:var(--ink);font:21px/1 Arial,sans-serif}
-body.ox-terminal[data-ui-mode="plus"] :is(#view-home,.us2-home-pane) :is(.ox-score-panel,.ox-analysis-benchmark,.ox-section-heading,.ox-home-tiers,.ox-home-events,.ox-home-more) {display:none!important}
-body.ox-terminal[data-ui-mode="plus"] :is(#view-home,.us2-home-pane) .ox-home-analysis {display:block!important}
-body.ox-terminal[data-ui-mode="plus"] :is(#view-home,.us2-home-pane) .ox-strength-duo,body.ox-terminal[data-ui-mode="plus"] :is(#view-home,.us2-home-pane) .ox-strength-context {max-width:720px}
+body.ox-terminal[data-ui-mode="plus"] #view-home :is(.ox-score-panel,.ox-analysis-benchmark,.ox-section-heading,.ox-home-tiers,.ox-home-events,.ox-home-more) {display:none!important}
+body.ox-terminal[data-ui-mode="plus"] #view-home .ox-home-analysis {display:block!important}
+body.ox-terminal[data-ui-mode="plus"] #view-home .ox-strength-duo,body.ox-terminal[data-ui-mode="plus"] #view-home .ox-strength-context {max-width:720px}
 @media(max-width:620px){
  body.ox-terminal .nav-stats {gap:7px!important}
  body.ox-terminal .ox-ui-mode button {padding:7px 7px;font-size:10px}
@@ -1219,8 +1219,8 @@ body.ox-terminal #ox-control-open>.ox-menu-glyph svg {
 body.ox-terminal #ox-control-open:focus-visible {outline:2px solid currentColor!important;outline-offset:3px}
 
 /* The removed BTC footer releases height to the T1 pair below it. */
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-chart {padding-bottom:5px!important}
-body.ox-terminal :is(#view-home,.us2-home-pane) .btc-premium-chart-wrap {margin-bottom:2px!important}
+body.ox-terminal #view-home .ox-home-chart {padding-bottom:5px!important}
+body.ox-terminal #view-home .btc-premium-chart-wrap {margin-bottom:2px!important}
 @media(max-width:620px) {
- body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-main {gap:8px!important}
+ body.ox-terminal #view-home .ox-home-main {gap:8px!important}
 }

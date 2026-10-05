@@ -174,9 +174,9 @@
     body.chart-focus { overflow:hidden; }
     body.chart-focus header,
     body.chart-focus .app-dock,
-    body.chart-focus :is(#view-home,.us2-home-pane),
+    body.chart-focus #view-home,
     body.chart-focus #view-strength,
-    body.chart-focus :is(#view-media,.us2-media-pane),
+    body.chart-focus #view-media,
     body.chart-focus #view-settings,
     body.chart-focus #view-radar > .benchmark-bar,
     body.chart-focus #view-radar > .top-summary,
@@ -288,4 +288,3 @@
       .story-quote { font-size:14px !important; }
       #btn-chart-fullscreen::after { content:""; }
     }
-

@@ -3,11 +3,11 @@ import assert from 'node:assert/strict';
 import { FEEDS, impact, normalizeFeed, parseBlsCalendar } from '../scripts/collect-news.mjs';
 
 test('news normalization retains only dated HTTPS source headlines', () => {
-  const feed = { id: 'bls-cpi', name: 'BLS', url: 'https://www.bls.gov/feed/cpi.rss', markets: ['us','tw'] };
+  const feed = { id: 'bls-cpi', name: 'BLS', url: 'https://www.bls.gov/feed/cpi.rss', markets: ['crypto','tw'] };
   const xml = '<feed><entry><title>Consumer Price Index released</title><link href="https://www.bls.gov/one"/><published>2026-09-24T12:30:00Z</published></entry><entry><title>Undated</title><link href="https://www.bls.gov/two"/></entry></feed>';
   const items = normalizeFeed(xml, feed);
   assert.equal(items.length, 1);
-  assert.deepEqual(items[0].markets, ['us','tw']);
+  assert.deepEqual(items[0].markets, ['crypto','tw']);
   assert.equal(items[0].impact.stars, null);
 });
 
@@ -88,11 +88,12 @@ test('Taiwan official feed resolves relative links and keeps native Chinese titl
   assert.equal(localize(item).titleZh, item.title);
 });
 
-test('market news does not reuse macro headlines as Taiwan or crypto news', async () => {
+test('macro news preserves official publisher identity and does not masquerade as crypto news', async () => {
   const snapshot = JSON.parse(await readFile(new URL('../data/news.json', import.meta.url)));
   assert.ok(snapshot.news.some(item => item.sourceId === 'twse'));
   for (const item of snapshot.news.filter(item => ['fed','bls-cpi','bls-jobs','ecb'].includes(item.sourceId))) {
     assert.equal(item.markets.includes('crypto'), false);
-    assert.equal(item.markets.includes('tw'), false);
+    assert.ok(['www.federalreserve.gov','www.bls.gov','www.ecb.europa.eu'].includes(new URL(item.link).hostname));
+    assert.notEqual(item.sourceId, 'twse');
   }
 });

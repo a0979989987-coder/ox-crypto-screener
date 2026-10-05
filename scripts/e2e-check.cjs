@@ -8,7 +8,7 @@ const testPort = Number(process.env.OX_E2E_PORT || 4173);
 const testBase = `http://127.0.0.1:${testPort}`;
 const html = readFileSync(join(root, "index.html"), "utf8");
 const expectedCss = [...html.matchAll(/<link rel="stylesheet" href="([^"]+)">/g)].map(match => match[1].split("?")[0]);
-const classifiedCss = expectedCss.filter(path => !["src/styles/markets/us.css"].includes(path));
+const classifiedCss = expectedCss;
 const mime = { ".html": "text/html", ".js": "text/javascript", ".css": "text/css", ".png": "image/png" };
 
 function assert(condition, message) {
@@ -168,14 +168,7 @@ async function preparePage(context, viewport, { holdCandle } = {}) {
       : url.pathname.endsWith("/radar") ? {items:[{symbol:"2330",name:"台積電",market:"TWSE",price:123.5,changePct:1.25,score:90,tier:"T1",volume:10000,turnoverTwd:1235000,dataDate:"2026-09-23"}]} : {};
     return route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ ok: true, data }) });
   });
-  await page.route("**/data/us-snapshot.json", route => route.fulfill({json:{schemaVersion:2,quotes:[],analyses:[],counts:{quoted:0,scanned:0}}}));
   await page.route("https://www.tradingview-widget.com/**", route => route.fulfill({contentType:"text/html",body:"<p>Isolated widget fixture, no prices</p>"}));
-  await page.route("https://ox-crypto-screener.vercel.app/api/v1/us/**", route => {
-    const url = new URL(route.request().url());
-    const symbol = url.searchParams.get("symbol") || "SPY";
-    const data = url.pathname.endsWith("quote-v2") ? {quote:{symbol,price:123.45,changePct:2.31,marketTime:now/1000,receivedAt:now,marketOpen:false,delaySeconds:null}} : url.pathname.endsWith("chart-v2") ? {symbol,interval:url.searchParams.get("interval"),bars:[],source:"TEST",adjustment:"splits"} : {source:"TEST",extendedHours:false,pollMs:60000,externalDisplayConfirmed:true};
-    return route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ ok: true, data }) });
-  });
   return { page, audit };
 }
 
@@ -258,9 +251,7 @@ async function selectView(page, view) {
   const desktop = page.locator(`.ox-desktop-nav [data-view-target="${view}"]`);
   if (await desktop.isVisible()) await desktop.click();
   else await page.click(`.app-dock [data-view-target="${view}"]`);
-  if (await page.locator("body").getAttribute("data-market") === "us")
-    await page.waitForFunction(view => document.body.dataset.view === view && !document.querySelector(".us2-root")?.hidden, view);
-  else if (await page.locator("body").getAttribute("data-market") === "tw")
+  if (await page.locator("body").getAttribute("data-market") === "tw")
     await page.waitForFunction(view => document.body.dataset.view === view && !document.querySelector("#market-unavailable-card")?.hidden, view);
   else await page.waitForSelector(`#view-${view}.active`);
 }
@@ -313,18 +304,6 @@ async function desktopRegression(browser) {
   await page.click('.btn-tf[data-tf="4H"]');
   assert(await page.locator('.btn-tf[data-tf="4H"]').evaluate(el => el.classList.contains("active")), "Timeframe did not switch to 4H");
 
-  await selectMarket(page, "us");
-  await page.waitForSelector(".us2-root");
-  await page.click("#ox-control-close");
-  await page.click('[data-search-open]');
-  await page.fill('.us2-search input', "NVDA");
-  await page.locator('[data-open-symbol="NVDA"]').click();
-  await page.waitForFunction(() => document.querySelector(".us2-symbol-picker")?.textContent.includes("NVDA"));
-  await page.waitForFunction(() => document.querySelector(".us2-quote-value")?.textContent.includes("123.45"));
-  await selectView(page, "home");
-  await page.waitForSelector(".us2-benchmarks");
-  assert(await page.locator(".us2-benchmarks button").count() === 3, "US Home must render three ETF benchmarks");
-  await selectView(page, "radar");
   await selectMarket(page, "tw");
   assert(await page.locator("#market-unavailable-card").isVisible(), "TW market placeholder did not display");
   await page.click("#ox-control-close");
@@ -439,14 +418,6 @@ async function mobileRegression(browser) {
   assert(await page.locator("body").evaluate(el => el.classList.contains("theme-light")), "Mobile light theme did not apply");
   await page.click('[data-control-theme="dark"]');
   assert(!(await page.locator("body").evaluate(el => el.classList.contains("theme-light"))), "Mobile dark theme did not apply");
-  await page.click('[data-market-choice="us"]');
-  assert(await page.locator("#market-unavailable-card").isVisible(), "Mobile market switch to US failed");
-  await page.click("#ox-control-close");
-  await selectView(page, "home");
-  await page.waitForSelector(".us2-benchmarks button");
-  assert(await page.locator(".us2-benchmarks button").count() === 3, "Mobile US Home failed after Radar switch");
-  await selectView(page, "radar");
-  await openControl(page);
   await page.click('[data-market-choice="tw"]');
   assert(await page.locator("#market-unavailable-card").isVisible(), "Mobile market switch to TW failed");
   await page.click("#ox-control-close");

@@ -1,7 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {squeeze,recover,deformation} from '../src/markets/crypto/bubbles/soft-body.js';
-import {usBubbleRadii} from '../src/markets/us/visuals.js';
 import {BubbleField} from '../src/markets/crypto/bubbles/field.js';
 function field(nodes,extra={}){
  const scene=Object.create(BubbleField.prototype);
@@ -61,7 +60,4 @@ test('paint deforms only the shell and draws labels after restoring its transfor
  const calls=[],ctx={clearRect(){},save(){calls.push('save');},restore(){calls.push('restore');},translate(){},scale(){},rotate(){calls.push('rotate');},drawImage(image){calls.push(image);}};
  const f=field([{x:100,y:200,strainX:.12,sprite:'shell',labelSprite:'label'}],{ctx});f.paint();
  assert.deepEqual(calls,['save','save','rotate','rotate','shell','restore','label','restore']);
-});
-test('US bubble size keeps average traded value ordering while fitting mobile bounds',()=>{
- const r=usBubbleRadii([{liquidity:1e6},{liquidity:1e9}],320,440);assert(r[1]>r[0]);assert(r.every(x=>x>0&&x<160));assert.deepEqual(usBubbleRadii([],320,440),[]);
 });

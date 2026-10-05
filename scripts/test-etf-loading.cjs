@@ -39,7 +39,7 @@ const server=http.createServer((req,res)=>{
    if(!baseline){assert(savingsMs<1500,'calculator must not wait for its catalog');await page.locator('input[name="age"]').fill('35');}
    release();
    const etfStart=Date.now();await page.evaluate(()=>window.mount('etf'));
-   await page.locator('.etf-table tbody tr [data-detail]').first().waitFor({timeout:5000});const etfMs=Date.now()-etfStart;
+   await page.locator(width<=760?'.fund-card [data-detail]':'.etf-table tbody tr [data-detail]').first().waitFor({timeout:5000});const etfMs=Date.now()-etfStart;
    if(!baseline){assert(etfMs<1500);assert.equal(apiCalls,0);assert.equal(files,1);}
    const returnStart=Date.now();await page.evaluate(()=>window.mount('savings'));
    await page.getByRole('heading',{name:'退休生活規劃',exact:true}).waitFor({timeout:5000});const returnMs=Date.now()-returnStart;

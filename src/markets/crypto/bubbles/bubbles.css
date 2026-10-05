@@ -62,3 +62,5 @@
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
 
 .oxb-loading{margin-left:auto;min-width:24px}.oxb-loading[hidden]{display:none}.oxb-loading .ox-region-loading{padding:0}.oxb-loading .ox-loading-label{display:none}.oxb-loading .ox-loading{gap:2px}.oxb-loading .ox-loading-count{font-size:9px}.oxb-loading:not([hidden])+.oxb-direction{margin-left:0}:host([data-bubble-market=tw]){--oxb-up:#f16a70;--oxb-down:#48b78e}:host([data-bubble-market=tw]) .oxb-dialog .up,:host([data-bubble-market=tw]) .up b{color:var(--oxb-up)}:host([data-bubble-market=tw]) .oxb-dialog .down,:host([data-bubble-market=tw]) .down b{color:var(--oxb-down)}
+
+.direction-toggle-icon svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.oxb-direction:hover .direction-toggle-icon,.oxb-direction:focus-visible .direction-toggle-icon{filter:drop-shadow(0 0 4px currentColor)}

@@ -255,7 +255,7 @@ function renderKeyLevelPriceLinesFromState() {
   for(const levels of [primary,state.secondaryLevels]){
     for(const pressure of [levels?.highPressure,levels?.lowPressure]){
       if(pressure?.kind!=='diagonal')continue;
-      const line=state.chart.addLineSeries({color:'#eee7df',lineWidth:1,lineStyle:2,priceLineVisible:false,lastValueVisible:false,autoscaleInfoProvider:()=>null});
+      const line=state.chart.addLineSeries({color:document.body.classList.contains('theme-light')?'#8d712e':'#eee7df',lineWidth:1,lineStyle:2,priceLineVisible:false,lastValueVisible:false,autoscaleInfoProvider:()=>null});
       const times=state.candleData?.filter(c=>c.time>=pressure.points[0].time&&c.time<=pressure.points[1].time)||[];
       const duration=(pressure.points[1].time-pressure.points[0].time)/(pressure.points[1].index-pressure.points[0].index);
       if(duration>0)line.setData(times.map(c=>({time:c.time,value:pressure.points[1].price+pressure.slope*(c.time-pressure.points[1].time)/duration})));

@@ -169,4 +169,5 @@ dialog.tw-stock-detail::backdrop { background:#040507c9; backdrop-filter:blur(3p
 
 .tw-radar-root #twr-screener[hidden],.tw-radar-root .twr-scan-button[hidden]{display:none!important}
 .tw-radar-root #twr-screener{min-width:0}
-@media(max-width:700px){.tw-radar-root .twr-mode-rail{min-width:430px}.tw-radar-root .twr-mode-rail button{flex:1 0 auto}}
+.twr-label-short{display:none}
+@media(max-width:700px){.tw-radar-root .twr-mode-viewport{overflow:hidden}.tw-radar-root .twr-mode-rail{min-width:0;width:100%;display:flex;flex-wrap:nowrap;gap:1px;padding:3px}.tw-radar-root .twr-mode-rail button{flex:1 1 0;min-width:0;white-space:nowrap;min-height:36px;padding:6px 2px;font-size:11px}.tw-radar-root .twr-label-full{display:none}.tw-radar-root .twr-label-short{display:inline}.tw-radar-root .twr-mode-indicator{display:block}}

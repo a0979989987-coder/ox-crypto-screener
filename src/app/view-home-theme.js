@@ -297,7 +297,6 @@ function renderOxLive() {
   if (!el) return;
   if (state.activeMarket && state.activeMarket !== "crypto") {
     el.textContent = ({
-      us: document.getElementById("ox-live-text")?.dataset.usText || "美股 · 行情與交易時段更新中",
       tw: "台股官方日資料已接入 · 非即時"
     })[state.activeMarket] || "市場資料切換中";
     el.title = el.textContent;
@@ -351,15 +350,17 @@ function applyTheme(themeMode = "system") {
   document.dispatchEvent(new CustomEvent("ox:themechange", { detail: { mode, resolved } }));
 
   if (state.candleSeries) {
-    const up = light ? "#00778a" : "#00b8d4", down = light ? "#b81550" : "#ff3078";
-    state.candleSeries.applyOptions({upColor:up,downColor:down,wickUpColor:up,wickDownColor:down});
+    const up = light ? "#4598df" : "#00b8d4", down = light ? "#e86480" : "#ff3078";
+    state.candleSeries.applyOptions({upColor:up,downColor:down,wickUpColor:up,wickDownColor:down,borderUpColor:up,borderDownColor:down});
   }
+  for (const line of state.classicLevelSeries || []) line.applyOptions({color:light?"#8d712e":"#eee7df"});
   if (state.chart) {
     state.chart.applyOptions({
-      layout: { background: { type: "solid", color: light ? "#f3f1eb" : "#121417" }, textColor: light ? "#626e66" : "#929995" },
-      grid: { vertLines: { color: light ? "rgba(90,100,92,.12)" : "#202725" }, horzLines: { color: light ? "rgba(90,100,92,.12)" : "#202725" } },
-      rightPriceScale: { borderColor: light ? "#c8cec7" : "#343b37" },
-      timeScale: { borderColor: light ? "#c8cec7" : "#343b37" }
+      layout: { background: { type: "solid", color: light ? "#ffffff" : "#121417" }, textColor: light ? "#616d7c" : "#929995" },
+      grid: { vertLines: { color: light ? "rgba(148,163,184,.16)" : "#202725" }, horzLines: { color: light ? "rgba(148,163,184,.16)" : "#202725" } },
+      crosshair: { vertLine:{labelBackgroundColor:light?"#8d712e":"#4c525e"}, horzLine:{labelBackgroundColor:light?"#8d712e":"#4c525e"} },
+      rightPriceScale: { borderColor: light ? "#d7dee7" : "#343b37" },
+      timeScale: { borderColor: light ? "#d7dee7" : "#343b37" }
     });
   }
 }
