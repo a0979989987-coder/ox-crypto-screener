@@ -170,7 +170,7 @@ export function mountTWChartRadar(host,{state:marketState,watchlist=new Set()}={
   const light=document.body.classList.contains('theme-light');
   state.chart?.applyOptions({layout:{background:{color:light?'#ffffff':'#101216'},textColor:light?'#616d7c':'#a9abb1'},grid:{horzLines:{color:light?'#94a3b81a':'#ffffff12'}},timeScale:{borderColor:light?'#d7dee7':'#ffffff1a'},rightPriceScale:{borderColor:light?'#d7dee7':'#ffffff1a'},crosshair:{vertLine:{labelBackgroundColor:light?'#8d712e':'#4c525e'},horzLine:{labelBackgroundColor:light?'#8d712e':'#4c525e'}}});
   if(state.candleData.length)levels();
-  const up=light?'#ce3c4d':UP,down=light?'#168366':DOWN;
+  const up=light?'#e86480':UP,down=light?'#32a780':DOWN;
   state.candleSeries?.applyOptions({upColor:up,downColor:down,borderUpColor:up,borderDownColor:down,wickUpColor:up,wickDownColor:down});
  }
  listen(document,'ox:themechange',syncChartTheme);
@@ -191,7 +191,7 @@ export function mountTWChartRadar(host,{state:marketState,watchlist=new Set()}={
   const signal=signals.filter(s=>s.eligible).sort(compareClassic)[0]||signals[side==='short'?1:0];
   for(const [title,level,darkColor]of [['觸發',signal.pressure,'#eee7df'],['下一目標',signal.target,'#f7bd52'],['結構失效',signal.invalidation,'#5ca5ff']]){
    if(!level)continue;
-   const color=document.body.classList.contains('theme-light')?({'#eee7df':'#8d712e','#f7bd52':'#8d712e','#5ca5ff':'#176ed0'}[darkColor]||darkColor):darkColor;
+   const color=document.body.classList.contains('theme-light')?({'#eee7df':'#8d712e','#f7bd52':'#8d712e','#5ca5ff':'#4598df'}[darkColor]||darkColor):darkColor;
    if(level.kind==='diagonal'){
     const line=state.chart.addLineSeries({color,lineWidth:1,lineStyle:2,priceLineVisible:false,lastValueVisible:false,autoscaleInfoProvider:()=>null});
     line.setData(level.points.map(p=>({time:p.time,value:p.price})));classicSeries.push(line);

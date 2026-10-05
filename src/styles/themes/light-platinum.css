@@ -186,3 +186,24 @@ body.ox-terminal.theme-light.theme-light.theme-light #view-radar .scanner-tabs .
 body.ox-terminal.theme-light.theme-light.theme-light #view-settings .theme-choice.active {background:var(--champagne-soft)!important;color:var(--ink)!important;border-color:var(--champagne-line)!important}
 
 body.ox-terminal.theme-light.theme-light.theme-light #view-radar #chart-timeframe-strip .tf-glass-indicator {background:linear-gradient(135deg,var(--champagne-soft),var(--champagne))!important;border-color:var(--champagne-line)!important;box-shadow:inset 0 1px #ffffffb3!important}
+
+/* Screenshot feedback: borderless home, visible energy, airy gauge colors. */
+body.ox-terminal.theme-light.theme-light.theme-light.theme-light.theme-light {
+ --meter-weak:#ed9aaf;--meter-mid:#e4c984;--meter-strong:#82b8e4;
+}
+body.ox-terminal.theme-light.theme-light.theme-light.theme-light.theme-light #view-home :is(.ox-home-chart,.ox-home-analysis,.ox-home-t1,.ox-score-panel) {
+ border:0!important;outline:0!important;background:#fff!important;box-shadow:none!important;
+}
+body.ox-terminal.theme-light.theme-light.theme-light.theme-light.theme-light #view-home :is(.ox-home-chart,.ox-score-panel)::after {display:none!important}
+body.ox-terminal.theme-light.theme-light.theme-light.theme-light.theme-light #view-home .ox-gauge-track {stroke:#edf0f3!important}
+body.ox-terminal.theme-light.theme-light.theme-light.theme-light.theme-light #view-home .ox-gauge-value {stroke:var(--meter-color,var(--meter-mid))!important}
+body.ox-terminal.theme-light.theme-light.theme-light.theme-light.theme-light #view-home .ox-meter {background:#edf0f3!important}
+body.ox-terminal.theme-light.theme-light.theme-light.theme-light.theme-light #view-home .ox-meter i {background:var(--meter-color,var(--meter-mid))!important}
+body.ox-terminal.theme-light.theme-light.theme-light.theme-light.theme-light #view-strength :is(.strength-card,.strength-compare-panel) {border:0!important;outline:0!important;background:#fff!important;box-shadow:none!important}
+body.ox-terminal.theme-light.theme-light.theme-light.theme-light.theme-light .strength-arc {background:conic-gradient(from 270deg at 50% 100%,var(--meter-weak) 0deg,var(--meter-mid) 90deg,var(--meter-strong) 180deg,transparent 180deg 360deg)!important;opacity:1!important}
+body.ox-terminal.theme-light.theme-light.theme-light.theme-light.theme-light .strength-arc::after {background:#fff!important}
+body.ox-terminal.theme-light.theme-light.theme-light.theme-light.theme-light .strength-compare-scale i.btc {background:var(--meter-mid)!important}
+body.ox-terminal.theme-light.theme-light.theme-light.theme-light.theme-light .strength-compare-scale i.alt {background:var(--meter-strong)!important}
+body.ox-terminal.theme-light.theme-light.theme-light.theme-light.theme-light :is(#btc-strength-needle,#alt-strength-needle) {background:#8794a5!important}
+body.ox-terminal.theme-light.theme-light.theme-light.theme-light.theme-light .tws-title>div {display:none!important}
+body.ox-terminal.theme-light.theme-light.theme-light.theme-light.theme-light #view-home .ox-kicker {display:none!important}
