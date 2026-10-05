@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {validRadarSnapshot,savedRadarSnapshot,saveRadarSnapshot} from '../src/markets/tw/radar-snapshot.js';
+import {validRadarSnapshot,savedRadarSnapshot,saveRadarSnapshot,bundledRadarSnapshot} from '../src/markets/tw/radar-snapshot.js';
 import {seedTWRadar,refreshTWMarketState,createTWMarketState} from '../src/markets/tw/engine.js';
 const published=JSON.parse(readFileSync(new URL('../data/tw-radar.json',import.meta.url),'utf8'));
 test('cached TW membership is bounded by age, official date, calendar and complete source status',()=>{
@@ -23,3 +23,5 @@ test('TW renders verified risk membership while live radar waits, accepts the ev
  release();const fresh=await pending;assert.equal(fresh.data.radarModes.risk.length,0);assert(!fresh.data.usingCachedRadar);
  assert.equal(seedTWRadar(saved),fresh);
 });
+
+test('bundled verified snapshot shares concurrent fetches and reuses success for only sixty seconds',async t=>{let now=Date.now(),calls=0,release;const paused=new Promise(r=>release=r);t.mock.method(Date,'now',()=>now);t.mock.method(globalThis,'fetch',async()=>{calls++;if(calls===1)await paused;return new Response(JSON.stringify({...published,savedAt:now}));});const a=bundledRadarSnapshot(),b=bundledRadarSnapshot();assert.equal(a,b);release();const snapshot=await a;assert.equal(await bundledRadarSnapshot(),snapshot);assert.equal(calls,1);now+=61000;const next=await bundledRadarSnapshot();assert.equal(calls,2);assert.notEqual(next,snapshot);now+=61000;t.mock.method(globalThis,'fetch',async()=>{calls++;throw Error('offline');});await assert.rejects(bundledRadarSnapshot());assert.equal(calls,3);});

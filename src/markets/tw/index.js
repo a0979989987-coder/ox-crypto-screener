@@ -24,7 +24,7 @@ import { cancelTWLookup } from "./lookup.js?v=20261001-tiercomb1";
 import { stopTWStrength, preloadTWStrength } from "./strength.js?v=20261005-load16";
 import { createPreloader } from "./preload.js?v=20261001-twhome1";
 import { preloadBundle } from "./patterns/bundle.js?v=20261005-load16";
-import {savedRadarSnapshot,saveRadarSnapshot,bundledRadarSnapshot} from './radar-snapshot.js?v=20261001-tiercomb1';
+import {savedRadarSnapshot,saveRadarSnapshot,bundledRadarSnapshot} from './radar-snapshot.js?v=20261005-reuse1';
 import { radarNeedsRecovery } from './recovery.js?v=20261001-tiercomb1';
 
 

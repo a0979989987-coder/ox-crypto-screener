@@ -40,7 +40,8 @@ export function createToolsRail({ tabs, selected, label, attribute = 'data-tool'
   }, { signal: life.signal });
   document.addEventListener('ox:feature-tool-return', event => { const market=attribute==='data-tw-tool'?'tw':attribute==='data-crypto-tool'?'crypto':null; if(market===event.detail?.market) shadow.querySelector(`[${attribute}="${event.detail.tool}"]`)?.click(); }, {signal:life.signal});
   document.addEventListener('ox:feature-news-return', event => { if(attribute==='data-news-tab') shadow.querySelector(`[${attribute}="${event.detail.tab}"]`)?.click(); }, {signal:life.signal});
-  shadow.querySelector('link').addEventListener('load', position, { signal: life.signal });
+  // Shared CSS loader replaces link nodes, then dispatches resize after styling.
+  window.addEventListener('resize', position, { signal: life.signal });
   const resize = new ResizeObserver(position); resize.observe(element);
   return { element, shadow, position, select(id){[...shadow.querySelectorAll('button')].find(b=>b.getAttribute(attribute)===id)?.click();}, destroy() { life.abort(); resize.disconnect(); } };
 }

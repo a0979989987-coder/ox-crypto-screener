@@ -14,13 +14,14 @@ export function saveRadarSnapshot(saved,storage=globalThis.localStorage) {
  if(!validRadarSnapshot(saved))return false;
  try {storage?.setItem(KEY,JSON.stringify(saved));return true;}catch{return false;}
 }
-let pending;
+let pending,bundled,expiresAt=0;
 export function bundledRadarSnapshot() {
+ if(bundled&&Date.now()<expiresAt&&validRadarSnapshot(bundled))return Promise.resolve(bundled);
  if(pending)return pending;
  const controller=new AbortController(),deadline=setTimeout(()=>controller.abort(),6000);
  pending=fetch(new URL('../../../data/tw-radar.json',import.meta.url),{cache:'no-cache',signal:controller.signal})
   .then(r=>{if(!r.ok)throw Error('官方名單快取未取得');return r.json();})
-  .then(saved=>{if(!validRadarSnapshot(saved))throw Error('官方名單快取已過期');return saved;})
+  .then(saved=>{if(!validRadarSnapshot(saved))throw Error('官方名單快取已過期');bundled=saved;expiresAt=Date.now()+60000;return saved;})
   .finally(()=>{clearTimeout(deadline);pending=null;});
  return pending;
 }
