@@ -153,7 +153,7 @@ async function refreshMarketTickers() {
 let radarPaintTimer=0, initialScanLoading=null, passCompleted=0, passFailed=0;
 function publishRadarProgress(immediate=false) {
   if (!immediate) {
-    if (!radarPaintTimer) radarPaintTimer=setTimeout(()=>publishRadarProgress(true),150);
+    if (!radarPaintTimer) radarPaintTimer=setTimeout(()=>publishRadarProgress(true),100);
     return;
   }
   clearTimeout(radarPaintTimer);radarPaintTimer=0;
@@ -230,7 +230,10 @@ async function runScanQueueLoop() {
           change24h:num(ticker.change24h),ret1h:candleReturn(candles,1),ret4h:candleReturn(candles,4),
           ret24h:candleReturn(candles,24),
         },ticker.usdtVolume));
-        passCompleted++;publishRadarProgress();
+        passCompleted++;
+        const firstCandidate=(signal.eligible||signal.observationEligible)&&
+          !['t1','t2','t3'].some(tier=>['long','short'].some(side=>state.tierMapBySide?.[side]?.[tier]?.length));
+        publishRadarProgress(firstCandidate);
       } catch (e) {if(state.activeMarket==='crypto'&&['home','radar'].includes(state.activeView))passFailed++;} finally { const n=(initialScanLoading?.done||0)+1;if(initialScanLoading){initialScanLoading.done=n;initialScanLoading.update(n,state.scanQueue.length);} }
     }));
 
