@@ -6,10 +6,18 @@
   const selected={crypto:'patterns',tw:'patterns'};
   const landing=new URL(location.href),returnId=landing.searchParams.get('ox_feature');
   const returning=ids.includes(returnId);
-  let panel;
+  let panel,progress;
   const style=document.createElement('style');
   style.textContent='body.ox-feature-blocked main.wrap,body.ox-feature-blocked #market-unavailable-card{display:none!important}#ox-feature-gate{max-width:640px;margin:32px auto;padding:24px;border:1px solid #d5d0c6;border-radius:16px;background:#fffaf2;color:#24282b}#ox-feature-gate button{font:inherit;padding:10px 16px;margin:8px 10px 0 0;border:1px solid #b8afa0;border-radius:9px;background:#fff;color:inherit}@media(max-width:650px){#ox-feature-gate{margin:20px 12px}}';document.head.append(style);
+  function showPending(){
+    document.body?.classList.add('ox-feature-blocked');
+    if(panel){panel.hidden=true;panel.style.display='none';}
+    if(!progress){progress=document.createElement('div');progress.id='ox-feature-progress';progress.setAttribute('role','status');progress.textContent='載入中…';progress.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);padding:6px 12px;font:12px system-ui;color:inherit;opacity:.7;pointer-events:none';document.body?.append(progress);}
+    progress.hidden=false;
+  }
   function gate(message,login=false){
+    if(!policies&&loading){showPending();return;}
+    if(progress)progress.hidden=true;
     document.body?.classList.add('ox-feature-blocked');
     if(!panel){panel=document.createElement('section');panel.id='ox-feature-gate';panel.setAttribute('role','status');
       const text=document.createElement('p');text.id='ox-feature-message';
@@ -22,7 +30,7 @@
     panel.querySelector('#ox-feature-login').hidden=!login;
     const choose=panel.querySelector('select');choose.replaceChildren();const placeholder=document.createElement('option');placeholder.value='';placeholder.textContent='前往其他功能';choose.append(placeholder);for(const row of policies?.values()||[]){const option=document.createElement('option');option.value=row.id;option.textContent=`${row.label}（${row.mode==='public'?'公開':'需登入'}）`;choose.append(option);}choose.hidden=!policies;
   }
-  function reveal(){document.body?.classList.remove('ox-feature-blocked');if(panel){panel.hidden=true;panel.style.display='none';}}
+  function reveal(){if(progress)progress.hidden=true;document.body?.classList.remove('ox-feature-blocked');if(panel){panel.hidden=true;panel.style.display='none';}}
   function viewFeature(view,market=document.body.dataset.market||'crypto'){
     if(view==='strength')return market+'.'+selected[market];
     if(['home','radar'].includes(view))return market+'.'+view;
@@ -58,7 +66,7 @@
   }
   async function refresh(){
     if(loading)return loading;
-    if(!policies)gate('正在確認功能設定…');const token=++epoch;
+    if(!policies)showPending();const token=++epoch;
     loading=(async()=>{try{
       const abort=new AbortController(),timer=setTimeout(()=>abort.abort(),10000);
       let response,data;try{response=await fetch('/api/v1/account/feature-access',{credentials:'same-origin',cache:'no-store',signal:abort.signal});data=await response.json();}finally{clearTimeout(timer);}

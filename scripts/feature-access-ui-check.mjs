@@ -33,7 +33,7 @@ try{
  await page.goto('https://ox.test/?ox_feature=tw.etf');await page.waitForFunction(()=>OXFeatures.ready);assert.equal(await page.locator('main').isVisible(),false);
  await page.evaluate(()=>{OXAuth.user={id:'synthetic-registered'};document.dispatchEvent(new CustomEvent('ox:accountchange'));});
  await page.waitForFunction(()=>window.returnedTool==='etf');assert.equal(await page.evaluate(()=>document.body.dataset.view),'strength');assert.equal(await page.locator('main').isVisible(),true);
- locked=false;pause=true;await page.goto('https://ox.test/');await page.waitForTimeout(100);await page.evaluate(()=>document.dispatchEvent(new CustomEvent('ox:viewchange')));assert.match(await page.locator('#ox-feature-message').innerText(),/正在確認/);assert.doesNotMatch(await page.locator('#ox-feature-message').innerText(),/暫停/);pause=false;releasePolicy();await page.waitForFunction(()=>OXFeatures.ready);assert.equal(await page.locator('main').isVisible(),true);
+ locked=false;pause=true;await page.goto('https://ox.test/');await page.waitForTimeout(100);await page.evaluate(()=>document.dispatchEvent(new CustomEvent('ox:viewchange')));assert.equal(await page.locator('#ox-feature-progress').isVisible(),true);assert.equal(await page.locator('#ox-feature-gate').isVisible(),false);assert.equal(await page.locator('main').isVisible(),false,'Unknown policy must not reveal product data');pause=false;releasePolicy();await page.waitForFunction(()=>OXFeatures.ready);assert.equal(await page.locator('main').isVisible(),true);
  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));assert.deepEqual(errors,[]);
  await page.close();
  }
