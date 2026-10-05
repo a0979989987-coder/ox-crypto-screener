@@ -19,7 +19,7 @@ import {
 
 import {
   renderTWRadar, stopTWRadar
-} from "./radar.js?v=20261005-polish1";
+} from "./radar.js?v=20261005-clarity1";
 import { cancelTWLookup } from "./lookup.js?v=20261001-tiercomb1";
 import { stopTWStrength, preloadTWStrength } from "./strength.js?v=20261005-briefingdate";
 import { createPreloader } from "./preload.js?v=20261001-twhome1";

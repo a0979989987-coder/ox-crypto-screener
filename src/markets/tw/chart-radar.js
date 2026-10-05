@@ -170,7 +170,7 @@ export function mountTWChartRadar(host,{state:marketState,watchlist=new Set()}={
   const light=document.body.classList.contains('theme-light');
   state.chart?.applyOptions({layout:{background:{color:light?'#ffffff':'#101216'},textColor:light?'#616d7c':'#a9abb1'},grid:{horzLines:{color:light?'#94a3b81a':'#ffffff12'}},timeScale:{borderColor:light?'#d7dee7':'#ffffff1a'},rightPriceScale:{borderColor:light?'#d7dee7':'#ffffff1a'},crosshair:{vertLine:{labelBackgroundColor:light?'#8d712e':'#4c525e'},horzLine:{labelBackgroundColor:light?'#8d712e':'#4c525e'}}});
   if(state.candleData.length)levels();
-  const up=light?'#e86480':UP,down=light?'#32a780':DOWN;
+  const up=light?'#d34260':UP,down=light?'#16876a':DOWN;
   state.candleSeries?.applyOptions({upColor:up,downColor:down,borderUpColor:up,borderDownColor:down,wickUpColor:up,wickDownColor:down});
  }
  listen(document,'ox:themechange',syncChartTheme);
@@ -203,7 +203,10 @@ export function mountTWChartRadar(host,{state:marketState,watchlist=new Set()}={
   const record=historyRecord;if(!record)return;
   const previous=state.candleData,range=state.chart.timeScale().getVisibleLogicalRange(),candles=aggregateChartCandles(record.daily,frame,record.asOf,{coverageStart:record.coverageStart});
   state.candleData=candles;state.candleSeries.setData(candles);state.volumeSeries.setData(candles.map(c=>({time:c.time,value:c.volume,color:c.close>=c.open?'#f16a7035':'#48b78e35'})));
-  if(fitAll||initial)state.chart.timeScale().fitContent();else if(range)state.chart.timeScale().setVisibleLogicalRange(preserveHistoryViewport(previous,candles,range));
+  if(fitAll||initial){
+   if(matchMedia('(max-width:720px)').matches&&candles.length){const count=Math.max(36,Math.min(72,Math.floor(el.clientWidth/5)));state.chart.timeScale().setVisibleLogicalRange({from:Math.max(-1,candles.length-count),to:candles.length+3});}
+   else state.chart.timeScale().fitContent();
+  }else if(range)state.chart.timeScale().setVisibleLogicalRange(preserveHistoryViewport(previous,candles,range));
   refreshRange();levels();drawings?.sync();
   const span=candles.length?`${candles[0].date} ～ ${candles.at(-1).lastDate||candles.at(-1).date}`:'尚無已完成 K 線';
   $('[data-series-note]').textContent=`${CHART_FRAMES[frame]} K · ${candles.length} 根${frame==='1D'?'':'已完成 K 線'} · ${span} · 未復權`;

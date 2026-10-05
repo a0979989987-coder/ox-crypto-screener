@@ -338,7 +338,27 @@ function getSavedThemeMode() {
   return ["dark", "light", "system"].includes(saved) ? saved : "dark";
 }
 
+let themeTransition = null, themeChangeVersion = 0, themeInitialized = false, themeFallbackTimer;
 function applyTheme(themeMode = "system") {
+  const version = ++themeChangeVersion;
+  const light = themeMode === 'light' || themeMode === 'system' && systemThemeQuery.matches;
+  const changed = document.body.classList.contains('theme-light') !== light;
+  const animate = themeInitialized && changed && !matchMedia('(prefers-reduced-motion: reduce)').matches;
+  themeInitialized = true;
+  themeTransition?.skipTransition();
+  const update = () => { if(version === themeChangeVersion)applyThemeNow(themeMode); };
+  if(!animate){update();return;}
+  if(typeof document.startViewTransition === 'function') {
+    themeTransition = document.startViewTransition(update);
+    themeTransition.finished.catch(()=>{});
+  } else {
+    document.body.classList.add('ox-theme-changing');
+    requestAnimationFrame(update);
+    clearTimeout(themeFallbackTimer);
+    themeFallbackTimer = setTimeout(()=>document.body.classList.remove('ox-theme-changing'),550);
+  }
+}
+function applyThemeNow(themeMode = "system") {
   const mode = ["dark", "light", "system"].includes(themeMode) ? themeMode : "system";
   const resolved = mode === "system" ? (systemThemeQuery.matches ? "light" : "dark") : mode;
   const light = resolved === "light";

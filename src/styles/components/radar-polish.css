@@ -44,3 +44,33 @@ body.ox-terminal .tw-radar-root .twr-scan-button[aria-busy="true"] svg {animatio
     bottom:calc(92px + env(safe-area-inset-bottom))!important;
   }
 }
+
+/* White-theme selection uses color alone, with no halo or neon shadow. */
+body.ox-terminal.theme-light.theme-light.theme-light.theme-light.theme-light #view-radar .coin-card.selected {
+  border-left-color:var(--ox-selected-color,#267bc9)!important;
+  outline:1px solid var(--ox-selected-color,#267bc9)!important;
+  outline-offset:-1px!important;
+  background:var(--ox-selected-fill,#eff6fd)!important;
+  box-shadow:none!important;
+}
+body.ox-terminal.theme-light #view-radar[data-price-direction="up"] {--ox-selected-color:#267bc9;--ox-selected-fill:#eff6fd}
+body.ox-terminal.theme-light #view-radar[data-price-direction="down"] {--ox-selected-color:#d64d69;--ox-selected-fill:#fff2f5}
+
+@media(max-width:700px) {
+  body.ox-terminal .tw-radar-root .twr-results-panel {margin-inline:0!important;padding-inline:0!important}
+  body.ox-terminal .tw-radar-root .twr-list {gap:8px!important}
+  body.ox-terminal .tw-radar-root .tw-stock-card {min-height:144px!important;padding:8px!important}
+  body.ox-terminal .tw-radar-root .tw-stock-quote {margin-block:5px!important}
+  body.ox-terminal .tw-radar-root .tw-stock-risk-area {min-height:36px!important}
+  body.ox-terminal .tw-radar-root .tw-stock-risk-area.no-progress {min-height:28px!important}
+}
+/* Render the chart's native high-density pixels without a compositor filter. */
+body.ox-terminal .tw-chart-radar :is(.chart-container,canvas) {filter:none!important;opacity:1!important}
+
+::view-transition-old(root),::view-transition-new(root) {animation-duration:480ms;animation-timing-function:ease-in-out;mix-blend-mode:normal}
+::view-transition-old(root) {animation-name:ox-theme-out}
+::view-transition-new(root) {animation-name:ox-theme-in}
+@keyframes ox-theme-out {to {opacity:0}}
+@keyframes ox-theme-in {from {opacity:0}}
+body.ox-theme-changing,body.ox-theme-changing * {transition:background-color 480ms ease,color 480ms ease,border-color 480ms ease,box-shadow 480ms ease!important}
+@media(prefers-reduced-motion:reduce){::view-transition-old(root),::view-transition-new(root) {animation:none}body.ox-theme-changing,body.ox-theme-changing * {transition:none!important}}
