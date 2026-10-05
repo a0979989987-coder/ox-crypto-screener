@@ -1,5 +1,5 @@
 import { PATTERNS, patternById, TIMEFRAMES as CRYPTO_TIMEFRAMES } from './catalog.js?v=patterns5d-20260929';
-import { revealStyledShadow } from '../../../components/style-ready.js?v=20261005-touch1';
+import { revealStyledShadow } from '../../../components/style-ready.js?v=20261005-tools12';
 import { queryFromStrokes, normalize, sortMatches, patternCounts, prepareCandles, indexPrepared, matchPrepared, rankPatternMatches, browsePatternEntries, classificationCurrent } from './matcher.js?v=20261002-rank8';
 import * as cryptoSource from './source.js?v=20261002-rank8';
 import * as cryptoCache from './index-cache.js?v=20261002-rank8';
