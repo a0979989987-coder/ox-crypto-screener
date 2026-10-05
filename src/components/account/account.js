@@ -91,6 +91,9 @@
     try { return await action(); } finally { busy = false; form?.removeAttribute('aria-busy'); buttons.forEach(button => { if (button) button.disabled = false; }); syncEmailCooldown(); }
   }
   const renderUser = user => {
+    for (const note of document.querySelectorAll('.ox-account-provider-note')) {
+      note.textContent = user ? '已登入 OX 帳號，可開啟帳號中心。' : window.OXAuth.status.configured ? '帳號連線設定已載入。請開啟登入／註冊。' : '帳號連線設定尚未完成。';
+    }
     if (!center) return;
     loadLink(user); loadAdmin(user);
     let profile = $('#ox-account-profile');

@@ -66,7 +66,11 @@ export function createAccountHandler({ env = process.env, clientFactory = create
     };
     try {
       client = clientFactory(url, key, { auth: { flowType: 'pkce', persistSession: true, autoRefreshToken: false, detectSessionInUrl: false, storage } });
-      if (endpoint === 'feature-access') return json(200,await featureCatalog(client));
+      if (endpoint === 'feature-access') {
+        // Public catalog must not inherit transient PKCE/session storage.
+        const policyReader=clientFactory(url,key,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
+        return json(200,await featureCatalog(policyReader));
+      }
       if (endpoint === 'google') {
         const returnTo = safeReturn(body.returnTo);
         const { data, error } = await client.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: origin + '/api/v1/account/callback', skipBrowserRedirect: true } });

@@ -22,9 +22,9 @@
     } finally { emailPending = false; }
   }
   let config = { configured: false };
-  async function request(endpoint, body) {
+  async function request(endpoint, body, options={}) {
     try {
-      const response = await fetch(`/api/v1/account/${endpoint}`, { method: body ? 'POST' : 'GET', credentials: 'same-origin', cache: 'no-store', headers: body ? { 'Content-Type': 'application/json' } : {}, ...(body ? { body: JSON.stringify(body) } : {}) });
+      const response = await fetch(`/api/v1/account/${endpoint}`, { method: body ? 'POST' : 'GET', credentials: 'same-origin', cache: 'no-store', signal:options.signal, headers: body ? { 'Content-Type': 'application/json' } : {}, ...(body ? { body: JSON.stringify(body) } : {}) });
       const result = await response.json();
       if (!response.ok) return { ok: false, code: endpoint === 'email' && response.status === 429 ? 'EMAIL_RATE_LIMITED' : result.code, cooldownSeconds: result.cooldownSeconds, message: result.message || '登入服務尚未設定或暫時無法使用。' };
       return result;
@@ -36,7 +36,7 @@
     get status() { return { configured: config.configured === true, providerConnected: !!current, configurationOnly: !current }; },
     get emailCooldownSeconds() { return remainingEmailCooldown(); },
     async initialize() { const epoch = sessionEpoch; config = await request('config'); let user = null; if (config.configured) { const result = await request('session'); if (result.ok) user = result.user; } if (epoch === sessionEpoch && !logoutPending) setUser(user); return config; },
-    async getCurrent() { const epoch = sessionEpoch; const result = await request('session'); if (epoch === sessionEpoch && !logoutPending) setUser(result.ok ? result.user : null); return current; },
+    async getCurrent(options={}) { const epoch = sessionEpoch; const result = await request('session',undefined,options); if (epoch === sessionEpoch && !logoutPending) setUser(result.ok ? result.user : null); return current; },
     getAdminReviewStatus() { return request('admin-review'); },
     getBitgetLink() { return request('bitget-link'); },
     saveBitgetLink(uid, revision) { return request('bitget-link', { action: 'save', uid, revision }); },
