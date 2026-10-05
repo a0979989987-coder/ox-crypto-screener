@@ -30,6 +30,7 @@ export function mountNewsWorkspace(host, api) {
   }), 'oxn-close oxn-more'); header.append(more);
   const rail = createToolsRail({ tabs: [['calendar', '行事曆'], ['key', '關鍵新聞']], selected: state.tab, label: '新聞內容', attribute: 'data-news-tab', equal: true,
     onSelect(tab) { state.tab = tab; persist(); panel?.destroy({ focus: false }); renderControls(); renderContent(); } }); rail.element.classList.add('oxn-tabs');
+  const compactRailStyle = node('style'); compactRailStyle.textContent = '@media(max-width:600px){.tw-radar-root .twr-mode-rail{padding:3px!important}.tw-radar-root .twr-mode-rail button{min-height:28px!important;padding:4px 8px!important}.tw-radar-root .twr-mode-viewport{margin-bottom:0!important}}'; rail.element.shadowRoot.append(compactRailStyle);
   const controls = node('div', 'oxn-controls'), notification = node('div', 'oxn-notification'), content = node('div', 'oxn-content');
   root.append(header, rail.element, controls, notification, content); host.replaceChildren(root);
   const scope = () => api.scope === 'all' ? state.market : api.scope;
@@ -145,12 +146,12 @@ export function mountNewsWorkspace(host, api) {
     for (const cell of gridInfo.cells) {
       const entries = map.get(cell.date) || []; const b = node('div', 'oxn-day'); b.dataset.date = cell.date; b.setAttribute('role', 'gridcell');
       const selectDay = () => { state.selectedDay=cell.date; persist(); renderContent(); };
-      b.addEventListener('click', selectDay);
+      b.addEventListener('click', () => { selectDay(); if(mobile && entries.length)api.navigate({day:cell.date}); });
       if (cell.outside) b.classList.add('is-outside'); if (cell.date === taipeiDay()) { b.classList.add('is-today'); b.setAttribute('aria-current', 'date'); }
-      b.append(button(String(cell.day), `${cell.date}，${entries.length} 個已收錄事件`, e => { e.stopPropagation(); selectDay(); if(!mobile)api.navigate({day:cell.date}); }, 'oxn-day-number'));
-      if(entries.length)b.append(button(`${entries.length} 件`,`${cell.date}，查看下方 ${entries.length} 個事件`,e=>{e.stopPropagation();selectDay();requestAnimationFrame(()=>content.querySelector('.oxn-day-events')?.scrollIntoView({block:'center',behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'instant':'smooth'}));},'oxn-day-count'));
+      b.append(button(String(cell.day), `${cell.date}，${entries.length} 個已收錄事件`, e => { e.stopPropagation(); selectDay(); if(!mobile || entries.length)api.navigate({day:cell.date}); }, 'oxn-day-number'));
+      if(entries.length)b.append(button(`${entries.length} 件`,`${cell.date}，開啟當日 ${entries.length} 個事件`,e=>{e.stopPropagation();state.selectedDay=cell.date;persist();api.navigate({day:cell.date});},'oxn-day-count'));
       for (const item of entries.slice(0, 2)) { const short = button(item.shortTitle || label(item).replace(/美國 \d{4} 年 \d+ 月/, ''), `${CATEGORY_NAMES[eventCategory(item)] || '事件'}：${label(item)}`, e => { e.stopPropagation(); api.navigate({ day: cell.date, event: item.id }); }, 'oxn-calendar-event'); short.title = label(item); short.dataset.category = eventCategory(item) || ''; short.dataset.tone = calendarTone(eventCategory(item)); b.append(short); }
-      if (entries.length>2) b.append(node('span', 'oxn-day-more', `＋${entries.length-2}`)); grid.append(b);
+      if (entries.length>2) b.append(button(`＋${entries.length-2}`,`${cell.date}，查看全部 ${entries.length} 個事件`,e=>{e.stopPropagation();api.navigate({day:cell.date});},'oxn-day-more')); grid.append(b);
     }
     const cover = coverage(data.snapshot, scope(), state.month);
     const caption = node('div', 'oxn-calendar-caption'); caption.append(node('span', '', '台北時間 UTC+8'), button(cover.complete ? '資料範圍' : '部分資料・範圍', '', () => showPanel(caption.querySelector('button'), '事件資料範圍', body => {

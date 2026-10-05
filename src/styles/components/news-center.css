@@ -427,14 +427,25 @@ body.theme-light.theme-light .oxn-root .oxn-importance-toggle[aria-pressed="true
 @media(max-width:600px){.oxn-root .oxn-event-row small{display:inline!important}.oxn-root .oxn-event-row .oxn-event-values small{font-size:12px;color:#969ca6;white-space:normal}.oxn-root .oxn-event-row .oxn-event-values{line-height:1.6}.oxn-root .oxn-controls button{color:#efeee9!important}.oxn-root .oxn-event-row{color:#efeee9!important}body.theme-light.theme-light .oxn-root .oxn-controls button,body.theme-light.theme-light .oxn-root .oxn-event-row{color:#303640!important}body.theme-light.theme-light .oxn-root .oxn-event-row small,body.theme-light.theme-light .oxn-root .oxn-event-meta{color:#707782!important}body.theme-light.theme-light .oxn-root .oxn-tabs button{color:#303640!important}.oxn-root .oxn-event-meta .oxn-stars{color:#d95658!important}}
 
 .oxn-event-summary{font-size:14px;line-height:1.6;white-space:normal;margin:0;color:inherit}.oxn-event-icon img{display:block;object-fit:contain}
+.oxn-root .oxn-day-more{border:0;background:transparent;padding:0;text-align:left;cursor:pointer}
+body.theme-light.theme-light .oxn-root .oxn-month-title{border:0!important;background:transparent!important;box-shadow:none!important;outline:0!important;backdrop-filter:none!important}
 @media(max-width:600px){
  .oxn-root{padding-top:12px}
- .oxn-root .oxn-week-date{gap:5px;min-height:56px;padding:7px 0}
- .oxn-root .oxn-week-date strong{font-size:19px!important;line-height:24px;letter-spacing:0!important}
+ .oxn-root .oxn-week-date{gap:2px;min-height:46px;padding:4px 0}
+ .oxn-root .oxn-week-date strong{font-size:18px!important;line-height:22px;letter-spacing:0!important}
  .oxn-root .oxn-week-date small{font-size:12px;letter-spacing:0!important}
  .oxn-root :is(.oxn-month-title,.oxn-mobile-events h2){letter-spacing:0!important;word-spacing:0!important;font-variant-numeric:tabular-nums}
  .oxn-root .oxn-mobile-events{width:calc(100vw - 16px);max-width:none;margin-inline:calc((100% - 100vw + 16px)/2)}
- .oxn-root .oxn-mobile-events h2{font-size:15px!important;line-height:1.4;margin:10px 0 6px;padding-inline:4px}
+ .oxn-root .oxn-mobile-events h2{font-size:14px!important;line-height:1.4;margin:6px 0;padding-inline:4px}
  .oxn-root .oxn-mobile-events .oxn-event-row{padding:16px 4px;min-width:0}
  .oxn-root .oxn-mobile-events :is(strong,p,small,time){letter-spacing:0!important;word-spacing:0!important}
+ .oxn-root .oxn-controls[data-tab="calendar"]{min-height:34px;margin-bottom:4px}
+ .oxn-root .oxn-controls[data-tab="calendar"] :is(.oxn-month-nav,.oxn-month-title,.oxn-pill){height:34px!important;min-height:34px!important}
+ .oxn-root .oxn-month-nav .oxn-month-title{font-size:12px!important}
+ .oxn-root .oxn-mobile-dates{margin:2px 0 4px}
+ .oxn-root .oxn-month-expand{font-size:12px;padding:5px 0;min-height:32px;line-height:22px}
+ .oxn-root .oxn-week-date[aria-pressed="true"],body.theme-light.theme-light .oxn-root .oxn-week-date[aria-pressed="true"]{background:#b9d5fa!important;color:#253a58!important;box-shadow:none!important}
+ .oxn-root .oxn-week-date[aria-pressed="true"] small,body.theme-light.theme-light .oxn-root .oxn-week-date[aria-pressed="true"] small{color:#425e83!important}
+ .oxn-root .oxn-day-count{min-height:22px!important;cursor:pointer}
+ .oxn-root .oxn-tabs{margin-bottom:4px}
 }
