@@ -115,7 +115,7 @@ let sortKey =
 
 let activeMode = "risk";
 let chartRadar=null,latestRadarState=null,pendingChartSymbol=null;
-const RADAR_MODES = [...TW_RADAR_MODES, { id: "screener", label: "篩選器" }];
+const RADAR_MODES = [...TW_RADAR_MODES.filter(mode => mode.id !== 'watchlist'), { id: "screener", label: "篩選器" }, ...TW_RADAR_MODES.filter(mode => mode.id === 'watchlist')];
 let screener=null, screenerHost=null, screenerGeneration=0;
 function stopScreener(){++screenerGeneration;screener?.destroy();screener=null;screenerHost=null;}
 async function showScreener(host){
