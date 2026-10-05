@@ -466,4 +466,20 @@ body.theme-light.theme-light .oxn-root .oxn-month-title{border:0!important;backg
 
 /* Separate each recorded date without reserving space for empty future days. */
 .oxn-root .oxn-upcoming-day+.oxn-upcoming-day{border-top:1px solid var(--oxn-line);padding-top:18px}
+
+/* Keep the white calendar visibly framed at both viewport sizes. */
+body.ox-terminal.theme-light.theme-light.theme-light .oxn-root .oxn-calendar {
+ border:1.5px solid #b7bec8!important;
+ box-shadow:none!important;
+}
+body.ox-terminal.theme-light.theme-light.theme-light .oxn-root .oxn-weekdays,
+body.ox-terminal.theme-light.theme-light.theme-light .oxn-root .oxn-day {
+ border-color:#d1d6de!important;
+}
+body.ox-terminal.theme-light.theme-light.theme-light .oxn-root .oxn-mobile-dates {
+ border:1.5px solid #b7bec8;
+ border-radius:13px;
+ padding:6px;
+ background:#fff;
+}
 body.theme-light.theme-light .oxn-root .oxn-week-date.is-market-closed{outline-color:#e5cf91}
