@@ -49,24 +49,25 @@ export function buildPremarketBriefing(input = {}) {
   if (!fx) missing.push('08:30 前台幣匯率');
   const direction = sox && adr && night ? sox.changePct > 0 && adr.changePct > 0 && night.change > 0 ? '偏開高' :
     sox.changePct < 0 && adr.changePct < 0 && night.change < 0 ? '偏開低' : '開盤方向分歧' : '開盤方向待確認';
-  const market = `費半${sox ? signed(sox.changePct) + '%' : '待補'}、ADR${adr ? signed(adr.changePct) + '%' : '待補'}；`;
-  const futures = night ? `夜盤${night.change > 0 ? '+' : ''}${compact(night.change)}點收${compact(night.close)}。` : '夜盤待補。';
-  const theme = sector ? `美股${short(sector.us)}強，留意台股${short(sector.tw)}；` : '強勢族群待補；';
-  const positions = shorts ? `空單${shorts.change > 0 ? '增' : shorts.change < 0 ? '減' : '持平'}${shorts.change ? compact(Math.abs(shorts.change)) + '口' : ''}。` : '外資空單待補。';
+  const market = [sox ? `費半${signed(sox.changePct)}%` : '', adr ? `ADR${signed(adr.changePct)}%` : ''].filter(Boolean).join('、');
+  const futures = night ? `夜盤${night.change > 0 ? '+' : ''}${compact(night.change)}點收${compact(night.close)}。` : '';
+  const theme = sector ? `美股${short(sector.us)}強，留意台股${short(sector.tw)}；` : '';
+  const positions = shorts ? `空單${shorts.change > 0 ? '增' : shorts.change < 0 ? '減' : '持平'}${shorts.change ? compact(Math.abs(shorts.change)) + '口' : ''}。` : '';
   const twdChange = fx ? (1 / (1 + fx.changePct / 100) - 1) * 100 : null;
   const currency = fx ? `台幣${twdChange > 0 ? '升' : twdChange < 0 ? '貶' : '持平'}${twdChange ? rounded(Math.abs(twdChange), 2) + '%' : ''}；` : '';
   const action = '前15分鐘先看量，未高於昨同期不追價。';
-  let text = `${market}${futures}${theme}${positions}${currency}${direction}；${action}`;
+  const confirmedDirection = sox && adr && night ? `${direction}；` : '';
+  let text = `${market ? market + '；' : ''}${futures}${theme}${positions}${currency}${confirmedDirection}${action}`;
   // Currency is supplementary to the required three axes. Keep all mandatory
   // fields and the measurable action intact when long supplied names exceed 100.
-  if ([...text].length > 100) text = `${market}${futures}${theme}${positions}${direction}；${action}`;
-  if ([...text].length > 100) text = `${market}${futures}${sector ? `美股${short(sector.us, 4)}→台股${short(sector.tw, 4)}；` : theme}${positions}${direction}；前15分鐘量未高於昨同期不追價。`;
+  if ([...text].length > 100) text = `${market ? market + '；' : ''}${futures}${theme}${positions}${confirmedDirection}${action}`;
+  if ([...text].length > 100) text = `${market ? market + '；' : ''}${futures}${sector ? `美股${short(sector.us, 4)}→台股${short(sector.tw, 4)}；` : theme}${positions}${confirmedDirection}前15分鐘量未高於昨同期不追價。`;
   if ([...text].length > 100) {
     missing.push('超長數值的可讀格式');
-    text = '費半、ADR與夜盤數值格式待確認；強勢族群及外資空單請見明確輸入。開盤方向待確認；前15分鐘先看量，未高於昨同期不追價。';
+    text = '數值超出摘要顯示範圍，請查看下方市場資料。前15分鐘先看量，未高於昨同期不追價。';
   }
   return { title: '08:30 盤前快訊', date, text, missing, complete: Boolean(date) && missing.length === 0,
-    basis: `${usDate ? `美股 ${usDate}；` : ''}方向：費半、台積電ADR＋已完成夜盤推估` };
+    basis: `${usDate ? `美股 ${usDate}` : ''}${sox && adr && night ? '；方向依費半、台積電ADR及已完成夜盤推估' : ''}` };
 }
 
 export function buildAftermarketBriefing(input = {}) {
@@ -80,7 +81,7 @@ export function buildAftermarketBriefing(input = {}) {
   const sells = [...sectors].filter(value => value.netTwd < 0).sort((a, b) => a.netTwd - b.netTwd).slice(0, 3);
   const amount = value => `${value.estimated ? '估算' : ''}${rounded(Math.abs(value.netTwd) / 1e8, 2)}億`;
   const theme = onDate(input.buyTheme, date) && clean(input.buyTheme.name) ? clean(input.buyTheme.name) : null;
-  let text = index ? `大盤${signed(index.changePct, 2)}%。` : '當日大盤漲跌幅待補。';
+  let text = index ? `大盤${signed(index.changePct, 2)}%。` : '';
   if (input.partial && sectors.length) {
     text += '已收錄族群中，';
     missing.push('部分法人來源待更新');
@@ -91,7 +92,7 @@ export function buildAftermarketBriefing(input = {}) {
     const strengthRatio = strength ? buys.reduce((sum, value) => sum + value.netTwd, 0) / strength.baselineTwd : null;
     if (finite(strengthRatio) && strengthRatio >= 1.5) text += `力道明顯（買超合計為${clean(strength.baselineLabel)}${rounded(strengthRatio, 1)}倍）。`;
   } else if (sectors.length) text += '已收錄族群未見淨買超。';
-  else { missing.push('當日法人產業買超'); text += '法人買賣主軸尚待同日資料。'; }
+  else { missing.push('當日法人產業買超'); }
   if (sells.length) text += `同時從${sells.map(value => `${clean(value.name)}賣超${amount(value)}`).join('、')}。`;
   else if (sectors.length) text += '已收錄族群未見淨賣超。';
   else { missing.push('當日法人產業賣超'); }
@@ -101,14 +102,14 @@ export function buildAftermarketBriefing(input = {}) {
   else { missing.push('有明確規則的籌碼異常股數'); }
   const rotation = onDate(input.rotation, date) && ['積極', '保守', '劇烈'].includes(input.rotation.label) &&
     clean(input.rotation.basis) ? input.rotation : null;
-  if (rotation) text += `${!anomalies ? '籌碼異常股數待確認。' : ''}轉向相當${rotation.label}（${clean(rotation.basis)}）。`;
-  else { missing.push('轉向程度依據'); text += anomalies ? '轉向程度待確認。' : '籌碼異常與轉向待確認。'; }
+  if (rotation) text += `轉向相當${rotation.label}（${clean(rotation.basis)}）。`;
+  else { missing.push('轉向程度依據'); }
   return { title: 'AI 盤後總結', date, text, missing, complete: Boolean(date) && missing.length === 0,
     basis: [sectors.some(value => value.estimated) ? '法人金額：淨股數×收盤價估算' : '',
       input.partial && sectors.length ? '部分來源未更新，採同日已取得資料' : ''].filter(Boolean).join('；') };
 }
 
-// Adapter for today's available snapshots. ADR, futures positioning, US sector
+// Adapter for verified available snapshots. Futures positioning, US sector
 // rankings and anomaly rules are intentionally absent until a verified source
 // supplies them; a broad US index is not relabelled as a strong sector.
 export function homeBriefingInput(home = {}, phase = 'after', research = null) {
@@ -116,12 +117,13 @@ export function homeBriefingInput(home = {}, phase = 'after', research = null) {
     const date = home.briefingStatus?.reportDate || home.briefing?.date;
     const rows = home.briefing?.rows || [];
     const quote = id => { const row = rows.find(value => value.id === id); return row ? { ...row, date: row.marketDate } : null; };
-    const night = home.night ? { ...home.night, date: home.night.sessionEnd?.slice(0, 10),
+    const night = home.night ? { ...home.night, date: home.night.tradeDate || home.night.sessionEnd?.slice(0, 10),
       quotedAt: home.night.sessionEnd, status: home.nightStatus?.error ? 'stale' : home.night.status } : null;
     const fx = quote('TWD=X');
     return { date, sox: quote('^SOX'), adr: quote('TSM'), us: quote('^GSPC'), night, fx: fx ? { ...fx, pair: 'USD/TWD' } : null };
   }
-  const date = home.coreStatus?.reportDate || home.core?.date;
+  // Acquisition date can be today while the last complete cash session is Friday.
+  const date = home.core?.date;
   const index = home.core?.index ? { ...home.core.index, date: home.core.date, status: home.coreStatus?.error ? 'stale' : 'ok' } : null;
   const partial = Boolean(research?.sourceHealth && Object.values(research.sourceHealth).some(source => !source.ok || source.stale));
   const sectors = research?.date === date && research?.methodology === 'net-shares-times-daily-close-v1' ?

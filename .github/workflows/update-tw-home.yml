@@ -10,6 +10,9 @@ on:
     - cron: '30 21 * * *'
     - cron: '45 21 * * *'
     - cron: '15 22 * * *'
+    # Retry completed night/US close sources before the 08:30 Taipei briefing.
+    - cron: '20 0 * * 1-5'
+    - cron: '30 0 * * 1-5'
     - cron: '35 5 * * *'
     - cron: '40 5 * * 1-5'
     - cron: '15 6 * * 1-5'

@@ -1,4 +1,4 @@
-import { renderResearch, stopResearch } from './research-page.js?v=20261002-nav6';
+import { renderResearch, stopResearch } from './research-page.js?v=20261005-briefingdate';
 import { mountResearch } from './research-ui.js';
 import { createToolsRail } from '../../components/strength/tools-rail.js?v=20261005-touch1';
 import { createTWMarketState } from './engine.js?v=20261002-rank8';

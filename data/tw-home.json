@@ -279,6 +279,25 @@
         "collectedAt": "2026-10-05T06:44:10.725Z"
       },
       {
+        "group": "us",
+        "name": "台積電 ADR",
+        "id": "TSM",
+        "decimals": 2,
+        "unit": "USD",
+        "source": "Yahoo Finance",
+        "sourceUrl": "https://finance.yahoo.com/quote/TSM/",
+        "value": 472.78,
+        "change": 13.579987792968723,
+        "changePct": 2.9573143362300547,
+        "previousClose": 459.20001220703125,
+        "marketDate": "2026-10-02",
+        "quotedAt": "2026-10-02T20:00:02.000Z",
+        "quoteKind": "source-quote",
+        "status": "ok",
+        "collectedAt": "2026-10-05T06:49:03.388Z",
+        "checkedAt": "2026-10-05T06:49:03.388Z"
+      },
+      {
         "group": "asia",
         "name": "台灣加權",
         "id": "^TWII",
