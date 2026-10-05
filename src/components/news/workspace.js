@@ -238,11 +238,11 @@ export function mountNewsWorkspace(host, api) {
       const dock = document.querySelector('.app-dock')?.getBoundingClientRect(), top = grid.getBoundingClientRect().top + scrollY;
       const bottom = Math.min(height, dock?.top || height - 80), rows = Number(content.querySelector('.oxn-calendar').dataset.weeks);
       const room = Math.floor(bottom - top - 38);
-      // Reveal the event shelf when there is room, but keep six-week months
-      // usable on shorter phones instead of falling back to an oversized grid.
-      const available = room-Math.min(70,Math.max(0,room-rows*56)), enlarged = parseFloat(getComputedStyle(document.documentElement).fontSize) > 20;
-      const fit = innerWidth <= 600 && height > innerWidth && available >= rows * 56 && !enlarged;
-      grid.style.setProperty('--month-height', fit ? `${available}px` : 'auto'); root.dataset.fit = fit ? '1' : '0'; root.dataset.compact = fit && available < rows * 70 ? '1' : '0';
+      // Keep mobile cells tall enough for two readable, wrapped event labels.
+      // Shorter phones scroll the complete month rather than shrinking its text.
+      const available = room-Math.min(70,Math.max(0,room-rows*112)), enlarged = parseFloat(getComputedStyle(document.documentElement).fontSize) > 20;
+      const fit = innerWidth <= 600 && height > innerWidth && available >= rows * 112 && !enlarged;
+      grid.style.setProperty('--month-height', fit ? `${available}px` : 'auto'); root.dataset.fit = fit ? '1' : '0'; root.dataset.compact = '0';
     });
   }
   window.addEventListener('resize', () => { if (innerWidth !== width || Math.abs(innerHeight - height) > 90) { const crossed=(width<=600)!==(innerWidth<=600);width = innerWidth; height = innerHeight; if(crossed&&state.tab==='calendar'){renderControls();renderContent();}else positionCalendar(); } }, { signal: life.signal });
@@ -250,4 +250,5 @@ export function mountNewsWorkspace(host, api) {
   renderControls();
   return { host, update(next) { const changed = next.snapshot !== data.snapshot || !content.firstChild; data = next; if (changed) { detailKey = ''; renderContent(); } else status(); renderRoute(data.route); rail.position(); if (restorePosition) { restorePosition = false; requestAnimationFrame(() => window.scrollTo(0, state.scroll || 0)); } }, suspend() { closePanel(); detail?.destroy(); detail = null; detailKey = ''; clearInterval(countdown); countdown = null; }, destroy() { state.scroll = root.closest('.app-view.active') ? scrollY : state.scroll; persist(); closePanel(); detail?.destroy(); clearInterval(countdown); clearTimeout(scrollTimer); life.abort(); rail.destroy(); root.remove(); } };
 }
+
 
