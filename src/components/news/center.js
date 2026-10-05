@@ -74,6 +74,7 @@
     window.switchAppView?.(view); state.navigating = false;
   }
   function open({ historyEntry = true, previous = null } = {}) {
+    if(window.OXFeatures&&!window.OXFeatures.enterView('news'))return;
     if (document.body.dataset.newsMode !== '1') state.previous = previous || capturePrevious();
     if (historyEntry && !history.state?.oxNews) history.replaceState?.({ ...history.state, oxView: state.previous.view, oxMarket: state.previous.market, oxScroll: state.previous.scroll }, '', baseURL() + (location.hash || ''));
     state.route = {}; switchTo('news');
@@ -81,6 +82,7 @@
     refresh(); render();
   }
   function openMarket({ historyEntry = true, market = currentMarket() } = {}) {
+    if(window.OXFeatures&&!window.OXFeatures.enterView('data'))return;
     const previous = !historyEntry && history.state?.oxPrevious || capturePrevious(); state.previous = previous; state.route = {};
     if (historyEntry) history.replaceState?.({ ...history.state, oxView: previous.view, oxMarket: previous.market, oxScroll: previous.scroll }, '', baseURL() + (location.hash || ''));
     switchTo('data', market);

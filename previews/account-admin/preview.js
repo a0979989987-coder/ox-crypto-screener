@@ -1,5 +1,6 @@
 import { parseUIDs, matchClaims, confirmation, LEVELS } from './model.js';
 const $ = s => document.querySelector(s); let rows = [], policyVersion, ordinaryConfigured=false, selected, lastApproval, lastRevoke, revokeTarget, sessionEpoch=0, inputEpoch=0, recordEpoch=0, sessionChanging=false;
+window.OXReviewPreview=Object.freeze({get sessionChanging(){return sessionChanging;}});
 const productionTransport=!['127.0.0.1','localhost','::1'].includes(location.hostname)||new URL(location.href).searchParams.get('transport')==='rpc';
 function resetInput() {
   inputEpoch++; rows=[];selected=null;revokeTarget=null;lastApproval=null;lastRevoke=null;
@@ -71,14 +72,14 @@ async function records() {
   if(data.truncated)$('#audit').append(text('p','目前顯示最近 100 筆核准與 200 筆稽核。'));
 }
 for(const button of document.querySelectorAll('[data-session]')) button.addEventListener('click',async()=>{
-  sessionChanging=true;$('#parse').disabled=true;$('#refresh').disabled=true;
+  sessionChanging=true;document.dispatchEvent(new CustomEvent('ox:review-session-changing',{detail:{changing:true}}));$('#parse').disabled=true;$('#refresh').disabled=true;
   const sessionVersion=++sessionEpoch;resetInput();$('#approvals').replaceChildren();$('#audit').replaceChildren();
   for(const sibling of document.querySelectorAll('[data-session]')) sibling.disabled=true;
   try {
     await api('fixture-session',{mode:button.dataset.session});if(sessionVersion!==sessionEpoch)return;
     resetInput();recordEpoch++;sessionChanging=false;$('#session-state').textContent={admin:'合成管理員',member:'合成一般會員',guest:'未登入'}[button.dataset.session];
     $('#status').textContent='測試身分已切換。';if(button.dataset.session==='admin') await records();
-  }catch(error){if(sessionVersion===sessionEpoch)$('#status').textContent=error.message;}finally{sessionChanging=false;$('#parse').disabled=false;$('#refresh').disabled=false;for(const sibling of document.querySelectorAll('[data-session]')) sibling.disabled=false;}
+  }catch(error){if(sessionVersion===sessionEpoch)$('#status').textContent=error.message;}finally{sessionChanging=false;document.dispatchEvent(new CustomEvent('ox:review-session-changing',{detail:{changing:false}}));$('#parse').disabled=false;$('#refresh').disabled=false;for(const sibling of document.querySelectorAll('[data-session]')) sibling.disabled=false;}
 });
 $('#approve').addEventListener('click',async()=>{
   if(sessionChanging||!selected)return;

@@ -15,6 +15,7 @@ export function stopTWStrength() {
 }
 async function show(s) {
   if (session !== s) return;
+  if(window.OXFeatures&&!window.OXFeatures.enterTool(selected,'data-tw-tool',()=>show(s)))return;
   s.instance?.destroy(); s.instance = null; stopResearch();
   // The drawing and bubble tools own a shadow root. A destroyed shadow root
   // cannot be detached; mounting light-DOM children into it would hide them.

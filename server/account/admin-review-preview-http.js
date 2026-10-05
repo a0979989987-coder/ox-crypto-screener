@@ -1,3 +1,4 @@
+import {FEATURE_CATALOG} from './feature-catalog.js';
 // Development-only HTTP adapter. No production API imports this module.
 import { randomBytes } from 'node:crypto';
 import { createReviewService, ReviewError } from './admin-review-preview.js';
@@ -32,6 +33,12 @@ export function createPreviewHTTP({db,origin,fixtureIDs,ordinaryCapabilities=[],
         res.setHeader('Set-Cookie',`ox-review-fixture=${body.mode==='guest'?'':token}; HttpOnly; SameSite=Strict; Path=/; Max-Age=${body.mode==='guest'?0:3600}`);
         return send(200,{ok:true,fixture:true,mode:body.mode});
       }
+      if(endpoint==='feature-access'&&req.method==='GET') {const data=await db.featureRPC(null,'catalog');return send(200,{...data,features:data.features.map(f=>({...FEATURE_CATALOG.find(s=>s.id===f.id),...f}))});}
+      if(endpoint==='feature-admin') {
+        const id=identity(req)?.id;if(!id)return send(401,{ok:false,code:'SIGN_IN_REQUIRED'});
+        try{const data=await db.featureRPC(id,req.method==='GET'?'records':body?.action,req.method==='GET'?{}:body?.payload);return send(data.ok?200:409,data);}catch{return send(403,{ok:false,code:'ADMIN_REQUIRED'});}
+      }
+      if(endpoint==='bitget-admin-lookup') {const id=identity(req)?.id;if(id!==fixtureIDs.admin)return send(403,{ok:false,code:'ADMIN_REQUIRED'});return send(200,req.method==='GET'?{ok:true,configured:true}:{ok:true,data:{uid:body.uid,referral:{status:'matched'},certification:{status:'passed'}},ownershipVerified:false,accessPolicyChanged:false,fixture:true});}
       if(endpoint==='lookup'&&req.method==='POST') {
         if(!body || Array.isArray(body) || typeof body!=='object' || Object.keys(body).length!==1 || !Object.hasOwn(body,'uids')) return send(400,{code:'INVALID_UIDS'});
         return send(200,await service.lookup(req,body.uids));

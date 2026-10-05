@@ -39,6 +39,9 @@ try {
   await page.route('**/preview-api/fixture-session',async route=>{loginBlocked();await loginGate;const response=await route.fetch();await route.fulfill({response});loginDone();});
   await page.locator('[data-session="member"]').click();await loginStart;
   assert.equal(await page.locator('#parse').isDisabled(),true);assert.equal(await page.locator('#refresh').isDisabled(),true);
+  assert.equal(await page.locator('#feature-load').isDisabled(),true);assert.equal(await page.locator('#bitget-lookup').isDisabled(),true);
+  let featureRequests=0;const countFeature=r=>{if(/preview-api\/(feature-admin|bitget-admin-lookup)/.test(r.url()))featureRequests++;};page.on('request',countFeature);
+  await page.locator('#feature-load').evaluate(el=>el.onclick());await page.locator('#bitget-lookup').evaluate(el=>el.onclick());await page.waitForTimeout(100);assert.equal(featureRequests,0,'No requests under previous fixture role while session changes');page.off('request',countFeature);
   await page.locator('#parse').evaluate(el=>el.click());await page.locator('#refresh').evaluate(el=>el.click());assert.equal(await page.locator('#rows tr').count(),0);
   finishLogin();await loginFinish;await page.unroute('**/preview-api/fixture-session');await page.locator('#session-state').filter({hasText:'合成一般會員'}).waitFor();
   assert.equal(await page.locator('#rows tr').count(),0);assert.equal(await page.locator('#approvals tr').count(),0);

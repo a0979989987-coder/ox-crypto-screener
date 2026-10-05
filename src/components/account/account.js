@@ -231,6 +231,6 @@
       landing.searchParams.delete('ox_auth'); landing.searchParams.delete('ox_auth_reason'); landing.searchParams.delete('ox_auth_provider');
       history.replaceState(null, '', landing.pathname + landing.search + landing.hash);
     }
-    if (failedCallback || successfulCallback) open();
+    if (failedCallback || (successfulCallback && !window.OXFeatures?.returning)) open();
   });
 })();

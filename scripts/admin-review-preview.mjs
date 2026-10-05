@@ -1,3 +1,4 @@
+import {initializeFeatureFixture} from './lib/feature-access-fixtures.mjs';
 import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { fixtureIDs } from './lib/admin-review-fixtures.mjs';
@@ -8,8 +9,9 @@ const port=Number(process.env.OX_REVIEW_PREVIEW_PORT||4199);
 if(!Number.isInteger(port)||port<1024||port>65535) throw Error('Invalid preview port');
 const ordinaryCapabilities=process.argv.includes('--ordinary-fixture')?['fixture_partial_feature']:[];
 const origin=`http://127.0.0.1:${port}`,db=await candidateFixtureDatabase({ordinaryFixture:ordinaryCapabilities.length>0,seedAdmin:true});
+await initializeFeatureFixture(db);
 const api=createPreviewHTTP({db,origin,fixtureIDs,ordinaryCapabilities,serviceFactory:candidateService});
-const files={'/':'index.html','/index.html':'index.html','/preview.js':'preview.js','/model.js':'model.js'};
+const files={'/':'index.html','/index.html':'index.html','/preview.js':'preview.js','/model.js':'model.js','/feature-admin.js':'feature-admin.js'};
 const server=createServer(async(req,res)=>{
   if(req.url?.startsWith('/preview-api/')) return api(req,res);
   if(req.headers.host!==new URL(origin).host||req.method!=='GET') {res.writeHead(403);res.end();return;}

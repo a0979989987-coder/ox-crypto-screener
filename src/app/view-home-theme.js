@@ -72,6 +72,7 @@ function setChartFocus(enabled) {
 }
 
 function switchAppView(view) {
+  if (window.OXFeatures && !window.OXFeatures.enterView(view)) return;
   if (!['home','strength','radar','data','media','settings','news'].includes(view)) return;
   if (document.body.classList.contains('chart-focus')) setChartFocus(false);
 
