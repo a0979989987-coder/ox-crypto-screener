@@ -1,6 +1,9 @@
 // Shadow CSS is not render blocking. Mount both palettes before revealing a
 // tool, and keep theme changes local to the host so data and gestures survive.
 export function revealStyledShadow(shadow, signal, selector = 'main', minHeight = 220) {
+  const mobileStyle=document.createElement('style');
+  mobileStyle.textContent='@media(max-width:700px),(pointer:coarse){:host,*{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;scrollbar-width:none}*::-webkit-scrollbar{display:none;width:0;height:0}button,[role=tab],a{touch-action:manipulation}input,textarea,[contenteditable=true]{-webkit-user-select:text;user-select:text;-webkit-touch-callout:default;font-size:max(16px,1em)}}';
+  shadow.append(mobileStyle);
   const sheet = shadow.querySelector('link[rel="stylesheet"]');
   const main = shadow.querySelector(selector);
   if (!sheet || !main) return;
