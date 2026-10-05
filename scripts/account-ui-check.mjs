@@ -21,7 +21,7 @@ try {
   page.on('pageerror', error => errors.push(error.message));
   await page.route('https://ox.test/**', async route => {
     const request = route.request(), path = new URL(request.url()).pathname;
-    if (path === '/') return route.fulfill({ contentType: 'text/html', body: `<!doctype html><html><head><meta charset="UTF-8"><style>${foundation}\n${style}</style></head><body><button data-ox-account-open>登入 / 註冊</button>${markup}<script src="/auth.js"></script><script src="/session.js"></script><script src="/account.js"></script></body></html>` });
+    if (path === '/') return route.fulfill({ contentType: 'text/html', body: `<!doctype html><html><head><meta charset="UTF-8"><style>${foundation}\n${style}</style></head><body><small class="ox-account-provider-note">Legacy provider placeholder</small><button data-ox-account-open>登入 / 註冊</button>${markup}<script src="/auth.js"></script><script src="/session.js"></script><script src="/account.js"></script></body></html>` });
     if (['/auth.js', '/session.js', '/account.js'].includes(path)) return route.fulfill({ contentType: 'text/javascript', body: readFileSync(resolve(root, 'src/components/account', path.slice(1)), 'utf8') });
     const endpoint = path.split('/').at(-1);
     calls.push({ endpoint, method: request.method(), body: request.postDataJSON() });
@@ -40,6 +40,7 @@ try {
   });
   await page.goto('https://ox.test/');
   await page.locator('#ox-account-auth-status').filter({ hasText: '登入連結' }).waitFor({ state: 'attached' });
+  assert.match(await page.locator('.ox-account-provider-note').innerText(),/連線設定已載入/);
   await page.locator('[data-ox-account-open]').click();
   await page.locator('#ox-account-tab-register').click();
   assert.equal(await page.locator('.ox-account-password-wrap').isVisible(), false);

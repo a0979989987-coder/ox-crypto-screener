@@ -3,7 +3,10 @@ const OXFeaturePack = (()=>{
     updateAccountUI(); syncWatchBadge(); MarketController.init();
     const sound=document.getElementById("ox-control-sound-toggle"); if(sound){ sound.checked=localStorage.getItem("ox-alert-sound-enabled")!=="0"; sound.addEventListener("change",()=>{localStorage.setItem("ox-alert-sound-enabled",sound.checked?"1":"0"); AccountStore.capturePrefs();}); }
     document.querySelectorAll("[data-market-choice]").forEach(b=>b.addEventListener("click",()=>MarketController.setMarket(b.dataset.marketChoice)));
-    document.getElementById("ox-control-account-open")?.addEventListener("click",()=>document.querySelectorAll("[data-control-view]").forEach(v=>v.classList.toggle("active",v.dataset.controlView==="account")));
+    document.getElementById("ox-control-account-open")?.addEventListener("click",()=>{
+      if(window.OXAccount){const opener=["ox-control-open","ox-dock-menu"].map(id=>document.getElementById(id)).find(el=>el&&el.getClientRects().length&&getComputedStyle(el).visibility!=="hidden");document.getElementById("ox-control-close")?.click();window.OXAccount.open('auth',opener);return;}
+      document.querySelectorAll("[data-control-view]").forEach(v=>v.classList.toggle("active",v.dataset.controlView==="account"));
+    });
     document.getElementById("ox-control-account-back")?.addEventListener("click",()=>document.querySelectorAll("[data-control-view]").forEach(v=>v.classList.toggle("active",v.dataset.controlView==="main")));
 
 

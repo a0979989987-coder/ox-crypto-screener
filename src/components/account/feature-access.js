@@ -1,7 +1,8 @@
 /* Product access UX. Server/API authorization remains independent. No policy cache. */
 (() => {
+  if(window.OXCanonicalRedirecting)return;
   const ids=['crypto.home','crypto.radar','crypto.patterns','crypto.bubbles','crypto.strength','crypto.heatmap','crypto.rotation','crypto.flow','tw.home','tw.radar','tw.patterns','tw.bubbles','tw.rotation','tw.etf','tw.savings','news.feed','news.calendar','media'];
-  let policies=null,pending=null,loading=null,epoch=0,requestEpoch=0,currentFeature=null,newsSelected='calendar';
+  let policies=null,pending=null,loading=null,epoch=0,requestEpoch=0,currentFeature=null,newsSelected='calendar',sessionUsable=false;
   const selected={crypto:'patterns',tw:'patterns'};
   const landing=new URL(location.href),returnId=landing.searchParams.get('ox_feature');
   const returning=ids.includes(returnId);
@@ -29,14 +30,15 @@
     if(view==='media')return 'media';
     return null; // Login/settings/private Account are never part of this switch.
   }
-  function allowed(id){const row=policies?.get(id);return !!row&&(row.mode==='public'||!!window.OXAuth?.user);}
+  function allowed(id){const row=policies?.get(id);return !!row&&(row.mode==='public'||sessionUsable&&!!window.OXAuth?.user);}
+  const policyMessage=()=>loading?'正在確認功能設定…':'功能設定暫時無法確認，已暫停此功能；請稍後重試。';
   function markReturn(id){const u=new URL(location.href);u.searchParams.set('ox_feature',id);history.replaceState(history.state,'',u.pathname+u.search+u.hash);}
   function cleanReturn(){const u=new URL(location.href);u.searchParams.delete('ox_feature');history.replaceState(history.state,'',u.pathname+u.search+u.hash);}
   function enter(id,resume){
     if(!ids.includes(id))return false;
     if(allowed(id)){currentFeature=id;pending=null;cleanReturn();reveal();return true;}
     pending={id,resume,epoch:++requestEpoch};markReturn(id);
-    gate(policies?`「${policies.get(id)?.label||id}」需要註冊登入。無需綁定交易所或代理資格。`:'功能設定暫時無法確認，已暫停此功能；請稍後重試。',!!policies);
+    gate(policies?`「${policies.get(id)?.label||id}」需要註冊登入。無需綁定交易所或代理資格。`:policyMessage(),!!policies);
     return false;
   }
   function enterView(view){const id=viewFeature(view);if(!id){pending=null;currentFeature=null;reveal();return true;}return enter(id,()=>window.switchAppView?.(view));}
@@ -50,19 +52,27 @@
     if(pending&&allowed(pending.id)){
       const action=pending.resume;pending=null;cleanReturn();reveal();action?.();return;
     }
-    if(pending){gate(policies?'此功能需要註冊登入，登入後可返回原功能。':'功能設定暫時無法確認，已暫停此功能。',!!policies);return;}
+    if(pending){gate(policies?'此功能需要註冊登入，登入後可回到原功能。':policyMessage(),!!policies);return;}
     const id=currentFeature||viewFeature(document.body.dataset.view||'radar');
-    if(id&&!allowed(id))gate(policies?'此功能需要註冊登入，登入後可返回原功能。':'功能設定暫時無法確認，已暫停此功能。',!!policies);else reveal();
+    if(id&&!allowed(id))gate(policies?'此功能需要註冊登入，登入後可回到原功能。':policyMessage(),!!policies);else reveal();
   }
   async function refresh(){
     if(loading)return loading;
-    policies=null;gate('正在確認功能設定…');const token=++epoch;
+    if(!policies)gate('正在確認功能設定…');const token=++epoch;
     loading=(async()=>{try{
-      const response=await fetch('/api/v1/account/feature-access',{credentials:'same-origin',cache:'no-store'}),data=await response.json();
+      const abort=new AbortController(),timer=setTimeout(()=>abort.abort(),10000);
+      let response,data;try{response=await fetch('/api/v1/account/feature-access',{credentials:'same-origin',cache:'no-store',signal:abort.signal});data=await response.json();}finally{clearTimeout(timer);}
       if(!response.ok||!data.ok||!Array.isArray(data.features)||data.features.length!==ids.length||new Set(data.features.map(f=>f.id)).size!==ids.length||data.features.some(f=>!ids.includes(f.id)||!['public','login'].includes(f.mode)))throw Error('invalid');
-      if(window.OXAuth?.user&&window.OXAuth.getCurrent)await window.OXAuth.getCurrent();
       if(token===epoch)policies=new Map(data.features.map(f=>[f.id,f]));
-    }catch{if(token===epoch)policies=null;}finally{loading=null;replay();}})();return loading;
+    }catch{if(token===epoch)policies=null;}finally{loading=null;replay();}
+    // Public policy is independent of session availability; login products fail closed.
+    if(token===epoch&&policies){
+      sessionUsable=false;replay();
+      if(window.OXAuth?.user&&window.OXAuth.getCurrent){const abort=new AbortController(),timer=setTimeout(()=>abort.abort(),8000);try{const user=await window.OXAuth.getCurrent({signal:abort.signal});if(token===epoch)sessionUsable=!!user&&!!window.OXAuth.user;}catch{if(token===epoch)sessionUsable=false;}finally{clearTimeout(timer);}}
+      else sessionUsable=!!window.OXAuth?.user;
+      if(token===epoch)replay();
+    }
+    })();return loading;
   }
   function navigate(id){
     const market=id.split('.')[0];
@@ -73,7 +83,7 @@
   }
   function restore(){if(!returning||!policies)return;const apply=()=>navigate(returnId);if(enter(returnId,apply))apply();}
   window.OXFeatures=Object.freeze({enter,enterView,enterTool,refresh,get returning(){return returning;},get ready(){return !!policies;},get newsTab(){return newsSelected;}});
-  document.addEventListener('ox:accountchange',()=>{replay();if(returning)restore();});
+  document.addEventListener('ox:accountchange',()=>{sessionUsable=!!window.OXAuth?.user;replay();if(returning)restore();});
   document.addEventListener('ox:marketchange',()=>{const id=viewFeature(document.body.dataset.view||'radar');if(id)enter(id,()=>window.switchAppView?.(document.body.dataset.view||'radar'));});
   document.addEventListener('ox:viewchange',()=>replay());
   const start=()=>refresh().then(()=>{if(returning)restore();});
