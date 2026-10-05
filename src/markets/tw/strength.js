@@ -1,12 +1,12 @@
 import { renderResearch, stopResearch } from './research-page.js?v=20261005-briefingdate';
 import { mountResearch } from './research-ui.js';
-import { createToolsRail } from '../../components/strength/tools-rail.js?v=20261005-tools12';
+import { createToolsRail } from '../../components/strength/tools-rail.js?v=20261005-styleready2';
 import { createTWMarketState } from './engine.js?v=20261002-rank8';
 let selected = 'patterns', session = null, modules;
 export function preloadTWStrength() {
   return modules ??= Promise.all([
-    import('../crypto/patterns/view.js?v=20261005-tools12'),
-    import('./patterns/source.js?v=20261002-rank8'), import('./patterns/index-cache.js?v=20261002-rank8'),import('./bubbles/view.js?v=20261005-tools12')
+    import('../crypto/patterns/view.js?v=20261005-styleready2'),
+    import('./patterns/source.js?v=20261002-rank8'), import('./patterns/index-cache.js?v=20261002-rank8'),import('./bubbles/view.js?v=20261005-styleready2')
   ]).catch(error => { modules = null; throw error; });
 }
 export function stopTWStrength() {
@@ -40,8 +40,8 @@ async function show(s) {
   if(window.OXLoading)OXLoading.render(s.host,selected==='bubbles'?'載入泡泡圖':'載入型態畫板');else s.host.textContent='介面載入中…';
   try {
     // A bubble view must not wait for the separate pattern engine to download.
-    const loaded = selected==='bubbles' ? [null,null,null,await import('./bubbles/view.js?v=20261005-tools12')] :
-      [...await Promise.all([import('../crypto/patterns/view.js?v=20261005-tools12'),import('./patterns/source.js?v=20261002-rank8'),import('./patterns/index-cache.js?v=20261002-rank8')]),{}];
+    const loaded = selected==='bubbles' ? [null,null,null,await import('./bubbles/view.js?v=20261005-styleready2')] :
+      [...await Promise.all([import('../crypto/patterns/view.js?v=20261005-styleready2'),import('./patterns/source.js?v=20261002-rank8'),import('./patterns/index-cache.js?v=20261002-rank8')]),{}];
     const [{ mountPatternSearch } = {}, source, cache,{mountTWBubbles}] = loaded.map(value=>value||{});
     if (session !== s || generation !== s.generation) return;
     s.host.textContent = '';
