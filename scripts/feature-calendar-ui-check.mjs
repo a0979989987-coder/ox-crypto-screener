@@ -16,7 +16,7 @@ try{
   await page.route('**/*',async route=>{
    const u=new URL(route.request().url());assert.equal(u.origin,'https://ox.test','No external requests');
    if(u.pathname==='/api/v1/account/feature-access')return route.fulfill({json:{ok:true,features:FEATURE_CATALOG.map(f=>({...f,mode:locked&&f.id==='news.calendar'?'login':'public',version:'fixture'}))}});
-   if(u.pathname==='/')return route.fulfill({contentType:'text/html',body:`<!doctype html><html data-theme="${theme}"><head><meta charset="UTF-8">${css}<style>body{margin:0}main.wrap{width:100%;max-width:1200px;margin:auto}.app-view{display:block}</style></head><body data-theme="${theme}" data-market="tw" data-view="data"><script>window.OXAuth={user:null};sessionStorage.setItem('ox-news-v2-all',JSON.stringify({selectedDay:'2020-01-01',month:'2020-01',times:['all']}));window.switchAppView=v=>{if(!OXFeatures.enterView(v))return;document.body.dataset.view=v};</script><script src="/src/components/account/feature-access.js"></script><main class="wrap"><section class="app-view active"><div id="host"></div></section></main><script type="module">
+   if(u.pathname==='/')return route.fulfill({contentType:'text/html',body:`<!doctype html><html data-theme="${theme}"><head><meta charset="UTF-8">${css}<style>body{margin:0}main.wrap{width:100%;max-width:1200px;margin:auto}.app-view{display:block}</style></head><body class="ox-terminal theme-${theme}" data-theme="${theme}" data-market="tw" data-view="data"><script>window.OXAuth={user:null};sessionStorage.setItem('ox-news-v2-all',JSON.stringify({selectedDay:'2020-01-01',month:'2020-01',times:['all']}));window.switchAppView=v=>{if(!OXFeatures.enterView(v))return;document.body.dataset.view=v};</script><script src="/src/components/account/feature-access.js"></script><main class="wrap"><section class="app-view active"><div id="host"></div></section></main><script type="module">
     import {mountNewsWorkspace} from '/src/components/news/workspace.js';import {taipeiDay} from '/src/components/news/model.js';
     await new Promise(r=>{const poll=()=>OXFeatures.ready?r():setTimeout(poll,10);poll()});
     const day=taipeiDay(),events=[{id:'synthetic-calendar',titleZh:'Synthetic event detail',title:'Synthetic event detail',date:day,category:'macro',markets:['tw','crypto'],sourceId:'fixture',status:'confirmed',importance:3},{id:'synthetic-holiday',titleZh:'Synthetic Taiwan closure',date:day,category:'holiday',sourceId:'twse-holidays',markets:['tw'],marketClosed:true}];
@@ -48,7 +48,8 @@ try{
   await page.getByLabel('結束日期',{exact:true}).fill(today);
   await page.getByRole('button',{name:'套用自訂日期',exact:true}).click();
   assert.deepEqual(await page.evaluate(()=>JSON.parse(sessionStorage.getItem('ox-news-v2-all')).customTime),{from:today,to:today});
-  await page.keyboard.press('Escape');await page.locator('[data-news-tab="calendar"]').click();
+  await page.keyboard.press('Escape');await page.locator('[data-news-tab="calendar"]').click();await page.waitForTimeout(350);
+  const bg=await page.evaluate(()=>getComputedStyle(document.querySelector('.oxn-calendar')).backgroundColor);const channels=bg.match(/[\d.]+/g).slice(0,3).map(Number);assert.equal(channels.every(c=>c>200),theme==='light','Theme must actually apply to body: '+bg);
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'No horizontal page overflow');assert.deepEqual(errors,[]);
   await page.screenshot({path:resolve(output,`${theme}-${width}.png`),fullPage:true});results.push({theme,width,currentTaipeiDate:true,closure:true,eventDetail:true,upcomingDays:8,loginLogoutGate:true,overflow:false});await page.close();
  }
