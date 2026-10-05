@@ -122,7 +122,7 @@ async function showScreener(host){
   if(screenerHost===host)return;
   stopScreener();screenerHost=host;const generation=screenerGeneration;
   host.textContent="篩選器載入中…";
-  try{const {mountScreener}=await import("./screener/view.js?v=20261005-weeklist4");
+  try{const {mountScreener}=await import("./screener/view.js?v=20261005-tools12");
     if(generation!==screenerGeneration||activeMode!=="screener"||!host.isConnected)return;
     host.replaceChildren();screener=mountScreener(host,{onOpenRadar(symbol){document.dispatchEvent(new CustomEvent("ox:tw-chart-symbol",{detail:{symbol}}));}});
   }catch{if(generation===screenerGeneration){host.textContent="篩選器暫時無法載入";screenerHost=null;}}

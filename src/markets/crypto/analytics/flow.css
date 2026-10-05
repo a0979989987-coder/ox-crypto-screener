@@ -18,3 +18,21 @@
 :is(#ox-control-close,button):is([aria-label*="關閉"],[aria-label="返回上一層"],[data-close],[data-twr-close],.close-btn,.modal-close,.ox-provider-close,.ox-control-close,.chart-tools-close)::after{content:""!important;position:absolute!important;left:50%!important;top:50%!important;width:18px!important;height:1.5px!important;border:0!important;border-radius:1px!important;background:currentColor!important;box-shadow:none!important;transform:translate(-50%,-50%) rotate(45deg)!important;opacity:1!important;pointer-events:none}
 :is(#ox-control-close,button):is([aria-label*="關閉"],[aria-label="返回上一層"],[data-close],[data-twr-close],.close-btn,.modal-close,.ox-provider-close,.ox-control-close,.chart-tools-close)::after{transform:translate(-50%,-50%) rotate(-45deg)!important}
 :is(#ox-control-close,button):is([aria-label*="關閉"],[aria-label="返回上一層"],[data-close],[data-twr-close],.close-btn,.modal-close,.ox-provider-close,.ox-control-close,.chart-tools-close):focus-visible{outline:2px solid currentColor!important;outline-offset:2px}
+
+/* Keep primary actions in one row; secondary controls live in the settings dialog. */
+.cfx-toolbar-compact{display:flex;flex-wrap:nowrap;align-items:center;gap:6px;margin-bottom:8px}
+.cfx-toolbar-compact .cfx-period-select{flex:0 0 62px;min-width:0;width:62px;height:36px;min-height:36px;padding:0 5px;font-size:12px}
+.cfx-toolbar-compact .cfx-search{flex:1;min-width:0;height:36px;min-height:36px;padding:0 8px}
+.cfx-toolbar-compact .cfx-search input{width:100%;min-width:0;height:34px}
+.cfx-toolbar-compact .cfx-icon{flex:0 0 36px;min-width:36px;width:36px;height:36px;padding:8px}
+.cfx-toolbar-compact .cfx-icon svg{width:18px;height:18px}
+.cfx-top-actions{display:none}
+.cfx-settings-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.cfx-settings-options button{min-height:42px;height:auto;white-space:normal}
+.cfx-settings-options label{display:grid;gap:6px;font-size:12px;min-width:0}
+.cfx-settings-options select{width:100%;max-width:none;min-width:0}
+.cfx-settings-options>button:last-child{grid-column:1/-1}
+.cfx-zoom{gap:0;right:10px;bottom:12px;padding:2px;border-radius:10px}
+.cfx-zoom button{width:30px;min-width:30px;height:30px;padding:5px}
+.cfx-zoom button svg{display:block;width:17px;height:17px}
+@media(max-width:600px){.cfx-toolbar-compact{gap:4px}.cfx-settings-dialog{max-height:75dvh}.cfx-chart-meta{flex-wrap:wrap;margin-bottom:5px}}

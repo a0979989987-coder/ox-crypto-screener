@@ -1,4 +1,4 @@
-import { createToolsRail } from "../../../components/strength/tools-rail.js?v=20261005-touch1";
+import { createToolsRail } from "../../../components/strength/tools-rail.js?v=20261005-tools12";
 // Crypto-only inline tools. Preserve the existing strength calculations and DOM.
 const section = document.querySelector('#view-strength .strength-page');
 if (section) {
@@ -56,22 +56,22 @@ if (section) {
     pending = true;loading.hidden=false;loading.innerHTML=window.OXLoading?.markup('工具載入中')||'工具載入中…';const token = ++generation;
     try {
       if(selected==='bubbles'){
-        const { mountCryptoBubbles } = await import('../bubbles/view.js?v=20261005-touch1');
+        const { mountCryptoBubbles } = await import('../bubbles/view.js?v=20261005-tools12');
         if(token!==generation||!active())return;
         instance=mountCryptoBubbles(host);
         return;
       }
       if(selected==='patterns'){
-        const { mountPatternSearch } = await import('../patterns/view.js?v=20261005-center2');
+        const { mountPatternSearch } = await import('../patterns/view.js?v=20261005-tools12');
         if(token!==generation||!active())return;
         instance=mountPatternSearch(host);
         return;
       }
-      const { mountCryptoFlow } = await import('./flow-view.js?v=20261005-weeklist4');
+      const { mountCryptoFlow } = await import('./flow-view.js?v=20261005-tools12');
       if (token !== generation || !active()) return;
       instance = mountCryptoFlow(host, { initialTab:selected, autoRefresh:true, onExit() { ns.querySelector('[data-crypto-tool="strength"]').click(); } });
       const style = document.createElement('style');
-      style.textContent = ':host{display:block}.cfx{min-height:0;border:1px solid #344248;border-radius:14px;overflow:hidden}.cfx-top{height:43px;padding:0 12px}.cfx-back,.cfx-brand,.cfx-source-badge,.cfx-tabs{display:none}.cfx-tabs{padding:0 12px;gap:18px}.cfx-content{padding:12px 10px}.cfx.focused{border:0;border-radius:0}.cfx.focused .cfx-brand{display:flex}';
+      style.textContent = ':host{display:block}.cfx{min-height:0;border:1px solid #344248;border-radius:14px;overflow:hidden}.cfx-top{display:none}.cfx.focused .cfx-top{display:flex;height:38px;padding:0 12px}.cfx-back,.cfx-brand,.cfx-source-badge,.cfx-tabs{display:none}.cfx-tabs{padding:0 12px;gap:18px}.cfx-content{padding:12px 10px}.cfx.focused{border:0;border-radius:0}.cfx.focused .cfx-brand{display:flex}';
       host.shadowRoot.append(style);
       observer = new MutationObserver(syncFocus);
       observer.observe(host.shadowRoot.querySelector('.cfx'), {attributes:true,attributeFilter:['class']});
