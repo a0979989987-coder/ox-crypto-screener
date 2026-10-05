@@ -31,3 +31,5 @@
 :host([data-ox-theme="light"][data-ox-theme="light"]) .header {justify-content:flex-end!important}
 :host([data-ox-theme="light"][data-ox-theme="light"]) .header:not(:has(.toolbar)) {display:none!important}
 :host([data-ox-theme="light"][data-ox-theme="light"]) .tws-title>div {display:none!important}
+
+:host([data-ox-theme="light"][data-ox-theme="light"]) .tw-radar-root .tw-stock-risk-icon.known {color:#efbd27!important;text-shadow:0 0 1px #a77900,0 0 5px #ffe36e66!important}
