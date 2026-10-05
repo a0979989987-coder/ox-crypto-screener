@@ -11,9 +11,9 @@ try{
    const rel=u.pathname.replace(/^\/ox-crypto-screener\//,'');const file=resolve(root,rel||'index.html');
    assert.ok(file.startsWith(root));return route.fulfill({contentType:extname(file)==='.html'?'text/html':extname(file)==='.js'?'text/javascript':'text/css',body:readFileSync(file)});
   });
-  try{await page.goto(legacy+'/ox-crypto-screener/?code=synthetic-private&state=synthetic-state#tw/radar');}catch(e){if(!/ERR_ABORTED/.test(e.message))throw e;}
-  await page.waitForURL(canonical+'/?ox_feature=tw.radar#tw/radar');assert.equal(apiRequests.length,0,'Legacy Pages must navigate before requesting backend APIs');
-  assert.equal(new URL(page.url()).searchParams.has('code'),false);assert.equal(new URL(page.url()).searchParams.has('state'),false);await context.close();
+  try{await page.goto(legacy+'/ox-crypto-screener/?ox_feature=news.calendar&code=synthetic-private&state=synthetic-state#news/tw');}catch(e){if(!/ERR_ABORTED/.test(e.message))throw e;}
+  await page.waitForURL(canonical+'/#news/tw');assert.equal(apiRequests.length,0,'Legacy Pages must navigate before requesting backend APIs');
+  assert.equal(new URL(page.url()).search,'');assert.equal(new URL(page.url()).searchParams.has('code'),false);assert.equal(new URL(page.url()).searchParams.has('state'),false);await context.close();
  }
  console.log('GitHub Pages actual-index mobile/desktop redirect passed: canonical market hash retained, callback query discarded, zero backend requests. Isolated navigation destinations only.');
 }finally{await browser.close();}

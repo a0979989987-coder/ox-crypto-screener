@@ -4,11 +4,10 @@
   if(!['/','/index.html','/ox-crypto-screener','/ox-crypto-screener/'].includes(location.pathname)&&!location.pathname.startsWith('/ox-crypto-screener/'))return;
   const source=new URL(location.href),target=new URL('https://ox-crypto-screener.vercel.app/');
   const ids=new Set(['crypto.home','crypto.radar','crypto.patterns','crypto.bubbles','crypto.strength','crypto.heatmap','crypto.rotation','crypto.flow','tw.home','tw.radar','tw.patterns','tw.bubbles','tw.rotation','tw.etf','tw.savings','news.feed','news.calendar','media']);
-  const feature=source.searchParams.get('ox_feature');if(ids.has(feature))target.searchParams.set('ox_feature',feature);
   const [route,parameters='']=source.hash.slice(1).split('?');
   const market=['crypto','tw'].includes(route)?route:null;
   const routeFeature=market?market+'.radar':route?.replace('/','.');
-  if(ids.has(routeFeature)){target.hash=route;if(!target.searchParams.has('ox_feature'))target.searchParams.set('ox_feature',routeFeature);}
+  if(ids.has(routeFeature))target.hash=route;
   else if(/^news(?:\/(?:crypto|tw))?$/.test(route||'')){
     const safe=new URLSearchParams(),params=new URLSearchParams(parameters);
     const day=params.get('day'),event=params.get('event');
