@@ -74,7 +74,7 @@
       const abort=new AbortController(),timer=setTimeout(()=>abort.abort(),10000);
       let response,data;try{[response,data]=await Promise.race([(async()=>{const r=await fetch('/api/v1/account/feature-access',{credentials:'same-origin',cache:'no-store',signal:abort.signal});return [r,await r.json()];})(),new Promise((_,reject)=>{abort.signal.addEventListener('abort',()=>reject(new Error('policy timeout')),{once:true});})]);}finally{clearTimeout(timer);}
       if(!response.ok||!data.ok||!Array.isArray(data.features)||data.features.length!==ids.length||new Set(data.features.map(f=>f.id)).size!==ids.length||data.features.some(f=>!ids.includes(f.id)||!['public','login'].includes(f.mode)))throw Error('invalid');
-      if(token===epoch){policies=new Map(data.features.map(f=>[f.id,f]));policyState='ready';}
+      if(token===epoch){policies=new Map(data.features.map(f=>[f.id,f]));policyState='ready';document.dispatchEvent(new CustomEvent('ox:feature-policy-ready'));}
     }catch{if(token===epoch){policies=null;policyState='error';}}finally{loading=null;replay();}
     // Public policy is independent of session availability; login products fail closed.
     if(token===epoch&&policies){
@@ -93,7 +93,7 @@
     else {const tool=id.split('.')[1];const view=['home','radar'].includes(tool)?tool:'strength';if(view==='strength')selected[market]=tool;window.switchAppView?.(view);if(view==='strength')document.dispatchEvent(new CustomEvent('ox:feature-tool-return',{detail:{market,tool}}));}
   }
   function restore(){if(!returning||!started)return;returning=false;const apply=()=>navigate(returnId);if(enter(returnId,apply))apply();}
-  window.OXFeatures=Object.freeze({enter,enterView,enterTool,refresh,selectedTool:market=>selected[market],get returning(){return returning;},get ready(){return !!policies;},get newsTab(){return newsSelected;}});
+  window.OXFeatures=Object.freeze({enter,enterView,enterTool,refresh,canPreload:id=>policies?.get(id)?.mode==='public',selectedTool:market=>selected[market],get returning(){return returning;},get ready(){return !!policies;},get newsTab(){return newsSelected;}});
   document.addEventListener('ox:accountchange',()=>{sessionUsable=!!window.OXAuth?.user;replay();if(returning)restore();});
   document.addEventListener('ox:marketchange',()=>{const id=viewFeature(document.body.dataset.view||'radar');if(id)enter(id,()=>window.switchAppView?.(document.body.dataset.view||'radar'));});
   document.addEventListener('ox:viewchange',()=>replay());

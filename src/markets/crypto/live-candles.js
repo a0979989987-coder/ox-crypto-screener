@@ -88,7 +88,7 @@ const CryptoLiveCandles = (() => {
     const poll=setInterval(()=>{
       if (stopped || document.hidden) return;
       const now=Date.now(), last=rows().at(-1);
-      if (now-lastSync>=5000 && (!lastPush || now-lastPush>15000 || (last && now/1000>=closeTime(last,period)))) sync().catch(()=>{});
+      if (now-lastSync>=5000 && (!lastPush || now-lastPush>5000 || (last && now/1000>=closeTime(last,period)))) sync().catch(()=>{});
     },1000);
     const ping=setInterval(()=>{
       if (!socket) return;

@@ -1,5 +1,6 @@
 import { marketRouter } from "./marketRouter.js?v=20261002-nav6";
 import './storage-migrations.js?v=20261004-markets2';
+import { preloadPatternSearch, stopPatternPreload } from "../markets/crypto/patterns/view.js";
 import { cryptoModule } from "../markets/crypto/index.js";
 import { twModule } from "../markets/tw/index.js?v=20261005-recovery20";
 
@@ -85,3 +86,12 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden) prel
 
 // Keep the next Taiwan switch warm during longer sessions in another market.
 setInterval(() => { if (document.body.dataset.market !== 'tw') preloadTaiwan(); }, 300000);
+
+// Public Crypto board warms gradually after initial paint; protected tools never preload.
+let cryptoWarmTimer=0;
+const scheduleCryptoWarm=()=>{clearTimeout(cryptoWarmTimer);if(document.hidden||document.body.dataset.market!=='crypto'||document.body.dataset.view==='strength'||!window.OXFeatures?.canPreload?.('crypto.patterns')){stopPatternPreload();return;}cryptoWarmTimer=setTimeout(()=>{if(!document.hidden&&document.body.dataset.market==='crypto'&&document.body.dataset.view!=='strength')void preloadPatternSearch();},2000);};
+document.addEventListener('ox:feature-policy-ready',scheduleCryptoWarm);
+document.addEventListener('ox:marketchange',scheduleCryptoWarm);
+document.addEventListener('ox:viewchange',scheduleCryptoWarm);
+document.addEventListener('visibilitychange',scheduleCryptoWarm);
+scheduleCryptoWarm();
