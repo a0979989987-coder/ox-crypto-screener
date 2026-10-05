@@ -4,6 +4,11 @@ import { resolve } from 'node:path';
 const months = 'January February March April May June July August September October November December'.split(' ');
 const text = html => html.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '').replace(/<[^>]*>/g, ' ').replace(/&nbsp;|&#160;/g, ' ').replace(/&ndash;|&#8211;/g, '-').replace(/\s+/g, ' ').trim();
 const number = value => value == null ? null : Number(value.replaceAll(',', ''));
+export function macroFingerprint(value) {
+  const volatile = new Set(['updatedAt','generatedAt','lastAttemptAt','lastSuccessAt']);
+  const stable = v => Array.isArray(v) ? v.map(stable) : v && typeof v === 'object' ? Object.fromEntries(Object.keys(v).filter(k => !volatile.has(k) && v[k] !== undefined).sort().map(k => [k,stable(v[k])])) : v;
+  return JSON.stringify(stable(value));
+}
 export function easternTime(date, hour = 8, minute = 30) {
   const guess = new Date(`${date}T${String(hour).padStart(2,'0')}:${String(minute).padStart(2,'0')}:00Z`);
   const localHour = Number(new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', hour: 'numeric', hourCycle: 'h23' }).format(guess));
@@ -93,7 +98,8 @@ export async function collectMacroResults() {
   const sources = results.map((result, i) => ({ metric: jobs[i][0], endpoint: jobs[i][1], status: result.status === 'fulfilled' ? 'ready' : 'error', lastAttemptAt: stamp, lastSuccessAt: result.status === 'fulfilled' ? stamp : old.sources?.find(s => s.metric === jobs[i][0])?.lastSuccessAt, message: result.status === 'rejected' ? String(result.reason.message) : null }));
   if (!results.some(r => r.status === 'fulfilled')) throw Error('All macro sources failed; previous snapshot retained');
   const next = { schemaVersion: 1, generatedAt: stamp, sources, events: [...events.values()] };
+  if (macroFingerprint(next) === macroFingerprint(old)) return { changed: false, events: events.size, sources };
   const temp = new URL('../data/macro-results.next.json', import.meta.url); await writeFile(temp, JSON.stringify(next, null, 2) + '\n'); await rename(temp, file);
-  return { events: events.size, sources };
+  return { changed: true, events: events.size, sources };
 }
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) collectMacroResults().then(result => console.log(JSON.stringify(result))).catch(error => { console.error(error); process.exitCode = 1; });

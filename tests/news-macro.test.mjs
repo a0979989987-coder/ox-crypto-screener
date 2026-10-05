@@ -2,9 +2,14 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { importance, matchesImportance } from '../src/components/news/model.js';
 import { macroResult, macroValue, mergeMacroResults } from '../src/components/news/macro.js';
-import { parseBlsResult, parseFedCalendar, parseFedRate, easternTime } from '../scripts/collect-macro-results.mjs';
+import { parseBlsResult, parseFedCalendar, parseFedRate, easternTime, macroFingerprint } from '../scripts/collect-macro-results.mjs';
 const now = Date.parse('2026-10-05T12:00:00Z');
 const released = { metric: 'cpi-mom', unit: '%', releasedAt: '2026-10-02T12:30:00Z', consensus: 0.3, consensusSource: 'https://example.com/survey', sourceUrl: 'https://www.bls.gov/release' };
+test('unchanged polling timestamps do not trigger deployments but revised facts and outages do',()=>{
+  const old={generatedAt:'a',events:[{actual:29,updatedAt:'a'}],sources:[{status:'ready',lastAttemptAt:'a'}]};
+  const next={generatedAt:'b',events:[{updatedAt:'b',actual:29}],sources:[{lastAttemptAt:'b',status:'ready'}]};
+  assert.equal(macroFingerprint(old),macroFingerprint(next));next.events[0].actual=30;assert.notEqual(macroFingerprint(old),macroFingerprint(next));next.events[0].actual=29;next.sources[0].status='error';assert.notEqual(macroFingerprint(old),macroFingerprint(next));
+});
 test('all five result labels handle threshold rounding and missing information safely', () => {
   for (const [actual, label] of [[0.1,'利多'],[0.2,'小多'],[0.3,'中性'],[0.4,'小空'],[0.5,'利空']]) assert.equal(macroResult({...released,actual},now).label,label);
   assert.equal(macroResult({...released,actual:0,consensus:null},now).label,'待判讀');
