@@ -53,6 +53,6 @@ try{
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'No horizontal page overflow');assert.deepEqual(errors,[]);
   await page.screenshot({path:resolve(output,`${theme}-${width}.png`),fullPage:true});results.push({theme,width,currentTaipeiDate:true,closure:true,eventDetail:true,upcomingDays:1,loginLogoutGate:true,overflow:false});await page.close();
  }
- writeFileSync(resolve(output,'report.json'),JSON.stringify({synthetic:true,baseline:'3d65f80',results},null,2));
+ writeFileSync(resolve(output,'report.json'),JSON.stringify({synthetic:true,baseline:'253f32a',results},null,2));
  console.log('Actual calendar workspace/CSS passed: dark/light × desktop/mobile, Taipei today, closures, upcoming events, detail dialog, login/logout gate and overflow. Synthetic sessions/events only.');
 }finally{await browser.close();}
