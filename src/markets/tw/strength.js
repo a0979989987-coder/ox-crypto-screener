@@ -5,7 +5,7 @@ import { createTWMarketState } from './engine.js?v=20261002-rank8';
 let selected = 'patterns', session = null, modules;
 export function preloadTWStrength() {
   return modules ??= Promise.all([
-    import('../crypto/patterns/view.js?v=20261005-touch1'),
+    import('../crypto/patterns/view.js?v=20261005-center2'),
     import('./patterns/source.js?v=20261002-rank8'), import('./patterns/index-cache.js?v=20261002-rank8'),import('./bubbles/view.js?v=20261005-touch1')
   ]).catch(error => { modules = null; throw error; });
 }

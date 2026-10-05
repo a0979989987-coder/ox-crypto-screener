@@ -86,11 +86,11 @@
 .px-tier-heading span{overflow:hidden;text-overflow:ellipsis}
 .px-refresh-pill{position:fixed;z-index:18;right:26px;bottom:calc(85px + env(safe-area-inset-bottom));display:grid;place-items:center;width:38px;height:38px;padding:0;border:1px solid #ffffffbd;border-radius:999px;background:radial-gradient(circle at 34% 18%,#ffffff39,#293037ed 45%,#14191ef0);color:#fff;box-shadow:inset 0 1px #fff9,0 0 8px #fff9,0 0 20px #ffffff6c,0 6px 18px #0009;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);transition:transform .5s cubic-bezier(.22,.8,.22,1),box-shadow .3s ease}
 .px-refresh-pill:hover{box-shadow:inset 0 1px #fff,0 0 12px #fffc,0 0 25px #ffffff88,0 6px 18px #0009}
-.px-refresh-glyph{display:grid;place-items:center}.px-refresh-glyph svg{width:19px;height:19px;stroke-width:1.6}
+.px-refresh-glyph{position:absolute;inset:0;display:grid;place-items:center;line-height:0;pointer-events:none}.px-refresh-glyph svg{display:block;flex:none;width:19px;height:19px;stroke-width:1.6;transform-box:view-box;transform-origin:50% 50%}
 .px-pill-progress{position:absolute;inset:-2px;width:calc(100% + 4px);height:calc(100% + 4px);transform:rotate(-90deg);pointer-events:none;fill:none;stroke-width:2.2}
 .px-pill-track{stroke:#ffffff21}.px-pill-arc{stroke:#fff;stroke-linecap:round;stroke-dasharray:107;stroke-dashoffset:107;opacity:0;filter:drop-shadow(0 0 3px #fff);transition:stroke-dashoffset .22s linear,opacity .2s ease}
 .px-refresh-pill.is-scanning .px-pill-arc,.px-refresh-pill.is-complete .px-pill-arc{opacity:1}
-.px-refresh-pill.is-scanning .px-refresh-glyph{animation:px-refresh-spin 2.4s linear infinite}
+.px-refresh-pill.is-scanning .px-refresh-glyph svg{animation:px-refresh-spin 2.4s linear infinite}
 .px-refresh-pill.is-compact{transform:scale(.84)}
 @keyframes px-refresh-spin{to{transform:rotate(360deg)}}
 .px-to-radar{border:1px solid #ffffff8a;border-radius:8px;background:linear-gradient(145deg,#ffffff2a,#ffffff08);box-shadow:inset 0 1px #ffffff85,0 0 9px #ffffff36;padding:5px 10px;font-size:11px;white-space:nowrap}
@@ -107,7 +107,7 @@
  .px-refresh-pill{right:22px;bottom:calc(78px + env(safe-area-inset-bottom));width:36px;height:36px}
  .px-tier-heading{padding-right:0}.px-status{font-size:9px}
 }
-@media(prefers-reduced-motion:reduce){.px-refresh-pill.is-scanning .px-refresh-glyph{animation:none}.px-pill-arc{transition:none}.px-mode-toggle{transition:none}}
+@media(prefers-reduced-motion:reduce){.px-refresh-pill.is-scanning .px-refresh-glyph svg{animation:none}.px-pill-arc{transition:none}.px-mode-toggle{transition:none}}
 
 /* Keep the initial status in normal flow above cards, even without a tier heading. */
 .px-status-row{position:static;width:100%;height:auto;min-height:20px;margin-bottom:4px;display:flex;align-items:center;justify-content:flex-end;gap:5px;min-width:0;pointer-events:none}

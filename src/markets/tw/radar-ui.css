@@ -171,3 +171,6 @@ dialog.tw-stock-detail::backdrop { background:#040507c9; backdrop-filter:blur(3p
 .tw-radar-root #twr-screener{min-width:0}
 .twr-label-short{display:none}
 @media(max-width:700px){.tw-radar-root .twr-mode-viewport{overflow:hidden}.tw-radar-root .twr-mode-rail{min-width:0;width:100%;display:flex;flex-wrap:nowrap;gap:1px;padding:3px}.tw-radar-root .twr-mode-rail button{flex:1 1 0;min-width:0;white-space:nowrap;min-height:36px;padding:6px 2px;font-size:11px}.tw-radar-root .twr-label-full{display:none}.tw-radar-root .twr-label-short{display:inline}.tw-radar-root .twr-mode-indicator{display:block}}
+
+/* Widen phone tiles into the existing side gutters; vertical sizing stays intact. */
+@media(max-width:700px){.tw-radar-root .twr-results-panel{margin-inline:-8px;padding-inline:0}.tw-radar-root .twr-list{column-gap:6px}.tw-radar-root .tw-stock-quote{margin-block:7px}}
