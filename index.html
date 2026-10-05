@@ -45,7 +45,7 @@
   <link rel="stylesheet" href="src/styles/components/fullscreen-lightglass.css?v=20261001-tiercomb2">
   <link rel="stylesheet" href="src/styles/components/feature-search-provider.css?v=20261005-weeklist4">
   <link rel="stylesheet" href="src/styles/components/news-center.css?v=20261005-weeklist4">
-  <link rel="stylesheet" href="src/styles/themes/editorial-terminal.css?v=20261004-markets2">
+  <link rel="stylesheet" href="src/styles/themes/editorial-terminal.css?v=20261005-dockmenu">
 
 <!-- CSS moved: ox-premium-glass-design-system -->
 
@@ -136,6 +136,7 @@
           </button>
         </div>
 
+        <div class="ox-control-group"><button class="ox-control-row" id="ox-control-media" type="button"><span class="ox-control-icon"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m10 9 5 3-5 3z"/></svg></span><span class="ox-control-copy"><b>媒體</b></span><span class="ox-control-side"><span class="ox-control-arrow">›</span></span></button></div>
         <div class="ox-control-section-label">Appearance</div>
         <div class="ox-control-group">
           <div class="ox-control-row">
@@ -693,8 +694,8 @@
   <button class="dock-btn" type="button" data-view-target="data" aria-label="資訊">
     <span class="dock-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V11m5 8V5m5 14v-7m5 7V8M3 20h18"/></svg></span><span>資訊</span>
   </button>
-  <button class="dock-btn" type="button" data-view-target="media" aria-label="媒體">
-    <span class="dock-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m10 9 5 3-5 3z"/></svg></span><span>媒體</span>
+  <button class="dock-btn" id="ox-dock-menu" type="button" aria-label="選單" aria-controls="ox-control-panel" aria-expanded="false">
+    <span class="dock-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></span><span>選單</span>
   </button>
 </nav>
 
@@ -754,7 +755,7 @@
 <script src="src/components/chart/workspace.js?v=20261005-graytop5"></script>
 <script src="src/markets/crypto/presentation.js?v=20261002-rank8"></script>
 <script src="src/components/account/store.js?v=20261005-graytop5"></script>
-<script src="src/components/control-panel/feature-pack.js?v=20261001-tiercomb2"></script>
+<script src="src/components/control-panel/feature-pack.js?v=20261005-dockmenu"></script>
 <script src="src/components/navigation/runtime-actions.js?v=20261001-tiercomb2"></script>
 <script src="src/components/radar/timeframe-filters.js?v=20261001-tiercomb2"></script>
 <script src="src/components/chart/toolbar.js?v=20261001-tiercomb2"></script>
@@ -766,7 +767,7 @@
 
 <script src="src/components/navigation/repair.js?v=20261002-newsv2"></script>
 
-<script src="src/components/navigation/market-quick-switch.js?v=20261005-hover1s"></script>
+<script src="src/components/navigation/market-quick-switch.js?v=20261005-hoverhalf"></script>
 <script src="src/components/news/center.js?v=20261005-weeklist4"></script>
 <script src="src/components/news/entry.js?v=20261002-nav6"></script>
 

@@ -1224,3 +1224,5 @@ body.ox-terminal #view-home .btc-premium-chart-wrap {margin-bottom:2px!important
 @media(max-width:620px) {
  body.ox-terminal #view-home .ox-home-main {gap:8px!important}
 }
+/* Mobile navigation lives in the dock; reclaim the old market/menu header. */
+@media(max-width:700px){body.ox-terminal .ox-shell-header{display:none!important}}
