@@ -13,22 +13,24 @@ import { FINANCE_SOURCES, FINANCE_FEEDS, publisherMatches, financeHeadline } fro
 // headlines and source links are retained; article bodies are never republished.
 export const FEEDS = [
   ...FINANCE_FEEDS, ...FINANCE_SOURCES,
+  { id: 'theblock', name: 'The Block', url: 'https://www.theblock.co/rss.xml', markets: ['crypto'], verified: 'publisher-feed' },
+  { id: 'cryptoslate', name: 'CryptoSlate', url: 'https://cryptoslate.com/feed/', markets: ['crypto'], verified: 'publisher-feed' },
   { id: 'technews', name: '科技新報', url: 'https://technews.tw/feed/', markets: ['tw'], verified: 'publisher-feed' },
   { id: 'abmedia', name: '鏈新聞 ABMedia', url: 'https://abmedia.io/feed', markets: ['crypto'], verified: 'publisher-feed' },
   { id: 'blocktempo', name: '動區動趨 BlockTempo', url: 'https://www.blocktempo.com/feed/', markets: ['crypto'], verified: 'publisher-feed' },
   { id: 'coindesk', name: 'CoinDesk', url: 'https://www.coindesk.com/arc/outboundfeeds/rss/?outputType=xml', markets: ['crypto'], verified: 'publisher-feed' },
   { id: 'cointelegraph', name: 'Cointelegraph', url: 'https://cointelegraph.com/rss', markets: ['crypto'], verified: 'publisher-feed' },
   { id: 'twse', name: '臺灣證券交易所', url: 'https://www.twse.com.tw/rwd/zh/news/feed?type=rss', markets: ['tw'] },
-  { id: 'fed', name: 'Federal Reserve', url: 'https://www.federalreserve.gov/feeds/press_monetary.xml', markets: ['tw'] },
-  { id: 'bls-cpi', name: 'U.S. BLS · CPI', url: 'https://www.bls.gov/feed/cpi.rss', markets: ['tw'] },
-  { id: 'bls-jobs', name: 'U.S. BLS · Employment', url: 'https://www.bls.gov/feed/empsit.rss', markets: ['tw'] },
+  { id: 'fed', name: 'Federal Reserve', url: 'https://www.federalreserve.gov/feeds/press_monetary.xml', markets: ['tw', 'crypto'] },
+  { id: 'bls-cpi', name: 'U.S. BLS · CPI', url: 'https://www.bls.gov/feed/cpi.rss', markets: ['tw', 'crypto'] },
+  { id: 'bls-jobs', name: 'U.S. BLS · Employment', url: 'https://www.bls.gov/feed/empsit.rss', markets: ['tw', 'crypto'] },
   { id: 'sec', name: 'U.S. SEC', url: 'https://www.sec.gov/news/pressreleases.rss', markets: ['crypto'] },
-  { id: 'ethereum', name: 'Ethereum Foundation', url: 'https://blog.ethereum.org/feed.xml', markets: ['crypto'] },
+  { id: 'ethereum', name: 'Ethereum Foundation', url: 'https://blog.ethereum.org/en/feed.xml', markets: ['crypto'] },
   { id: 'kraken', name: 'Kraken', url: 'https://blog.kraken.com/feed', markets: ['crypto'] },
   { id: 'cftc', name: 'U.S. CFTC', url: 'https://www.cftc.gov/RSS/RSSGP/rssgp.xml', markets: ['crypto'] },
   { id: 'bitcoin-core', name: 'Bitcoin Core', url: 'https://github.com/bitcoin/bitcoin/releases.atom', markets: ['crypto'] }
 ];
-const OFFICIAL_HOSTS = new Set(['technews.tw', 'abmedia.io', 'www.blocktempo.com', 'www.coindesk.com', 'cointelegraph.com', 'decrypt.co', 'www.twse.com.tw', 'www.federalreserve.gov', 'www.bls.gov', 'www.ecb.europa.eu', 'www.sec.gov', 'blog.ethereum.org', 'blog.kraken.com', 'www.cftc.gov']);
+const OFFICIAL_HOSTS = new Set(['technews.tw', 'abmedia.io', 'www.blocktempo.com', 'www.coindesk.com', 'cointelegraph.com', 'decrypt.co', 'www.twse.com.tw', 'www.federalreserve.gov', 'www.bls.gov', 'www.ecb.europa.eu', 'www.theblock.co', 'cryptoslate.com', 'www.sec.gov', 'blog.ethereum.org', 'blog.kraken.com', 'www.cftc.gov']);
 for(const feed of FINANCE_FEEDS)for(const host of feed.hosts)OFFICIAL_HOSTS.add(host);
 OFFICIAL_HOSTS.add('news.google.com');
 
@@ -203,7 +205,7 @@ export async function collect() {
   const sources = results.map((result, i) => result.status === 'fulfilled'
     ? { id: FEEDS[i].id, name: FEEDS[i].name, markets: FEEDS[i].markets, status: 'ready', count: result.value.items.length, lastSuccessAt: stamp, lastAttemptAt: stamp, access: FEEDS[i].aggregator?'public-aggregated-rss':FEEDS[i].portal?'public-portal-rss':'public-rss-headlines-links', aggregator:Boolean(FEEDS[i].aggregator||FEEDS[i].portal), usage:FEEDS[i].usage, termsUrl:FEEDS[i].termsUrl, scopeLabel:FEEDS[i].scopeLabel, endpoint: FEEDS[i].url }
     : { ...old?.sources?.find(s => s.id === FEEDS[i].id), id: FEEDS[i].id, name: FEEDS[i].name, markets: FEEDS[i].markets, endpoint: FEEDS[i].url, scopeLabel:FEEDS[i].scopeLabel, status: 'error', lastAttemptAt: stamp, message: String(result.reason?.message || '來源請求失敗').slice(0, 100) });
-  const allOldNews = [...(old?.news || []), ...(old?.pendingNews || [])].filter(item => item.sourceId !== 'decrypt').map(migrateAggregateHeadline);
+  const allOldNews = [...(old?.news || []), ...(old?.pendingNews || [])].filter(item => item.sourceId !== 'decrypt').map(migrateAggregateHeadline).map(item => ['fed','bls-cpi','bls-jobs'].includes(item.sourceId) ? {...item,markets:['tw','crypto']} : item);
   // Append to history rather than replacing yesterday with today's RSS window.
   const articles = new Map(allOldNews.map(item => [item.id, item]));
   results.forEach(result => { if (result.status === 'fulfilled') result.value.items.forEach(item => articles.set(item.id, item)); });
@@ -227,7 +229,7 @@ export async function collect() {
     ['twse-holidays', async () => holidays(JSON.parse(await fetchText('https://openapi.twse.com.tw/v1/holidaySchedule/holidaySchedule')), stamp)],
     ['twse-conferences', async () => collectConferences(fetchText, stamp)],
     ['aave-governance', async () => {
-      const response = await fetch('https://hub.snapshot.org/graphql', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ query: '{ proposals(first: 30, skip: 0, where: { space_in: ["aave.eth"] }, orderBy: "created", orderDirection: desc) { id title start end space { id } } }' }), signal: AbortSignal.timeout(20000) });
+      const response = await fetch('https://hub.snapshot.org/graphql', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ query: '{ proposals(first: 30, skip: 0, where: { space_in: ["aave.eth", "uniswap.eth", "ens.eth", "arbitrumfoundation.eth"] }, orderBy: "created", orderDirection: desc) { id title start end space { id } } }' }), signal: AbortSignal.timeout(20000) });
       if (!response.ok) throw Error(`HTTP ${response.status}`); const body = await response.json(); if (body.errors || !Array.isArray(body.data?.proposals)) throw Error('Governance response has no verified proposals'); return governanceEvents(body.data.proposals, stamp);
     }]
   ];

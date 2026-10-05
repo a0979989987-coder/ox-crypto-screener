@@ -38,7 +38,7 @@
   async function refreshMacro(force) {
     if (macroPending) return; macroPending = true;
     try {
-      const [response, { mergeMacroResults }] = await Promise.all([fetch(`data/macro-results.json${force ? `?t=${Date.now()}` : ''}`, { cache: force ? 'reload' : 'default', signal: AbortSignal.timeout(8000) }), import('./macro.js?v=20261005-macro1')]);
+      const [response, { mergeMacroResults }] = await Promise.all([fetch(`data/macro-results.json${force ? `?t=${Date.now()}` : ''}`, { cache: force ? 'reload' : 'default', signal: AbortSignal.timeout(8000) }), import('./macro.js?v=20261005-weeklist4')]);
       if (!response.ok) return;
       const supplement = await response.json();
       if (state.snapshot) state.snapshot = mergeMacroResults(state.snapshot, supplement);
@@ -56,7 +56,7 @@
     const scope = document.body.dataset.newsMode === '1' ? 'all' : currentMarket();
     const host = document.querySelector(`[data-news-surface="${scope === 'all' ? 'all' : 'market'}"]`);
     if (!host) return;
-    const { mountNewsWorkspace } = await import('./workspace.js?v=20261005-macro1');
+    const { mountNewsWorkspace } = await import('./workspace.js?v=20261005-weeklist4');
     if (token !== generation || !host.isConnected) return;
     if (state.scope !== scope || state.workspace?.host !== host) {
       state.workspace?.destroy(); state.scope = scope;

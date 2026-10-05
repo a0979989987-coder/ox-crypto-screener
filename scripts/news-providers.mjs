@@ -59,11 +59,11 @@ export function paymentEvents(rows, updatedAt) {
   return events;
 }
 export function governanceEvents(proposals, updatedAt) {
-  return proposals.filter(p => p.space?.id === 'aave.eth' && /^[a-zA-Z0-9]+$/.test(p.id) && Number.isFinite(p.end) && Number.isFinite(p.start) && p.end > p.start).map(p => ({
-    id: `aave-vote:${p.id}:end`, title: 'Aave governance proposal voting deadline', titleZh: 'Aave 治理提案投票截止', translationStatus: 'translated', proposalTitle: p.title,
-    kind: 'event', category: 'governance', shortTitle: 'Aave 投票截止', occursAt: new Date(p.end * 1000).toISOString(), date: null, status: 'confirmed', announcementStatus: 'confirmed', markets: ['crypto'],
-    originalTimezone: 'UTC', sourceId: 'aave-governance', source: 'Aave 官方治理空間', sourceUrl: `https://snapshot.box/#/s:aave.eth/proposal/${p.id}`, link: `https://snapshot.box/#/s:aave.eth/proposal/${p.id}`,
-    startsAt: new Date(p.start * 1000).toISOString(), projectId: 'aave', assets: [CRYPTO_ASSETS.find(a => a.symbol === 'AAVE')], updatedAt, impact: { stars: null, ruleVersion: 'unassessed-v1', reason: '來源沒有可靠重要性分級' }
+  return proposals.filter(p => ['aave.eth','uniswap.eth','ens.eth','arbitrumfoundation.eth'].includes(p.space?.id) && /^[a-zA-Z0-9]+$/.test(p.id) && Number.isFinite(p.end) && Number.isFinite(p.start) && p.end > p.start).map(p => ({
+    id: `${p.space.id==='aave.eth'?'aave-vote':p.space.id+'-vote'}:${p.id}:end`, title: 'Aave governance proposal voting deadline', titleZh: `${p.space.id.split('.')[0].toUpperCase()} 治理提案投票截止`, translationStatus: 'translated', proposalTitle: p.title,
+    kind: 'event', category: 'governance', shortTitle: `${p.space.id.split('.')[0]} 投票截止`, occursAt: new Date(p.end * 1000).toISOString(), date: null, status: 'confirmed', announcementStatus: 'confirmed', markets: ['crypto'],
+    originalTimezone: 'UTC', sourceId: 'aave-governance', source: `${p.space.id} 官方治理空間`, sourceUrl: `https://snapshot.box/#/s:${p.space.id}/proposal/${p.id}`, link: `https://snapshot.box/#/s:${p.space.id}/proposal/${p.id}`,
+    startsAt: new Date(p.start * 1000).toISOString(), projectId: p.space.id.split('.')[0], assets: CRYPTO_ASSETS.filter(a => a.projectId===p.space.id.split('.')[0]), updatedAt, impact: { stars: null, ruleVersion: 'unassessed-v1', reason: '來源沒有可靠重要性分級' }
   }));
 }
 export function spansFor(events, sourceId, complete = false) {

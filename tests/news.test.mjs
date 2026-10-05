@@ -88,11 +88,12 @@ test('Taiwan official feed resolves relative links and keeps native Chinese titl
   assert.equal(localize(item).titleZh, item.title);
 });
 
-test('macro news preserves official publisher identity and does not masquerade as crypto news', async () => {
+test('macro news shared with crypto keeps its official publisher identity', async () => {
   const snapshot = JSON.parse(await readFile(new URL('../data/news.json', import.meta.url)));
   assert.ok(snapshot.news.some(item => item.sourceId === 'twse'));
   for (const item of snapshot.news.filter(item => ['fed','bls-cpi','bls-jobs','ecb'].includes(item.sourceId))) {
-    assert.equal(item.markets.includes('crypto'), false);
+    assert.ok(item.markets.includes('tw'));
+    if(['fed','bls-cpi','bls-jobs'].includes(item.sourceId))assert.ok(item.markets.includes('crypto'));
     assert.ok(['www.federalreserve.gov','www.bls.gov','www.ecb.europa.eu'].includes(new URL(item.link).hostname));
     assert.notEqual(item.sourceId, 'twse');
   }

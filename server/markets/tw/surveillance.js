@@ -64,6 +64,12 @@ export function tradingDaysBetween(start, end, calendar) {
   }
   return count;
 }
+export function nextTradingDay(endDate, calendar) {
+  if (!endDate || !calendar) return '';
+  let date=endDate;
+  for(let i=0;i<32;i++){ date=addDay(date);const open=calendar.isOpen(date);if(open===null)return '';if(open)return date; }
+  return '';
+}
 function period(value) {
   const dates = clean(value).split(/[~～至]/).map(officialDate);
   return dates.length === 2 && dates.every(Boolean) && dates[0] <= dates[1] ? dates : ['', ''];
@@ -221,6 +227,9 @@ export function buildTWSurveillance(feeds, quotes = [], { now = new Date(), data
         status: startDate > today ? 'risk' : 'active', startDate, endDate,
         scheduled: startDate > today,
         announcementDate: officialDate(item.Date),
+        measures: clean(item.DispositionMeasures || item.DisposalMeasures),
+        announcementCount: number(item.NumberOfAnnouncement),
+        resumeDate: nextTradingDay(endDate, calendar),
         batchMinutes: batchMinutes(detail),
         releaseDays: tradingDaysBetween(today, endDate, calendar),
         condition: clean(item.ReasonsOfDisposition || item.DispositionReasons),
