@@ -3,7 +3,7 @@ import { seal, unseal, cookie, readCookie, safeReturn } from './cookies.js';
 import { handleBitgetLink, parseLinkMutation } from './bitget-link.js';
 const bursts = new Map();
 // Only fixed public API categories may cross the callback boundary.
-const providerCodes = new Set(['unexpected_failure', 'bad_oauth_callback', 'bad_oauth_state', 'flow_state_expired', 'flow_state_not_found', 'provider_disabled', 'oauth_provider_not_supported', 'provider_email_needs_verification', 'signup_disabled', 'identity_already_exists', 'email_exists', 'user_already_exists', 'user_banned', 'over_request_rate_limit', 'request_timeout', 'validation_failed']);
+const providerCodes = new Set(['otp_expired','otp_disabled','email_not_confirmed','email_provider_disabled','unexpected_failure', 'bad_oauth_callback', 'bad_oauth_state', 'flow_state_expired', 'flow_state_not_found', 'provider_disabled', 'oauth_provider_not_supported', 'provider_email_needs_verification', 'signup_disabled', 'identity_already_exists', 'email_exists', 'user_already_exists', 'user_banned', 'over_request_rate_limit', 'request_timeout', 'validation_failed']);
 const providerErrors = new Set(['access_denied', 'server_error', 'invalid_request', 'temporarily_unavailable', 'unauthorized_client', 'unsupported_response_type', 'invalid_scope']);
 function allow(key) {
   const now = Date.now();
@@ -73,7 +73,8 @@ export function createAccountHandler({ env = process.env, clientFactory = create
       if (endpoint === 'callback') {
         if (req.query.error) {
           const category = providerCodes.has(req.query.error_code) ? req.query.error_code : providerErrors.has(req.query.error) ? req.query.error : 'unclassified';
-          return callbackFailure(req.query.error === 'access_denied' ? 'provider_denied' : 'provider_callback_error', category);
+          const reason = ['otp_expired','flow_state_expired'].includes(category) ? 'authorization_expired' : category === 'flow_state_not_found' ? 'authorization_invalid' : req.query.error === 'access_denied' ? 'provider_denied' : 'provider_callback_error';
+          return callbackFailure(reason, category);
         }
         if (!flow) return callbackFailure(rawFlow ? 'flow_invalid' : 'flow_missing');
         if (typeof req.query.code !== 'string' || !req.query.code || req.query.code.length > 2048) return callbackFailure('code_missing');
@@ -84,7 +85,7 @@ export function createAccountHandler({ env = process.env, clientFactory = create
           return callbackFailure(reason);
         }
         if (!data?.user || !data.session?.access_token || !data.session?.refresh_token) return callbackFailure('response_invalid');
-        saveSession(data.session); return redirect(safeReturn(flow.returnTo));
+        saveSession(data.session); const landing = new URL(safeReturn(flow.returnTo), origin); landing.searchParams.set('ox_auth','success'); return redirect(landing.pathname + landing.search + landing.hash);
       }
       if (endpoint === 'email' || endpoint === 'verify') {
         const email = body.email;
@@ -92,9 +93,10 @@ export function createAccountHandler({ env = process.env, clientFactory = create
         if (endpoint === 'email') {
           const returnTo = safeReturn(body.returnTo);
           const { error } = await client.auth.signInWithOtp({ email, options: { shouldCreateUser: body.register === true, emailRedirectTo: origin + '/api/v1/account/callback' } });
+          if (error?.status === 429 || ['over_email_send_rate_limit','over_request_rate_limit'].includes(error?.code)) return json(429, { ok: false, code: 'EMAIL_RATE_LIMITED', cooldownSeconds: 60, message: '登入信寄送太頻繁或已達寄信額度。請先等待，不要連續點擊；若持續受限，請稍後重試或聯絡管理員。' });
           if (error) return json(400, { ok: false, message: '無法寄出登入連結，請稍後重試或確認電子郵件設定。' });
           res.setHeader('Set-Cookie', cookie('flow', seal({ storage: Object.fromEntries(storageMap), returnTo }, secret, 'flow', 600), 600));
-          return json(200, { ok: true, message: '登入連結已寄出，請到信箱點擊連結完成登入。' });
+          return json(200, { ok: true, cooldownSeconds: 60, message: '登入連結已寄出，請查看收件匣或垃圾郵件並點擊連結；不需重複送出。' });
         }
         if (typeof body.token !== 'string' || !/^\d{6,10}$/.test(body.token)) return json(400, { ok: false, message: '請輸入信件中的驗證碼。' });
         const { data, error } = await client.auth.verifyOtp({ email, token: body.token, type: 'email' });

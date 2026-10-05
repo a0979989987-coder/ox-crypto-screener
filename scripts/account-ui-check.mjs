@@ -117,6 +117,9 @@ try {
   await page.locator('#ox-bitget-link-save').click();
   await page.locator('#ox-bitget-link-status').filter({ hasText: '持有權待驗證' }).waitFor();
   assert.equal(calls.filter(call => call.endpoint === 'bitget-link' && call.method === 'POST').at(-1).body.revision, '00000000-0000-4000-8000-000000000004');
+  await page.goto('https://ox.test/?ox_auth=success');
+  await page.locator('#ox-account-center').waitFor({state:'visible'});
+  assert.equal(await page.evaluate(()=>location.search.includes('ox_auth')),false);
   linkAvailable = false;
   await page.reload();
   await page.waitForFunction(() => window.OXAuth?.user?.id === 'fixture-member');
@@ -128,6 +131,18 @@ try {
   await page.reload();
   await page.locator('#ox-account-auth-status').filter({ hasText: '尚未設定' }).waitFor({ state: 'attached' });
   assert.equal(calls.some(call => call.endpoint === 'session'), false);
+  configured = true; user = null;
+  await page.goto('https://ox.test/?ox_auth=error&ox_auth_reason=provider_denied&ox_auth_provider=access_denied');
+  await page.locator('#ox-account-auth-status').filter({hasText:'登入連結或授權未完成'}).waitFor();
+  assert.doesNotMatch(await page.locator('#ox-account-auth-status').innerText(),/Google 登入已取消/);
+  await page.goto('https://ox.test/?ox_auth=error&ox_auth_reason=authorization_expired&ox_auth_provider=otp_expired');
+  await page.locator('#ox-account-auth-status').filter({hasText:'登入驗證已失效'}).waitFor();
+  await page.goto('https://ox.test/#error=access_denied&error_code=otp_expired&error_description=synthetic-private-error');
+  await page.reload();
+  await page.locator('#ox-account-auth-status').filter({hasText:'登入驗證已失效'}).waitFor();
+  assert.doesNotMatch(await page.locator('#ox-account-auth-status').innerText(), /Google|synthetic-private-error/);
+  assert.equal(await page.evaluate(()=>location.hash), '');
+  assert.equal(await page.evaluate(()=>window.OXAuth.user), null);
   assert.deepEqual(errors, []);
   console.log('Account UI passed: Magic Link registration, Google failure recovery, member profile escaping/storage status, mobile viewport, logout, unconfigured guest mode. Synthetic fixtures only.');
 } finally { await browser.close(); }

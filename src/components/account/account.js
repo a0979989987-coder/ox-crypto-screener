@@ -61,7 +61,7 @@
     busy = true; form?.setAttribute('aria-busy','true');
     const buttons = [$('#ox-account-google'), $('#ox-account-email-submit')];
     buttons.forEach(button => { if (button) button.disabled = true; });
-    try { return await action(); } finally { busy = false; form?.removeAttribute('aria-busy'); buttons.forEach(button => { if (button) button.disabled = false; }); }
+    try { return await action(); } finally { busy = false; form?.removeAttribute('aria-busy'); buttons.forEach(button => { if (button) button.disabled = false; }); syncEmailCooldown(); }
   }
   const renderUser = user => {
     if (!center) return;
@@ -71,6 +71,17 @@
       center.querySelector('h2 + p')?.remove();
       profile = document.createElement('div'); profile.id = 'ox-account-profile';
       center.querySelector('h2')?.after(profile);
+  let emailCooldownTimer = null;
+  function syncEmailCooldown() {
+    const button = $('#ox-account-email-submit'); if (!button) return;
+    const seconds = window.OXAuth.emailCooldownSeconds || 0;
+    button.disabled = busy || seconds > 0;
+    button.textContent = seconds ? `請等待 ${seconds} 秒` : $('#ox-account-tab-register')?.getAttribute('aria-selected') === 'true' ? '建立帳號' : 'Email 登入';
+    if (seconds && !emailCooldownTimer) emailCooldownTimer = setInterval(syncEmailCooldown, 1000);
+    if (!seconds && emailCooldownTimer) { clearInterval(emailCooldownTimer); emailCooldownTimer = null; }
+  }
+  document.addEventListener('ox:emailcooldown', syncEmailCooldown);
+  syncEmailCooldown();
       const signout = document.createElement('button'); signout.type = 'button'; signout.className = 'ox-account-skip'; signout.id = 'ox-account-signout'; signout.textContent = '登出'; center.append(signout);
     }
     profile.replaceChildren();
@@ -116,7 +127,7 @@
     $('#ox-account-tab-login').setAttribute('aria-selected', String(!register));
     $('#ox-account-tab-register').setAttribute('aria-selected', String(register));
     $('#ox-account-title-main').textContent = register ? '建立 OX 帳號' : '登入 OX';
-    $('#ox-account-email-submit').textContent = register ? '建立帳號' : '繼續';
+    $('#ox-account-email-submit').textContent = register ? '建立帳號' : '繼續'; syncEmailCooldown();
     $('.ox-account-password-wrap').hidden = true;
 
     $('#ox-account-lead')?.remove();
@@ -170,20 +181,30 @@
     const failedCallback = landing.searchParams.get('ox_auth') === 'error' && !window.OXAuth.user;
     const reason = landing.searchParams.get('ox_auth_reason');
     const provider = landing.searchParams.get('ox_auth_provider');
-    const providerLabels = new Set(['unexpected_failure', 'bad_oauth_callback', 'bad_oauth_state', 'flow_state_expired', 'flow_state_not_found', 'provider_disabled', 'oauth_provider_not_supported', 'provider_email_needs_verification', 'signup_disabled', 'identity_already_exists', 'email_exists', 'user_already_exists', 'user_banned', 'over_request_rate_limit', 'request_timeout', 'validation_failed', 'access_denied', 'server_error', 'invalid_request', 'temporarily_unavailable', 'unauthorized_client', 'unsupported_response_type', 'invalid_scope', 'unclassified']);
+    const providerLabels = new Set(['otp_expired','otp_disabled','email_not_confirmed','email_provider_disabled','unexpected_failure', 'bad_oauth_callback', 'bad_oauth_state', 'flow_state_expired', 'flow_state_not_found', 'provider_disabled', 'oauth_provider_not_supported', 'provider_email_needs_verification', 'signup_disabled', 'identity_already_exists', 'email_exists', 'user_already_exists', 'user_banned', 'over_request_rate_limit', 'request_timeout', 'validation_failed', 'access_denied', 'server_error', 'invalid_request', 'temporarily_unavailable', 'unauthorized_client', 'unsupported_response_type', 'invalid_scope', 'unclassified']);
     const messages = {
       flow_missing: '登入驗證 Cookie 未收到。請重新點選登入；若仍發生，請回報原因：flow_missing。',
       flow_invalid: '登入驗證 Cookie 已失效或無法驗證。請重新點選登入；原因：flow_invalid。',
       code_missing: '登入回呼未收到授權碼。請重新點選登入；原因：code_missing。',
-      provider_denied: 'Google 登入已取消或未同意。可重新點選 Google 登入。',
+      provider_denied: '登入連結或授權未完成。連結可能已使用或過期，也可能取消了登入；請回到發起登入的同一瀏覽器確認後再試。',
       provider_callback_error: '登入提供者未完成回呼。請回報原因：provider_callback_error。',
       pkce_missing: '登入驗證資料未完整還原。請回報原因：pkce_missing。',
       pkce_mismatch: '登入驗證資料與回呼不符。請重新登入；原因：pkce_mismatch。',
-      authorization_expired: '本次授權碼已過期。請重新登入；原因：authorization_expired。',
+      authorization_expired: '登入驗證已失效，可能已使用或過期。請停止重開舊信，待寄信限制解除後再取得一封新信；原因：authorization_expired。',
       authorization_invalid: '本次授權碼已使用或無法確認。請重新登入；原因：authorization_invalid。',
       exchange_failed: '登入提供者未能完成授權交換。請回報原因：exchange_failed。',
       response_invalid: '登入提供者沒有回傳完整登入資料。請回報原因：response_invalid。',
+    // Direct Supabase email failures may bypass the OX callback in a fragment.
+    // Never display raw descriptions or accept a fragment as session proof.
+    const fragment = new URLSearchParams(landing.hash.slice(1));
+    if (fragment.has('error')) {
+      const code = fragment.get('error_code');
+      landing.searchParams.set('ox_auth', 'error');
+      landing.searchParams.set('ox_auth_reason', ['otp_expired', 'flow_state_expired'].includes(code) ? 'authorization_expired' : code === 'flow_state_not_found' ? 'authorization_invalid' : 'provider_denied');
+      landing.hash = '';
+    }
       callback_unavailable: '登入回呼暫時無法完成。請回報原因：callback_unavailable。'
+    const successfulCallback = landing.searchParams.get('ox_auth') === 'success' && !!window.OXAuth.user;
     };
     status.textContent = failedCallback ? (Object.hasOwn(messages, reason) ? messages[reason] : '登入回呼未完成。請重新點選 Google 或 Email 登入。') : config.configured ? '使用電子郵件登入連結，不需要設定密碼。' : '正式登入服務尚未設定，訪客功能可正常使用。';
     if (failedCallback && reason === 'provider_callback_error') {
@@ -194,6 +215,6 @@
       landing.searchParams.delete('ox_auth'); landing.searchParams.delete('ox_auth_reason'); landing.searchParams.delete('ox_auth_provider');
       history.replaceState(null, '', landing.pathname + landing.search + landing.hash);
     }
-    if (failedCallback) open();
+    if (failedCallback || successfulCallback) open();
   });
 })();
