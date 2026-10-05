@@ -339,3 +339,28 @@ body[data-news-mode="1"] #market-unavailable-card {display:none!important}
  .oxn-root .oxn-calendar-event {padding:0}
  .oxn-root .oxn-calendar-event::before {position:static;float:left;margin:5px 3px 0 0}
 }
+
+
+/* Mobile calendar: one control row, single-line events, complete month in view. */
+@media(max-width:600px) {
+ .oxn-root .oxn-header {display:none}
+ .oxn-root .oxn-controls[data-tab="calendar"] {display:grid;grid-template-columns:minmax(0,1fr) 48px 52px 64px;gap:4px;min-height:38px;margin-bottom:7px}
+ .oxn-root .oxn-controls[data-tab="calendar"] .oxn-month-nav {height:38px}
+ .oxn-root .oxn-month-nav .oxn-month-title {font-size:13px!important;height:36px;min-height:36px;white-space:nowrap;letter-spacing:-.04em}
+ .oxn-root .oxn-month-nav .oxn-month-arrow {width:21px;min-width:21px;height:36px;min-height:36px;padding:0}
+ .oxn-root .oxn-controls[data-tab="calendar"]>.oxn-pill {min-width:0;height:38px;min-height:38px;padding:0 3px;font-size:11px!important;gap:2px}
+ .oxn-root .oxn-controls[data-tab="calendar"]>.oxn-calendar-switch {grid-column:auto;grid-row:auto;justify-self:stretch;margin:0;height:38px;min-height:38px;padding:0 3px}
+ .oxn-root .oxn-calendar-switch::before {display:none}
+ .oxn-root .oxn-calendar {border-radius:13px}
+ .oxn-root .oxn-weekdays {height:27px;font-size:12px}
+ .oxn-root .oxn-calendar-grid {grid-template-rows:repeat(var(--weeks),minmax(66px,1fr))}
+ .oxn-root[data-fit="1"] .oxn-calendar-grid {grid-template-rows:repeat(var(--weeks),minmax(0,1fr))}
+ .oxn-root .oxn-day,.oxn-root[data-compact="1"] .oxn-day {padding:4px;gap:2px}
+ .oxn-root .oxn-day-number,.oxn-root[data-compact="1"] .oxn-day-number {font-size:19px!important;line-height:22px}
+ .oxn-root .oxn-calendar-event,.oxn-root[data-compact="1"] .oxn-calendar-event {display:block;-webkit-line-clamp:unset;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;overflow-wrap:normal;word-break:normal;font-size:11px!important;line-height:14px;min-height:14px;max-height:14px;padding:0 0 0 8px}
+ .oxn-root .oxn-calendar-event::before,.oxn-root[data-compact="1"] .oxn-calendar-event::before {position:absolute;float:none;left:0;top:5px;width:4px;height:4px;margin:0}
+ .oxn-root .oxn-day-more {top:7px;bottom:auto;right:3px;font-size:8px;line-height:10px}
+ .oxn-root[data-compact="1"] .oxn-day {padding:3px;gap:1px}
+ .oxn-root[data-compact="1"] .oxn-day-number {font-size:18px!important;line-height:20px}
+ .oxn-root[data-compact="1"] .oxn-calendar-event {font-size:10px!important;line-height:12px;min-height:12px;max-height:12px}
+}

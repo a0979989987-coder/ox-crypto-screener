@@ -61,8 +61,7 @@ export function mountNewsWorkspace(host, api) {
       events.classList.toggle('is-filtered', state.categories !== null); level.classList.toggle('is-filtered', state.importance !== null);
       const monthNav = node('div', 'oxn-month-nav'); monthNav.append(prev, month, next);
       viewSwitch.classList.add('oxn-calendar-switch');
-      if (innerWidth <= 600) { header.insertBefore(viewSwitch, more); controls.append(monthNav, events, level); }
-      else controls.append(monthNav, viewSwitch, events, level);
+      controls.append(monthNav, viewSwitch, events, level);
     } else {
       const time = button('時間', '多選新聞時間', () => multi(time, '時間', 'times', TIME_CHOICES.map(([id, text]) => ({ id, label: text })), ['24'], '時間採聯集並去重，依發布時間篩選。'), 'oxn-pill');
       const source = button('來源', '多選新聞來源', () => {
@@ -235,20 +234,28 @@ export function mountNewsWorkspace(host, api) {
   let width = innerWidth, height = innerHeight;
   function positionCalendar() {
     requestAnimationFrame(() => { const grid = content.querySelector('.oxn-calendar-grid'); if (!grid) return;
-      const dock = document.querySelector('.app-dock')?.getBoundingClientRect(), top = grid.getBoundingClientRect().top + scrollY;
-      const bottom = Math.min(height, dock?.top || height - 80), rows = Number(content.querySelector('.oxn-calendar').dataset.weeks);
-      const room = Math.floor(bottom - top - 38);
-      // Keep mobile cells tall enough for two readable, wrapped event labels.
-      // Shorter phones scroll the complete month rather than shrinking its text.
-      const available = room-Math.min(70,Math.max(0,room-rows*112)), enlarged = parseFloat(getComputedStyle(document.documentElement).fontSize) > 20;
-      const fit = innerWidth <= 600 && height > innerWidth && available >= rows * 112 && !enlarged;
-      grid.style.setProperty('--month-height', fit ? `${available}px` : 'auto'); root.dataset.fit = fit ? '1' : '0'; root.dataset.compact = '0';
+      const viewport = window.visualViewport;
+      const visibleHeight = viewport?.height || innerHeight;
+      const dock = document.querySelector('.app-dock')?.getBoundingClientRect();
+      const top = grid.getBoundingClientRect().top + scrollY;
+      const bottom = Math.min(visibleHeight, dock?.top || visibleHeight - 80);
+      const captionHeight = content.querySelector('.oxn-calendar-caption')?.getBoundingClientRect().height || 30;
+      const rows = Number(content.querySelector('.oxn-calendar').dataset.weeks);
+      const room = Math.floor(bottom - top - captionHeight - 12);
+      const mobile = innerWidth <= 600 && visibleHeight > innerWidth;
+      const available = room - Math.min(64, Math.max(0, room - rows * 66));
+      const fit = mobile && available >= rows * 54;
+      grid.style.setProperty('--month-height', fit ? `${available}px` : 'auto');
+      root.dataset.fit = fit ? '1' : '0';
+      root.dataset.compact = fit && available < rows * 66 ? '1' : '0';
     });
   }
   window.addEventListener('resize', () => { if (innerWidth !== width || Math.abs(innerHeight - height) > 90) { const crossed=(width<=600)!==(innerWidth<=600);width = innerWidth; height = innerHeight; if(crossed&&state.tab==='calendar'){renderControls();renderContent();}else positionCalendar(); } }, { signal: life.signal });
+  window.visualViewport?.addEventListener('resize', positionCalendar, { signal: life.signal });
   let scrollTimer; window.addEventListener('scroll', () => { if (!root.closest('.app-view.active')) return; clearTimeout(scrollTimer); scrollTimer = setTimeout(() => { state.scroll = scrollY; persist(); }, 180); }, { signal: life.signal, passive: true });
   renderControls();
   return { host, update(next) { const changed = next.snapshot !== data.snapshot || !content.firstChild; data = next; if (changed) { detailKey = ''; renderContent(); } else status(); renderRoute(data.route); rail.position(); if (restorePosition) { restorePosition = false; requestAnimationFrame(() => window.scrollTo(0, state.scroll || 0)); } }, suspend() { closePanel(); detail?.destroy(); detail = null; detailKey = ''; clearInterval(countdown); countdown = null; }, destroy() { state.scroll = root.closest('.app-view.active') ? scrollY : state.scroll; persist(); closePanel(); detail?.destroy(); clearInterval(countdown); clearTimeout(scrollTimer); life.abort(); rail.destroy(); root.remove(); } };
 }
+
 
 
