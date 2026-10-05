@@ -16,12 +16,15 @@ export function guardStyledContent(container, main, links, signal, selector = 'm
   container.prepend(cloak); container.append(shell);
   let timer, poll, finished = false, attempt = 0;
   const readyLinks = new Set();
-  const readable = link => { try { return Boolean(link.sheet && (link.sheet.cssRules === undefined || link.sheet.cssRules.length)); } catch { return readyLinks.has(link); } };
+  // A sheet may expose rules before it has finished loading (including imports).
+  // Only a completed load event is allowed to release the loading screen.
+  const readable = link => readyLinks.has(link);
   function stop() { clearTimeout(timer); clearInterval(poll); }
   function check() {
     if (finished || signal?.aborted) return;
     if (!links.every(link => readable(link))) return;
     finished = true; stop(); cloak.remove(); shell.remove(); main.inert = false; main.removeAttribute?.('aria-busy');
+    if (main.dataset.stylePending === 'true') { main.style.removeProperty('visibility'); delete main.dataset.stylePending; }
     if (host.style) host.style.position = position || '';
     // Observers see the final CSS geometry before charts redraw.
     requestAnimationFrame(() => { if (!signal?.aborted) window.dispatchEvent(new Event('resize')); });
