@@ -98,17 +98,6 @@
       center.querySelector('h2 + p')?.remove();
       profile = document.createElement('div'); profile.id = 'ox-account-profile';
       center.querySelector('h2')?.after(profile);
-  let emailCooldownTimer = null;
-  function syncEmailCooldown() {
-    const button = $('#ox-account-email-submit'); if (!button) return;
-    const seconds = window.OXAuth.emailCooldownSeconds || 0;
-    button.disabled = busy || seconds > 0;
-    button.textContent = seconds ? `請等待 ${seconds} 秒` : $('#ox-account-tab-register')?.getAttribute('aria-selected') === 'true' ? '建立帳號' : 'Email 登入';
-    if (seconds && !emailCooldownTimer) emailCooldownTimer = setInterval(syncEmailCooldown, 1000);
-    if (!seconds && emailCooldownTimer) { clearInterval(emailCooldownTimer); emailCooldownTimer = null; }
-  }
-  document.addEventListener('ox:emailcooldown', syncEmailCooldown);
-  syncEmailCooldown();
       const signout = document.createElement('button'); signout.type = 'button'; signout.className = 'ox-account-skip'; signout.id = 'ox-account-signout'; signout.textContent = '登出'; center.append(signout);
     }
     profile.replaceChildren();
@@ -231,17 +220,7 @@
       authorization_invalid: '本次授權碼已使用或無法確認。請重新登入；原因：authorization_invalid。',
       exchange_failed: '登入提供者未能完成授權交換。請回報原因：exchange_failed。',
       response_invalid: '登入提供者沒有回傳完整登入資料。請回報原因：response_invalid。',
-    // Direct Supabase email failures may bypass the OX callback in a fragment.
-    // Never display raw descriptions or accept a fragment as session proof.
-    const fragment = new URLSearchParams(landing.hash.slice(1));
-    if (fragment.has('error')) {
-      const code = fragment.get('error_code');
-      landing.searchParams.set('ox_auth', 'error');
-      landing.searchParams.set('ox_auth_reason', ['otp_expired', 'flow_state_expired'].includes(code) ? 'authorization_expired' : code === 'flow_state_not_found' ? 'authorization_invalid' : 'provider_denied');
-      landing.hash = '';
-    }
       callback_unavailable: '登入回呼暫時無法完成。請回報原因：callback_unavailable。'
-    const successfulCallback = landing.searchParams.get('ox_auth') === 'success' && !!window.OXAuth.user;
     };
     status.textContent = failedCallback ? (Object.hasOwn(messages, reason) ? messages[reason] : '登入回呼未完成。請重新點選 Google 或 Email 登入。') : config.configured ? '使用電子郵件登入連結，不需要設定密碼。' : '正式登入服務尚未設定，訪客功能可正常使用。';
     if (failedCallback && reason === 'provider_callback_error') {

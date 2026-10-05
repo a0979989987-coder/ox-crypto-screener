@@ -1,5 +1,25 @@
 # OX admin release recovery
 
+## Current acceptance: 2026-10-05 03:26 UTC
+
+Latest main bdada6f0ac6df0812035c54b9fc7dd1a7fa2391e is integrated locally. Removed US market remains removed; main index/styles/market modules are unchanged except two Account script cache-version strings. Latest white/champagne theme, gray navigation, macro calendar and mobile changes remain intact. Full original Admin candidate b88fe1c is retained in history; isolated Email branch codex/email-login-recovery has no Admin API/schema/UI dependency.
+
+Local final QA: integrated Admin 458/458 full tests; isolated Email 427/427; native PostgreSQL 17/17; build 96 assets/171 IDs. Account, mobile Email cooldown/fragment, local Admin and production-router/SDK/RLS synthetic UI passed. Tests cover UID owner isolation/revision CAS, duplicate/conflict selections, explicit member/ordinary/core confirmation, immutable audit, revoke/rebind/policy invalidation, ordinary zero rights, core member marker without admin, metadata forgery, stale session/verification responses and provider error redaction. Synthetic provider tests are not real Email delivery or current real Google acceptance.
+
+Read-only production DB: active_admins=0, ordinary_configured=false, ordinary_capabilities=[], capability_catalog=[all_member_features], exclusive_uid=true, anon_rpc=false, member_rpc=true, mutable_audit=false. Migration exists; bootstrap remains absent. No migration or bootstrap writes were attempted. Public site anonymous smoke: root/assets/config/session HTTP200, configured=true, anonymous session null; admin-review HTTP404; deployed Account source still has old Google cancellation text and no Email cooldown/fragment fix. GitHub Vercel status for main bdada6f is success at https://vercel.com/ox-lab/ox-crypto-screener/DUZUpt4K6H8SG88k2LNFpWK2rWqF . This confirms that deployment, not remaining quota/reset availability. No release was triggered.
+
+### Parent handoff / remaining release checks
+
+1. Confirm authorization and choose isolated Email release first or full Account/Admin candidate. No push, merge or deploy occurs in this round. After release verify the exact deployed SHA and both Account assets; cache versions are bumped to 20261005-email1.
+2. Admin bootstrap is independent of Email. Restore supported Supabase connector request state before one bootstrap through that route. Use existing private Library libfile_2b498d195140819183f4fc1e2b15240d version 2, OX-Admin-production-SQL-v3.zip. Public docs/account/admin-release/02-bootstrap.sql is only a placeholder. Do not rerun successful migration or execute emergency disable as part of bootstrap.
+3. The bootstrap operator needs SELECT on auth.users/auth.identities/public.ox_accounts, INSERT/UPDATE on ox_review_live.administrators and UPDATE on ox_review_live.policy (trusted existing table owner/operator). Do not grant these rights to anon/authenticated, add keys, broaden executor membership or make service-role available to clients. Transaction must match exactly one confirmed Google identity and existing OX account; reject another active admin. It only initializes intended admin/policy and never approves real UIDs.
+4. Parent should read docs/account/admin-release/03-verify.sql after bootstrap: exactly one intended active admin, ordinary_configured=true, empty ordinary capabilities, exclusive_uid=true, member catalog only all_member_features; anon RPC false, member RPC true, immutable audit and restricted executor flags. No new real approvals/audit records are expected.
+5. User must initiate one fresh Email request after release, use its unused link in the initiating browser, confirm stored account center, refresh then log out. Keep Google real historical success separate from a fresh production retest. Do not reopen old otp_expired links; 60-second client cooldown does not promise hourly-provider quota reset. For public launch, verify actual Email/SMTP readiness and limits read-only; no SMTP/security settings are changed here.
+6. After bootstrap/release verify real admin status and read-only admin page, and guest/nonadmin rejection. Do not use real members to test approvals or expose identity/UID records publicly. Public market access stays open; manual approval remains manual/unverified, never an official BG ownership/KYC result.
+
+Earlier history follows; old deployment quota observations are not current reset guarantees.
+
+
 2026-10-02: production v3 migration succeeded per parent; bootstrap remains blocked by connector `Invalid or expired requestState`. Parent read-only check at 09:08 UTC: active admins 0, ordinary_configured false. Do not infer bootstrap success or retry writes through another tool.
 
 ## Preserved release
