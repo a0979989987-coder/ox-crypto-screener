@@ -44,7 +44,7 @@ export function mountNewsWorkspace(host, api) {
     });
   }
   function renderControls() {
-    controls.replaceChildren(); controls.dataset.tab = state.tab;
+    controls.replaceChildren(); header.querySelector('.oxn-calendar-switch')?.remove(); controls.dataset.tab = state.tab;
     if (state.tab === 'calendar') {
       const prev = button('‹', '上個月', () => changeMonth(-1), 'oxn-close oxn-month-arrow'), next = button('›', '下個月', () => changeMonth(1), 'oxn-close oxn-month-arrow');
       const month = button(state.month.replace('-', '／'), '選擇年份月份', () => showPanel(month, '選擇年月', body => {
@@ -59,7 +59,10 @@ export function mountNewsWorkspace(host, api) {
         multi(events, '事件類別', 'categories', MARKET_CATEGORIES[scope()].map(id => ({ id, label: CATEGORY_NAMES[id], hint: c.find(i => i.category === id)?.spans.length ? '有資料・覆蓋依月份' : c.find(i => i.category === id)?.known ? '部分排程' : c.find(i => i.category === id)?.connected.length ? '已接入・依來源排程' : '尚未接入' })), null, '沒有覆蓋的類別不會填入示範事件。');
       }, 'oxn-pill'); const level = button('重要性', '多選重要性', () => multi(level, '重要性', 'importance', [{ id: '1', label: '★ 低' }, { id: '2', label: '★★ 中' }, { id: '3', label: '★★★ 高' }, { id: 'unrated', label: '未分級' }], null, '舊制 1–2 星→低、3 星→中、4–5 星→高。保留原始值與來源，星級不代表漲跌。'), 'oxn-pill');
       events.classList.toggle('is-filtered', state.categories !== null); level.classList.toggle('is-filtered', state.importance !== null);
-      controls.append(prev, month, next, viewSwitch, events, level);
+      const monthNav = node('div', 'oxn-month-nav'); monthNav.append(prev, month, next);
+      viewSwitch.classList.add('oxn-calendar-switch');
+      if (innerWidth <= 600) { header.insertBefore(viewSwitch, more); controls.append(monthNav, events, level); }
+      else controls.append(monthNav, viewSwitch, events, level);
     } else {
       const time = button('時間', '多選新聞時間', () => multi(time, '時間', 'times', TIME_CHOICES.map(([id, text]) => ({ id, label: text })), ['24'], '時間採聯集並去重，依發布時間篩選。'), 'oxn-pill');
       const source = button('來源', '多選新聞來源', () => {
@@ -98,10 +101,21 @@ export function mountNewsWorkspace(host, api) {
     positionCalendar();
   }
   function renderCalendar() {
-    const gridInfo = monthGrid(state.month), events = (data.snapshot.events || []).filter(i => eventDay(i)?.slice(0, 7) === state.month && (scope() === 'all' || i.markets?.includes(scope())) && (state.categories === null || state.categories.includes(eventCategory(i))) && (state.importance === null || state.importance.includes(String(importance(i).value || 'unrated'))));
+    const mobile = innerWidth <= 600;
+    const gridInfo = monthGrid(state.month);
+    if (mobile) {
+      const [year, month] = state.month.split('-').map(Number);
+      const offset = new Date(Date.UTC(year, month - 1, 1)).getUTCDay();
+      gridInfo.weeks = 6;
+      gridInfo.cells = Array.from({ length: 42 }, (_, i) => {
+        const date = new Date(Date.UTC(year, month - 1, 1 - offset + i)).toISOString().slice(0, 10);
+        return { date, day: Number(date.slice(8)), outside: date.slice(0, 7) !== state.month };
+      });
+    }
+    const events = (data.snapshot.events || []).filter(i => eventDay(i)?.slice(0, 7) === state.month && (scope() === 'all' || i.markets?.includes(scope())) && (state.categories === null || state.categories.includes(eventCategory(i))) && (state.importance === null || state.importance.includes(String(importance(i).value || 'unrated'))));
     const map = new Map(); for (const e of events) { const key = eventDay(e); if (!map.has(key)) map.set(key, []); map.get(key).push(e); }
     const calendar = node('section', 'oxn-calendar'); calendar.setAttribute('aria-label', `${state.month} 完整月份行事曆`); calendar.dataset.weeks = String(gridInfo.weeks);
-    const weekdays = node('div', 'oxn-weekdays'); '一二三四五六日'.split('').forEach(d => weekdays.append(node('span', '', d)));
+    const weekdays = node('div', 'oxn-weekdays'); (mobile ? '日一二三四五六' : '一二三四五六日').split('').forEach(d => weekdays.append(node('span', '', d)));
     const grid = node('div', 'oxn-calendar-grid'); grid.style.setProperty('--weeks', gridInfo.weeks); grid.setAttribute('role', 'grid');
     for (const cell of gridInfo.cells) {
       const entries = map.get(cell.date) || []; const b = node('div', 'oxn-day'); b.dataset.date = cell.date; b.setAttribute('role', 'gridcell');
@@ -110,8 +124,8 @@ export function mountNewsWorkspace(host, api) {
       if (cell.outside) b.classList.add('is-outside'); if (cell.date === taipeiDay()) { b.classList.add('is-today'); b.setAttribute('aria-current', 'date'); }
       b.append(button(String(cell.day), `${cell.date}，${entries.length} 個已收錄事件`, e => { e.stopPropagation(); selectDay(); api.navigate({day:cell.date}); }, 'oxn-day-number'));
       if(entries.length)b.append(button(`${entries.length} 件`,`${cell.date}，查看下方 ${entries.length} 個事件`,e=>{e.stopPropagation();selectDay();requestAnimationFrame(()=>content.querySelector('.oxn-day-events')?.scrollIntoView({block:'center',behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'instant':'smooth'}));},'oxn-day-count'));
-      for (const item of entries.slice(0, innerWidth <= 600 ? 0 : 2)) { const short = button(item.shortTitle || label(item).replace(/美國 \d{4} 年 \d+ 月/, ''), `${CATEGORY_NAMES[eventCategory(item)] || '事件'}：${label(item)}`, e => { e.stopPropagation(); api.navigate({ day: cell.date, event: item.id }); }, 'oxn-calendar-event'); short.title = label(item); short.dataset.category = eventCategory(item) || ''; b.append(short); }
-      if (innerWidth>600 && entries.length>2) b.append(node('span', 'oxn-day-more', `＋${entries.length-2}`)); grid.append(b);
+      for (const item of entries.slice(0, 2)) { const short = button(item.shortTitle || label(item).replace(/美國 \d{4} 年 \d+ 月/, ''), `${CATEGORY_NAMES[eventCategory(item)] || '事件'}：${label(item)}`, e => { e.stopPropagation(); api.navigate({ day: cell.date, event: item.id }); }, 'oxn-calendar-event'); short.title = label(item); short.dataset.category = eventCategory(item) || ''; b.append(short); }
+      if (entries.length>2) b.append(node('span', 'oxn-day-more', `＋${entries.length-2}`)); grid.append(b);
     }
     const cover = coverage(data.snapshot, scope(), state.month);
     const caption = node('div', 'oxn-calendar-caption'); caption.append(node('span', '', '台北時間 UTC+8'), button(cover.complete ? '資料範圍' : '部分資料・範圍', '', () => showPanel(caption.querySelector('button'), '事件資料範圍', body => {
@@ -123,7 +137,7 @@ export function mountNewsWorkspace(host, api) {
     const section=node('section','oxn-day-events');section.setAttribute('aria-label','所選日期完整事件');
     const heading=node('div','oxn-day-events-heading');heading.append(node('h2','',`${selected.replaceAll('-','／')} 事件`),button('完整列表','查看所選日期完整列表',()=>api.navigate({day:selected}),'oxn-text-button'));section.append(heading);
     const entries=[...(map.get(selected)||[])].sort((a,b)=>(a.occursAt||'').localeCompare(b.occursAt||'')||label(a).localeCompare(label(b)));
-    const cards=node('div','oxn-event-carousel');cards.tabIndex=0;cards.setAttribute('aria-label','事件卡片，左右滑動瀏覽');
+    const cards=node('div','oxn-event-carousel');cards.tabIndex=0;cards.setAttribute('aria-label',mobile?'所選日期事件列表':'事件卡片，左右滑動瀏覽');
     for(const item of entries){const card=eventRow(item,()=>api.navigate({day:selected,event:item.id}));card.classList.add('oxn-event-card');card.append(node('small','oxn-card-source',`${sourceName(item)} · ${statusLabel(item)}`));cards.append(card);}
     if(!entries.length)cards.append(node('p','oxn-caption','這一天目前沒有符合篩選條件的已收錄事件；不代表沒有事件。'));
     section.append(cards);content.append(section);
@@ -226,13 +240,14 @@ export function mountNewsWorkspace(host, api) {
       const room = Math.floor(bottom - top - 38);
       // Reveal the event shelf when there is room, but keep six-week months
       // usable on shorter phones instead of falling back to an oversized grid.
-      const available = room-Math.min(70,Math.max(0,room-rows*40)), enlarged = parseFloat(getComputedStyle(document.documentElement).fontSize) > 20;
-      const fit = innerWidth <= 600 && height > innerWidth && available >= rows * 40 && !enlarged;
-      grid.style.setProperty('--month-height', fit ? `${available}px` : 'auto'); root.dataset.fit = fit ? '1' : '0';
+      const available = room-Math.min(70,Math.max(0,room-rows*56)), enlarged = parseFloat(getComputedStyle(document.documentElement).fontSize) > 20;
+      const fit = innerWidth <= 600 && height > innerWidth && available >= rows * 56 && !enlarged;
+      grid.style.setProperty('--month-height', fit ? `${available}px` : 'auto'); root.dataset.fit = fit ? '1' : '0'; root.dataset.compact = fit && available < rows * 70 ? '1' : '0';
     });
   }
-  window.addEventListener('resize', () => { if (innerWidth !== width || Math.abs(innerHeight - height) > 90) { const crossed=(width<=600)!==(innerWidth<=600);width = innerWidth; height = innerHeight; if(crossed&&state.tab==='calendar')renderContent();else positionCalendar(); } }, { signal: life.signal });
+  window.addEventListener('resize', () => { if (innerWidth !== width || Math.abs(innerHeight - height) > 90) { const crossed=(width<=600)!==(innerWidth<=600);width = innerWidth; height = innerHeight; if(crossed&&state.tab==='calendar'){renderControls();renderContent();}else positionCalendar(); } }, { signal: life.signal });
   let scrollTimer; window.addEventListener('scroll', () => { if (!root.closest('.app-view.active')) return; clearTimeout(scrollTimer); scrollTimer = setTimeout(() => { state.scroll = scrollY; persist(); }, 180); }, { signal: life.signal, passive: true });
   renderControls();
   return { host, update(next) { const changed = next.snapshot !== data.snapshot || !content.firstChild; data = next; if (changed) { detailKey = ''; renderContent(); } else status(); renderRoute(data.route); rail.position(); if (restorePosition) { restorePosition = false; requestAnimationFrame(() => window.scrollTo(0, state.scroll || 0)); } }, suspend() { closePanel(); detail?.destroy(); detail = null; detailKey = ''; clearInterval(countdown); countdown = null; }, destroy() { state.scroll = root.closest('.app-view.active') ? scrollY : state.scroll; persist(); closePanel(); detail?.destroy(); clearInterval(countdown); clearTimeout(scrollTimer); life.abort(); rail.destroy(); root.remove(); } };
 }
+

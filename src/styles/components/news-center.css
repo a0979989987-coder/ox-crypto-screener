@@ -261,3 +261,62 @@ body[data-news-mode="1"] #market-unavailable-card {display:none!important}
 @media(prefers-reduced-motion:reduce) {.oxn-root *,.oxn-popover *,.oxn-modal-backdrop,.oxn-popover {transition:none!important;scroll-behavior:auto!important}}
 
 .oxn-panel-actions .oxn-action[aria-pressed="true"] {border-color:#ffffffe0;box-shadow:0 0 8px #ffffff20;background:#ffffff13}
+
+
+/* Selected mobile calendar concept 10: dates, event dots and divided cells. */
+.oxn-month-nav {display:contents}
+@media (max-width:600px) {
+  .oxn-root {--oxn-line:rgba(207,216,226,.3)}
+  .oxn-controls[data-tab="calendar"] {display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:6px;position:relative;padding-right:0;margin-bottom:8px}
+  .oxn-controls[data-tab="calendar"] .oxn-month-nav {display:flex;align-items:center;justify-content:space-between;min-width:0;height:42px;border:1px solid var(--oxn-line);border-radius:12px;background:linear-gradient(145deg,#ffffff0b,#ffffff02)}
+  .oxn-root .oxn-month-nav .oxn-month-title {min-width:0;border:0;background:none;padding:0 2px!important;font-size:15px!important;font-weight:650;height:42px}
+  .oxn-root .oxn-month-nav .oxn-month-arrow {width:28px;min-width:28px;height:42px;min-height:42px;color:var(--ink)!important}
+  .oxn-controls[data-tab="calendar"]>.oxn-pill {height:42px;min-height:42px;padding:0 9px;border-radius:12px}
+  .oxn-header>.oxn-calendar-switch {height:28px;min-height:28px;margin-left:auto;padding:0 9px;font-size:11px!important}
+  .oxn-header>.oxn-calendar-switch+.oxn-more {margin-left:0}
+  .oxn-header>.oxn-calendar-switch::before {content:'▤';font-size:14px}
+  .oxn-root .oxn-calendar {border:1px solid var(--oxn-line);border-radius:14px;background:linear-gradient(135deg,#ffffff08,#10131760)}
+  .oxn-root .oxn-weekdays {height:28px;font-size:12px;color:var(--ink);opacity:.8}
+  .oxn-weekdays>span {border-right:1px solid var(--oxn-line)}
+  .oxn-weekdays>span:last-child {border:0}
+  .oxn-root .oxn-calendar-grid {grid-template-rows:repeat(var(--weeks),minmax(70px,1fr))}
+  .oxn-root[data-fit="1"] .oxn-calendar-grid {grid-template-rows:repeat(var(--weeks),minmax(56px,1fr))}
+  .oxn-root .oxn-day {padding:5px 4px;gap:3px;overflow:hidden;background:linear-gradient(135deg,#ffffff03,transparent)}
+  .oxn-root .oxn-day-number {font-size:19px!important;font-weight:700;line-height:23px;color:var(--ink,#f6f4ee);letter-spacing:-.02em;text-shadow:none}
+  .oxn-root .oxn-day.is-outside {opacity:1}
+  .oxn-root .oxn-day.is-outside .oxn-day-number {opacity:.48}
+  .oxn-root .oxn-day-count {display:none}
+  .oxn-root .oxn-calendar-event {position:relative;display:block;padding:0 0 0 9px;border:0;font-size:11px!important;font-weight:500;line-height:15px;color:var(--ink,#f6f4ee);white-space:nowrap;min-height:15px}
+  .oxn-calendar-event::before {content:'';position:absolute;left:0;top:5px;width:5px;height:5px;border-radius:50%;background:#59a3ff}
+  .oxn-calendar-event[data-category="macro"]::before {background:#ff666b}
+  .oxn-calendar-event:is([data-category="unlock"],[data-category="payment"],[data-category="dividend"])::before {background:#5bdda0}
+  .oxn-root .oxn-day-more {position:absolute;right:3px;top:8px;display:block;font-size:9px;line-height:12px;color:var(--oxn-muted)}
+  .oxn-root .oxn-day.is-today {border-radius:7px;box-shadow:inset 0 0 0 2px #f8f6ef,inset 0 0 10px #ffffff15}
+  .oxn-root .oxn-day.is-today::after {display:none}
+  .oxn-root .oxn-day.is-today .oxn-day-number {color:var(--ink,#f6f4ee);text-shadow:none}
+  .oxn-root .oxn-day-events {padding:12px 9px 5px;margin-top:10px;border:1px solid var(--oxn-line);border-radius:14px;background:linear-gradient(145deg,#ffffff07,transparent)}
+  .oxn-root .oxn-day-events-heading h2 {font-size:15px;font-weight:650}
+  .oxn-root .oxn-day-events-heading button {font-size:12px}
+  .oxn-root .oxn-event-carousel {display:grid;gap:7px;overflow:visible;padding:10px 0 5px}
+  .oxn-root .oxn-event-carousel .oxn-event-card {display:grid;grid-template-columns:56px minmax(0,1fr) auto;gap:4px 8px;width:100%;min-height:76px;padding:11px 9px;border:1px solid var(--oxn-line);border-radius:11px;background:#ffffff03}
+  .oxn-event-carousel .oxn-event-card>strong {grid-column:2;grid-row:1/3;font-size:14px;font-weight:650;line-height:1.45;align-self:center}
+  .oxn-root .oxn-event-carousel .oxn-event-card>.oxn-event-type {grid-column:1;grid-row:2;font-size:10px;max-width:56px;white-space:normal;text-align:center;padding:2px 0;border:0}
+  .oxn-root .oxn-event-carousel .oxn-event-card>small:not(.oxn-card-source) {grid-column:1;grid-row:1;font-size:12px;font-weight:600;white-space:normal}
+  .oxn-event-carousel .oxn-event-card>.oxn-stars {grid-column:3;grid-row:1/3;font-size:11px;align-self:center}
+  .oxn-root .oxn-event-carousel .oxn-event-card>.oxn-card-source {grid-column:2/4;grid-row:3;font-size:10px;color:var(--oxn-muted)}
+  body.theme-light .oxn-root .oxn-calendar,body.theme-light .oxn-root .oxn-day-events {background:var(--panel,#fff)}
+  body.theme-light .oxn-root .oxn-day.is-today {box-shadow:inset 0 0 0 2px var(--ink,#30343b)}
+}
+
+@media (max-width:600px) {
+ .oxn-root[data-compact="1"] .oxn-day {padding:4px;gap:1px}
+ .oxn-root[data-compact="1"] .oxn-day-number {line-height:20px}
+ .oxn-root[data-compact="1"] .oxn-calendar-event {font-size:10px!important;line-height:13px;min-height:13px}
+ .oxn-root[data-compact="1"] .oxn-calendar-event::before {top:4px}
+}
+@media(max-width:600px) {
+ body.theme-light .oxn-root :is(.oxn-pill,.oxn-month-title,.oxn-calendar-event,.oxn-event-card) {color:var(--ink,#30343b)!important}
+ body.theme-light.theme-light .oxn-root .oxn-calendar-event {border:0!important}
+ body.ox-terminal.theme-light.theme-light.theme-light .oxn-root .oxn-day.is-today {background:#f3f4f6!important;box-shadow:inset 0 0 0 2px #69727e!important}
+ body.theme-light .oxn-root .oxn-day.is-today .oxn-day-number {text-shadow:none!important}
+}
