@@ -2,7 +2,7 @@
 (() => {
   if(window.OXCanonicalRedirecting)return;
   const ids=['crypto.home','crypto.radar','crypto.patterns','crypto.bubbles','crypto.strength','crypto.heatmap','crypto.rotation','crypto.flow','tw.home','tw.radar','tw.patterns','tw.bubbles','tw.rotation','tw.etf','tw.savings','news.feed','news.calendar','media'];
-  let policies=null,pending=null,loading=null,epoch=0,requestEpoch=0,currentFeature=null,newsSelected='calendar',sessionUsable=false;
+  let policies=null,pending=null,loading=null,epoch=0,requestEpoch=0,currentFeature=null,newsSelected='calendar',sessionUsable=false,policyState='pending';
   const selected={crypto:'patterns',tw:'patterns'};
   const landing=new URL(location.href),returnId=landing.searchParams.get('ox_feature');
   const returning=ids.includes(returnId);
@@ -16,7 +16,7 @@
     progress.hidden=false;
   }
   function gate(message,login=false){
-    if(!policies&&loading){showPending();return;}
+    if(!policies&&policyState==='pending'){showPending();return;}
     if(progress)progress.hidden=true;
     document.body?.classList.add('ox-feature-blocked');
     if(!panel){panel=document.createElement('section');panel.id='ox-feature-gate';panel.setAttribute('role','status');
@@ -66,13 +66,13 @@
   }
   async function refresh(){
     if(loading)return loading;
-    if(!policies)showPending();const token=++epoch;
+    policyState='pending';if(!policies)showPending();const token=++epoch;
     loading=(async()=>{try{
       const abort=new AbortController(),timer=setTimeout(()=>abort.abort(),10000);
       let response,data;try{response=await fetch('/api/v1/account/feature-access',{credentials:'same-origin',cache:'no-store',signal:abort.signal});data=await response.json();}finally{clearTimeout(timer);}
       if(!response.ok||!data.ok||!Array.isArray(data.features)||data.features.length!==ids.length||new Set(data.features.map(f=>f.id)).size!==ids.length||data.features.some(f=>!ids.includes(f.id)||!['public','login'].includes(f.mode)))throw Error('invalid');
-      if(token===epoch)policies=new Map(data.features.map(f=>[f.id,f]));
-    }catch{if(token===epoch)policies=null;}finally{loading=null;replay();}
+      if(token===epoch){policies=new Map(data.features.map(f=>[f.id,f]));policyState='ready';}
+    }catch{if(token===epoch){policies=null;policyState='error';}}finally{loading=null;replay();}
     // Public policy is independent of session availability; login products fail closed.
     if(token===epoch&&policies){
       sessionUsable=false;replay();
