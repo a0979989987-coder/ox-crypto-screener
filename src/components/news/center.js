@@ -82,7 +82,8 @@
     refresh(); render();
   }
   function openMarket({ historyEntry = true, market = currentMarket() } = {}) {
-    if(window.OXFeatures&&!window.OXFeatures.enterView('data'))return;
+    // Retry the complete route after policy loading, preserving its explicit market.
+    if(window.OXFeatures&&!window.OXFeatures.enter(window.OXFeatures.newsTab==='calendar'?'news.calendar':'news.feed',()=>openMarket({historyEntry,market})))return;
     const previous = !historyEntry && history.state?.oxPrevious || capturePrevious(); state.previous = previous; state.route = {};
     if (historyEntry) history.replaceState?.({ ...history.state, oxView: previous.view, oxMarket: previous.market, oxScroll: previous.scroll }, '', baseURL() + (location.hash || ''));
     switchTo('data', market);
