@@ -433,8 +433,8 @@ body.theme-light.theme-light .oxn-root .oxn-importance-toggle[aria-pressed="true
 .oxn-root .oxn-upcoming-day .oxn-event-row{display:flex;flex-direction:column;align-items:stretch;width:100%;text-align:left;padding:15px 8px;border:0;border-bottom:1px solid var(--oxn-line);border-radius:0;background:transparent}
 .oxn-root .oxn-day.is-market-closed{background:#d4b87a0c!important;outline:2px solid #d9bd83;outline-offset:-3px;box-shadow:inset 0 0 10px #d9bd831a!important}
 .oxn-root .oxn-market-closed-label{position:absolute;right:5px;top:5px;font-size:9px;color:#e1c58d;line-height:12px;pointer-events:none}
-body.theme-light.theme-light .oxn-root .oxn-day.is-market-closed{outline-color:#a98c52;background:#fff8e8!important}
-body.theme-light.theme-light .oxn-root .oxn-market-closed-label{color:#82632d!important}
+body.theme-light.theme-light .oxn-root .oxn-day.is-market-closed{outline-color:#e5cf91;background:#fffdf5!important}
+body.theme-light.theme-light .oxn-root .oxn-market-closed-label{color:#a78a45!important}
 .oxn-root .oxn-week-date.is-market-closed{outline:1.5px solid #bd9b59;outline-offset:-2px}
 .oxn-time-panel .oxn-time-options,.oxn-time-panel .oxn-panel-actions{display:flex;flex-wrap:nowrap!important;overflow-x:auto;gap:8px;max-width:100%;padding:3px 1px 8px;scrollbar-width:thin}
 .oxn-time-panel :is(.oxn-time-options,.oxn-panel-actions)>button{flex:0 0 auto;white-space:nowrap}
@@ -463,3 +463,7 @@ body.theme-light.theme-light .oxn-root .oxn-month-title{border:0!important;backg
  .oxn-root .oxn-day-count{min-height:22px!important;cursor:pointer}
  .oxn-root .oxn-tabs{margin-bottom:4px}
 }
+
+/* Separate each recorded date without reserving space for empty future days. */
+.oxn-root .oxn-upcoming-day+.oxn-upcoming-day{border-top:1px solid var(--oxn-line);padding-top:18px}
+body.theme-light.theme-light .oxn-root .oxn-week-date.is-market-closed{outline-color:#e5cf91}

@@ -2450,7 +2450,7 @@ function ensureStyles() {
   const ui = document.createElement("link");
   ui.id = 'ox-tw-radar-css';
   ui.rel = "stylesheet";
-  ui.href = "src/markets/tw/radar-ui.css?v=20261002-compact1";
+  ui.href = "src/markets/tw/radar-ui.css?v=20261005-wide2";
   document.head.appendChild(ui);
 }
 
