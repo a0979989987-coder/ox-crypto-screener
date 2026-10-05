@@ -17,7 +17,7 @@ test('cold shadow waits for palettes and shared roles; errors and aborted naviga
   assert(cloak.textContent.includes('display:none!important'));assert.equal(loading.textContent,'介面載入中…');assert.equal(delayed.host.dataset.oxTheme,'light');
   delayed.sheet.dispatchEvent(new Event('load'));assert(!cloak.removed,'base CSS alone must not reveal the dark surface');
   palette.dispatchEvent(new Event('load'));assert(!cloak.removed,'palette alone must not reveal before the approved role sheet');
-  const roles=delayed.nodes.filter(n=>n.tag==='link')[1];assert(roles.href.endsWith('light-tool-roles.css?v=20261005-risknav4'));
+  const roles=delayed.nodes.filter(n=>n.tag==='link')[1];assert(roles.href.endsWith('light-tool-roles.css?v=20261005-graytop5'));
   roles.dispatchEvent(new Event('load'));assert(cloak.removed&&loading.removed);
   light=false;doc.dispatchEvent(new Event('ox:themechange'));assert.equal(delayed.host.dataset.oxTheme,'dark');
   life.abort();light=true;doc.dispatchEvent(new Event('ox:themechange'));assert.equal(delayed.host.dataset.oxTheme,'dark','unmounted host stops receiving theme events');

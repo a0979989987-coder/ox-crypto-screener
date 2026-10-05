@@ -212,3 +212,13 @@ body.ox-terminal.theme-light.theme-light.theme-light.theme-light.theme-light #vi
 body.ox-terminal.theme-light.theme-light.theme-light .tw-radar-root .tw-stock-risk-icon.known {color:#efbd27!important;text-shadow:0 0 1px #a77900,0 0 5px #ffe36e66!important}
 body.ox-terminal.theme-light.theme-light.theme-light.theme-light.theme-light .ox-desktop-nav,
 body.ox-terminal.theme-light.theme-light.theme-light.theme-light.theme-light .ox-desktop-nav button {background:transparent!important;border:0!important;outline:0!important;box-shadow:none!important}
+
+/* White theme: all upper segmented controls use the neutral selection role. */
+body.ox-terminal.theme-light.theme-light.theme-light.theme-light.theme-light :is(.btn-tf.active,.tab-btn.active,.v34-home-mini-tf.active,.ox-market-chip.active,.oxn-tabs button[aria-selected="true"],.ox-news-tabs button.active,.tws-main-tabs button[aria-pressed="true"],.tws-categories button[aria-pressed="true"],.twr-mode-rail button.active,.tf-glass-indicator,.twr-mode-indicator) {
+ background:linear-gradient(145deg,#eef0f3,#e6e8eb)!important;border-color:#d4d9e0!important;color:#30343b!important;box-shadow:inset 0 1px #ffffffb3!important;
+}
+body.ox-terminal.theme-light.theme-light.theme-light.theme-light.theme-light #view-home .v34-home-mini-tf.active,
+body.ox-terminal.theme-light.theme-light.theme-light.theme-light.theme-light #view-radar #chart-timeframe-strip :is(.btn-tf.active,.tf-glass-indicator),
+body.ox-terminal.theme-light.theme-light.theme-light.theme-light.theme-light #view-radar .scanner-tabs .tab-btn.active {
+ background:linear-gradient(145deg,#eef0f3,#e6e8eb)!important;border-color:#d4d9e0!important;color:#30343b!important;box-shadow:inset 0 1px #ffffffb3!important;
+}
