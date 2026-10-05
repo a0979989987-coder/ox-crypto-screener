@@ -19,9 +19,10 @@ export function eventCategory(item) {
 }
 export function importance(item) {
   const raw = item.impact?.stars;
-  const value = Number.isInteger(raw) && raw >= 1 && raw <= 5 ? (raw <= 2 ? 1 : raw === 3 ? 2 : 3) : null;
+  const value = Number.isInteger(raw) && raw >= 1 && raw <= 5 ? raw : null;
   return { value, raw: raw ?? null, source: item.impact?.ruleVersion || null, evidence: safeLink(item.impact?.evidence), reason: item.impact?.reason || null };
 }
+export const matchesImportance = (item, enabled) => typeof enabled !== 'boolean' || Boolean(importance(item).value) === enabled;
 export function monthGrid(month) {
   const [year, index] = month.split('-').map(Number);
   const offset = (new Date(Date.UTC(year, index - 1, 1)).getUTCDay() + 6) % 7;
@@ -77,7 +78,7 @@ export function monthEvents(snapshot, scope, state) {
   return (snapshot?.events || []).filter(item => {
     const day = eventDay(item), type = eventCategory(item), level = importance(item).value;
     return inMarket(item, scope) && day?.slice(0, 7) === state.month &&
-      (state.categories === null || state.categories.includes(type)) && (state.importance === null || state.importance.includes(String(level || 'unrated')));
+      (state.categories === null || state.categories.includes(type)) && matchesImportance(item, state.importance);
   }).sort((a, b) => (eventDay(a) + (a.occursAt || '')).localeCompare(eventDay(b) + (b.occursAt || '')));
 }
 // Agenda includes every recorded date from the chosen month onward, rather
@@ -87,7 +88,7 @@ export function agendaDays(snapshot, scope, state) {
   for (const item of snapshot?.events || []) {
     const day=eventDay(item),type=eventCategory(item),level=importance(item).value;
     if(!day||day<state.month+'-01'||!inMarket(item,scope)||seen.has(item.id)||
-      state.categories!==null&&!state.categories.includes(type)||state.importance!==null&&!state.importance.includes(String(level||'unrated')))continue;
+      state.categories!==null&&!state.categories.includes(type)||!matchesImportance(item,state.importance))continue;
     seen.add(item.id);if(!dates.has(day))dates.set(day,[]);dates.get(day).push(item);
   }
   return [...dates].sort(([a],[b])=>a.localeCompare(b)).map(([date,events])=>({date,events:events.sort((a,b)=>(a.occursAt||date).localeCompare(b.occursAt||date)||plain(a.titleZh||a.title).localeCompare(plain(b.titleZh||b.title)))}));

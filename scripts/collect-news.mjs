@@ -257,7 +257,7 @@ export async function collect() {
   if (!news.length && !events.size) throw Error('No verified source data; snapshot not replaced');
   const snapshot = { schemaVersion: 1, generatedAt: sources.some(s => s.status === 'ready') ? stamp : old?.generatedAt || null, attemptedAt: stamp, sources,
     news: translations, pendingNews, events: [...events.values()], eventCoverage, assetCatalog: catalog,
-    methodology: { news: '公開 RSS 標題與原文連結；不轉載全文。', ranking: '目前快照去重文章的標題資產提及；同篇同資產只計一次。', history: '逐次收集累積，RSS 數量有限，非完整 30 日資料庫。', importance: '1–2/5→低；3/5→中；4–5/5→高；保留原始值及來源規則。', frequencyHours: 6 } };
+    methodology: { news: '公開 RSS 標題與原文連結；不轉載全文。', ranking: '目前快照去重文章的標題資產提及；同篇同資產只計一次。', history: '逐次收集累積，RSS 數量有限，非完整 30 日資料庫。', importance: '保留 1–5 星與來源規則；重要性開＝有星、關＝無星。星級不代表多空。', frequencyHours: 6 } };
   await mkdir(new URL('../data/', import.meta.url), { recursive: true });
   const temp = new URL('../data/news.next.json', import.meta.url);
   await writeFile(temp, JSON.stringify(snapshot, null, 2) + '\n');

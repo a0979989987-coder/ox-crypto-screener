@@ -364,3 +364,15 @@ body[data-news-mode="1"] #market-unavailable-card {display:none!important}
  .oxn-root[data-compact="1"] .oxn-day-number {font-size:18px!important;line-height:20px}
  .oxn-root[data-compact="1"] .oxn-calendar-event {font-size:10px!important;line-height:12px;min-height:12px;max-height:12px}
 }
+/* Release facts stay in one compact card, including on narrow phones. */
+.oxn-macro-result{border:1px solid var(--ox-border,rgba(255,255,255,.22));border-radius:16px;padding:16px;display:grid;gap:12px;min-width:0;margin:16px 0}
+.oxn-macro-result h3,.oxn-macro-result h4,.oxn-macro-result p{margin:0}
+.oxn-macro-values{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;text-align:center}
+.oxn-macro-values>div{padding:12px 4px;border-radius:10px;background:rgba(128,128,128,.09);min-width:0}
+.oxn-macro-values small,.oxn-macro-values strong{display:block;overflow-wrap:anywhere}
+.oxn-macro-values strong{margin-top:6px;font-size:clamp(14px,3.5vw,22px);font-variant-numeric:tabular-nums}
+.oxn-result-badge{display:inline-block;width:fit-content;padding:3px 8px;border:1px solid currentColor;border-radius:6px;font-size:12px;line-height:1.4;white-space:nowrap;margin:0 6px}
+.oxn-result-badge[data-score="1"],.oxn-result-badge[data-score="2"]{color:#f27582}
+.oxn-result-badge[data-score="-1"],.oxn-result-badge[data-score="-2"]{color:#42bea5}
+.oxn-macro-result a{overflow-wrap:anywhere;font-size:12px}
+@media(max-width:600px){.oxn-macro-result{padding:12px;gap:10px}.oxn-macro-values>div{padding:10px 2px}.oxn-macro-values small{font-size:11px}}
