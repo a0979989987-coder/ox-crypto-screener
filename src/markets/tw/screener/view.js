@@ -1,4 +1,4 @@
-import { guardStyledContent } from '../../../components/style-ready.js?v=20261005-load16';
+import { guardStyledContent } from '../../../components/style-ready.js?v=20261005-stable18';
 import { GROUPS, FIELDS, FIELD_MAP, PRESETS, QUICK, CATEGORIES } from './catalog.js';
 import { normalizeConditions, screenStocks, coverage, conditionLabel } from './model.js';
 import { escape as e, number } from '../research-ui.js';
