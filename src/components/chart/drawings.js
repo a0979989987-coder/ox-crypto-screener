@@ -55,7 +55,7 @@ window.OXChartDrawings = function mountChartDrawings({box,chartEl,state,market='
   const scope = () => `${state.symbol}:${state.period}`;
   const current = () => Array.isArray(drawings[scope()]) ? drawings[scope()] : [];
   const schedule = () => { if (!life.signal.aborted && !raf) raf = requestAnimationFrame(draw); };
-  const colorOf = item => {const color=item.color||prefs.color;return document.body.classList.contains('theme-light')&&['#f3f1e9','#f4f0e8'].includes(color)?'#8d712e':color;};
+  const colorOf = item => {const color=item.color||prefs.color;return document.body.classList.contains('theme-light')&&['#f3f1e9','#f4f0e8'].includes(color)?'#4598df':color;};
   listen(document,'ox:themechange',schedule);
   const points = item => {
     const ts = state.chart.timeScale(), series = state.candleSeries;

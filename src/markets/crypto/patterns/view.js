@@ -1,9 +1,9 @@
 import { PATTERNS, patternById, TIMEFRAMES as CRYPTO_TIMEFRAMES } from './catalog.js?v=patterns5d-20260929';
-import { revealStyledShadow } from '../../../components/style-ready.js?v=20261005-champagne2';
+import { revealStyledShadow } from '../../../components/style-ready.js?v=20261005-softvisual3';
 import { queryFromStrokes, normalize, sortMatches, patternCounts, prepareCandles, indexPrepared, matchPrepared, rankPatternMatches, browsePatternEntries, classificationCurrent } from './matcher.js?v=20261002-rank8';
 import * as cryptoSource from './source.js?v=20261002-rank8';
 import * as cryptoCache from './index-cache.js?v=20261002-rank8';
-import { candleChart } from './charts.js?v=patterns-tw-20260930';
+import { candleChart } from './charts.js?v=20261005-softvisual3';
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const icons={down:'<path d="m6 9 6 6 6-6"/>',close:'<path d="m6 6 12 12M18 6 6 18"/>',undo:'<path d="m9 5-5 5 5 5M4 10h10a5 5 0 1 1 0 10"/>',refresh:'<path d="M4 4v6h6M4 10a8 8 0 1 1 1 8"/>',scan:'<circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="1.5"/><path d="M12 12 17 7M12 2v2M22 12h-2M12 22v-2M2 12h2"/>',expand:'<path d="M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5"/>'};
 const icon=name=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${icons[name]||''}</svg>`;
@@ -67,8 +67,8 @@ export function mountPatternSearch(host,options={}){
     c.fillStyle=light?'#a38b5838':'#e0e7ef13';for(let x=22;x<w-10;x+=24)for(let y=18;y<h-12;y+=24)c.fillRect(x,y,1,1);
     const paths=strokes.length?strokes:(query?.id?[templatePath(patternById(query.id))]:query?.points?[normalize(query.points)]:[]);
     const glow=reducedMotion?0:activePointer!==null?1:Math.max(0,1-(performance.now()-glowEnded)/1400);
-    c.shadowColor=`rgba(255,255,255,${.15+glow*.8})`;c.shadowBlur=1+glow*15;c.lineWidth=2+glow*.35;c.lineJoin=c.lineCap='round';c.strokeStyle=light?'#8d712e':'#f7f7f2';paths.forEach(path=>{c.beginPath();path.forEach((p,i)=>{const x=8+p.x*(w-16),y=8+(1-p.y)*(h-16);if(i)c.lineTo(x,y);else c.moveTo(x,y);});c.stroke();});
-    if(paths[0]?.length){const p=paths.at(-1).at(-1);c.fillStyle=light?'#8d712e':'#f3efde';c.beginPath();c.arc(8+p.x*(w-16),8+(1-p.y)*(h-16),3,0,Math.PI*2);c.fill();}
+    c.shadowColor=`rgba(255,255,255,${.15+glow*.8})`;c.shadowBlur=1+glow*15;c.lineWidth=2+glow*.35;c.lineJoin=c.lineCap='round';c.strokeStyle=light?'#4598df':'#f7f7f2';paths.forEach(path=>{c.beginPath();path.forEach((p,i)=>{const x=8+p.x*(w-16),y=8+(1-p.y)*(h-16);if(i)c.lineTo(x,y);else c.moveTo(x,y);});c.stroke();});
+    if(paths[0]?.length){const p=paths.at(-1).at(-1);c.fillStyle=light?'#4598df':'#f3efde';c.beginPath();c.arc(8+p.x*(w-16),8+(1-p.y)*(h-16),3,0,Math.PI*2);c.fill();}
     if(activePointer===null&&glow>0&&!document.hidden)boardRAF=requestAnimationFrame(drawBoard);
   }
   const scheduleBoard=()=>{if(!boardRAF)boardRAF=requestAnimationFrame(drawBoard);};const resize=new ResizeObserver(scheduleBoard);resize.observe(board);

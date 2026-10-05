@@ -350,7 +350,7 @@ function applyTheme(themeMode = "system") {
   document.dispatchEvent(new CustomEvent("ox:themechange", { detail: { mode, resolved } }));
 
   if (state.candleSeries) {
-    const up = light ? "#176ed0" : "#00b8d4", down = light ? "#d13c5b" : "#ff3078";
+    const up = light ? "#4598df" : "#00b8d4", down = light ? "#e86480" : "#ff3078";
     state.candleSeries.applyOptions({upColor:up,downColor:down,wickUpColor:up,wickDownColor:down,borderUpColor:up,borderDownColor:down});
   }
   for (const line of state.classicLevelSeries || []) line.applyOptions({color:light?"#8d712e":"#eee7df"});

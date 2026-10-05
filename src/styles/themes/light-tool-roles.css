@@ -26,3 +26,8 @@
 :host([data-ox-theme="light"][data-ox-theme="light"]) :is(.px-track i,.px-load-track i,.mini-bar span) {background:var(--tool-active)!important}
 :host([data-ox-theme="light"][data-ox-theme="light"]) :is(.px-frame,.px-meta,.px-caption,.px-hint,.px-turnover,.muted,.cell-sub,.metric-label) {color:var(--tool-muted)!important}
 :host([data-ox-theme="light"][data-ox-theme="light"]) :is(.px-dialog,.detail-dialog,.oxb-dialog)::backdrop {background:#30343b30!important;backdrop-filter:blur(3px)}
+/* The market tool rail already names each tool; remove repeated title blocks. */
+:host([data-ox-theme="light"][data-ox-theme="light"]) .header>div:first-child:not(.toolbar) {display:none!important}
+:host([data-ox-theme="light"][data-ox-theme="light"]) .header {justify-content:flex-end!important}
+:host([data-ox-theme="light"][data-ox-theme="light"]) .header:not(:has(.toolbar)) {display:none!important}
+:host([data-ox-theme="light"][data-ox-theme="light"]) .tws-title>div {display:none!important}
