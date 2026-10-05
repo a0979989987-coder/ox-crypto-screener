@@ -25,7 +25,7 @@ test('Asia ignores report-day intraday quotes, walks holiday gaps and compares t
  const asia=parseMarket(raw,'TEST',345601,'1970-01-05');assert.equal(asia.value,100);assert.equal(asia.marketDate,'1970-01-02');assert.equal(asia.comparisonDate,'1970-01-01');assert.equal(asia.quoteKind,'previous-close');assert.equal(asia.quotedAt,null);
  const current=parseMarket(raw,'TEST',345601);assert.equal(current.previousClose,100);assert.throws(()=>parseMarket(raw,'WRONG',345601),/代號/);
  raw.chart.result[0].meta.fulldayPrice=999;raw.chart.result[0].meta.fulldayChange=2;assert.equal(parseMarket(raw,'TEST',345601).change,2);
- assert.equal(MARKETS.length,20);assert.equal(new Set(MARKETS.map(m=>m[2])).size,20);
+ assert.equal(MARKETS.length,21);assert.equal(new Set(MARKETS.map(m=>m[2])).size,21);
 });
 test('USD/JPY accepts the source canonical alias only with JPY currency and rejects reversed or unrelated symbols',()=>{
  const meta={symbol:'USDJPY=X',currency:'JPY',exchangeTimezoneName:'UTC',regularMarketTime:86400,regularMarketPrice:158};

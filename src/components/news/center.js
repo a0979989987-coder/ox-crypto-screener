@@ -56,7 +56,7 @@
     const scope = document.body.dataset.newsMode === '1' ? 'all' : currentMarket();
     const host = document.querySelector(`[data-news-surface="${scope === 'all' ? 'all' : 'market'}"]`);
     if (!host) return;
-    const { mountNewsWorkspace } = await import('./workspace.js?v=20261005-calendar10');
+    const { mountNewsWorkspace } = await import('./workspace.js?v=20261005-calendar11');
     if (token !== generation || !host.isConnected) return;
     if (state.scope !== scope || state.workspace?.host !== host) {
       state.workspace?.destroy(); state.scope = scope;

@@ -3,13 +3,16 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths: ['server/markets/tw/home-*.js', 'scripts/collect-tw-home.mjs', '.github/workflows/update-tw-home.yml']
+    paths: ['server/markets/tw/home-*.js', 'src/markets/tw/home-model.js', 'tests/tw-home*.test.mjs', 'scripts/collect-tw-home.mjs', '.github/workflows/update-tw-home.yml']
   schedule:
     # UTC 21:30 = the following day 05:30 in Asia/Taipei, every day.
     # Retry morning sources that are still publishing, then retain close retries.
     - cron: '30 21 * * *'
     - cron: '45 21 * * *'
     - cron: '15 22 * * *'
+    # Retry completed night/US close sources before the 08:30 Taipei briefing.
+    - cron: '20 0 * * 1-5'
+    - cron: '30 0 * * 1-5'
     - cron: '35 5 * * *'
     - cron: '40 5 * * 1-5'
     - cron: '15 6 * * 1-5'

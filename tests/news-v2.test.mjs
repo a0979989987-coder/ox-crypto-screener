@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { monthGrid, eventDay, taipeiDay, importance, monthEvents, defaultState, newsBase, filterNews, ranking, dedupe, hotWords, safeLink, validDate, sourcesFor, coverage, agendaDays } from '../src/components/news/model.js';
+import { monthGrid, eventDay, taipeiDay, importance, monthEvents, defaultState, newsBase, filterNews, ranking, dedupe, hotWords, safeLink, validDate, sourcesFor, coverage, agendaDays, upcomingEventDays } from '../src/components/news/model.js';
 import { MARKET_CATEGORIES } from '../src/components/news/config.js';
 import { identifyAssets, rocDate, nullableNumber, dividends, holidays, governanceEvents } from '../scripts/news-providers.mjs';
 import { parseBlsCalendar, normalizeFeed } from '../scripts/collect-news.mjs';
@@ -117,4 +117,20 @@ test('headline aliases aggregate into the verified asset name and media does not
   assert.equal(words.filter(([w]) => ['BTC','Bitcoin','比特幣'].includes(w)).length,1);
   assert.equal(impact('Bitcoin ETF','coindesk','https://www.coindesk.com/test').sourceConfidence,null);
   assert.equal(cryptoRelevant('Apple announces a new iPhone'),false);
+});
+
+test('upcoming dates omit empty future groups and isolate market-specific events even in a legacy mixed snapshot', () => {
+ const snapshot={events:[
+ {id:'tw',date:'2026-10-05',category:'dividend',markets:['tw']},
+ {id:'eth',date:'2026-10-06',category:'network',markets:['crypto','tw'],kind:'event'},
+ {id:'macro',date:'2026-10-07',category:'macro',markets:['crypto','tw']},
+ {id:'late',date:'2026-10-13',category:'macro',markets:['tw']} ]};
+ const state=defaultState();
+ const tw=upcomingEventDays(snapshot,'tw',state,'2026-10-05');
+ assert.deepEqual(tw.map(d=>d.date),['2026-10-05','2026-10-07']);
+ const crypto=upcomingEventDays(snapshot,'crypto',state,'2026-10-05');
+ assert.deepEqual(crypto.map(d=>d.events.map(e=>e.id)),[[],['eth'],['macro']]);
+ assert.deepEqual(upcomingEventDays(snapshot,'tw',{...state,categories:[]},'2026-10-05').map(d=>d.date),['2026-10-05']);
+ assert.equal(monthEvents(snapshot,'tw',{...state,month:'2026-10'}).some(e=>e.id==='eth'),false);
+ assert.equal(agendaDays(snapshot,'tw',{...state,month:'2026-10'}).flatMap(d=>d.events).some(e=>e.id==='eth'),false);
 });

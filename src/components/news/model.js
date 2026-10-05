@@ -1,4 +1,4 @@
-import { SOURCE_CATALOG, MARKET_CATEGORIES, EVENT_PROVIDERS } from './config.js?v=20261005-calendar10';
+import { SOURCE_CATALOG, MARKET_CATEGORIES, EVENT_PROVIDERS } from './config.js?v=20261005-calendar11';
 export const validDate = value => { if (!/^\d{4}-\d{2}-\d{2}$/.test(value || '')) return false; const date = new Date(`${value}T00:00:00Z`); return Number.isFinite(date.getTime()) && date.toISOString().slice(0, 10) === value; };
 export const safeLink = value => { try { const u = new URL(value); return u.protocol === 'https:' && !u.username && !u.password ? u.href : null; } catch { return null; } };
 export const plain = value => String(value ?? '').replace(/<[^>]*>/g, '').replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g, '').trim();
@@ -36,7 +36,18 @@ export function monthGrid(month) {
 }
 export function shiftMonth(month, delta) { const [y, m] = month.split('-').map(Number); return new Date(Date.UTC(y, m - 1 + delta, 1)).toISOString().slice(0, 7); }
 export function defaultState() { return { tab: 'calendar', calendarView: 'month', month: taipeiDay().slice(0, 7), categories: null, importance: null, times: ['week'], timePresetVersion: 2, customTime: null, sources: null, words: [], query: '', asset: null, limit: 40, scroll: 0, market: 'all' }; }
-export const inMarket = (item, scope) => scope === 'all' || item.markets?.includes(scope);
+export const inMarket = (item, scope) => scope === 'all' || Boolean(item.markets?.includes(scope) &&
+  (!(item.kind === 'event' || item.date || item.occursAt) || !eventCategory(item) || MARKET_CATEGORIES[scope]?.includes(eventCategory(item))));
+export function upcomingEventDays(snapshot, scope, state, start) {
+  return Array.from({ length: 8 }, (_, index) => {
+    const date = new Date(start + 'T12:00:00Z'); date.setUTCDate(date.getUTCDate() + index);
+    const day = date.toISOString().slice(0, 10);
+    const events = (snapshot?.events || []).filter(item => eventDay(item) === day && inMarket(item, scope) &&
+      (state.categories === null || state.categories.includes(eventCategory(item))) && matchesImportance(item, state.importance))
+      .sort((a, b) => (a.occursAt || '').localeCompare(b.occursAt || '') || (a.titleZh || a.title || '').localeCompare(b.titleZh || b.title || ''));
+    return { date: day, events, index };
+  }).filter(day => day.index === 0 || day.events.length);
+}
 export function canonicalURL(value) {
   const safe = safeLink(value); if (!safe) return null;
   const url = new URL(safe); for (const key of [...url.searchParams.keys()]) if (/^(utm_|fbclid|gclid|ref$)/i.test(key)) url.searchParams.delete(key);

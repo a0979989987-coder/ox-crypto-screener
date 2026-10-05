@@ -7,5 +7,5 @@ test('NYSE closes only on official table days, retains US trading dates and earl
 });
 test('Ethereum activation imports confirmed timestamps without inventing TBD mainnet dates',()=>{
  const html='<table><tr><td>Sepolia</td><td>353,024</td><td>11,296,768</td><td>2026-10-06 13:53:36</td><td>1791294816</td></tr><tr><td>Mainnet</td><td>TBD</td><td>TBD</td><td>TBD</td><td>TBD</td></tr></table>';
- const events=ethereumUpgradeCalendar(html);assert.equal(events.length,1);assert.equal(events[0].occursAt,'2026-10-06T13:53:36.000Z');assert.equal(events[0].chain,'Sepolia');assert.ok(events[0].description.includes('不表示'));assert.throws(()=>ethereumUpgradeCalendar('TBD'));
+ const events=ethereumUpgradeCalendar(html);assert.equal(events.length,1);assert.equal(events[0].occursAt,'2026-10-06T13:53:36.000Z');assert.equal(events[0].chain,'Sepolia');assert.deepEqual(events[0].markets,['crypto']);assert.ok(events[0].description.includes('不表示'));assert.throws(()=>ethereumUpgradeCalendar('TBD'));
 });
