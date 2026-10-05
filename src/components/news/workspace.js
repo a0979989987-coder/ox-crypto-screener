@@ -1,6 +1,6 @@
 import { createToolsRail } from '../strength/tools-rail.js';
 import { MARKET_NAMES, CATEGORY_NAMES, MARKET_CATEGORIES, TIME_CHOICES, sourceName } from './config.js?v=20261004-markets2';
-import { defaultState, taipeiDay, monthGrid, shiftMonth, eventDay, eventCategory, importance, matchesImportance, newsBase, filterNews, hotWords, ranking, sourcesFor, coverage, safeLink, plain, agendaDays } from './model.js?v=20261005-macro1';
+import { defaultState, taipeiDay, validDate, monthGrid, shiftMonth, eventDay, eventCategory, importance, matchesImportance, newsBase, filterNews, hotWords, ranking, sourcesFor, coverage, safeLink, plain, agendaDays } from './model.js?v=20261005-time9';
 import { macroResult, macroValue } from './macro.js?v=20261005-macro1';
 import { node, button, anchoredPanel, modal } from './layers.js';
 const fmt = value => Number.isFinite(Date.parse(value)) ? new Intl.DateTimeFormat('zh-TW', { timeZone: 'Asia/Taipei', dateStyle: 'short', timeStyle: 'short', hour12: false }).format(new Date(value)) : '時間待確認';
@@ -14,6 +14,7 @@ export function mountNewsWorkspace(host, api) {
   const key = `ox-news-v2-${api.scope}`;
   let saved; try { saved = JSON.parse(sessionStorage.getItem(key) || 'null'); } catch {}
   const state = { ...defaultState(), ...saved }, life = new AbortController();
+  if (saved?.timePresetVersion !== 2) { state.times = ['week']; state.customTime = null; state.timePresetVersion = 2; }
   if (state.importance !== true) state.importance = null;
   if (!Object.hasOwn(MARKET_NAMES, state.market)) state.market = 'all';
   let monthExpanded = false;
@@ -72,7 +73,18 @@ export function mountNewsWorkspace(host, api) {
       if (innerWidth > 600) controls.append(viewSwitch);
       controls.append(events, level);
     } else {
-      const time = button('時間', '多選新聞時間', () => multi(time, '時間', 'times', TIME_CHOICES.map(([id, text]) => ({ id, label: text })), ['24'], '時間採聯集並去重，依發布時間篩選。'), 'oxn-pill');
+      const time = button('時間', '多選新聞時間', () => showPanel(time, '時間', body => {
+        body.classList.add('oxn-time-panel');
+        const actions=node('div','oxn-panel-actions'), tags=node('div','oxn-tags oxn-time-options'), form=node('form','oxn-custom-time');
+        const from=node('input'),to=node('input'),message=node('p','oxn-caption');from.type=to.type='date';from.setAttribute('aria-label','開始日期');to.setAttribute('aria-label','結束日期');
+        from.value=state.customTime?.from||taipeiDay();to.value=state.customTime?.to||taipeiDay();
+        function sync(){for(const b of tags.children)b.setAttribute('aria-pressed',String(state.times.includes(b.dataset.value)));time.classList.toggle('is-filtered',JSON.stringify(state.times)!=='["week"]');}
+        function setTimes(values){state.times=values;persist();sync();renderContent();}
+        actions.append(button('全部','',()=>setTimes([...TIME_CHOICES.map(([id])=>id),'week']),'oxn-action'),button('清除選取','',()=>setTimes([]),'oxn-action'),button('恢復預設','',()=>{setTimes(['week']);form.hidden=true;tags.scrollLeft=0;panel?.position();},'oxn-action'));
+        for(const [id,text] of [['week','本週'],...TIME_CHOICES,['custom','自訂時間']]){const b=button(text,'',()=>{if(id==='custom'){form.hidden=!form.hidden;panel?.position();return;}const values=new Set(state.times);values.has(id)?values.delete(id):values.add(id);setTimes([...values]);},'oxn-tag');b.dataset.value=id;tags.append(b);}
+        const apply=button('套用','套用自訂日期',()=>{if(!validDate(from.value)||!validDate(to.value)||from.value>to.value){message.textContent='請選擇有效日期，結束日期不可早於開始日期。';return;}state.customTime={from:from.value,to:to.value};setTimes(['custom']);message.textContent=`${from.value} ～ ${to.value}（台北時間）`;panel?.position();},'oxn-action');
+        form.append(from,node('span','','至'),to,apply,message);form.hidden=true;form.addEventListener('submit',e=>{e.preventDefault();apply.click();});body.append(actions,tags,form,node('p','oxn-caption','本週從週一開始；自訂日期包含起訖日。依台北時間與新聞發布時間篩選。'));sync();
+      }), 'oxn-pill');
       const source = button('來源', '多選新聞來源', () => {
         const available = sourcesFor(data.snapshot, scope()).filter(s => !s.id.includes('calendar') && !['aptos', 'twse-dividends', 'twse-holidays', 'mops-payments', 'mops-conferences', 'tpex-dividends', 'tpex-dividends-daily', 'twse-conferences', 'aave-governance'].includes(s.id));
         multi(source, '來源', 'sources', available.map(s => ({ id: s.id, label: s.name, disabled: s.status === 'not-connected', hint: `${sourceState(s)}${s.scopeLabel?'・'+s.scopeLabel:s.aggregator ? '・聚合入口' : ''}`, description:s.message })), null, '公開標題與原文連結，非全文轉載；聚合接入不代表官方 API。中央通訊社 RSS 限個人／非營利的非商業用途；來源失敗保留最後成功資料。');
@@ -90,13 +102,13 @@ export function mountNewsWorkspace(host, api) {
         const table = node('div', 'oxn-ranking'); for (const [i, asset] of assets.slice(0, 30).entries()) { const b = button('', `${asset.name}，${asset.count} 篇新聞`, () => { state.asset = state.asset === asset.id ? null : asset.id; persist(); b.setAttribute('aria-pressed', String(state.asset === asset.id)); renderContent(); }); b.setAttribute('aria-pressed', String(state.asset === asset.id)); b.append(node('span', 'oxn-rank-number', String(i + 1).padStart(2, '0')), node('span', '', `${asset.symbol} ${asset.name}`), node('small', '', MARKET_NAMES[asset.market]), node('b', '', `${asset.count} 篇`)); table.append(b); }
         body.append(table, button('清除資產篩選', '', () => { state.asset = null; persist(); [...table.children].forEach(b => b.setAttribute('aria-pressed', 'false')); renderContent(); }, 'oxn-action'));
       }), 'oxn-pill');
-      time.classList.toggle('is-filtered', JSON.stringify(state.times) !== '["24"]'); source.classList.toggle('is-filtered', state.sources !== null); words.classList.toggle('is-filtered', Boolean(state.query || state.words.length)); rank.classList.toggle('is-filtered', Boolean(state.asset));
+      time.classList.toggle('is-filtered', JSON.stringify(state.times) !== '["week"]'); source.classList.toggle('is-filtered', state.sources !== null); words.classList.toggle('is-filtered', Boolean(state.query || state.words.length)); rank.classList.toggle('is-filtered', Boolean(state.asset));
       controls.append(time, source, words, rank);
     }
   }
   function changeMonth(delta) { state.month = shiftMonth(state.month, delta); persist(); renderControls(); renderContent(); }
   function baseItems() { return newsBase(data.snapshot, scope(), state, api.preferences()); }
-  function statsText(items) { const hours = Math.max(0, ...(state.times || []).map(Number)); return `近${hours < 24 ? `${hours}小時` : `${Math.round(hours / 24)}日`}・${scope() === 'all' ? '全部市場' : MARKET_NAMES[scope()]}・目前快照去重 ${items.length} 篇，標題提及・非全網統計`; }
+  function statsText(items) { const names=new Map([['week','本週'],...TIME_CHOICES,['custom',state.customTime?`${state.customTime.from}～${state.customTime.to}`:'自訂時間']]); const range=(state.times||[]).map(id=>names.get(id)).filter(Boolean).join('／')||'未選時間';return `${range}・${scope() === 'all' ? '全部市場' : MARKET_NAMES[scope()]}・目前快照去重 ${items.length} 篇，標題提及・非全網統計`; }
   function status() {
     notification.replaceChildren(); if (data.candidate) notification.append(button('有新消息・點此更新', '', api.applyUpdate, 'oxn-update'));
     if (data.error) notification.append(node('p', 'oxn-caption', data.snapshot ? '更新失敗，保留最後成功資料' : '來源快照讀取失敗'), button('重試', '', api.refresh, 'oxn-action'));

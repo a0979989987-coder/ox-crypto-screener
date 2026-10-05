@@ -35,7 +35,7 @@ export function monthGrid(month) {
   return { weeks, cells };
 }
 export function shiftMonth(month, delta) { const [y, m] = month.split('-').map(Number); return new Date(Date.UTC(y, m - 1 + delta, 1)).toISOString().slice(0, 7); }
-export function defaultState() { return { tab: 'calendar', calendarView: 'month', month: taipeiDay().slice(0, 7), categories: null, importance: null, times: ['24'], sources: null, words: [], query: '', asset: null, limit: 40, scroll: 0, market: 'all' }; }
+export function defaultState() { return { tab: 'calendar', calendarView: 'month', month: taipeiDay().slice(0, 7), categories: null, importance: null, times: ['week'], timePresetVersion: 2, customTime: null, sources: null, words: [], query: '', asset: null, limit: 40, scroll: 0, market: 'all' }; }
 export const inMarket = (item, scope) => scope === 'all' || item.markets?.includes(scope);
 export function canonicalURL(value) {
   const safe = safeLink(value); if (!safe) return null;
@@ -57,12 +57,14 @@ export function dedupe(items) {
 export function newsBase(snapshot, scope, state, prefs = {}, now = Date.now()) {
   const hidden = new Set(prefs.hidden || []), muted = new Set(prefs.mutedSources || []);
   const windows = (state.times || []).map(Number).filter(h => h > 0 && h <= 720);
-  if (!windows.length) return [];
-  const lower = now - Math.max(...windows) * 3600000;
+  const ranges = windows.map(hours => [now - hours * 3600000, now + 60000]);
+  if (state.times?.includes('week')) { const monday = new Date(`${taipeiDay(now)}T00:00:00+08:00`); const weekday = new Date(`${taipeiDay(now)}T12:00:00Z`).getUTCDay(); monday.setUTCDate(monday.getUTCDate() - (weekday + 6) % 7); ranges.push([monday.getTime(), now + 60000]); }
+  if (state.times?.includes('custom') && validDate(state.customTime?.from) && validDate(state.customTime?.to) && state.customTime.from <= state.customTime.to) ranges.push([Date.parse(`${state.customTime.from}T00:00:00+08:00`), Date.parse(`${state.customTime.to}T00:00:00+08:00`) + 86400000 - 1]);
+  if (!ranges.length) return [];
   return dedupe([...(snapshot?.news || []), ...(snapshot?.pendingNews || [])].filter(item => {
     const published = Date.parse(item.publishedAt);
     return inMarket(item, scope) && !hidden.has(item.id) && !muted.has(item.sourceId) && item.contentType !== 'promotion' &&
-      Number.isFinite(published) && published <= now + 60000 && published >= lower &&
+      Number.isFinite(published) && published <= now + 60000 && ranges.some(([from, to]) => published >= from && published <= to) &&
       (state.sources === null || state.sources.includes(item.sourceId));
   })).sort((a, b) => b.publishedAt.localeCompare(a.publishedAt));
 }

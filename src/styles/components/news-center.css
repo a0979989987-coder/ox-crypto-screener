@@ -428,6 +428,12 @@ body.theme-light.theme-light .oxn-root .oxn-importance-toggle[aria-pressed="true
 
 .oxn-event-summary{font-size:14px;line-height:1.6;white-space:normal;margin:0;color:inherit}.oxn-event-icon img{display:block;object-fit:contain}
 .oxn-root .oxn-day-more{border:0;background:transparent;padding:0;text-align:left;cursor:pointer}
+.oxn-time-panel .oxn-time-options,.oxn-time-panel .oxn-panel-actions{display:flex;flex-wrap:nowrap!important;overflow-x:auto;gap:8px;max-width:100%;padding:3px 1px 8px;scrollbar-width:thin}
+.oxn-time-panel :is(.oxn-time-options,.oxn-panel-actions)>button{flex:0 0 auto;white-space:nowrap}
+.oxn-time-panel .oxn-custom-time{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:8px;align-items:center;margin-top:8px}
+.oxn-time-panel .oxn-custom-time[hidden]{display:none}
+.oxn-time-panel .oxn-custom-time input{box-sizing:border-box;min-width:0;width:100%;padding:8px 4px;color:inherit;background:transparent;border:1px solid var(--oxn-line,#aab2bd70);border-radius:8px;font:inherit;font-size:12px}
+.oxn-time-panel .oxn-custom-time :is(button,p){grid-column:1/-1}
 body.theme-light.theme-light .oxn-root .oxn-month-title{border:0!important;background:transparent!important;box-shadow:none!important;outline:0!important;backdrop-filter:none!important}
 @media(max-width:600px){
  .oxn-root{padding-top:12px}
