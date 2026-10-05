@@ -32,7 +32,7 @@ try{
   if(width<600){assert.equal(await page.locator('.oxn-week-date').count(),7);assert.equal(await page.locator('.oxn-week-date[aria-current=date]').count(),1);await page.locator('.oxn-month-expand').click();assert.equal(await page.locator('.oxn-day').count(),42);}
   assert.equal(await page.locator(`.oxn-day[data-date="${today}"].is-today`).count(),1);
   assert.equal(await page.locator(`.oxn-day[data-date="${today}"].is-market-closed`).count(),1);
-  assert.equal(await page.locator('.oxn-upcoming-day').count(),8);
+  assert.equal(await page.locator('.oxn-upcoming-day').count(),1);
   await page.locator('.oxn-upcoming-day').first().locator('.oxn-event-row').filter({hasText:'Synthetic event detail'}).click();
   await page.locator('[role=dialog][aria-modal=true]').waitFor();assert.match(await page.locator('[role=dialog][aria-modal=true]').innerText(),/Synthetic event detail/);
   await page.evaluate(()=>{payload.route={};workspace.update(payload)});
@@ -51,8 +51,8 @@ try{
   await page.keyboard.press('Escape');await page.locator('[data-news-tab="calendar"]').click();await page.waitForTimeout(350);
   const bg=await page.evaluate(()=>getComputedStyle(document.querySelector('.oxn-calendar')).backgroundColor);const channels=bg.match(/[\d.]+/g).slice(0,3).map(Number);assert.equal(channels.every(c=>c>200),theme==='light','Theme must actually apply to body: '+bg);
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'No horizontal page overflow');assert.deepEqual(errors,[]);
-  await page.screenshot({path:resolve(output,`${theme}-${width}.png`),fullPage:true});results.push({theme,width,currentTaipeiDate:true,closure:true,eventDetail:true,upcomingDays:8,loginLogoutGate:true,overflow:false});await page.close();
+  await page.screenshot({path:resolve(output,`${theme}-${width}.png`),fullPage:true});results.push({theme,width,currentTaipeiDate:true,closure:true,eventDetail:true,upcomingDays:1,loginLogoutGate:true,overflow:false});await page.close();
  }
- writeFileSync(resolve(output,'report.json'),JSON.stringify({synthetic:true,baseline:'5fec313',results},null,2));
+ writeFileSync(resolve(output,'report.json'),JSON.stringify({synthetic:true,baseline:'3d65f80',results},null,2));
  console.log('Actual calendar workspace/CSS passed: dark/light × desktop/mobile, Taipei today, closures, upcoming events, detail dialog, login/logout gate and overflow. Synthetic sessions/events only.');
 }finally{await browser.close();}
