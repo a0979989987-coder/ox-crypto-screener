@@ -7,7 +7,7 @@ export const CATEGORY_NAMES = {
 };
 export const MARKET_CATEGORIES = {
   tw: ['dividend', 'macro', 'earnings', 'holiday', 'dividend-preview', 'payment', 'exchange'],
-  crypto: ['unlock', 'network', 'listing', 'governance', 'airdrop', 'burn', 'macro', 'regulation'],
+  crypto: ['unlock', 'network', 'listing', 'governance', 'airdrop', 'burn', 'macro', 'regulation', 'holiday', 'exchange'],
   all: Object.keys(CATEGORY_NAMES)
 };
 const source = (id, name, markets, extra = {}) => ({ id, name, markets, status: 'not-connected', ...extra });
@@ -29,6 +29,7 @@ export const SOURCE_CATALOG = [
   source('coinbase', 'Coinbase 官方公告', ['crypto']), source('kraken', 'Kraken 交易所', ['crypto']), source('okx', 'OKX 官方公告', ['crypto']),
   source('ethereum', '以太坊基金會', ['crypto']), source('bitcoin-core', '比特幣核心開發團隊', ['crypto']), source('aptos', 'Aptos 基金會', ['crypto']), source('aave-governance', 'Aave／Uniswap／ENS／Arbitrum 治理（Snapshot）', ['crypto']),
   source('fed', '美國聯準會', ['crypto', 'tw']), source('bls-cpi', '美國勞工統計局・物價', ['crypto', 'tw']), source('bls-jobs', '美國勞工統計局・就業', ['crypto', 'tw']),
+  source('nyse-calendar', 'NYSE・美股休市／提早收盤', ['crypto','tw']), source('ethereum-upgrades', '以太坊基金會・升級排程', ['crypto']),
   source('bls-calendar', '美國勞工統計局・行事曆', ['crypto', 'tw']), source('ecb', '歐洲央行', ['crypto', 'tw']),
   source('sec', '美國證券交易委員會', ['crypto']), source('cftc', '美國商品期貨交易委員會', ['crypto']),
   source('twse-dividends', '證交所・除權息預告', ['tw']), source('twse-holidays', '證交所・交易日曆', ['tw']),
@@ -37,5 +38,5 @@ export const SOURCE_CATALOG = [
   source('mops-conferences', '公開資訊觀測站・法說會', ['tw']), source('mops-payments', '公開資訊觀測站・配息', ['tw'])
 ];
 export const TIME_CHOICES = [['3', '3 小時'], ['24', '24 小時'], ['168', '1 週'], ['720', '30 日']];
-export const EVENT_PROVIDERS = { macro: ['bls-calendar'], 'dividend-preview': ['twse-dividends','tpex-dividends'], dividend: ['tpex-dividends-daily'], earnings: ['twse-conferences','mops-conferences'], holiday: ['twse-holidays'], payment: ['mops-payments'], governance: ['aave-governance'], network: ['bitcoin-core'], unlock: ['aptos'] };
+export const EVENT_PROVIDERS = { macro: ['bls-calendar'], 'dividend-preview': ['twse-dividends','tpex-dividends'], dividend: ['tpex-dividends-daily'], earnings: ['twse-conferences','mops-conferences'], holiday: ['twse-holidays','nyse-calendar'], exchange:['nyse-calendar'], payment: ['mops-payments'], governance: ['aave-governance'], network: ['bitcoin-core','ethereum-upgrades'], unlock: ['aptos'] };
 export function sourceName(item) { return SOURCE_CATALOG.find(s => s.id === (item.sourceId || item.id))?.name || item.source || item.name || item.sourceId || '來源待確認'; }

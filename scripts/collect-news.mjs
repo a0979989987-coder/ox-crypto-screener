@@ -8,6 +8,7 @@ import { XMLParser } from 'fast-xml-parser';
 import { CRYPTO_ASSETS, identifyAssets, issuerAssets, dividends, holidays, paymentEvents, governanceEvents, spansFor, tpexDividends } from './news-providers.mjs';
 import { collectConferences } from './news-conferences.mjs';
 import { FINANCE_SOURCES, FINANCE_FEEDS, publisherMatches, financeHeadline } from './news-finance-sources.mjs';
+import { nyseCalendar, ethereumUpgradeCalendar } from './news-official-calendar.mjs';
 
 // Public publisher and explicitly identified aggregation feeds. Only dated
 // headlines and source links are retained; article bodies are never republished.
@@ -215,6 +216,8 @@ export async function collect() {
   try { const research = JSON.parse(await readFile(new URL('../data/tw-research.json', import.meta.url), 'utf8')); catalog = [...new Map([...catalog, ...(research.stocks || []).filter(s => /^\d{4}$/.test(s.symbol) && s.name).map(s => ({ id: `tw:${s.symbol}`, market: 'tw', symbol: s.symbol, name: s.name, aliases: [] }))].map(a => [a.id, a])).values()]; } catch {}
   const news = [...articles.values()].filter(item => !['abmedia','blocktempo','decrypt'].includes(item.sourceId) || cryptoRelevant(item.title)).sort((a, b) => b.publishedAt.localeCompare(a.publishedAt)).slice(0, 6000).map(item => localize({ ...item, contentType: item.contentType || (/sponsored|APY|challenge|giveaway|獎池|限時優惠|抽獎|贊助|業配/i.test(item.title) ? 'promotion' : 'news'), assets: identifyAssets(item.titleZh || item.title, item.markets, catalog) }, allOldNews));
   const providers = [
+    ['nyse-calendar',async()=>nyseCalendar(await fetchText('https://www.nyse.com/trade/hours-calendars'),stamp)],
+    ['ethereum-upgrades',async()=>ethereumUpgradeCalendar(await fetchText('https://blog.ethereum.org/2026/09/17/glamsterdam-testnet-announcement'),stamp)],
     ['aptos', async () => {
       const url = 'https://aptosnetwork.com/currents/aptos-tokenomics-overview', html = await fetchText(url);
       if (!/October 12, 2022/.test(html) || !/four-year anniversary/.test(html)) throw Error('Official vesting rule changed; estimate requires review');
@@ -229,7 +232,7 @@ export async function collect() {
     ['twse-holidays', async () => holidays(JSON.parse(await fetchText('https://openapi.twse.com.tw/v1/holidaySchedule/holidaySchedule')), stamp)],
     ['twse-conferences', async () => collectConferences(fetchText, stamp)],
     ['aave-governance', async () => {
-      const response = await fetch('https://hub.snapshot.org/graphql', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ query: '{ proposals(first: 30, skip: 0, where: { space_in: ["aave.eth", "uniswap.eth", "ens.eth", "arbitrumfoundation.eth"] }, orderBy: "created", orderDirection: desc) { id title start end space { id } } }' }), signal: AbortSignal.timeout(20000) });
+      const response = await fetch('https://hub.snapshot.org/graphql', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ query: '{ proposals(first: 100, skip: 0, where: { space_in: ["aave.eth", "uniswap.eth", "ens.eth", "arbitrumfoundation.eth"] }, orderBy: "created", orderDirection: desc) { id title start end space { id } } }' }), signal: AbortSignal.timeout(20000) });
       if (!response.ok) throw Error(`HTTP ${response.status}`); const body = await response.json(); if (body.errors || !Array.isArray(body.data?.proposals)) throw Error('Governance response has no verified proposals'); return governanceEvents(body.data.proposals, stamp);
     }]
   ];

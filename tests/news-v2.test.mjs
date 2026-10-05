@@ -91,7 +91,7 @@ test('BLS historical release days remain queryable and DST retains exact times',
 });
 test('governance timestamps require the verified official space and keep the proposal original', () => {
   const proposals = [{id:'abc123',title:'Original proposal',space:{id:'aave.eth'},start:now/1000,end:now/1000+3600},{id:'fake',title:'Fake',space:{id:'other.eth'},start:1,end:2}];
-  const events = governanceEvents(proposals); assert.equal(events.length,1); assert.equal(events[0].proposalTitle,'Original proposal'); assert.equal(events[0].status,'confirmed');
+  const events = governanceEvents(proposals); assert.equal(events.length,2); assert.equal(events[0].proposalTitle,'Original proposal'); assert.equal(events[0].status,'confirmed'); assert.equal(events[1].occursAt,new Date(now).toISOString()); assert.equal(events[1].endsAt,events[0].occursAt); assert.ok(events[1].id.endsWith(':start'));
 });
 test('untrusted XML declarations, unsafe protocols and mismatched publisher links are rejected', () => {
   assert.equal(safeLink('javascript:alert(1)'), null); assert.equal(safeLink('https://user:secret@example.com'), null);

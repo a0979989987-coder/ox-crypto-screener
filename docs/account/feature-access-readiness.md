@@ -1,6 +1,6 @@
 # Feature access readiness — local candidate, 2026-10-05
 
-Base: origin/main 2cc1c22. No production database writes, deployment, push or merge authorization is implied.
+Integrated baseline: origin/main 5fec3137c5a81670fe49f58e38e3a479f893f8fe (fixed for this verification round; includes PR100 and newer calendar changes). No production database writes, deployment, push or merge authorization is implied.
 
 ## Behavior
 
@@ -25,7 +25,7 @@ Google provider manual configuration, if still absent, belongs to the user: http
 ## Local evidence
 
 - Original local attachment matches SHA256 501a61ade6d39ca70bf12b04fa216f3d8588c1b33e6c851002c6ddd86f224e49, 1,172,044 bytes.
-- npm test: 469 passed. npm run check: 99 assets, 173 IDs.
+- npm test: 473 passed. npm run check: 99 assets, 173 IDs.
 - Native PostgreSQL: 22 passed, including independent-client conflict handling, restricted executor ownership and fresh non-superuser migration application.
-- Production-transport synthetic UI, local admin UI, product mobile UI, Account and Email synthetic UI passed. Transport tests use actual router/handler/SDK/SQL with a synthetic provider; they are not real Google/Email acceptance.
-- Bitget helper and radar/navigation implementation have no changes from the integrated base. Only the new admin adapter/UI and product entry guards were added.
+- Production-transport synthetic UI, local admin UI, dark/light desktop/mobile product access and actual calendar workspace/CSS, Account and Email synthetic UI passed. Calendar checks cover Taipei today initialization, closure markers, upcoming eight-day events, event detail dialogs, current-week saved-state migration and custom dates. Transport tests use actual router/handler/SDK/SQL with a synthetic provider; they are not real Google/Email acceptance.
+- Latest calendar source is preserved; news/workspace.js differs from main only by the two feature-access hooks. No conflict remains against the fixed baseline. Bitget helper and radar/navigation implementation have no changes from the integrated base. Only the new admin adapter/UI and product entry guards were added.
