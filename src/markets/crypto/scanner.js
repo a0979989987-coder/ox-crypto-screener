@@ -68,8 +68,11 @@ function cryptoFrameTier(row,frame,side) {
  const data=row.timeframeTiers?.[frame];
  return data&&data.eligible&&Date.now()-data.at<=RADAR_RETAIN_MS&&(!side||data.side?.toLowerCase()===side.toLowerCase())?data:null;
 }
+let refreshingMarketTickers=false;
 async function refreshMarketTickers() {
   if (state.activeMarket && state.activeMarket !== "crypto") return;
+  if(refreshingMarketTickers)return;
+  refreshingMarketTickers=true;state.radarLoadError=false;
   const loading=window.OXLoading?.begin('crypto','加密行情載入中',{views:['home','strength']});
   try {
     const rawTickers = await BitgetAPI.fetchTickers();
@@ -139,9 +142,10 @@ async function refreshMarketTickers() {
       runScanQueueLoop();
     }
   } catch (e) {
+    state.radarLoadError=true;
     document.getElementById("scan-status").textContent = `行情取得失敗：${e.message}`;
     document.getElementById("dot").style.background = "#ee617c";
-  } finally { loading?.finish(); }
+  } finally { refreshingMarketTickers=false;loading?.finish();if(state.activeMarket==='crypto'&&state.activeView==='radar')renderCurrentTab(); }
 }
 
 let radarPaintTimer=0, initialScanLoading=null;
@@ -238,6 +242,7 @@ async function runScanQueueLoop() {
         .sort((a,b)=>num(b.usdtVolume)-num(a.usdtVolume)).map(t=>t.symbol);
       state.scanIndex = 0;
       state.radarSnapshotReady = true;
+      state.radarScanFailed = state.analyzedCache.size === 0;
       saveRadarSnapshot();
     }
     publishRadarProgress(true);
@@ -404,6 +409,12 @@ function renderCurrentTab() {
   document.getElementById("pool-count").textContent = `${list.length} 檔${directionLabel}${!state.radarSnapshotReady&&state.isQueueRunning?` · 已分析 ${state.analyzedCache.size}/${state.scanQueue.length}`:''}`;
   syncWatchBadge();
   if (!list.length) {
+    if(!state.analyzedCache.size&&(state.radarLoadError||state.radarScanFailed||!state.radarSnapshotReady)){
+      const failed=state.radarLoadError||state.radarScanFailed;
+      container.innerHTML=`<div style="padding:20px 12px;text-align:center;color:var(--muted)"><b>${failed?'行情資料尚未取得':'正在載入與分析行情'}</b><p style="font-size:12px;line-height:1.6">${failed?'目前無法判斷入選標的，連線恢復後會自動重試。':`已處理 ${state.scanIndex||0} / ${state.scanQueue.length||'—'} 檔`}</p></div>`;
+      if(failed){const retry=document.createElement('button');retry.type='button';retry.textContent='重新連線';retry.style.cssText='font:inherit;color:inherit;background:transparent;border:1px solid currentColor;border-radius:10px;padding:8px;min-height:44px';retry.onclick=()=>{state.radarScanFailed=false;state.radarSnapshotReady=false;refreshMarketTickers();};container.firstElementChild.append(retry);}
+      return;
+    }
     container.innerHTML = `<div style="padding:30px 16px;text-align:center;color:var(--muted)"><b>目前沒有符合 OX 經典的${directionLabel}標的</b><p style="font-size:11px">符合條件後會依${combinedRadar ? " T1 → T2 → T3 順序" : `目前 T${isTierTab ? tab.slice(1) : ""} 排名`}顯示。</p></div>`;
     return;
   }

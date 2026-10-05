@@ -1,4 +1,5 @@
-import { loadToolModule } from '../../../components/load-tool-module.js';
+import { loadToolModule } from '../../../components/load-tool-module.js?v=20261005-recover19';
+import { showToolLoadError } from '../../../components/tool-load-error.js?v=20261005-recover19';
 import { createToolsRail } from "../../../components/strength/tools-rail.js?v=20261005-stable18";
 // Crypto-only inline tools. Preserve the existing strength calculations and DOM.
 const section = document.querySelector('#view-strength .strength-page');
@@ -21,7 +22,7 @@ if (section) {
   slot.hidden = true;
   const anchor = section.querySelector('.strength-compare-panel');
   if (anchor) anchor.after(slot); else section.prepend(slot);
-  const host = document.createElement('div'),loading = document.createElement('div');loading.className='ox-tool-loading';loading.hidden=true;slot.append(host,loading);
+  let host = document.createElement('div');const loading = document.createElement('div');loading.className='ox-tool-loading';loading.hidden=true;slot.append(host,loading);
   let instance = null, pending = false, generation = 0, observer = null, dialog = null;
   let previousOverflow = '';
   const active = () => (document.body.dataset.market || 'crypto') === 'crypto' && document.body.dataset.view === 'strength';
@@ -45,6 +46,7 @@ if (section) {
   function unmount() {
     generation++; pending = false; observer?.disconnect(); observer = null;
     exitFocus(); instance?.destroy(); instance = null; loading.hidden=true;slot.hidden = true;
+    const fresh=document.createElement('div');host.replaceWith(fresh);host=fresh;
   }
   async function sync() {
     nav.hidden = !active();
@@ -78,7 +80,7 @@ if (section) {
       observer.observe(host.shadowRoot.querySelector('.cfx'), {attributes:true,attributeFilter:['class']});
     } catch (error) {
       console.warn('[OX Crypto tool]',error);
-      if (token === generation) { loading.textContent = '工具載入失敗'; const retry = document.createElement('button'); retry.textContent='重新載入'; retry.onclick=()=>{loading.textContent='';sync();};loading.append(retry); }
+      if (token === generation) showToolLoadError(loading,error,()=>{unmount();sync();});
     } finally { if (token === generation) { pending = false;if(instance)loading.hidden=true; } }
   }
   document.addEventListener('ox:marketchange', sync);

@@ -95,29 +95,39 @@ function isCryptoSymbolAllowed(symbol) {
 }
 
 const cryptoCandleObservations=new Map();
+// Include body decoding in the deadline, including Safari versions without
+// AbortSignal.timeout. A stalled request must not hold the scanner forever.
+async function fetchBitgetJSON(url, timeoutMs=10000) {
+  const controller=new AbortController();let timer;
+  try {
+    return await Promise.race([
+      (async()=>{const response=await fetch(url,{cache:'no-store',signal:controller.signal});
+        if(!response.ok)throw Error(`Bitget HTTP ${response.status}`);
+        return response.json();})(),
+      new Promise((_,reject)=>{timer=setTimeout(()=>{reject(new DOMException('行情連線逾時','TimeoutError'));controller.abort();},timeoutMs);})
+    ]);
+  } finally {clearTimeout(timer);}
+}
 const BitgetAPI = {
   peekCandles(symbol,frame,now=Date.now()) {
     const observation=cryptoCandleObservations.get(symbol+':'+frame);
     return observation&&now-observation.serverTime<=300000?observation:null;
   },
   async fetchTickers() {
-    const res = await fetch(`${CONFIG.apiBase}/tickers?productType=${CONFIG.productType}`, { cache: "no-store" });
-    const json = await res.json();
+    const json = await fetchBitgetJSON(`${CONFIG.apiBase}/tickers?productType=${CONFIG.productType}`);
     if (json.code !== "00000" || !Array.isArray(json.data)) throw new Error("Ticker 格式錯誤");
     return json.data;
   },
 
   async fetchContracts() {
-    const res = await fetch(`${CONFIG.apiBase}/contracts?productType=${CONFIG.productType}`, { cache: "no-store" });
-    const json = await res.json();
-    if (json.code !== "00000" || !Array.isArray(json.data)) return [];
+    const json = await fetchBitgetJSON(`${CONFIG.apiBase}/contracts?productType=${CONFIG.productType}`);
+    if (json.code !== "00000" || !Array.isArray(json.data)) throw Error('合約資料未取得');
     return json.data.filter(x => x.symbolStatus === "normal" && x.symbolType === "perpetual" && x.quoteCoin === "USDT");
   },
 
   async fetchInstrumentMetadata() {
     try {
-      const res = await fetch(`https://api.bitget.com/api/v3/market/instruments?category=${CONFIG.productType}`, { cache: "no-store" });
-      const json = await res.json();
+      const json = await fetchBitgetJSON(`https://api.bitget.com/api/v3/market/instruments?category=${CONFIG.productType}`);
       if (json.code !== "00000" || !Array.isArray(json.data)) return [];
       return json.data;
     } catch (e) {
@@ -130,8 +140,7 @@ const BitgetAPI = {
     const endpoint = endTime ? "history-candles" : "candles";
     let url = `${CONFIG.apiBase}/${endpoint}?symbol=${encodeURIComponent(symbol)}&productType=${CONFIG.productType}&granularity=${granularity}&limit=${Math.min(200, limit)}`;
     if (endTime) url += `&endTime=${endTime}`;
-    const res = await fetch(url, { cache: "no-store", ...(typeof AbortSignal !== "undefined" && AbortSignal.timeout ? { signal: AbortSignal.timeout(10000) } : {}) });
-    const json = await res.json();
+    const json = await fetchBitgetJSON(url);
     if (json.code !== "00000" || !Array.isArray(json.data)) return [];
     
     // 使用 ES6 陣列解構，百分之百避免任何下標被誤刪

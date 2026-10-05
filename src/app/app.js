@@ -1,7 +1,7 @@
 import { marketRouter } from "./marketRouter.js?v=20261002-nav6";
 import './storage-migrations.js?v=20261004-markets2';
 import { cryptoModule } from "../markets/crypto/index.js";
-import { twModule } from "../markets/tw/index.js?v=20261005-stable18";
+import { twModule } from "../markets/tw/index.js?v=20261005-recover19";
 
 export function bootOXModules(modules = []) {
   modules.forEach(module => marketRouter.register(module));
@@ -74,7 +74,11 @@ if (document.readyState === "loading") document.addEventListener("DOMContentLoad
 else restoreMarketView();
 
 // Preload before the user opens Taiwan; idle scheduling leaves initial UI paint free.
-const preloadTaiwan = () => { if (!document.hidden) twModule.preload(); };
+const preloadTaiwan = () => {
+  // Do not compete with the phone's active Crypto scan by downloading the
+  // other market's complete data and tools on every foreground transition.
+  if (!document.hidden && !matchMedia('(max-width: 900px), (pointer: coarse)').matches) twModule.preload();
+};
 if ('requestIdleCallback' in window) window.requestIdleCallback(preloadTaiwan, { timeout: 1200 });
 else setTimeout(preloadTaiwan, 300);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) preloadTaiwan(); });
