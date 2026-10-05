@@ -97,13 +97,13 @@ function quickSwitchHarness({desktop=false}={}) {
   return { document, window, radar, desktopRadar, viewport, nodes, advance, start, end, views };
 }
 
-test('desktop Radar requires 2.5 seconds of continuous hover and cancels when the pointer leaves',()=>{
+test('desktop Radar requires 1 second of continuous hover and cancels when the pointer leaves',()=>{
  const h=quickSwitchHarness({desktop:true});
- h.desktopRadar.emit('pointerenter',{pointerType:'mouse'});h.advance(2499);
+ h.desktopRadar.emit('pointerenter',{pointerType:'mouse'});h.advance(999);
  assert.notEqual(h.nodes.get('ox-market-quick-switch')?.attrs.get('aria-hidden'),'false');
  h.desktopRadar.emit('pointerleave');h.advance(1000);
  assert.notEqual(h.nodes.get('ox-market-quick-switch')?.attrs.get('aria-hidden'),'false');
- h.desktopRadar.emit('pointerenter',{pointerType:'mouse'});h.advance(2500);
+ h.desktopRadar.emit('pointerenter',{pointerType:'mouse'});h.advance(1000);
  assert.equal(h.nodes.get('ox-market-quick-switch').attrs.get('aria-hidden'),'false');
 });
 
