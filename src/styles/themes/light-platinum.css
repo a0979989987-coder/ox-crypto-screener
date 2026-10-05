@@ -78,7 +78,8 @@ body.theme-light.theme-light .chart-drawing-tools button {color:var(--muted)!imp
 body.theme-light.theme-light .chart-drawing-tools button:is(.active,[aria-pressed="true"]) {background:#f0f3f7!important;color:var(--gold)!important}
 body.theme-light.theme-light :is(.drawing-tool-menu,.drawing-tool-inspector) :is(span,label,small) {color:var(--muted)!important}
 body.theme-light.theme-light .ox-control-overlay.is-open {background:#47556926!important}
-body.theme-light.theme-light .ox-control-panel {width:min(360px,calc(100vw - 24px))!important;border-left:1px solid #c7d0dc!important}
+/* Drawer geometry comes from the shared compact layout in both palettes. */
+body.theme-light.theme-light .ox-control-panel {border-left:1px solid #c7d0dc!important}
 body.theme-light.theme-light .ox-control-edge-close {right:min(360px,calc(100vw - 24px))!important;width:24px!important;min-height:50px}
 body.theme-light.theme-light .ox-control-row {background:transparent!important;border-color:var(--line)!important;box-shadow:none!important}
 body.theme-light.theme-light :is(.ox-control-icon,.ox-control-close,.ox-control-back,.ox-control-edge-close) {background:#ffffff!important;color:var(--gold)!important;border-color:#c7d0dc!important;box-shadow:0 2px 10px #8d712e0d!important}

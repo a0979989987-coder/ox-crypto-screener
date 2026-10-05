@@ -385,6 +385,8 @@ body[data-news-mode="1"] #market-unavailable-card {display:none!important}
 .oxn-event-values>span{display:flex;gap:6px;flex-wrap:wrap}.oxn-event-values small{color:var(--muted)}
 .oxn-event-description{white-space:pre-wrap;line-height:1.7}
 .oxn-root .oxn-importance-toggle:after{display:none!important}
+.oxn-root .oxn-importance-toggle{transition:box-shadow .65s ease,border-color .65s ease,background-color .65s ease,outline-color .65s ease!important;outline:1px solid transparent;outline-offset:1px}
+@media(prefers-reduced-motion:reduce){.oxn-root .oxn-importance-toggle{transition:none!important}}
 .oxn-root .oxn-importance-toggle[aria-pressed="false"]{border-color:var(--oxn-line);box-shadow:none!important}
 .oxn-root .oxn-importance-toggle[aria-pressed="true"],body.theme-light.theme-light .oxn-root .oxn-importance-toggle[aria-pressed="true"]{border:1px solid #fff!important;box-shadow:0 0 3px #fff,0 0 11px #ffffff70,inset 0 0 5px #ffffff38!important}
 body.theme-light.theme-light .oxn-root .oxn-importance-toggle[aria-pressed="false"]{border-color:#c4c8d0!important;box-shadow:none!important}

@@ -65,7 +65,14 @@ export function mountNewsWorkspace(host, api) {
       const events = button('事件', '多選事件類別', () => {
         const c = coverage(data.snapshot, scope(), state.month).categories;
         multi(events, '事件類別', 'categories', MARKET_CATEGORIES[scope()].map(id => ({ id, label: CATEGORY_NAMES[id], hint: c.find(i => i.category === id)?.spans.length ? '有資料・覆蓋依月份' : c.find(i => i.category === id)?.known ? '部分排程' : c.find(i => i.category === id)?.connected.length ? '已接入・依來源排程' : '尚未接入' })), null, '沒有覆蓋的類別不會填入示範事件。');
-      }, 'oxn-pill'); const level = button('重要性', '僅顯示重要事件', () => { state.importance = state.importance === true ? null : true; persist(); renderControls(); renderContent(); }, 'oxn-pill oxn-importance-toggle');
+      }, 'oxn-pill'); const level = button('重要性', '僅顯示重要事件', () => {
+        state.importance = state.importance === true ? null : true; persist();
+        // Retain the button so both directions of the glow transition can run.
+        level.setAttribute('aria-pressed', String(state.importance === true));
+        level.classList.toggle('is-filtered', state.importance === true);
+        level.title = state.importance === true ? '目前僅顯示重要事件；點一下恢復全部' : '目前顯示全部事件；點一下只顯示重要事件';
+        renderContent();
+      }, 'oxn-pill oxn-importance-toggle');
       level.setAttribute('aria-pressed', String(state.importance === true));
       level.title = state.importance === true ? '目前僅顯示重要事件；點一下恢復全部' : '目前顯示全部事件；點一下只顯示重要事件';
       events.classList.toggle('is-filtered', state.categories !== null); level.classList.toggle('is-filtered', state.importance !== null);
