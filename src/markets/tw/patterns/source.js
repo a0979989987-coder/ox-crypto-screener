@@ -1,6 +1,6 @@
 import { classifyTWSeries } from '../classic.js?v=20261002-rank8';
 import { qualifyClassicRow, compareClassic, rankClassicTiers } from '../../../core/classic.js?v=20261002-rank8';
-import { preloadBundle, awaitBundleManifest, subscribeBundle, bundleEntry, bundleEntries, bundleState } from './bundle.js?v=20261002-rank8';
+import { preloadBundle, awaitBundleManifest, subscribeBundle, bundleEntry, bundleEntries, bundleState } from './bundle.js?v=20261005-load16';
 import { twProvider } from '../api.js?v=20261001-tiercomb1';
 import { createTWMarketState } from '../engine.js?v=20261002-rank8';
 import { savedResearch, loadResearch } from '../research-data.js?v=20261001-twhome1';

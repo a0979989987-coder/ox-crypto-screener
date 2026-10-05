@@ -1,4 +1,4 @@
-import { createETFRequester } from './request.js?v=20261002-etffast1';
+import { createETFRequester } from './request.js?v=20261005-load16';
 const requests=new Map();
 export const etfRequest=createETFRequester({rootUrl:new URL('../../../../',import.meta.url),
   getApiBase:async()=> (await import('../api.js')).getTWApiBase()});

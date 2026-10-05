@@ -9,6 +9,7 @@ import { CRYPTO_ASSETS, identifyAssets, issuerAssets, dividends, holidays, payme
 import { collectConferences } from './news-conferences.mjs';
 import { FINANCE_SOURCES, FINANCE_FEEDS, publisherMatches, financeHeadline } from './news-finance-sources.mjs';
 import { nyseCalendar, ethereumUpgradeCalendar } from './news-official-calendar.mjs';
+import { translateHeadlines } from './news-translation.mjs';
 
 // Public publisher and explicitly identified aggregation feeds. Only dated
 // headlines and source links are retained; article bodies are never republished.
@@ -160,12 +161,13 @@ export function localize(item, previous = []) {
     if (match && match[2] === 'Annual') titleZh = `美國 ${match[3]} 年${names[match[1]]}（年度）`;
     if (match && month) titleZh = `美國 ${match[3]} 年 ${month} 月${names[match[1]]}`;
   }
-  return { ...item, titleZh, translationStatus: titleZh ? 'translated' : [...FINANCE_FEEDS,...FINANCE_SOURCES].some(f=>f.id===item.sourceId)?'original':'pending' };
+  return { ...item, titleZh, ...(old?.translationMethod?{translationMethod:old.translationMethod}:{}), translationStatus: titleZh ? 'translated' : [...FINANCE_FEEDS,...FINANCE_SOURCES].some(f=>f.id===item.sourceId)?'original':'pending' };
 }
 
 // Reviewed headline translations are keyed by the exact original text; changed
 // headlines wait for a new review instead of inheriting an inaccurate title.
 const VERIFIED_TRANSLATIONS = {
+  'Ukraine scrambles for money to fight war as Russian strikes batter economy': '俄軍攻擊重創經濟，烏克蘭急籌戰爭資金',
   'CFTC Staff Releases Updates to FAQs Concerning Registrants and Registered Entity Activities Relating to Crypto Assets and Blockchain Technologies': '美國 CFTC 更新加密資產與區塊鏈業務常見問答，涉及註冊機構及登記實體',
   'Spend more than your cash balance: introducing Kraken Borrow for US customers': 'Kraken 推出面向美國用戶的借貸功能 Kraken Borrow',
   'Inside Kraken&#8217;s VIP château retreat: a weekend in Saint-Émilion': 'Kraken 介紹其法國聖愛美濃貴賓活動',
@@ -257,11 +259,14 @@ export async function collect() {
     const event = localize({ ...item, id: `release:${item.id}`, kind: 'event', category: 'network', occursAt: item.publishedAt, status: 'confirmed', announcementStatus: 'confirmed', sourceUrl: item.link, projectId: 'bitcoin', eventTimeType: 'software-release-publication' }, old?.events);
     if (event.titleZh) events.set(event.id, event);
   }
+  // Fill fresh English titles on each collection run; retain exact-title
+  // translations on later runs so opening the page never waits for translation.
+  const translation = await translateHeadlines(news);
   const translations = news.filter(item => item.translationStatus !== 'pending');
   const pendingNews = news.filter(item => item.translationStatus === 'pending');
   if (!news.length && !events.size) throw Error('No verified source data; snapshot not replaced');
   const snapshot = { schemaVersion: 1, generatedAt: sources.some(s => s.status === 'ready') ? stamp : old?.generatedAt || null, attemptedAt: stamp, sources,
-    news: translations, pendingNews, events: [...events.values()], eventCoverage, assetCatalog: catalog,
+    news: translations, pendingNews, events: [...events.values()], eventCoverage, assetCatalog: catalog, translation,
     methodology: { news: '公開 RSS 標題與原文連結；不轉載全文。', ranking: '目前快照去重文章的標題資產提及；同篇同資產只計一次。', history: '逐次收集累積，RSS 數量有限，非完整 30 日資料庫。', importance: '保留 1–5 星與來源規則；重要性開＝有星、關＝無星。星級不代表多空。', frequencyHours: 6 } };
   await mkdir(new URL('../data/', import.meta.url), { recursive: true });
   const temp = new URL('../data/news.next.json', import.meta.url);

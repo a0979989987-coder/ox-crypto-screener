@@ -5,7 +5,7 @@ import {FRAME_LABELS} from './patterns/model.js';
 import { rankChartRows, chartUniverse } from './chart-radar-model.js?v=20261002-radarkeep1';
 import { escapeTW as esc } from './radar-card.js';
 import { savedResearch } from './research-data.js?v=20261001-twhome1';
-import { bundleState, bundleEntry, bundleClassification, subscribeBundle, preloadBundle } from './patterns/bundle.js?v=20261002-rank8';
+import { bundleState, bundleEntry, bundleClassification, subscribeBundle, preloadBundle } from './patterns/bundle.js?v=20261005-load16';
 import { fetchSeries } from './patterns/source.js?v=20261002-rank8';
 import { CHART_FRAMES, aggregateChartCandles, stockDetails, chartTickFormatter } from './chart-data.js?v=20261001-loading1';
 import { cryptoRadarPart, attachCryptoRadarStyles } from '../../components/radar/market-workspace.js';

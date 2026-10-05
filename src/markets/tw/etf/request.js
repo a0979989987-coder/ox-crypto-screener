@@ -1,4 +1,5 @@
-import { createSnapshotLoader, waitForSignal } from './static-snapshot.js?v=20261002-etffast1';
+import { createSnapshotLoader, waitForSignal } from './static-snapshot.js?v=20261005-load16';
+import { withDeadline } from '../../../components/resource-deadline.js';
 
 // Published daily data is the normal read path. A slow upstream refresh must
 // not block entry into either tool. Dates/source labels remain in the payload.
@@ -13,17 +14,19 @@ export function createETFRequester({ fetcher = fetch, rootUrl, getApiBase, timeo
       try {
         published = await snapshot(action, params);
         if (!incomplete(action, published)) return published;
-      } catch {}
+      } catch (error) { if (error.name === 'TimeoutError') throw error; }
     }
     try {
+      return await withDeadline(async signal => {
       const base = await getApiBase();
       const query = new URLSearchParams({ action, ...params, ...(refresh ? { refresh: '1' } : {}) });
       const response = await fetcher(`${(base || '/api').replace(/\/$/, '')}/v1/tw/etf?${query}`, {
-        cache: 'no-store', signal: AbortSignal.timeout(timeoutMs),
+        cache: 'no-store', signal,
       });
       const payload = await response.json();
       if (!response.ok || !payload.ok) throw Error(payload.error?.message || 'ETF 資料暫時無法取得');
       return payload.data;
+      }, timeoutMs, 'ETF 來源回應逾時，請重試');
     } catch (error) {
       if (published) return published;
       try { return await snapshot(action, params, undefined, refresh); }

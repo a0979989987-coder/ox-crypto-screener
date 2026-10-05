@@ -1,4 +1,4 @@
-import { revealStyledShadow } from '../../../components/style-ready.js?v=20261005-tools12';
+import { revealStyledShadow } from '../../../components/style-ready.js?v=20261005-load16';
 export const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export const fmt=(n,d=2)=>Number.isFinite(n)?n.toLocaleString('zh-TW',{maximumFractionDigits:d,minimumFractionDigits:d}):'—';
 export const signed=(n,d=2)=>Number.isFinite(n)?(n>0?'+':'')+fmt(n,d):'—';
@@ -9,7 +9,7 @@ export const amount=n=>Number.isFinite(n)?'NT$ '+fmt(n,0):'—';
 export const iconSearch='<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.8"/><path d="m16 16 5 5"/></svg>';
 export function shell(host,title){
   const node=document.createElement('div');host.append(node);const shadow=node.attachShadow({mode:'open'}), life=new AbortController();
-  shadow.innerHTML=`<link rel="stylesheet" href="${new URL('./style.css?v=20261005-spacing6',import.meta.url)}"><main aria-label="${esc(title)}"><div class="loading" role="status">正在載入 ${esc(title)}…</div></main>`;
+  shadow.innerHTML=`<link rel="stylesheet" href="${new URL('./style.css?v=20261005-spacing6',import.meta.url)}"><main aria-label="${esc(title)}" data-style-pending="true" inert style="visibility:hidden!important"><div class="loading" role="status">正在載入 ${esc(title)}…</div></main>`;
   node.style.setProperty('--ox-light-up','#ce3c4d');node.style.setProperty('--ox-light-down','#168366');
   revealStyledShadow(shadow,life.signal,'main',360);
   return {node,shadow,life,main:shadow.querySelector('main'),destroy(){life.abort();node.remove();}};

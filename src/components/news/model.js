@@ -74,7 +74,9 @@ export function newsBase(snapshot, scope, state, prefs = {}, now = Date.now()) {
   if (!ranges.length) return [];
   return dedupe([...(snapshot?.news || []), ...(snapshot?.pendingNews || [])].filter(item => {
     const published = Date.parse(item.publishedAt);
-    return inMarket(item, scope) && !hidden.has(item.id) && !muted.has(item.sourceId) && item.contentType !== 'promotion' &&
+    // Some aggregated RSS entries contain only a ticker, not an article title.
+    const title=plain(item.titleZh||item.title).trim();
+    return title.length>0 && !/^\d{4,6}[a-z]?$/i.test(title) && inMarket(item, scope) && !hidden.has(item.id) && !muted.has(item.sourceId) && item.contentType !== 'promotion' &&
       Number.isFinite(published) && published <= now + 60000 && ranges.some(([from, to]) => published >= from && published <= to) &&
       (state.sources === null || state.sources.includes(item.sourceId));
   })).sort((a, b) => b.publishedAt.localeCompare(a.publishedAt));
