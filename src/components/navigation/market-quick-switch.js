@@ -1997,7 +1997,7 @@ body.theme-light
       hoverOpenTimer = setTimeout(() => {
         hoverOpenTimer = null;
         if (pointerHover && desktopRadar.matches(':hover')) openMenu(desktopRadar, { hover: true });
-      }, 2500);
+      }, 1000);
     });
     desktopRadar.addEventListener('pointerleave', () => {
       pointerHover = false;
