@@ -9,8 +9,12 @@ export function revealStyledShadow(shadow, signal, selector = 'main', minHeight 
   document.addEventListener('ox:themechange', syncTheme, { signal });
   const lightSheet = document.createElement('link');
   lightSheet.rel = 'stylesheet';
-  lightSheet.href = sheet.href.replace(/\.css(?:\?.*)?$/, '-light.css?v=20261005-whiteclear1');
+  lightSheet.href = sheet.href.replace(/\.css(?:\?.*)?$/, '-light.css?v=20261005-champagne2');
   shadow.append(lightSheet);
+  const rolesSheet = document.createElement('link');
+  rolesSheet.rel = 'stylesheet';
+  rolesSheet.href = new URL('../styles/themes/light-tool-roles.css?v=20261005-champagne2', import.meta.url).href;
+  shadow.append(rolesSheet);
   const cloak = document.createElement('style');
   cloak.textContent = `${selector}{display:none!important}.ox-style-loading{box-sizing:border-box;min-height:${minHeight}px;display:grid;place-items:center;padding:10px;border:1px solid #8883;border-radius:12px;color:var(--ox-light-muted,#969ba3);background:var(--ox-light-panel,#101216);font:13px/1.6 system-ui}`;
   const shell = document.createElement('div');
@@ -18,7 +22,7 @@ export function revealStyledShadow(shadow, signal, selector = 'main', minHeight 
   if (globalThis.OXLoading) shell.innerHTML = OXLoading.markup('介面載入中'); else shell.textContent = '介面載入中…';
   if (globalThis.OXLoading) { const style=document.createElement('style');style.textContent=OXLoading.css;shadow.append(style); }
   shadow.prepend(cloak);shadow.append(shell);
-  const pending = new Set([sheet, lightSheet].filter(link => !link.sheet));
+  const pending = new Set([sheet, lightSheet, rolesSheet].filter(link => !link.sheet));
   const reveal = () => {if (!pending.size) {cloak.remove();shell.remove();}};
   for (const link of pending) {
     link.addEventListener('load', () => {pending.delete(link);reveal();}, {once:true,signal});

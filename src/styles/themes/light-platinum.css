@@ -1,14 +1,17 @@
 /* OX White Gold 2.0. Theme roles are shared by document and shadow components. */
 html:has(body.theme-light) {background:#ffffff!important;color-scheme:light}
 body.ox-terminal.theme-light {
- --bg:#ffffff; --panel:#ffffff; --panel-alt:#f3f5f7; --ink:#374151;
- --muted:#616d7c; --line:#d7dee7; --gold:#8d712e; --gold-dim:#a68a5020;
+ --bg:#ffffff; --panel:#ffffff; --panel-alt:#f6f7f9; --ink:#30343b;
+ --muted:#636b77; --line:#dde1e6; --gold:#8d712e; --gold-dim:#e9d6ab40;
+ --champagne:#e9d6ab; --champagne-soft:#f6eddc; --champagne-line:#d8bc83;
+ --dock-selection:#e6e8eb; --dock-line:#d4d9e0;
  --blue:#176ed0; --green:#176ed0; --red:#d13c5b; --purple:#785d97;
  --tier-t1:#8d712e; --tier-t2:#616d7c; --tier-t3:#616d7c;
  --green-dim:#176ed011; --red-dim:#d13c5b10;
- --ox-light-bg:#ffffff; --ox-light-panel:#ffffff; --ox-light-ink:#374151;
- --ox-light-muted:#616d7c; --ox-light-line:#d7dee7; --ox-light-gold:#8d712e;
- --ox-light-active:#f0f3f7; --ox-light-up:#176ed0; --ox-light-down:#d13c5b;
+ --ox-light-bg:#ffffff; --ox-light-panel:#ffffff; --ox-light-ink:#30343b;
+ --ox-light-muted:#636b77; --ox-light-line:#dde1e6; --ox-light-gold:#8d712e;
+ --ox-light-active:#e9d6ab; --ox-light-up:#176ed0; --ox-light-down:#d13c5b;
+ --ox-light-accent-line:#d8bc83; --ox-light-accent-soft:#f6eddc;
  --ox-light-up-fill:#e6eff7; --ox-light-down-fill:#f7e7ec;
  --platinum-shadow:0 8px 28px #5361740b,inset 0 1px 0 #fff;
  color:var(--ink)!important;
@@ -117,3 +120,69 @@ body.theme-light.theme-light :is(.chart-crosshair-price-label,.chart-live-price-
  body.theme-light.theme-light .ox-feature-search-box input {font-size:16px!important}
  body.theme-light.theme-light :is(.ox-feature-result,.ox-provider-option) {min-height:44px}
 }
+
+/* Approved 02 palette: white surfaces, charcoal copy, champagne controls.
+   Navigation has its own neutral role, including the moving radar selection. */
+body.ox-terminal.theme-light.theme-light.theme-light {
+ background:#fff!important;
+}
+body.ox-terminal.theme-light.theme-light.theme-light :is(.ox-home-chart,.ox-home-t1,.panel,.detail-panel,.tw-stock-card,.tws-savings-form,.twx-glass,.oxn-card) {
+ background:#fff!important;border-color:var(--champagne-line)!important;
+ box-shadow:0 4px 18px #30343b08,inset 0 1px #fff!important;
+}
+body.ox-terminal.theme-light.theme-light.theme-light :is(.btn-tf.active,.tab-btn.active,.theme-choice.active,.v34-home-mini-tf.active,.ox-market-chip.active,.ox-theme-segment button.active,.chart-choice input:checked+span,.chart-indicator-option[aria-pressed="true"],.radar-tier-menu button[aria-pressed="true"],.radar-tier-option.active,.ox-provider-option.active,.oxn-tabs button[aria-selected="true"],.oxn-controls button[aria-pressed="true"],.ox-news-tabs button.active,.tws-main-tabs button[aria-pressed="true"],.tws-categories button[aria-pressed="true"],.chart-drawing-tools button.active,.chart-drawing-tools button[aria-pressed="true"],.twr-mode-rail button.active) {
+ color:var(--ink)!important;background:linear-gradient(135deg,var(--champagne-soft),var(--champagne))!important;
+ border-color:var(--champagne-line)!important;text-shadow:none!important;
+ box-shadow:inset 0 1px #ffffffb3,0 1px 4px #30343b08!important;
+}
+body.ox-terminal.theme-light.theme-light.theme-light :is(.tf-glass-indicator,.twr-mode-indicator) {
+ background:linear-gradient(135deg,var(--champagne-soft),var(--champagne))!important;
+ border-color:var(--champagne-line)!important;box-shadow:inset 0 1px #ffffffb3!important;
+}
+body.ox-terminal.theme-light.theme-light.theme-light :is(.chart-symbol,.coin-title,.strength-value,.ox-home-price,.ox-home-ticker,.ox-mobile-location) {color:var(--ink)!important}
+body.ox-terminal.theme-light.theme-light.theme-light :is(.ox-control-panel,.ox-feature-results,.drawing-tool-menu,.drawing-tool-inspector,.oxn-popover,.oxn-detail,.twr-filter-popover) {
+ background:#fff!important;border-color:var(--line)!important;
+ box-shadow:0 12px 36px #30343b20,inset 0 1px #fff!important;
+}
+body.ox-terminal.theme-light.theme-light.theme-light .ox-feature-search-box {background:#f6f7f9!important;border-color:var(--line)!important}
+body.ox-terminal.theme-light.theme-light.theme-light .ox-control-toggle input:checked+span {background:var(--champagne)!important;border-color:var(--champagne-line)!important}
+body.ox-terminal.theme-light.theme-light.theme-light :is(.tws-primary,.tws-savings-form>button,.ox-feedback-submit,.chart-tools-save) {
+ background:var(--champagne-soft)!important;color:var(--ink)!important;border-color:var(--champagne-line)!important;
+}
+body.ox-terminal.theme-light.theme-light.theme-light :is(.tws-sidebar,.tws-chart,.tws-filter-group,.tws-chips,.oxn-calendar,.oxn-agenda-day,.oxn-event-card) {background:#fff!important}
+body.ox-terminal.theme-light.theme-light.theme-light .oxn-day.is-today {
+ background:var(--champagne-soft)!important;box-shadow:inset 0 0 0 1px var(--champagne-line)!important;
+}
+body.ox-terminal.theme-light.theme-light.theme-light .oxn-day.is-selected:not(.is-today) {background:#f6f7f9!important;box-shadow:inset 0 0 0 1px var(--line)!important}
+/* Do not share gold selection styles with the bottom or desktop navigation. */
+body.ox-terminal.theme-light.theme-light.theme-light :is(.app-dock.glass-nav,.ox-desktop-nav,.ox-news-dock) {
+ background:#ffffffed!important;border-color:var(--dock-line)!important;
+ box-shadow:0 6px 22px #30343b14,inset 0 1px #fff!important;
+}
+body.ox-terminal.theme-light.theme-light.theme-light .app-dock :is(.dock-btn,.dock-radar-logo,.dock-radar-orb) {
+ color:var(--muted)!important;background:transparent!important;border-color:transparent!important;
+ box-shadow:none!important;filter:none!important;text-shadow:none!important;
+}
+body.ox-terminal.theme-light.theme-light.theme-light .app-dock :is(.dock-btn.active,.dock-btn.active .dock-radar-logo) {color:var(--ink)!important}
+body.ox-terminal.theme-light.theme-light.theme-light .app-dock .ox-dock-indicator {
+ background:linear-gradient(145deg,#eef0f3,var(--dock-selection))!important;
+ border:1px solid var(--dock-line)!important;box-shadow:inset 0 1px #ffffffb3!important;opacity:1!important;
+}
+body.ox-terminal.theme-light.theme-light.theme-light :is(.ox-desktop-nav button.active,.ox-news-dock button.active) {
+ background:var(--dock-selection)!important;border-color:var(--dock-line)!important;color:var(--ink)!important;
+}
+body.ox-terminal.theme-light.theme-light.theme-light .app-dock .dock-btn::before {background:none!important;box-shadow:none!important}
+/* Existing home/radar rules carry IDs; keep approved roles explicit there. */
+body.ox-terminal.theme-light.theme-light.theme-light #view-home :is(.ox-home-chart,.ox-home-t1) {
+ background:#fff!important;border-color:var(--champagne-line)!important;
+ box-shadow:0 4px 18px #30343b08,inset 0 1px #fff!important;
+}
+body.ox-terminal.theme-light.theme-light.theme-light #view-home .v34-home-mini-tf.active,
+body.ox-terminal.theme-light.theme-light.theme-light #view-radar #chart-timeframe-strip .btn-tf.active,
+body.ox-terminal.theme-light.theme-light.theme-light #view-radar .scanner-tabs .tab-btn.active {
+ color:var(--ink)!important;background:linear-gradient(135deg,var(--champagne-soft),var(--champagne))!important;
+ border-color:var(--champagne-line)!important;box-shadow:inset 0 1px #ffffffb3!important;
+}
+body.ox-terminal.theme-light.theme-light.theme-light #view-settings .theme-choice.active {background:var(--champagne-soft)!important;color:var(--ink)!important;border-color:var(--champagne-line)!important}
+
+body.ox-terminal.theme-light.theme-light.theme-light #view-radar #chart-timeframe-strip .tf-glass-indicator {background:linear-gradient(135deg,var(--champagne-soft),var(--champagne))!important;border-color:var(--champagne-line)!important;box-shadow:inset 0 1px #ffffffb3!important}
