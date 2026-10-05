@@ -172,3 +172,15 @@ body.theme-light .twx-bubble-value{fill:#38433e}
 .twx-bubbles.is-zoomed{touch-action:none}
 body.theme-light .twx-chart-main select,body.theme-light .twx-chart-utility button,body.theme-light .twx-expand{background:#f2f4f4;color:#252b2c}
 @media(max-width:480px){.twx-chart-tools .twx-segments button{padding:5px 8px}.twx-chart-main select{max-width:68px}.twx-chart-utility button{min-width:33px;height:36px;padding:0 7px}.twx-chart-mode{margin-top:7px}}
+.twx-flow-columns>div{min-width:0}
+.twx-flow-columns .twx-sector-chip{min-width:0;max-width:100%;box-sizing:border-box}
+.twx-flow-columns .twx-sector-chip span{min-width:0;overflow-wrap:anywhere;line-height:1.5}
+.twx-flow-columns .twx-sector-chip b{flex-shrink:0;max-width:100%;font-variant-numeric:tabular-nums}
+@media(max-width:600px){
+ .twx-flow-columns .twx-sector-chip{flex-direction:column;align-items:flex-start;justify-content:center;gap:4px;padding:10px 2px;min-height:62px}
+ .twx-flow-columns .twx-sector-chip b{align-self:flex-end;padding-right:2px;font-size:12px}
+ .twx-flow-columns .twx-sector-chip span{width:100%;font-size:12px}
+ .twx-section-head{gap:10px;min-width:0}
+ .twx-section-head>span{min-width:0;overflow-wrap:anywhere}
+ .twx-section-head>button{flex-shrink:0;padding:6px 8px;line-height:1.4}
+}

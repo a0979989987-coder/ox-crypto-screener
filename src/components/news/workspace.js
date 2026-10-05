@@ -116,7 +116,7 @@ export function mountNewsWorkspace(host, api) {
     }
     const toggle=button(monthExpanded?'收起行事曆 ▴':'展開行事曆 ▾','展開或收起完整月份行事曆',()=>{monthExpanded=!monthExpanded;renderContent();},'oxn-month-expand');toggle.setAttribute('aria-expanded',String(monthExpanded));shell.append(week,toggle);content.append(shell);
     if(monthExpanded) { renderCalendar(); content.querySelector('.oxn-day-events')?.remove(); }
-    const section=node('section','oxn-mobile-events');section.append(node('h2','',`${selected.replaceAll('-','／')} 事件`));
+    const section=node('section','oxn-mobile-events');section.append(node('h2','',`${selected.replaceAll('-','/')} 事件`));
     const entries=(data.snapshot.events||[]).filter(e=>eventDay(e)===selected&&(scope()==='all'||e.markets?.includes(scope()))&&(state.categories===null||state.categories.includes(eventCategory(e)))&&matchesImportance(e,state.importance)).sort((a,b)=>(a.occursAt||'').localeCompare(b.occursAt||'')||label(a).localeCompare(label(b)));
     for(const item of entries) { const row=eventRow(item,()=>api.navigate({day:selected,event:item.id}));row.append(node('small','oxn-card-source',`${sourceName(item)} · ${statusLabel(item)}`));section.append(row); }
     if(!entries.length)section.append(node('p','oxn-empty','這一天目前沒有符合篩選的已收錄事件。'));
@@ -322,4 +322,3 @@ export function mountNewsWorkspace(host, api) {
   renderControls();
   return { host, update(next) { const changed = next.snapshot !== data.snapshot || !content.firstChild; data = next; if (changed) { detailKey = ''; renderContent(); } else status(); renderRoute(data.route); rail.position(); if (restorePosition) { restorePosition = false; requestAnimationFrame(() => window.scrollTo(0, state.scroll || 0)); } }, suspend() { closePanel(); detail?.destroy(); detail = null; detailKey = ''; clearInterval(countdown); countdown = null; }, destroy() { state.scroll = root.closest('.app-view.active') ? scrollY : state.scroll; persist(); closePanel(); detail?.destroy(); clearInterval(countdown); clearTimeout(scrollTimer); life.abort(); rail.destroy(); root.remove(); } };
 }
-
