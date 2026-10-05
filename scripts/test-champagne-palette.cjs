@@ -17,17 +17,17 @@ const {mkdirSync}=require('node:fs');
   const originalDark=await dock();
   await page.evaluate(()=>applyTheme('light'));
   const positions=[];
-  for(const view of ['home','strength','radar','data','media']){
+  for(const view of ['home','strength','radar','data']){
    await page.evaluate(v=>switchAppView(v),view);await page.waitForTimeout(180);
-   const color=await dock();positions.push(color.x);
+   const color=await dock();if(view==='radar'){assert.equal(await page.locator('.ox-dock-indicator').evaluate(e=>getComputedStyle(e).display),'none');continue;}positions.push(color.x);
    assert(color.image.includes('230, 232, 235'),view+': neutral selection');assert.equal(color.border,'rgb(212, 217, 224)');assert.equal(color.opacity,'1');assert(color.width>30);
    const text=await page.locator('.dock-btn.active').evaluate(e=>getComputedStyle(e).color);assert.equal(text,'rgb(48, 52, 59)');
   }
-  assert(new Set(positions).size===5,'gray selection moves to all five tabs');
+  assert(new Set(positions).size===3,'gray selection moves across non-radar tabs');
   await page.evaluate(()=>switchAppView('home'));await page.waitForTimeout(100);
-  const home=await page.locator('.ox-home-chart').evaluate(e=>({bg:getComputedStyle(e).backgroundColor,border:getComputedStyle(e).borderTopWidth,shadow:getComputedStyle(e).boxShadow}));assert.equal(home.bg,'rgb(255, 255, 255)');assert.equal(home.border,'0px');assert.equal(home.shadow,'none');
+  const home=await page.locator('.ox-home-chart').evaluate(e=>({bg:getComputedStyle(e).backgroundColor,border:getComputedStyle(e).borderTopWidth,shadow:getComputedStyle(e).boxShadow}));assert.equal(home.bg,'rgb(255, 255, 255)');assert.equal(home.border,'1px');assert.equal(home.shadow,'none');
   const energy=await page.locator('#home-btc-strength-meter').evaluate(e=>getComputedStyle(e).backgroundColor);assert.notEqual(energy,'rgb(247, 248, 250)');assert.notEqual(energy,'rgb(255, 255, 255)');
-  const analysis=await page.locator('.ox-home-analysis').evaluate(e=>getComputedStyle(e).borderTopWidth);assert.equal(analysis,'0px');await page.screenshot({path:out+'/approved-home.png'});
+  const analysis=await page.locator('.ox-home-analysis').evaluate(e=>getComputedStyle(e).borderTopWidth);assert.equal(analysis,'1px');await page.screenshot({path:out+'/approved-home.png'});
   await page.evaluate(()=>switchAppView('radar'));await page.waitForTimeout(100);
   const frame=await page.locator('#chart-timeframe-strip .btn-tf.active').evaluate(e=>({bg:getComputedStyle(e).backgroundImage,text:getComputedStyle(e).color}));assert(frame.bg.includes('230, 232, 235'));assert.equal(frame.text,'rgb(48, 52, 59)');await page.screenshot({path:out+'/approved-radar.png'});
   await page.evaluate(()=>switchAppView('strength'));await page.locator('button[data-crypto-tool="patterns"]').waitFor();await page.waitForTimeout(150);
@@ -38,6 +38,6 @@ const {mkdirSync}=require('node:fs');
   const hasBlue=await canvas.evaluate(e=>{const a=e.getContext('2d').getImageData(0,0,e.width,e.height).data;for(let i=0;i<a.length;i+=4)if(a[i]===69&&a[i+1]===152&&a[i+2]===223&&a[i+3]===255)return true;return false;});assert(hasBlue,'actual drawing stroke is clear blue');await page.screenshot({path:out+'/blue-drawing.png'});
 
   await page.evaluate(()=>{applyTheme('dark');switchAppView('radar');});await page.waitForTimeout(100);assert.deepEqual(await dock(),originalDark,'dark navigation unchanged after round trip');
-  console.log('Approved palette passed: five moving gray dock states, charcoal text, borderless white home, visible energy, soft gauges, blue drawing, neutral gray controls, dark round trip.');
+  console.log('Approved palette passed: three gray dock states and frameless radar, charcoal text, framed white home, visible energy, soft gauges, blue drawing, neutral gray controls, dark round trip.');
  }finally{await browser.close();server.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;server.close();});

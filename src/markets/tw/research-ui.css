@@ -184,3 +184,13 @@ body.theme-light .twx-chart-main select,body.theme-light .twx-chart-utility butt
  .twx-section-head>span{min-width:0;overflow-wrap:anywhere}
  .twx-section-head>button{flex-shrink:0;padding:6px 8px;line-height:1.4}
 }
+
+/* Keep sector names and large flow amounts inside their own column. */
+.twx-flow-columns .twx-sector-chip b {white-space:normal;overflow-wrap:anywhere;min-width:0;line-height:1.4}
+@media(max-width:720px){
+ .twx-flow-columns {gap:12px}
+ .twx-flow-columns>div+div {padding-left:12px}
+ .twx-flow-columns .twx-sector-chip {flex-direction:column;align-items:stretch;gap:4px}
+ .twx-flow-columns .twx-sector-chip span {width:100%}
+ .twx-flow-columns .twx-sector-chip b {align-self:flex-end;max-width:100%;text-align:right}
+}
