@@ -5,7 +5,6 @@ import {readFileSync} from 'node:fs';
 import {runInNewContext} from 'node:vm';
 import {patternFrameTier} from '../src/markets/tw/timeframe-tiers.js';
 import {rankChartRows} from '../src/markets/tw/chart-radar-model.js';
-import {timeframeTierResults} from '../src/markets/us/analysis.js';
 function filters(){const data=new Map(),context={window:{},localStorage:{getItem:k=>data.get(k),setItem:(k,v)=>data.set(k,v)},document:{dispatchEvent(){}},CustomEvent:class{}};runInNewContext(readFileSync(new URL('../src/components/radar/timeframe-filters.js',import.meta.url),'utf8'),context);return context.window.OXTierFilters;}
 test('timeframe combinations enforce all/any, real classifications and independent market preferences',()=>{
  const f=filters(),rules=[{frame:'1H',tier:'T1'},{frame:'4H',tier:'T2'}];
@@ -37,14 +36,4 @@ test('TW frame grades use validated pattern direction and retain exact groups wi
  assert.equal(patternFrameTier(entry,'long').tier,'T2');assert.equal(patternFrameTier(entry,'short').tier,'T1');assert.equal(patternFrameTier(null),null);
  const rows=[{symbol:'1234',price:10,changePct:1,tier:'T3',classic:{long:rankingSignal('T3')}}];
  assert.equal(rankChartRows(rows,{strictTier:true})[0].displayTier,'T2');assert.equal(rankChartRows(rows,{strictTier:true})[0].qualityTier,'T3');assert.equal(rankChartRows(rows,{strictTier:true,tier:'T1'}).length,0);
-});
-const analysis=(symbol,interval,distance,side='long')=>({symbol,interval,type:'stock',price:100,rvol:null,rs:null,liquidity:1e8,classic:{[side]:rankingSignal('T1',side)},patterns:{[side]:[{id:'W',label:'W',forming:true,distance}]}});
-test('US combines the full per-frame classification pool before display limits, without substituting daily or opposite-side grades',()=>{
- const daily=Array.from({length:12},(_,i)=>analysis('S'+i,'1D',1+i/100));
- const rows=[...daily,analysis('S11','1W',1),analysis('ONLYW','1W',1),analysis('SHORT','1W',1,'short')];
- const config={enabled:true,match:'all',rules:[{frame:'1D',tier:'T1'},{frame:'1W',tier:'T1'}]};
- assert.deepEqual(timeframeTierResults(rows,{side:'long'},config).map(r=>r.symbol),['S11']);
- config.match='any';const high=rows.find(r=>r.symbol==='ONLYW');high.classic.long.qualityScore=100;assert(timeframeTierResults(rows,{side:'long'},config).some(r=>r.symbol==='ONLYW'));
- config.rules=[{frame:'1M',tier:'T1'}];assert.equal(timeframeTierResults(rows,{side:'long'},config).length,0);
- config.rules=[{frame:'1W',tier:'T1'}];assert.deepEqual(timeframeTierResults(rows,{side:'short'},config).map(r=>r.symbol),['SHORT']);
 });

@@ -1,7 +1,7 @@
 /* Shared editorial UI. Market data and radar workspace remain owned by their modules. */
 (() => {
   'use strict';
-  const marketNames = {crypto:'Crypto',us:'美股',tw:'台股'};
+  const marketNames = {crypto:'Crypto',tw:'台股'};
   document.body.dataset.uiMode = 'pro';
   function updateContext() {
     const view = document.querySelector('.app-view.active')?.dataset.appView || 'home';

@@ -35,11 +35,11 @@ test('agenda retains all upcoming recorded dates, chronologically groups busy da
  {id:'old',date:'2026-09-30',markets:['tw']},{id:'crypto',date:'2026-10-01',markets:['crypto']},
  {id:'early',occursAt:'2026-10-09T02:00:00Z',markets:['tw']},{id:'invalid',date:'2026-99-99',markets:['tw']}]};
  const days=agendaDays(snapshot,'tw',state);assert.deepEqual(days.map(d=>d.date),['2026-10-09','2027-01-15']);assert.deepEqual(days[0].events.map(e=>e.id),['early','late']);
- assert.equal(agendaDays(snapshot,'tw',{...state,categories:['macro'],importance:['3']}).flatMap(d=>d.events).length,2);
+ assert.equal(agendaDays(snapshot,'tw',{...state,categories:['macro'],importance:true}).flatMap(d=>d.events).length,2);
  assert.equal(agendaDays(snapshot,'tw',{...state,categories:[]}).length,0);
 });
-test('importance has an explicit adapter without modifying raw five-star ratings', () => {
-  for (const [raw, expected] of [[1,1],[2,1],[3,2],[4,3],[5,3]]) { const item = { impact: { stars: raw, ruleVersion: 'source-rule' } }; assert.equal(importance(item).value, expected); assert.equal(item.impact.stars, raw); }
+test('importance retains each of the five ratings', () => {
+  for (const [raw, expected] of [[1,1],[2,2],[3,3],[4,4],[5,5]]) { const item = { impact: { stars: raw, ruleVersion: 'source-rule' } }; assert.equal(importance(item).value, expected); assert.equal(item.impact.stars, raw); }
   assert.equal(importance({ impact: { stars: null } }).value, null);
 });
 test('time multiselect is a union and uses publication rather than fetch time', () => {
@@ -101,7 +101,7 @@ test('untrusted XML declarations, unsafe protocols and mismatched publisher link
 test('preview collection is isolated from production writes and does not alter global market IDs', async () => {
   const workflow = await readFile(new URL('../.github/workflows/news-preview.yml', import.meta.url),'utf8'); assert.match(workflow,/contents: read/); assert.doesNotMatch(workflow,/git push|HEAD:main|schedule:/);
   const quick = await readFile(new URL('../src/components/navigation/market-quick-switch.js', import.meta.url),'utf8'); const declared=quick.slice(quick.indexOf('const MARKETS'),quick.indexOf('const MENU_ID')); assert.match(declared,/id: "crypto"/);assert.match(declared,/id: "tw"/);assert.doesNotMatch(declared,/id: "us"|id: "news"/);
-  assert.match(await readFile(new URL('../src/core/config.js',import.meta.url),'utf8'),/"us"/);
+  assert.doesNotMatch(await readFile(new URL('../src/core/config.js',import.meta.url),'utf8'),/"us"/);
 });
 test('official conference table uses meeting time after registration and validates dates', () => {
   const row = values => `<w:tr>${values.map(v => `<w:tc><w:p><w:r><w:t>${v}</w:t></w:r></w:p></w:tc>`).join('')}</w:tr>`;

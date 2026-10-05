@@ -34,21 +34,17 @@ function updateAccountUI() {
 }
 
 const MarketController = (() => {
-  const labels={crypto:"加密貨幣",us:"美股",tw:"台股"};
+  const labels={crypto:"加密貨幣",tw:"台股"};
   const setMarket = (market,{toast=true,kick=true}={}) => {
     if(!labels[market]) return;
     if (state.activeMarket === market && document.body.dataset.market === market) return;
     if(market!=="crypto"){state.chartLiveFeed?.stop();state.chartLiveFeed=null;state.chartLiveQuote=null;}
     state.activeMarket=market; localStorage.setItem("ox-active-market",market); document.body.dataset.market=market;
-    document.querySelectorAll("[data-terminal-view]").forEach(el => { el.textContent = {crypto:"Crypto",us:"美股",tw:"台股"}[market]; });
-    // Paint the non-Crypto host before notifying the router. US activation is
-    // synchronous through its first paint, so the fallback is replaced in the
-    // same task instead of remaining visible while the mobile frame settles.
-    if (market === "us") syncPlaceholder();
+    document.querySelectorAll("[data-terminal-view]").forEach(el => { el.textContent = {crypto:"Crypto",tw:"台股"}[market]; });
     document.dispatchEvent(new CustomEvent("ox:marketchange",{detail:{market}}));
     document.querySelectorAll("[data-market-choice]").forEach(b=>b.classList.toggle("active",b.dataset.marketChoice===market));
-    const st=document.getElementById("ox-market-status-text"); if(st) st.textContent = market==="crypto" ? "加密市場行情已連線" : market==="tw" ? "台股官方收盤資料已連線" : "美股 ETF 行情已連線 · 廣度與類股待接";
-    if (market !== "us") syncPlaceholder();
+    const st=document.getElementById("ox-market-status-text"); if(st) st.textContent = market==="crypto" ? "加密市場行情已連線" : "台股官方收盤資料已連線";
+    syncPlaceholder();
     renderOxLive();
     if (market === "crypto" && kick) { refreshMarketTickers(); if(state.activeView==="radar") loadSymbolCandles(true); if(state.activeView==="home") HomeMiniChart.ensureAndLoad(true); }
     if(toast) showMarketToast(`已切換至${labels[market]}`);
@@ -57,12 +53,12 @@ const MarketController = (() => {
   const syncPlaceholder = () => {
     const marketView = ["home","strength","radar"].includes(state.activeView);
     const nonCrypto = state.activeMarket !== "crypto" && marketView;
-    const unsupported = ["us","tw"].includes(state.activeMarket) && marketView;
+    const unsupported = state.activeMarket === "tw" && marketView;
     document.body.classList.toggle("market-data-unavailable", unsupported);
     document.querySelectorAll("[data-app-view]").forEach(v => { if(["home","strength","radar"].includes(v.dataset.appView)) v.style.display = nonCrypto ? "none" : ""; });
     const card=document.getElementById("market-unavailable-card"); if(card) { card.hidden=!unsupported; if(unsupported){ const name=labels[state.activeMarket]; const title=card.querySelector("#market-unavailable-title"), copy=card.querySelector("#market-unavailable-copy"); if(title) title.textContent=`${name}市場`; if(copy) copy.textContent=`正在讀取${name}市場資料…`; } }
   };
-  const cycle = () => { const order=["crypto","us","tw"]; const i=order.indexOf(state.activeMarket); setMarket(order[(i+1)%order.length]); };
+  const cycle = () => { const order=["crypto","tw"]; const i=order.indexOf(state.activeMarket); setMarket(order[(i+1)%order.length]); };
   const init=()=>{ state.activeMarket="crypto"; setMarket("crypto",{toast:false,kick:false}); };
   return {setMarket,syncPlaceholder,cycle,init,labels};
 })();
@@ -74,7 +70,7 @@ const HomeChartVariant = (()=>{
   let chart=null, series=null, volumeSeries=null, period="1H", liveFeed=null, candles=[], request=0, ro=null;
   const theme=()=>document.body.classList.contains("theme-light");
   const chartColors=()=> theme() ? {
-    bg:"rgba(255,255,255,0)", text:"#777d79",
+    bg:"rgba(255,255,255,0)", text:"#616d7c",
     grid:"rgba(65,72,68,.10)", cross:"rgba(65,72,68,.24)"
   } : {
     bg:"rgba(0,0,0,0)", text:"#a2a8a3",
@@ -107,8 +103,8 @@ const HomeChartVariant = (()=>{
       handleScale:{axisPressedMouseMove:false,mouseWheel:true,pinch:true}
     });
     series=chart.addCandlestickSeries({
-      upColor:theme()?"#00778a":"#00b8d4",downColor:theme()?"#b81550":"#ff3078",
-      borderVisible:false,wickUpColor:theme()?"#00778a":"#00b8d4",wickDownColor:theme()?"#b81550":"#ff3078",
+      upColor:theme()?"#176ed0":"#00b8d4",downColor:theme()?"#d13c5b":"#ff3078",
+      borderVisible:false,wickUpColor:theme()?"#176ed0":"#00b8d4",wickDownColor:theme()?"#d13c5b":"#ff3078",
       priceLineVisible:true,lastValueVisible:true
     });
     volumeSeries=chart.addHistogramSeries({
@@ -128,7 +124,7 @@ const HomeChartVariant = (()=>{
   const applyThemeHome=()=>{
     if(!chart) return;
     const c=chartColors();
-    const up=theme()?"#00778a":"#00b8d4",down=theme()?"#b81550":"#ff3078";
+    const up=theme()?"#176ed0":"#00b8d4",down=theme()?"#d13c5b":"#ff3078";
     series?.applyOptions({upColor:up,downColor:down,wickUpColor:up,wickDownColor:down});
     chart.applyOptions({
       layout:{background:{type:"solid",color:c.bg},textColor:c.text,fontSize:9},

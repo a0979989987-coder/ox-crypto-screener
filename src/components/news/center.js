@@ -4,7 +4,7 @@
   const initialNewsHash = /^#news(?:\/[^?]*)?(?:\?|$)/.test(location.hash || '') ? location.hash : '';
   let restoringInitialRoute = Boolean(initialNewsHash);
   const state = { snapshot: null, candidate: null, pending: null, lastError: null, request: 0, previous: null, route: {}, navigating: false, workspace: null, scope: null };
-  const markets = ['crypto', 'tw', 'us'];
+  const markets = ['crypto', 'tw'];
   const currentMarket = () => markets.includes(document.body.dataset.market) ? document.body.dataset.market : 'crypto';
   const preferences = () => { try { return JSON.parse(localStorage.getItem(SAVED_KEY) || '{}'); } catch { return {}; } };
   const save = patch => { try { localStorage.setItem(SAVED_KEY, JSON.stringify({ ...preferences(), ...patch })); } catch {} };
@@ -29,10 +29,23 @@
       .then(data => { if (request !== state.request) return state.snapshot; state.lastError = null;
         if (state.snapshot && data.generatedAt !== state.snapshot.generatedAt) state.candidate = data;
         else if (!state.snapshot) state.snapshot = data;
-        render(); return state.snapshot;
+        render(); refreshMacro(force); return state.snapshot;
       }).catch(error => { if (request === state.request) { state.lastError = error; render(); } return state.snapshot; })
       .finally(() => { clearTimeout(timeout); state.pending = null; });
     render(); return state.pending;
+  }
+  let macroPending = false;
+  async function refreshMacro(force) {
+    if (macroPending) return; macroPending = true;
+    try {
+      const [response, { mergeMacroResults }] = await Promise.all([fetch(`data/macro-results.json${force ? `?t=${Date.now()}` : ''}`, { cache: force ? 'reload' : 'default', signal: AbortSignal.timeout(8000) }), import('./macro.js?v=20261005-macro1')]);
+      if (!response.ok) return;
+      const supplement = await response.json();
+      if (state.snapshot) state.snapshot = mergeMacroResults(state.snapshot, supplement);
+      if (state.candidate) state.candidate = mergeMacroResults(state.candidate, supplement);
+      render();
+    } catch { /* Keep the calendar and its last successful official values. */ }
+    finally { macroPending = false; }
   }
   let generation = 0;
   async function render() {
@@ -40,11 +53,10 @@
     const view = document.querySelector('.app-view.active')?.dataset.appView;
     if (!['news', 'data'].includes(view)) { state.workspace?.suspend(); return; }
     // US keeps its existing Data workspace. Cross-market news remains available from the news menu.
-    if (view === 'data' && currentMarket() === 'us') { state.workspace?.suspend(); return; }
     const scope = document.body.dataset.newsMode === '1' ? 'all' : currentMarket();
     const host = document.querySelector(`[data-news-surface="${scope === 'all' ? 'all' : 'market'}"]`);
     if (!host) return;
-    const { mountNewsWorkspace } = await import('./workspace.js?v=20261002-finance4');
+    const { mountNewsWorkspace } = await import('./workspace.js?v=20261005-macro1');
     if (token !== generation || !host.isConnected) return;
     if (state.scope !== scope || state.workspace?.host !== host) {
       state.workspace?.destroy(); state.scope = scope;
@@ -138,3 +150,4 @@
   }
   else render();
 })();
+

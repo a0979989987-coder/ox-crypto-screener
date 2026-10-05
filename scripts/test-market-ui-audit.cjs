@@ -89,15 +89,6 @@ async function setup(browser, width) {
     else if (u.pathname.endsWith('/quotes')) data = { quotes:[] };
     return route.fulfill({ json:{ ok:true, data } });
   });
-  await page.route('**/api/v1/us/**', route => {
-    const u = new URL(route.request().url());
-    const data = u.pathname.endsWith('/snapshot')
-      ? { schemaVersion:2,analyses:[],quotes:[],counts:{quoted:0,scanned:0},error:'UI fixture: public raw data unavailable' }
-      : u.pathname.endsWith('/capabilities')
-        ? { source:'finance-query-eod',chartMode:'widget',mode:'eod',intervals:['1D','1W','1M'],externalDisplayConfirmed:false,rawDataAvailable:false }
-        : {};
-    return route.fulfill({ json:{ok:true,data} });
-  });
   return { context, page, audit };
 }
 
@@ -110,7 +101,7 @@ async function setup(browser, width) {
       try {
         await page.goto(testBase, {waitUntil:'domcontentloaded'});
         await page.locator('#view-radar .coin-card').first().waitFor();
-        for (const market of ['crypto','tw','us']) {
+        for (const market of ['crypto','tw']) {
           if (market !== 'crypto') {
             await selectMarket(page, market);
             await page.locator('#ox-control-close').click();
@@ -118,12 +109,6 @@ async function setup(browser, width) {
               const overlay = document.querySelector('#ox-control-overlay');
               return overlay?.getAttribute('aria-hidden') === 'true' && getComputedStyle(overlay).pointerEvents === 'none';
             });
-            if (market === 'us') {
-              // Verify the first landing before later view changes could mask
-              // a cold-start/reentrant initialization failure.
-              await page.locator('.us2-radar-pane').waitFor();
-              assert.equal(await page.locator('.us-boot-status').count(), 0, 'first US entry must mount without a retry');
-            }
           }
           for (const view of ['home','radar','strength','data','media']) {
             const nav = width > 720 ? '.ox-desktop-nav' : '.app-dock';
@@ -133,7 +118,7 @@ async function setup(browser, width) {
               if (width > 720) await page.locator(`${nav} [data-view-target="data"]`).click();
               else await page.locator(`${nav} [data-view-target="data"]`).tap();
               await page.waitForFunction(() => document.body.dataset.view === 'data');
-              await page.locator(market === 'us' ? '.us2-news-page' : '.oxn-root').waitFor();
+              await page.locator('.oxn-root').waitFor();
               assert.equal(await page.locator('#ox-news-entry-menu').count(), 0, 'information opens its market directly without a menu');
               assert.equal(await page.locator('body').getAttribute('data-market'), market, 'information preserves the selected market');
             } else {
@@ -142,24 +127,13 @@ async function setup(browser, width) {
             }
             if (market === 'tw' && view === 'home') await page.locator('.twx-core').waitFor();
             if (market === 'tw' && view === 'radar') await page.locator('.tw-stock-card').first().waitFor();
-            if (market === 'us') await page.locator(`.us2-${view}-pane`).waitFor();
             if (view === 'strength') {
               // Excludes floating bubbles, covered by their dedicated physics QA.
-              await page.getByRole('tab',{name:market === 'us' ? '型態畫板' : market === 'tw' ? '畫板' : '型態搜尋',exact:true}).click();
+              await page.getByRole('tab',{name:market === 'tw' ? '畫板' : '型態搜尋',exact:true}).click();
               await page.locator('.px-board').waitFor();
               await page.locator('.px-board:not(.is-scanning)').waitFor({timeout:30000});
             }
             await layout(page, market, view, width);
-            if (market === 'us' && view === 'data') {
-              await page.locator('.us2-news-card').first().waitFor();
-              assert.equal(await page.locator('.us2-data-pane .media-card,.us2-data-pane .media-page').count(),0,'no legacy news background wrapper');
-              const action = page.locator('.us2-news-card .ox-news-actions button').first();
-              assert.ok((await action.boundingBox()).height >= 44,'news actions need readable touch targets');
-              await action.click();await page.locator('.us2-article').waitFor();
-              await layout(page,market,'article',width);
-              await page.getByRole('button',{name:'返回新聞列表',exact:true}).click();
-              await page.locator('.us2-news-card').first().waitFor();
-            }
           }
         }
         report.errors.push(...audit.pageErrors);

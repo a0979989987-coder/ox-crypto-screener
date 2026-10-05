@@ -1,4 +1,4 @@
-import { SOURCE_CATALOG, MARKET_CATEGORIES, EVENT_PROVIDERS } from './config.js';
+import { SOURCE_CATALOG, MARKET_CATEGORIES, EVENT_PROVIDERS } from './config.js?v=20261004-markets2';
 export const validDate = value => { if (!/^\d{4}-\d{2}-\d{2}$/.test(value || '')) return false; const date = new Date(`${value}T00:00:00Z`); return Number.isFinite(date.getTime()) && date.toISOString().slice(0, 10) === value; };
 export const safeLink = value => { try { const u = new URL(value); return u.protocol === 'https:' && !u.username && !u.password ? u.href : null; } catch { return null; } };
 export const plain = value => String(value ?? '').replace(/<[^>]*>/g, '').replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g, '').trim();
@@ -19,9 +19,10 @@ export function eventCategory(item) {
 }
 export function importance(item) {
   const raw = item.impact?.stars;
-  const value = Number.isInteger(raw) && raw >= 1 && raw <= 5 ? (raw <= 2 ? 1 : raw === 3 ? 2 : 3) : null;
+  const value = Number.isInteger(raw) && raw >= 1 && raw <= 5 ? raw : null;
   return { value, raw: raw ?? null, source: item.impact?.ruleVersion || null, evidence: safeLink(item.impact?.evidence), reason: item.impact?.reason || null };
 }
+export const matchesImportance = (item, enabled) => typeof enabled !== 'boolean' || Boolean(importance(item).value) === enabled;
 export function monthGrid(month) {
   const [year, index] = month.split('-').map(Number);
   const offset = (new Date(Date.UTC(year, index - 1, 1)).getUTCDay() + 6) % 7;
@@ -77,7 +78,7 @@ export function monthEvents(snapshot, scope, state) {
   return (snapshot?.events || []).filter(item => {
     const day = eventDay(item), type = eventCategory(item), level = importance(item).value;
     return inMarket(item, scope) && day?.slice(0, 7) === state.month &&
-      (state.categories === null || state.categories.includes(type)) && (state.importance === null || state.importance.includes(String(level || 'unrated')));
+      (state.categories === null || state.categories.includes(type)) && matchesImportance(item, state.importance);
   }).sort((a, b) => (eventDay(a) + (a.occursAt || '')).localeCompare(eventDay(b) + (b.occursAt || '')));
 }
 // Agenda includes every recorded date from the chosen month onward, rather
@@ -87,7 +88,7 @@ export function agendaDays(snapshot, scope, state) {
   for (const item of snapshot?.events || []) {
     const day=eventDay(item),type=eventCategory(item),level=importance(item).value;
     if(!day||day<state.month+'-01'||!inMarket(item,scope)||seen.has(item.id)||
-      state.categories!==null&&!state.categories.includes(type)||state.importance!==null&&!state.importance.includes(String(level||'unrated')))continue;
+      state.categories!==null&&!state.categories.includes(type)||!matchesImportance(item,state.importance))continue;
     seen.add(item.id);if(!dates.has(day))dates.set(day,[]);dates.get(day).push(item);
   }
   return [...dates].sort(([a],[b])=>a.localeCompare(b)).map(([date,events])=>({date,events:events.sort((a,b)=>(a.occursAt||date).localeCompare(b.occursAt||date)||plain(a.titleZh||a.title).localeCompare(plain(b.titleZh||b.title)))}));

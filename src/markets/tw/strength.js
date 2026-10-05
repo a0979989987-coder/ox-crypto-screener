@@ -1,12 +1,12 @@
 import { renderResearch, stopResearch } from './research-page.js?v=20261002-nav6';
 import { mountResearch } from './research-ui.js';
-import { createToolsRail } from '../../components/strength/tools-rail.js?v=20261002-rail1';
+import { createToolsRail } from '../../components/strength/tools-rail.js?v=20261005-mobilefix1';
 import { createTWMarketState } from './engine.js?v=20261002-rank8';
 let selected = 'patterns', session = null, modules;
 export function preloadTWStrength() {
   return modules ??= Promise.all([
     import('../crypto/patterns/view.js?v=20261002-quiet1'),
-    import('./patterns/source.js?v=20261002-rank8'), import('./patterns/index-cache.js?v=20261002-rank8'),import('./bubbles/view.js?v=20261002-finance4')
+    import('./patterns/source.js?v=20261002-rank8'), import('./patterns/index-cache.js?v=20261002-rank8'),import('./bubbles/view.js?v=20261005-mobilefix1')
   ]).catch(error => { modules = null; throw error; });
 }
 export function stopTWStrength() {
@@ -28,7 +28,7 @@ async function show(s) {
     if(window.OXLoading)OXLoading.render(s.host,selected==='etf'?'載入 ETF 精選':'載入存股計算');
     else s.host.textContent='介面載入中…';
     try{
-      const module=selected==='etf'?await import('./etf/view.js?v=20261002-pages3'):await import('./etf/savings.js?v=20261002-pages3');
+      const module=selected==='etf'?await import('./etf/view.js?v=20261002-compact1'):await import('./etf/savings.js?v=20261002-compact1');
       if(session!==s||generation!==s.generation)return;
       s.host.replaceChildren();
       s.instance=selected==='etf'?module.mountETF(s.host,{onSavings(selection){s.savingsInitial=selection;s.rail.select('savings');}}):module.mountSavings(s.host,{initialSelection:s.savingsInitial});
@@ -43,7 +43,9 @@ async function show(s) {
     s.host.textContent = '';
     const onOpenRadar=symbol=>{
       document.dispatchEvent(new CustomEvent('ox:tw-chart-symbol',{detail:{symbol}}));
-      document.querySelector('.dock-btn[data-view-target="radar"]')?.click();
+      // The mobile radar button owns a gesture recognizer and deliberately
+      // suppresses synthetic clicks. Navigation must use the app API.
+      window.switchAppView?.('radar');
     };
     s.instance=selected==='bubbles'?mountTWBubbles(s.host,{onOpenRadar}):mountPatternSearch(s.host,{source,cache,onOpenRadar});
   } catch (error) {
@@ -62,7 +64,7 @@ export function renderTWStrength(state) {
   stopTWStrength(); stopResearch(); root.replaceChildren();
   const host = document.createElement('div'), research = document.createElement('div');
   host.id = 'ox-tw-patterns'; research.id = 'ox-tw-sector-tools';
-  const rail = createToolsRail({ tabs: [['patterns', '畫板'], ['bubbles','泡泡圖'], ['rotation', '板塊輪動'],['etf','ETF 精選'],['savings','存股計算']], selected, label: '台股指標分類', attribute: 'data-tw-tool',equal:true, onSelect(id) { selected = id; if (session) show(session); } });
+  const rail = createToolsRail({ tabs: [['patterns', '畫板'], ['bubbles','泡泡圖'], ['rotation', '板塊輪動'],['etf','ETF 精選'],['savings','存股計算']], selected, label: '台股指標分類', attribute: 'data-tw-tool',equal:true,mobileCompact:true, onSelect(id) { selected = id; if (session) show(session); } });
   rail.element.id = 'ox-tw-tools-nav';
   const style = document.createElement('style');
   style.textContent = '#ox-tw-tools-nav{margin:0 0 12px}#ox-tw-patterns,#ox-tw-sector-tools{min-width:0}#ox-tw-sector-tools[hidden],#ox-tw-patterns[hidden]{display:none!important}';

@@ -24,5 +24,4 @@ body.ox-terminal #view-home .ox-home-t1-row.is-tier-start small:not(.ox-home-row
 body.ox-terminal #view-home .ox-home-t1-row.is-tier-start em {grid-row:2/4}
 @media(max-width:720px){.ox-home-preview {height:76dvh}.ox-home-preview button {min-height:36px}.ox-home-preview header strong {font-size:12px}.ox-home-preview header {padding:8px}.ox-home-preview header button {padding:6px}.ox-home-preview nav {overflow-x:auto}}
 
-body.ox-terminal :is(#view-home,.us2-home-pane) .ox-home-t1-list::-webkit-scrollbar{display:none;width:0;height:0}
-body.ox-terminal .us2-home-pane .ox-home-t1-list{scrollbar-width:none}
+body.ox-terminal #view-home .ox-home-t1-list::-webkit-scrollbar{display:none;width:0;height:0}

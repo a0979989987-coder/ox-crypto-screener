@@ -35,7 +35,7 @@ async function bounds(page) {
   const engine = report.engine === 'webkit' ? webkit : chromium;
   const browser = await engine.launch({headless:true,...(process.env.OX_BROWSER_PATH ? {executablePath:process.env.OX_BROWSER_PATH} : {})});
   try {
-    for (const size of (process.env.OX_NEWS_ONLY_INTERACTIONS ? [] : [{width:1440,height:900},{width:1366,height:768},{width:390,height:844},{width:375,height:667},{width:430,height:932}])) {
+    for (const size of (process.env.OX_NEWS_ONLY_INTERACTIONS || process.env.OX_NEWS_MACRO_ONLY ? [] : [{width:1440,height:900},{width:1366,height:768},{width:390,height:844},{width:375,height:667},{width:430,height:932}])) {
       const {context,page,errors} = await contextFor(browser,size); await load(page);
       let result = await bounds(page); assert(result.overflow <= 1, `${size.width}: horizontal overflow`);
       if (size.width < 600) assert(result.calendarBottom < result.dockTop, `${size.width}: 5-week month extends below dock ${JSON.stringify(result)}`);
@@ -53,6 +53,29 @@ async function bounds(page) {
       report.viewports.push({size,...result});report.errors.push(...errors);await context.close();
     }
     if(process.env.OX_NEWS_VIEWPORTS_ONLY){assert(report.errors.length===0,'runtime errors: '+report.errors.join(' | '));report.passed=true;console.log(JSON.stringify(report,null,2));return;}
+    for (const width of [375,1440]) {
+      const {context,page,errors}=await contextFor(browser,{width,height:844});
+      const supplement=JSON.parse(readFileSync(resolve(root,'data/macro-results.json'),'utf8'));
+      const nfp=supplement.events.find(e=>e.metric==='nonfarm-payrolls');assert(nfp?.actual!=null,'official nonfarm result required');
+      const existing=snapshot.events.find(e=>e.title?.startsWith(nfp.matchTitle)&&(e.date||e.occursAt||'').slice(0,10)===nfp.occursAt.slice(0,10));
+      await page.goto(base+'/#news/crypto?date='+nfp.occursAt.slice(0,10)+'&event='+encodeURIComponent(existing?.id||nfp.id),{waitUntil:'domcontentloaded'});
+      await page.locator('.oxn-macro-result').waitFor();await page.waitForFunction(()=>document.querySelector('.oxn-macro-result')?.textContent.includes('29,000人'));
+      const facts=page.locator('.oxn-macro-result');assert(await facts.locator('.oxn-macro-values>div').count()===3,'three release columns');assert((await facts.innerText()).includes('90,000人'),'verified consensus displayed');assert((await facts.innerText()).includes('133,000人'),'revised previous displayed');assert(await facts.getByRole('link',{name:'實際值：官方公布'}).count()===1,'official evidence');
+      assert((await page.locator('.oxn-fields').innerText()).includes('★★★★★'),'five stars retained in detail');
+      assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'macro detail page fits phone');
+      const box=await facts.boundingBox();assert(box.x>=0&&box.x+box.width<=width,'macro result card fits viewport');
+      await shot(page,`${width<600?'mobile':'desktop'}-macro-result.png`);
+      await page.goto('about:blank');await load(page);await page.getByRole('button',{name:'切換為行程列表',exact:true}).click();
+      await page.getByRole('button',{name:'切換重要事件篩選',exact:true}).click();let panel=page.locator('.oxn-popover.is-open');
+      await panel.getByRole('button',{name:'開：有星星的重要事件',exact:true}).click();
+      assert(await page.locator('.oxn-agenda .oxn-event-row').count()>0,'important events present');
+      assert(await page.locator('.oxn-agenda .oxn-stars').evaluateAll(nodes=>nodes.every(n=>/^★{1,5}$/.test(n.textContent))),'on contains only 1–5 star events');
+      await panel.getByRole('button',{name:'關：沒有星星的事件',exact:true}).click();
+      assert(await page.locator('.oxn-agenda .oxn-stars').evaluateAll(nodes=>nodes.every(n=>!n.textContent)),'off contains only unrated events');
+      assert(await panel.locator('.oxn-tag[aria-pressed="true"]').count()===1,'on/off are exclusive');
+      report.interactions.push(`${width}px: real macro result, five stars, exclusive importance switch`);report.errors.push(...errors);await context.close();
+    }
+    if(process.env.OX_NEWS_MACRO_ONLY){assert(report.errors.length===0,'runtime errors: '+report.errors.join(' | '));report.passed=true;console.log(JSON.stringify(report,null,2));return;}
     const {context,page,errors}=await contextFor(browser,{width:390,height:844});await load(page);
     // History nesting uses real events from the production snapshot, not fixtures.
     const event=snapshot.events.find(e=>e.kind==='token-unlock'&&e.date?.startsWith('2026-10')) || snapshot.events.find(e=>e.markets.includes('crypto')&&e.date?.startsWith('2026-10'));
@@ -77,11 +100,10 @@ async function bounds(page) {
     assert(await page.locator('.oxn-tabs [data-news-tab="key"]').getAttribute('aria-selected')==='true','TW preserves its own key-news tab');
     await page.getByRole('button',{name:'多選新聞時間'}).click();let multi=page.locator('.oxn-popover.is-open');await multi.getByRole('button',{name:'3 小時',exact:true}).click();assert(await multi.getByRole('button',{name:'3 小時',exact:true}).getAttribute('aria-pressed')==='true','time union 3h selected');assert(await multi.getByRole('button',{name:'24 小時',exact:true}).getAttribute('aria-pressed')==='true','24h remains selected');await multi.getByRole('button',{name:'關閉篩選'}).click();await pause(300);
     await tab(page,'calendar');await page.getByRole('button',{name:'多選事件類別'}).click();multi=page.locator('.oxn-popover.is-open');await multi.getByRole('button',{name:/^除權息預告/}).click();await multi.getByRole('button',{name:/^法說會/}).click();assert(await multi.locator('.oxn-tag[aria-pressed="true"]').count()===2,'event categories multiselect');assert(await multi.getByRole('button',{name:'全部',exact:true}).getAttribute('aria-pressed')==='false','all and specific selection do not conflict');await multi.getByRole('button',{name:'恢復預設'}).click();await page.keyboard.press('Escape');await pause(300);
-    await page.getByRole('button',{name:'多選重要性'}).click();multi=page.locator('.oxn-popover.is-open');await multi.getByRole('button',{name:'★★ 中',exact:true}).click();await multi.getByRole('button',{name:'★★★ 高',exact:true}).click();assert(await multi.locator('.oxn-tag[aria-pressed="true"]').count()===2,'importance multiselect');await multi.getByRole('button',{name:'恢復預設'}).click();await page.keyboard.press('Escape');await pause(300);
+    await page.getByRole('button',{name:'切換重要事件篩選'}).click();multi=page.locator('.oxn-popover.is-open');await multi.getByRole('button',{name:'開：有星星的重要事件',exact:true}).click();assert(await multi.locator('.oxn-tag[aria-pressed="true"]').count()===1,'importance on');await multi.getByRole('button',{name:'關：沒有星星的事件',exact:true}).click();assert(await multi.locator('.oxn-tag[aria-pressed="true"]').count()===1,'importance off is exclusive');await multi.getByRole('button',{name:'恢復預設'}).click();await page.keyboard.press('Escape');await pause(300);
     await page.evaluate(()=>window.OXNews.open());await page.locator('.oxn-root[data-scope="all"] .oxn-calendar-grid').waitFor();assert(await page.locator('.oxn-tabs [role="tab"]').count()===2,'original news total view has two tabs');await shot(page,'mobile-all-calendar.png');await page.getByRole('button',{name:'返回先前頁面'}).click();await page.locator('.oxn-root[data-scope="tw"]').waitFor();
     await page.evaluate(()=>window.switchAppView('radar'));const radar=page.locator('.app-dock .dock-radar');await radar.dispatchEvent('touchstart',{touches:[{identifier:1,clientX:190,clientY:800}],changedTouches:[{identifier:1,clientX:190,clientY:800}]});await pause(500);await radar.dispatchEvent('touchend',{touches:[],changedTouches:[{identifier:1,clientX:190,clientY:800}]});await pause(100);const menu=page.locator('#ox-market-quick-switch');assert(await menu.locator('[data-market]').count()===2,'two radar markets');const buttons=await menu.locator('[data-market]').evaluateAll(bs=>bs.map(b=>({id:b.dataset.market,width:b.getBoundingClientRect().width})));assert(buttons.map(b=>b.id).join(',')==='crypto,tw','only crypto/tw');assert(Math.abs(buttons[0].width-buttons[1].width)<1,'equal market widths');await shot(page,'mobile-radar-two-markets.png');
     // Unchanged market/home/indicator/account entry points remain usable.
-    await page.evaluate(()=>window.OXMarketController.setMarket('us'));await pause(400);await page.evaluate(()=>window.switchAppView('data'));await page.locator('.us2-news-tabs').waitFor();assert(await page.locator('.us2-news-tabs button').count()===2,'US data workspace survives');
     await page.evaluate(()=>window.OXMarketController.setMarket('crypto'));await page.evaluate(()=>window.switchAppView('home'));await page.locator('#view-home.active').waitFor();await page.evaluate(()=>window.switchAppView('strength'));await page.locator('#view-strength.active').waitFor();assert(await page.locator('.app-dock .dock-btn').count()===5,'original five navigation entries retained');assert(await page.locator('#ox-control-open').count()===1,'account/control entry retained');
     report.interactions.push('nested history/back/forward/reload','market state isolation','information single/double/long tap without menus','mobile radar hold market menu','multi-select all/none/reset','real title-based crypto ranking');report.errors.push(...errors);await context.close();
     // Information has no hover menu; the desktop Radar alone offers market hover choices.
@@ -100,7 +122,6 @@ async function bounds(page) {
     await dr.click();await desk.page.waitForFunction(()=>document.body.dataset.market==='tw'&&document.body.dataset.view==='radar');assert(await desk.page.locator('#ox-market-quick-switch.is-open').count()===0,'clicking desktop Radar navigates and dismisses its hover popup');
     await desk.page.mouse.move(900,600);await dr.hover();await desk.page.locator('#ox-market-quick-switch.is-open').waitFor();await dm.locator('[data-market="crypto"]').click();await desk.page.waitForFunction(()=>document.body.dataset.market==='crypto'&&document.body.dataset.view==='radar');assert(await desk.page.locator('#ox-news-entry-menu').count()===0,'no Information menu is created by market navigation');
     await desk.page.mouse.move(900,600);await dr.hover();await desk.page.locator('#ox-market-quick-switch.is-open').waitFor();await desk.page.mouse.move(900,600);await desk.page.locator('#ox-market-quick-switch.is-open').waitFor({state:'detached'});
-    await desk.page.evaluate(()=>window.OXMarketController.setMarket('us'));await desk.page.locator('.us2-radar-pane').waitFor();await desk.page.locator('.ox-desktop-nav [data-view-target="home"]').click();await desk.page.locator('.us2-home-pane').waitFor();await de.click();await desk.page.locator('.us2-data-pane .us2-news-tabs').waitFor();assert(await desk.page.locator('#ox-news-entry-menu').count()===0,'US Information also opens directly');
     await dr.hover();await desk.page.locator('#ox-market-quick-switch.is-open').waitFor();await dm.locator('[data-market="crypto"]').click();await desk.page.waitForFunction(()=>document.body.dataset.market==='crypto'&&document.body.dataset.view==='radar');assert(await desk.page.locator('#view-radar.active').count()===1,'US to crypto choice cannot mistake US for the current crypto market');
     report.interactions.push('desktop Information direct click without hover menu','desktop Radar hover crypto/TW direct radar','desktop Radar click preserves current market');report.errors.push(...desk.errors);await desk.context.close();
     // Explicit isolated test modes for pending, failure, empty and late responses.

@@ -28,7 +28,7 @@ async function informationEntryHarness(market = 'crypto') {
 
 test('desktop and mobile Information clicks immediately open the currently selected market', async () => {
   const {document, entries, opened, scheduled} = await informationEntryHarness();
-  for (const market of ['crypto','tw','us']) {
+  for (const market of ['crypto','tw']) {
     document.body.dataset.market = market;
     for (const entry of entries) {
       let prevented = false, stopped = false;
@@ -37,7 +37,7 @@ test('desktop and mobile Information clicks immediately open the currently selec
       assert.ok(prevented && stopped, 'one action owns navigation without duplicate bubbling');
     }
   }
-  assert.equal(opened.length, 6);
+  assert.equal(opened.length, 4);
   assert.equal(scheduled.length, 0, 'single-click navigation has no double-tap delay');
 });
 

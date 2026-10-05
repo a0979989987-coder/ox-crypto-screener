@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {FEEDS,normalizeFeed,localize,fetchText,migrateAggregateHeadline} from '../scripts/collect-news.mjs';
-import {FINANCE_SOURCES,RESTRICTED_FINANCE_SOURCES} from '../scripts/news-finance-sources.mjs';
-import {newsBase} from '../src/components/news/model.js';
+import {FINANCE_SOURCES} from '../scripts/news-finance-sources.mjs';
+import {newsBase,sourcesFor} from '../src/components/news/model.js';
 import {createHash} from 'node:crypto';
 import {readFileSync} from 'node:fs';
 import {runInNewContext} from 'node:vm';
@@ -17,7 +17,7 @@ test('aggregate headlines require matching publisher domain and retain provenanc
 test('finance feed preserves timestamp, original language and restrictive sources are not collected',()=>{
  const f=FEEDS.find(f=>f.id==='investing');const [item]=normalizeFeed('<rss><channel><item><title>Markets update</title><link>https://www.investing.com/news/economy-news/1</link><pubDate>2026-10-02 06:18:26</pubDate></item></channel></rss>',f);
  assert.equal(item.publishedAt,'2026-10-02T06:18:26.000Z');assert.equal(localize(item).translationStatus,'original');assert.equal(localize(item).titleZh,null);
- assert.equal(FEEDS.some(f=>f.id==='jin10'),false);assert.equal(RESTRICTED_FINANCE_SOURCES[0].access,'authorization-required');
+ assert.equal(FEEDS.some(f=>f.id==='jin10'),false);assert.equal(sourcesFor({sources:[{id:'jin10',status:'not-connected'}]},'tw').some(s=>s.id==='jin10'),false);
  assert.equal(new Set(FEEDS.map(f=>f.id)).size,FEEDS.length);assert.equal(FINANCE_SOURCES.length,8);
 });
 test('official portal feeds retain dated headlines and declare portal provenance',()=>{
@@ -98,10 +98,4 @@ test('portal attribution does not invent an original publisher',()=>{
  const render=item=>{const output=[];runInNewContext(captionLine,{item,sourceName:()=>item.source,body:{append:value=>output.push(value)},node:(_tag,_class,text)=>text});return output.join('');};
  const portal=render({aggregation:'Yahoo RSS',source:'Yahoo'});assert.match(portal,/入口來源：Yahoo/);assert.doesNotMatch(portal,/原始發布者/);
  const publisher=render({aggregation:'Google News RSS',source:'Google 新聞',publisher:'玩股網'});assert.match(publisher,/原始發布者：玩股網/);assert.doesNotMatch(publisher,/入口來源/);
-});
-test('US news shell does not label all third-party financial reporting as official announcements',()=>{
- const source=readFileSync(new URL('../src/markets/us/news.js',import.meta.url),'utf8');
- assert.doesNotMatch(source,/"官方消息"|讀取官方美股消息|查看美股官方消息/);
- assert.match(source,/讀取美股市場消息/);
- assert.match(source,/官方排程已確認/,'confirmed official event schedules retain their precise label');
 });

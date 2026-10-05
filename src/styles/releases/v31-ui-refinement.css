@@ -202,12 +202,12 @@
 
     /* --- mobile fix: top market row must stay horizontal and compact --- */
     @media (max-width:720px) {
-      :is(#view-radar,.us2-radar-pane) > .top-summary.compact-summary {
+      #view-radar > .top-summary.compact-summary {
         display: block !important;
         margin: 0 0 4px !important;
       }
-      :is(#view-radar,.us2-radar-pane) > .top-summary.compact-summary > .market-line-card.metric-card,
-      :is(#view-radar,.us2-radar-pane) > .top-summary.compact-summary > .market-line-card.metric-card:first-child {
+      #view-radar > .top-summary.compact-summary > .market-line-card.metric-card,
+      #view-radar > .top-summary.compact-summary > .market-line-card.metric-card:first-child {
         display: grid !important;
         grid-template-columns: minmax(0,1.28fr) minmax(0,.76fr) minmax(0,.82fr) !important;
         align-items: center !important;
@@ -217,24 +217,24 @@
         justify-content: initial !important;
         grid-column: auto !important;
       }
-      :is(#view-radar,.us2-radar-pane) > .top-summary.compact-summary > .market-line-card .market-line-item {
+      #view-radar > .top-summary.compact-summary > .market-line-card .market-line-item {
         padding: 6px 7px !important;
       }
-      :is(#view-radar,.us2-radar-pane) > .top-summary.compact-summary > .market-line-card .market-line-item label {
+      #view-radar > .top-summary.compact-summary > .market-line-card .market-line-item label {
         font-size: 6px !important;
         margin: 0 0 1px !important;
       }
-      :is(#view-radar,.us2-radar-pane) > .top-summary.compact-summary > .market-line-card .market-line-item strong {
+      #view-radar > .top-summary.compact-summary > .market-line-card .market-line-item strong {
         font-size: 10px !important;
         line-height: 1.05 !important;
       }
-      :is(#view-radar,.us2-radar-pane) > .top-summary.compact-summary > .market-line-card .market-line-price strong {
+      #view-radar > .top-summary.compact-summary > .market-line-card .market-line-price strong {
         font-size: 15px !important;
       }
-      :is(#view-radar,.us2-radar-pane) > .top-summary.compact-summary > .market-line-card .market-line-item small {
+      #view-radar > .top-summary.compact-summary > .market-line-card .market-line-item small {
         display: none !important;
       }
-      :is(#view-radar,.us2-radar-pane) > .top-summary.compact-summary > .summary-mini {
+      #view-radar > .top-summary.compact-summary > .summary-mini {
         display: none !important;
       }
     }
