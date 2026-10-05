@@ -76,11 +76,13 @@ async function refreshMarketTickers() {
   const loading=window.OXLoading?.begin('crypto','加密行情載入中',{views:['home','strength']});
   try {
     const rawTickers = await BitgetAPI.fetchTickers();
+    if(state.activeMarket!=="crypto")return;
     if (!state.contracts.size) {
       const [contractList, instrumentMetadata] = await Promise.all([
         BitgetAPI.fetchContracts(),
         BitgetAPI.fetchInstrumentMetadata()
       ]);
+      if(state.activeMarket!=="crypto")return;
       const metaBySymbol = new Map((instrumentMetadata || []).map(m => [m.symbol, m]));
       state.instrumentCatalog.clear();
       state.contracts.clear();
@@ -148,7 +150,7 @@ async function refreshMarketTickers() {
   } finally { refreshingMarketTickers=false;loading?.finish();if(state.activeMarket==='crypto'&&state.activeView==='radar')renderCurrentTab(); }
 }
 
-let radarPaintTimer=0, initialScanLoading=null;
+let radarPaintTimer=0, initialScanLoading=null, passCompleted=0, passFailed=0;
 function publishRadarProgress(immediate=false) {
   if (!immediate) {
     if (!radarPaintTimer) radarPaintTimer=setTimeout(()=>publishRadarProgress(true),150);
@@ -165,7 +167,7 @@ async function runScanQueueLoop() {
   while (true) {
     // Keep the ranking data, but do not spend CPU scanning Crypto in the
     // background while another market, page, or browser tab is visible.
-    if (document.hidden || state.activeMarket !== 'crypto' || !['home','strength','radar'].includes(state.activeView)) {
+    if (document.hidden || state.activeMarket !== 'crypto' || !['home','radar'].includes(state.activeView)) {
       await new Promise(r => setTimeout(r, document.hidden ? 15000 : 8000));
       continue;
     }
@@ -194,9 +196,10 @@ async function runScanQueueLoop() {
 
       try {
         const [candles,contextBars,dailyBars] = await Promise.all([
-          BitgetAPI.fetchCandles(symbol, '1H', 180), BitgetAPI.fetchCandles(symbol, '4H', 180),
-          BitgetAPI.fetchCandles(symbol,'1D',180).catch(()=>[])
+          BitgetAPI.fetchCandles(symbol, '1H', 180,null,{owner:'radar-scan',priority:0}), BitgetAPI.fetchCandles(symbol, '4H', 180,null,{owner:'radar-scan',priority:0}),
+          BitgetAPI.fetchCandles(symbol,'1D',180,null,{owner:'radar-scan',priority:0}).catch(()=>[])
         ]);
+        if(state.activeMarket!=='crypto'||!['home','radar'].includes(state.activeView))return;
         const frames={'1H':cryptoClassicBars(candles,'1H'),'4H':cryptoClassicBars(contextBars,'4H'),'1D':cryptoClassicBars(dailyBars,'1D')};
         // A rate-limit or malformed candle response must not replace a valid
         // prior scan with a neutral row and make the symbol disappear.
@@ -216,7 +219,7 @@ async function runScanQueueLoop() {
         const timeframeTiers=Object.fromEntries(Object.entries(frames).map(([frame,bars])=>[frame,classifyTierFrame(bars,frame)]));
         const tierConfig=globalThis.OXTierFilters?.get('crypto');
         if(tierConfig?.enabled)await Promise.all(tierConfig.rules.filter(r=>!frames[r.frame]).map(async rule=>{
-          try {timeframeTiers[rule.frame]=classifyTierFrame(await BitgetAPI.fetchCandles(symbol,rule.frame,180),rule.frame);}
+          try {timeframeTiers[rule.frame]=classifyTierFrame(await BitgetAPI.fetchCandles(symbol,rule.frame,180,null,{owner:'radar-scan',priority:0}),rule.frame);}
           catch {timeframeTiers[rule.frame]=null;}
         }));
         state.analyzedCache.set(symbol, OXEngine.withTurnover({
@@ -227,10 +230,11 @@ async function runScanQueueLoop() {
           change24h:num(ticker.change24h),ret1h:candleReturn(candles,1),ret4h:candleReturn(candles,4),
           ret24h:candleReturn(candles,24),
         },ticker.usdtVolume));
-        publishRadarProgress();
-      } catch (e) {} finally { const n=(initialScanLoading?.done||0)+1;if(initialScanLoading){initialScanLoading.done=n;initialScanLoading.update(n,state.scanQueue.length);} }
+        passCompleted++;publishRadarProgress();
+      } catch (e) {if(state.activeMarket==='crypto'&&['home','radar'].includes(state.activeView))passFailed++;} finally { const n=(initialScanLoading?.done||0)+1;if(initialScanLoading){initialScanLoading.done=n;initialScanLoading.update(n,state.scanQueue.length);} }
     }));
 
+    if(state.activeMarket!=='crypto'||!['home','radar'].includes(state.activeView)){state.scanIndex=Math.max(0,state.scanIndex-batchSymbols.length);continue;}
     const completed = state.scanIndex >= state.scanQueue.length;
     // A completed pass persists the snapshot; visible rows are published as
     // their own analysis completes, even while another request is pending.
@@ -241,12 +245,13 @@ async function runScanQueueLoop() {
       state.scanQueue=state.tickers.filter(t=>num(t.usdtVolume)>0)
         .sort((a,b)=>num(b.usdtVolume)-num(a.usdtVolume)).map(t=>t.symbol);
       state.scanIndex = 0;
-      state.radarSnapshotReady = true;
-      state.radarScanFailed = state.analyzedCache.size === 0;
-      saveRadarSnapshot();
+      state.radarSnapshotReady = passCompleted>0&&passFailed===0;
+      state.radarScanFailed = passFailed>0||passCompleted===0;
+      if(passCompleted>0)saveRadarSnapshot();
+      passCompleted=0;passFailed=0;
     }
     publishRadarProgress(true);
-    // Warm-up is rate-limited to at most 20 candle requests per second.
+    // All tools share the public-feed scheduler and its 429 cooldown.
     await new Promise(r=>setTimeout(r,state.radarSnapshotReady?Math.max(CONFIG.batchIntervalMs,1000):Math.max(0,1000-(performance.now()-batchStarted))));
   }
 }
@@ -409,7 +414,7 @@ function renderCurrentTab() {
   document.getElementById("pool-count").textContent = `${list.length} 檔${directionLabel}${!state.radarSnapshotReady&&state.isQueueRunning?` · 已分析 ${state.analyzedCache.size}/${state.scanQueue.length}`:''}`;
   syncWatchBadge();
   if (!list.length) {
-    if(!state.analyzedCache.size&&(state.radarLoadError||state.radarScanFailed||!state.radarSnapshotReady)){
+    if(state.radarLoadError||state.radarScanFailed||!state.radarSnapshotReady){
       const failed=state.radarLoadError||state.radarScanFailed;
       container.innerHTML=`<div style="padding:20px 12px;text-align:center;color:var(--muted)"><b>${failed?'行情資料尚未取得':'正在載入與分析行情'}</b><p style="font-size:12px;line-height:1.6">${failed?'目前無法判斷入選標的，連線恢復後會自動重試。':`已處理 ${state.scanIndex||0} / ${state.scanQueue.length||'—'} 檔`}</p></div>`;
       if(failed){const retry=document.createElement('button');retry.type='button';retry.textContent='重新連線';retry.style.cssText='font:inherit;color:inherit;background:transparent;border:1px solid currentColor;border-radius:10px;padding:8px;min-height:44px';retry.onclick=()=>{state.radarScanFailed=false;state.radarSnapshotReady=false;refreshMarketTickers();};container.firstElementChild.append(retry);}
@@ -465,3 +470,6 @@ if(typeof document!=='undefined')document.addEventListener('ox:timeframe-tier-ch
  if(event.detail.market!=='crypto')return;
  state.scanIndex=0;rebuildTierLists();if(state.activeMarket==='crypto'&&state.activeView==='radar')renderCurrentTab();
 });
+
+function cancelHiddenCryptoScan(){if(document.hidden||state.activeMarket!=='crypto'||!['home','radar'].includes(state.activeView))globalThis.OXPublicFeed.cancel('radar-scan');}
+if(typeof document!=='undefined')for(const event of ['ox:viewchange','ox:marketchange','visibilitychange'])document.addEventListener(event,cancelHiddenCryptoScan);

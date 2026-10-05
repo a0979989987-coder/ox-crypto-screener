@@ -4,12 +4,13 @@ import { readFileSync } from 'node:fs';
 import { runInNewContext } from 'node:vm';
 
 test('older candles use the history endpoint with an older cursor', async () => {
-  const source = readFileSync(new URL('../src/markets/crypto/api.js', import.meta.url), 'utf8');
+  const source=readFileSync(new URL('../src/core/public-feed.js',import.meta.url),'utf8')+readFileSync(new URL('../src/markets/crypto/api.js', import.meta.url), 'utf8');
   let requested;
   const api = runInNewContext(`${source}\nBitgetAPI`, {
+    URL,AbortController,DOMException,setTimeout,clearTimeout,
     CONFIG: { apiBase: 'https://api.bitget.com/api/v2/mix/market', productType: 'USDT-FUTURES' },
     num: Number,
-    fetch: async url => { requested = new URL(url); return { json: async () => ({ code: '00000', data: [['100000', '1', '2', '1', '2', '3', '4']] }) }; }
+    fetch: async url => { requested = new URL(url); return {ok:true,status:200, json: async () => ({ code: '00000', data: [['100000', '1', '2', '1', '2', '3', '4']] }) }; }
   });
   await api.fetchCandles('BTCUSDT', '1D', 200, 100000);
   assert.equal(requested.pathname, '/api/v2/mix/market/history-candles');

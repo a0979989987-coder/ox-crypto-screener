@@ -1,3 +1,4 @@
+import '../../../core/public-feed.js';
 import { cryptoUniverse, PERIODS } from './flow-model.js';
 const API = 'https://api.bitget.com';
 const pause = (ms, signal) => new Promise((resolve, reject) => {
@@ -7,9 +8,7 @@ const pause = (ms, signal) => new Promise((resolve, reject) => {
   signal.addEventListener('abort', abort, { once: true });
 });
 async function json(path, signal) {
-  const response = await fetch(API + path, { signal, cache: 'no-store' });
-  if (!response.ok) throw new Error(`Bitget HTTP ${response.status}`);
-  const body = await response.json();
+  const body=await globalThis.OXPublicFeed.json(API+path,{signal,owner:'analytics',priority:20});
   if (body.code !== '00000' || !Array.isArray(body.data)) throw new Error('Bitget 暫時無法提供完整資料');
   return body;
 }

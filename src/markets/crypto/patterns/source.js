@@ -1,23 +1,15 @@
+import '../../../core/public-feed.js';
 import { TIMEFRAMES, candleBoundary } from './catalog.js?v=patterns5d-20260929';
 import '../liquidity-policy.js?v=20261002-rank8';
 import { evaluateClassic, compareClassic, compactClassic, CLASSIC_TIER_LIMITS } from '../../../core/classic.js?v=20261002-rank8';
 const BASE='https://api.bitget.com';
-const candleCache=new Map();let nextRequest=0;
+const candleCache=new Map();
 const abortError=()=>new DOMException('Aborted','AbortError');
 function wait(ms,signal){return new Promise((resolve,reject)=>{if(signal?.aborted)return reject(abortError());const id=setTimeout(()=>{signal?.removeEventListener('abort',cancel);resolve();},ms);function cancel(){clearTimeout(id);reject(abortError());}signal?.addEventListener('abort',cancel,{once:true});});}
 async function request(path,signal){
-  for(let attempt=0;attempt<3;attempt++){
-    const clock=performance.now(),at=Math.max(clock,nextRequest);nextRequest=at+110;await wait(Math.max(0,at-clock),signal);
-    const ctrl=new AbortController(),cancel=()=>ctrl.abort();signal?.addEventListener('abort',cancel,{once:true});const timer=setTimeout(cancel,12000);
-    try{
-      const response=await fetch(BASE+path,{signal:ctrl.signal,cache:'no-store'});
-      if(!response.ok)throw Error(`Bitget HTTP ${response.status}`);
-      const json=await response.json();
-      if(json.code!=='00000'||!Array.isArray(json.data))throw Error(`Bitget ${json.code||'格式錯誤'}`);
-      return json;
-    }catch(e){if(signal?.aborted)throw abortError();if(attempt===2)throw e;await wait(800*(attempt+1),signal);}
-    finally{clearTimeout(timer);signal?.removeEventListener('abort',cancel);}
-  }
+  const json=await globalThis.OXPublicFeed.json(BASE+path,{signal,owner:'patterns',priority:10});
+  if(json.code!=='00000'||!Array.isArray(json.data))throw Error(`Bitget ${json.code||'格式錯誤'}`);
+  return json;
 }
 export function parseCandles(rows,frame,serverTime,{includeOpen=false}={}){
   const seconds=TIMEFRAMES[frame],map=new Map();if(!seconds||!Number.isFinite(serverTime))return [];

@@ -40,7 +40,7 @@ test('TW does not retry forbidden, invalid input, cancellation or invalid succes
 
 test('TW aborts a real pending backoff immediately and caps timeout retries', async () => {
   const controller = new AbortController(); let calls = 0;
-  const pending = retryTWRequest(() => { calls++; throw failure('TW_DATA_NETWORK_ERROR'); }, { signal: controller.signal, delays: [60000] });
+  const pending = retryTWRequest(() => { calls++; throw failure('TW_DATA_NETWORK_ERROR'); }, { signal: controller.signal, delays: [60000],budgetMs:120000 });
   await Promise.resolve(); controller.abort();
   await assert.rejects(pending, { code: 'TW_DATA_ABORTED' }); assert.equal(calls, 1);
   calls = 0;

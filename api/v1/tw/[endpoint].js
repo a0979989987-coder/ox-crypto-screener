@@ -1500,6 +1500,8 @@ export async function handleTWRequest(
       .toLowerCase();
 
 
+  res.setHeader("X-OX-Revision",process.env.VERCEL_GIT_COMMIT_SHA||"local-recovery20");
+  const requestStarted=Date.now();
   if (!(await accessGate(req,res,endpoint))) return;
 
   try {
@@ -1649,6 +1651,10 @@ export async function handleTWRequest(
       {
 
         endpoint,
+        source:error?.source,
+        upstreamStatus:error?.status,
+        elapsedMs:Date.now()-requestStarted,
+        attempts:error?.details?.attempts,
 
         code:
           error?.code ||
@@ -1743,7 +1749,8 @@ export async function handleTWRequest(
         res,
         502,
         "TW_DATA_UPSTREAM_ERROR",
-        "Unable to retrieve Taiwan official market data."
+        "Unable to retrieve Taiwan official market data.",
+        {endpoint,providerCode:errorCode,source:String(error?.source||"official-tw").slice(0,80),upstreamStatus:Number(error?.status)||0,elapsedMs:Date.now()-requestStarted,attempts:error?.details?.attempts,primaryCode:error?.details?.primaryCode,primarySource:error?.details?.primarySource}
       );
     }
 

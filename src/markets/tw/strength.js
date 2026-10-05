@@ -1,9 +1,9 @@
 import { renderResearch, stopResearch } from './research-page.js?v=20261005-briefingdate';
 import { mountResearch } from './research-ui.js';
 import { createToolsRail } from '../../components/strength/tools-rail.js?v=20261005-stable18';
-import { createTWMarketState } from './engine.js?v=20261005-load16';
-import { loadToolModule } from '../../components/load-tool-module.js?v=20261005-recover19';
-import { showToolLoadError } from '../../components/tool-load-error.js?v=20261005-recover19';
+import { createTWMarketState } from './engine.js?v=20261005-recovery20';
+import { loadToolModule } from '../../components/load-tool-module.js?v=20261005-recovery20';
+import { showToolLoadError } from '../../components/tool-load-error.js?v=20261005-recovery20';
 import { preloadToolStyles } from '../../components/style-ready.js?v=20261005-stable18';
 let selected = 'patterns', session = null, modules;
 export function preloadTWStrength() {
@@ -11,9 +11,8 @@ export function preloadTWStrength() {
   // for the pattern data engine or mounting an invisible tool.
   preloadToolStyles(new URL('./etf/style.css?v=20261005-spacing6',import.meta.url).href).catch(()=>{});
   return modules ??= Promise.all([
-    import('../crypto/patterns/view.js?v=20261005-stable18'),
-    import('./patterns/source.js?v=20261005-load16'), import('./patterns/index-cache.js?v=20261002-rank8'),import('./bubbles/view.js?v=20261005-stable18')
-  ]).catch(error => { modules = null; throw error; });
+    '../crypto/patterns/view.js','./patterns/source.js','./patterns/index-cache.js','./bubbles/view.js'
+  ].map(path=>loadToolModule(new URL(path,import.meta.url).href))).catch(error => { modules = null; throw error; });
 }
 export function stopTWStrength() {
   if (!session) return;
@@ -66,6 +65,7 @@ async function show(s) {
   }
 }
 export function renderTWStrength(state) {
+  const desired=globalThis.OXFeatures?.selectedTool?.('tw');if(desired&&desired!==selected){stopTWStrength();selected=desired;}
   const root = mountResearch('strength'); if (!root) return null;
   if (session?.root === root && root.querySelector('#ox-tw-tools-nav')) {
     session.state = state;

@@ -1,7 +1,8 @@
 import {
   TW_MODULE_CONFIG
 } from "./config.js";
-import { retryTWRequest } from './recovery.js?v=20261001-tiercomb1';
+import { withDeadline } from '../../components/resource-deadline.js';
+import { retryTWRequest } from './recovery.js?v=20261005-recovery20';
 
 
 /*
@@ -815,7 +816,8 @@ function unwrapPayload(
 /* ========================================================================== */
 
 function request(endpoint, options = {}) {
-  return retryTWRequest(() => requestOnce(endpoint, options), { signal: options.signal, ...(options.params?.history ? {delays:[2000,5000,10000]} : {}) });
+  const started=Date.now(),budget=options.params?.history?45000:28000;
+  return retryTWRequest(() => requestOnce(endpoint, {...options,timeoutMs:Math.max(1000,Math.min(options.timeoutMs||DEFAULT_TIMEOUT_MS,budget-(Date.now()-started)))}), { signal: options.signal, ...(options.params?.history ? {delays:[2000,5000,10000]} : {}), budgetMs:budget });
 }
 
 async function requestOnce(
@@ -916,7 +918,10 @@ async function requestOnce(
 
   try {
 
-    const response =
+    const [response,payload]=await withDeadline(async deadlineSignal=>{
+      const cancel=()=>controller.abort();deadlineSignal.addEventListener('abort',cancel,{once:true});
+      try {
+      const response =
       await fetch(
         url.toString(),
         {
@@ -945,10 +950,14 @@ async function requestOnce(
       );
 
 
-    const payload =
+      const payload =
       await parseResponse(
         response
       );
+
+        return [response,payload];
+      }finally{deadlineSignal.removeEventListener('abort',cancel);}
+    },Math.max(1000,Number(timeoutMs)||DEFAULT_TIMEOUT_MS),'台股資料讀取逾時',{signal});
 
 
     if (
@@ -992,7 +1001,7 @@ async function requestOnce(
 
 
     if (
-      timedOut
+      timedOut || error?.name === "TimeoutError"
     ) {
 
       throw new TWDataProviderError(

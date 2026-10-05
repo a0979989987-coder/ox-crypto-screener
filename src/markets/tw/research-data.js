@@ -1,4 +1,4 @@
-import { getTWApiBase } from './api.js?v=20261001-tiercomb1';
+import { getTWApiBase } from './api.js?v=20261005-recovery20';
 const KEY = 'ox-tw-research-v1';
 let value, pending, lastSuccess = 0;
 const listeners=new Set();

@@ -1,9 +1,8 @@
+import '../../../core/public-feed.js';
 // A bounded foreground refresh. No browser-wide polling or fabricated history.
 const BITGET_API = 'https://api.bitget.com';
 async function bitget(path, signal) {
-  const response = await fetch(BITGET_API + path, {signal, cache:'no-store'});
-  if (!response.ok) throw new Error(`Bitget HTTP ${response.status}`);
-  const body = await response.json();
+  const body = await globalThis.OXPublicFeed.json(BITGET_API+path,{signal,owner:'analytics',priority:20});
   if (body.code !== '00000' || !Array.isArray(body.data)) throw new Error('Bitget 資料格式不符');
   return body;
 }

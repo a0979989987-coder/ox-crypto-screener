@@ -25,7 +25,7 @@ const OXFeaturePack = (()=>{
 /* ===== OX CONTROL module: isolated from OX Engine / radar logic ===== */
 const OXControlPanel = (() => {
   const q = sel => document.querySelector(sel);
-  let overlay, panel, openBtn, closeBtn, scanObserver;
+  let overlay, panel, openBtn, closeBtn, scanObserver,initialized=false;
 
   const setView = name => {
     document.querySelectorAll("[data-control-view]").forEach(view => view.classList.toggle("active", view.dataset.controlView === name));
@@ -46,6 +46,7 @@ const OXControlPanel = (() => {
 
   const open = () => {
     if (!overlay) return;
+    window.OXControlResources?.ensure(overlay,close);
     overlay.classList.add("is-open");
     overlay.setAttribute("aria-hidden", "false");
     openBtn?.setAttribute("aria-expanded", "true");
@@ -71,12 +72,14 @@ const OXControlPanel = (() => {
   };
 
   const init = () => {
+    if(initialized)return;
     overlay = q("#ox-control-overlay");
     panel = q("#ox-control-panel");
     openBtn = q("#ox-control-open");
     closeBtn = q("#ox-control-close");
     if (!overlay || !panel || !openBtn || !closeBtn) return;
 
+    initialized=true;
     openBtn.addEventListener("click", open);
     q("#ox-dock-menu")?.addEventListener("click", open);
     q("#ox-control-media")?.addEventListener("click", () => { close(); switchAppView("media"); });

@@ -97,16 +97,8 @@ function isCryptoSymbolAllowed(symbol) {
 const cryptoCandleObservations=new Map();
 // Include body decoding in the deadline, including Safari versions without
 // AbortSignal.timeout. A stalled request must not hold the scanner forever.
-async function fetchBitgetJSON(url, timeoutMs=10000) {
-  const controller=new AbortController();let timer;
-  try {
-    return await Promise.race([
-      (async()=>{const response=await fetch(url,{cache:'no-store',signal:controller.signal});
-        if(!response.ok)throw Error(`Bitget HTTP ${response.status}`);
-        return response.json();})(),
-      new Promise((_,reject)=>{timer=setTimeout(()=>{reject(new DOMException('行情連線逾時','TimeoutError'));controller.abort();},timeoutMs);})
-    ]);
-  } finally {clearTimeout(timer);}
+async function fetchBitgetJSON(url, timeoutMs=30000,options={}) {
+  return globalThis.OXPublicFeed.json(url,{timeoutMs,...options});
 }
 const BitgetAPI = {
   peekCandles(symbol,frame,now=Date.now()) {
@@ -135,13 +127,13 @@ const BitgetAPI = {
     }
   },
 
-  async fetchCandles(symbol, granularity, limit = 100, endTime = null) {
+  async fetchCandles(symbol, granularity, limit = 100, endTime = null, options = {}) {
     // Older pages use Bitget's history endpoint; recent candles only cover a short window.
     const endpoint = endTime ? "history-candles" : "candles";
     let url = `${CONFIG.apiBase}/${endpoint}?symbol=${encodeURIComponent(symbol)}&productType=${CONFIG.productType}&granularity=${granularity}&limit=${Math.min(200, limit)}`;
     if (endTime) url += `&endTime=${endTime}`;
-    const json = await fetchBitgetJSON(url);
-    if (json.code !== "00000" || !Array.isArray(json.data)) return [];
+    const json = await fetchBitgetJSON(url,30000,{owner:"chart",priority:100,...options});
+    if (json.code !== "00000" || !Array.isArray(json.data)) throw Error("K 線資料格式錯誤");
     
     // 使用 ES6 陣列解構，百分之百避免任何下標被誤刪
     const candles=json.data.map(d => {

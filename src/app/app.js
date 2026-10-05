@@ -1,7 +1,7 @@
 import { marketRouter } from "./marketRouter.js?v=20261002-nav6";
 import './storage-migrations.js?v=20261004-markets2';
 import { cryptoModule } from "../markets/crypto/index.js";
-import { twModule } from "../markets/tw/index.js?v=20261005-recover19";
+import { twModule } from "../markets/tw/index.js?v=20261005-recovery20";
 
 export function bootOXModules(modules = []) {
   modules.forEach(module => marketRouter.register(module));

@@ -12,6 +12,7 @@ export function savedRadarSnapshot(storage=globalThis.localStorage) {
 }
 export function saveRadarSnapshot(saved,storage=globalThis.localStorage) {
  if(!validRadarSnapshot(saved))return false;
+ const previous=savedRadarSnapshot(storage);if(previous?.data.dataDate>saved.data.dataDate)return false;
  try {storage?.setItem(KEY,JSON.stringify(saved));return true;}catch{return false;}
 }
 let pending,bundled,expiresAt=0;

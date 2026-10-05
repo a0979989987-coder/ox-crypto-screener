@@ -2,8 +2,8 @@ import { classicTWRow } from './classic.js?v=20261002-rank8';
 import { bundleClassification, subscribeBundle } from './patterns/bundle.js?v=20261005-load16';
 import {
   twProvider
-} from "./api.js?v=20261001-tiercomb1";
-import {validRadarSnapshot} from './radar-snapshot.js?v=20261001-tiercomb1';
+} from "./api.js?v=20261005-recovery20";
+import {validRadarSnapshot} from './radar-snapshot.js?v=20261005-recovery20';
 
 
 /*
@@ -1523,6 +1523,8 @@ function setState(
   next
 ) {
 
+  const oldData=currentState.data,newData=next.data;
+  if(oldData?.radarDataDate&&newData?.radarDataDate&&newData.radarDataDate<oldData.radarDataDate)next={...next,data:{...newData,...Object.fromEntries(["radar","radarModes","radarModesMeta","radarUpdatedAt","radarDataDate","usingCachedRadar"].map(key=>[key,oldData[key]]))}};
   currentState =
     Object.freeze({
 
@@ -1587,7 +1589,7 @@ export function createTWMarketState() {
 export function seedTWRadar(saved) {
   if(!validRadarSnapshot(saved))return currentState;
   const existing=Date.parse(currentState.data?.radarUpdatedAt)||0;
-  if(existing>=saved.savedAt)return currentState;
+  if(currentState.data?.radarDataDate>saved.data.dataDate||existing>=saved.savedAt)return currentState;
   const payload=saved.data;
   const state=setState({...currentState,status:currentState.status==='loading'?'loading':'partial',data:{
     ...(currentState.data||{}),radar:normalizeTWRadar(payload),radarModes:payload.modes,
@@ -1620,8 +1622,7 @@ export async function refreshTWMarketState(
    * Prevent duplicate refreshes.
    */
   if (
-    activeRequest &&
-    !force
+    activeRequest
   ) {
 
     return activeRequest;
@@ -1709,9 +1710,10 @@ export async function refreshTWMarketState(
     market: "ALL",
     limit: 2000,
     sort: "oxScore",
-    timeoutMs: 28000,
+    timeoutMs: 20000,
     signal
   }).then(payload => {
+    if(payload?.dataDate<currentState.data?.radarDataDate)throw Object.assign(Error("較舊交易日資料已忽略"),{code:"TW_RADAR_OLDER_DATE"});
     if (!signal?.aborted) {
       const partialState = setState({
         ...currentState,

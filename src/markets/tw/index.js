@@ -7,7 +7,7 @@ import {
 import {
   createTWMarketState,
   refreshTWMarketState, seedTWRadar
-} from "./engine.js?v=20261005-load16";
+} from "./engine.js?v=20261005-recovery20";
 
 import {
   renderTWHome
@@ -15,17 +15,17 @@ import {
 
 import {
   renderTWStrength
-} from "./strength.js?v=20261005-recover19";
+} from "./strength.js?v=20261005-recovery20";
 
 import {
   renderTWRadar, stopTWRadar
 } from "./radar.js?v=20261005-stable18";
 import { cancelTWLookup } from "./lookup.js?v=20261001-tiercomb1";
-import { stopTWStrength, preloadTWStrength } from "./strength.js?v=20261005-recover19";
+import { stopTWStrength, preloadTWStrength } from "./strength.js?v=20261005-recovery20";
 import { createPreloader } from "./preload.js?v=20261001-twhome1";
 import { preloadBundle } from "./patterns/bundle.js?v=20261005-load16";
-import {savedRadarSnapshot,saveRadarSnapshot,bundledRadarSnapshot} from './radar-snapshot.js?v=20261005-reuse1';
-import { radarNeedsRecovery } from './recovery.js?v=20261001-tiercomb1';
+import {savedRadarSnapshot,saveRadarSnapshot,bundledRadarSnapshot} from './radar-snapshot.js?v=20261005-recovery20';
+import { radarNeedsRecovery } from './recovery.js?v=20261005-recovery20';
 
 
 /*
@@ -372,8 +372,9 @@ function render(
 /* Request lifecycle                                                         */
 /* ========================================================================== */
 
+let marketDataController;
 const ensureMarketData = createPreloader(async ({silent=false}={}) => {
-  const controller = new AbortController();
+  const controller = new AbortController();marketDataController=controller;
   try {
   const state = await refreshTWMarketState({
     signal: controller.signal,
@@ -526,6 +527,7 @@ export const twModule =
 
       isActive =
         false;
+      marketDataController?.abort();
       clearTimeout(recoveryTimer);
       closeRefresh.stop();
 

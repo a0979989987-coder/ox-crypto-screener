@@ -1,9 +1,7 @@
+import '../../../core/public-feed.js';
 const API='https://api.bitget.com';
 export async function json(url,signal) {
-  const controller=new AbortController(),abort=()=>controller.abort();
-  signal?.addEventListener('abort',abort,{once:true}); const timeout=setTimeout(abort,12000);
-  try { if(signal?.aborted)abort(); const r=await fetch(url,{signal:controller.signal}); if(!r.ok)throw Error('HTTP '+r.status);return await r.json(); }
-  finally { clearTimeout(timeout);signal?.removeEventListener('abort',abort); }
+  return globalThis.OXPublicFeed.json(url,{signal,owner:'bubbles',priority:30});
 }
 let capCache=null;
 export async function fetchCaps(signal) {

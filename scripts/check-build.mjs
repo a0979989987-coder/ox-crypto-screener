@@ -16,7 +16,7 @@ if (duplicateIds.length) errors.push(`Duplicate HTML ids: ${duplicateIds.join(",
 if (/<style(?:\s|>)/i.test(html)) errors.push("Inline style blocks remain in index.html");
 if (/<script(?![^>]*\bsrc=)[^>]*>[\s\S]*?<\/script>/i.test(html)) errors.push("Inline script blocks remain in index.html");
 if (!html.includes("v4.0-modular-classified-rc2")) errors.push("Build marker is missing");
-if (!/type="module" src="src\/app\/app\.js(?:\?[^"]*)?"/.test(html)) errors.push("Modular entry is missing");
+if (!/src="src\/app\/module-boot\.js(?:\?[^"]*)?"/.test(html)) errors.push("Modular entry is missing");
 if (/src\/(?:legacy\/|styles\/legacy\.css)/.test(html)) errors.push("Legacy bundle references remain");
 
 // The production Vercel Hobby project counts each JavaScript file under api/ as a function.

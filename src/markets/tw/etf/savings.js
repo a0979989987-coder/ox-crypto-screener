@@ -1,6 +1,6 @@
 import {parseHoldingsCSV,compareHoldings as compareAllocation} from '../savings/model.js';
 import { lifecycle, futureValue, compareHoldings, portfolioHistory, STRATEGIES } from './model.js';
-import { etfRequest, knownHistory, rememberHistory } from './api.js?v=20261005-load16';
+import { etfRequest, knownHistory, rememberHistory } from './api.js?v=20261005-recovery20';
 import { shell,esc,fmt,pct,color,money,amount,tabs,selector,input,chart,donut } from './ui.js?v=20261005-stable18';
 import { labelMobileTables } from './mobile.js?v=20261005-weeklist4';
 const manualFunds=new Map();let allocation=50;

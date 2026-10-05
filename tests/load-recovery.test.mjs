@@ -28,14 +28,23 @@ const apiSource=await readFile(new URL('../src/markets/crypto/api.js',import.met
 test('Bitget fetch and body stalls time out without AbortSignal.timeout, and later requests recover',async()=>{
   for(const phase of ['fetch','body']){
     let recover=false,signal;
-    const context=vm.createContext({AbortController,DOMException,setTimeout,clearTimeout,fetch:async(_url,options)=>{signal=options.signal;
+    const context=vm.createContext({AbortController,DOMException,setTimeout,clearTimeout,URL,fetch:async(_url,options)=>{signal=options.signal;
       if(recover)return {ok:true,json:async()=>({code:'00000',data:[1]})};
       if(phase==='fetch')return new Promise(()=>{});
       return {ok:true,json:()=>new Promise(()=>{})};
     }});
+    vm.runInContext(await readFile(new URL('../src/core/public-feed.js',import.meta.url),'utf8'),context);
+    vm.runInContext('OXPublicFeed=OXPublicFeed.create({intervalMs:1})',context);
     vm.runInContext(apiSource,context);
     await assert.rejects(vm.runInContext('fetchBitgetJSON("https://test.invalid",10)',context),{name:'TimeoutError'});
     assert.equal(signal.aborted,true);recover=true;
     assert.equal((await vm.runInContext('fetchBitgetJSON("https://test.invalid",10)',context)).data[0],1);
   }
+});
+
+const {withDeadline}=await import('../src/components/resource-deadline.js');
+test('departed view releases a stalled body immediately, without waiting for its deadline',async()=>{
+ const controller=new AbortController();let inner;
+ const pending=withDeadline(signal=>{inner=signal;return new Promise(()=>{});},60000,'stall',{signal:controller.signal});
+ await Promise.resolve();controller.abort();await assert.rejects(pending,{name:'AbortError'});assert.equal(inner.aborted,true);
 });

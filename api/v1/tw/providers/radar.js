@@ -818,6 +818,8 @@ async function requestJSON(
   } = {}
 ) {
 
+  const started=Date.now();
+  let httpStatus=0;
   const controller =
     new AbortController();
 
@@ -864,6 +866,7 @@ async function requestJSON(
       );
 
 
+    httpStatus=response.status;
     const text =
       await response.text();
 
@@ -974,7 +977,7 @@ async function requestJSON(
     );
 
   } finally {
-
+    console.info("[OX TW upstream]",{source,status:httpStatus,elapsedMs:Date.now()-started,aborted:controller.signal.aborted});
     clearTimeout(
       timer
     );
@@ -1674,6 +1677,7 @@ async function loadTWSEForDate(
     );
 
 
+  industryMap=await industryMap;
   const requestedDate =
     isoDate(
       date
@@ -2173,6 +2177,7 @@ async function loadTPEXForDate(
     );
 
 
+  industryMap=await industryMap;
   const requestedDate =
     isoDate(
       date
@@ -2256,34 +2261,16 @@ async function loadLatestCommonDailyMarket(
   minimumDate = null
 ) {
 
-  if (
-    !twseIndustryMap ||
-    !twseIndustryMap.size ||
-    !tpexIndustryMap ||
-    !tpexIndustryMap.size
-  ) {
-
-    throw new TWRadarProviderError(
-      "Industry maps are unavailable for latest-day Radar.",
-      {
-        code:
-          "TW_RADAR_INDUSTRY_UNAVAILABLE",
-
-        source:
-          "official-tw"
-      }
-    );
-  }
-
-
+  const started=Date.now();
   const attempts =
     [];
 
 
   for (
     const date
-    of candidateTradingDates()
+    of candidateTradingDates().slice(0,4)
   ) {
+    if(Date.now()-started>24000)break;
 
     const dateISO =
       isoDate(
@@ -3102,31 +3089,26 @@ async function buildUniverseSnapshot(minimumDate = null) {
   // Fetch the large quote payloads while the company dictionaries load.
   // Keep errors as values so a failed exchange cannot reject the other feed.
   const settled = promise => promise.then(payload => ({ payload }), error => ({ error }));
-  const [industryMaps, twseSnapshot, tpexSnapshot] = await Promise.all([
-    loadIndustryMaps(),
-    settled(requestJSON(TWSE_QUOTES_FALLBACK_URL, { source: 'TWSE-STOCK-DAY-ALL' })),
-    settled(requestJSON(TPEX_QUOTES_FALLBACK_URL, { source: 'TPEX-OPENAPI-DAILY', timeoutMs: 20000 }))
-  ]);
-
-
-  let marketData =
-    null;
-
-
-  let primaryError =
-    null;
-
-
-  // The daily snapshots already carry the latest completed trading date.
-  // Use them first; avoid serial holiday lookbacks before showing the Radar.
+  const industries=loadIndustryMaps();
+  const date=candidateTradingDates()[0];
+  const daily=(async()=>{
+    const [twse,tpex]=await Promise.all([loadTWSEForDate(date,industries.then(m=>m.twse)),loadTPEXForDate(date,industries.then(m=>m.tpex))]);
+    return {mode:'latest-completed-trading-day',dataDate:isoDate(date),twse,tpex};
+  })();
+  const snapshots=Promise.all([industries,
+    settled(requestJSON(TWSE_QUOTES_FALLBACK_URL,{source:'TWSE-STOCK-DAY-ALL'})),
+    settled(requestJSON(TPEX_QUOTES_FALLBACK_URL,{source:'TPEX-OPENAPI-DAILY',timeoutMs:12000}))
+  ]).then(([maps,twse,tpex])=>loadFallbackMarket(maps,{twse,tpex},!!minimumDate));
+  const verified=p=>p.then(data=>{if(minimumDate&&data.dataDate<minimumDate)throw new TWRadarProviderError('Quote source is older than verified close.',{code:'TW_RADAR_OLDER_CLOSE'});return data;});
+  // Attach rejection handlers before awaiting the slower dictionaries.
+  const [industryMaps,winner]=await Promise.all([industries,settled(Promise.any([verified(daily),verified(snapshots)]))]);
+  let marketData,primaryError=null;
   try {
-    marketData = await loadFallbackMarket(industryMaps, { twse: twseSnapshot, tpex: tpexSnapshot }, !!minimumDate);
-    if (minimumDate && marketData.dataDate < minimumDate) {
-      throw new TWRadarProviderError('Quote source is older than the verified close.', { code: 'TW_RADAR_OLDER_CLOSE' });
-    }
-  } catch (error) {
-    primaryError = error;
-    marketData = await loadLatestCommonDailyMarket(industryMaps.twse, industryMaps.tpex, minimumDate);
+    if(winner.error)throw winner.error;marketData=winner.payload;
+  }catch(error){
+    primaryError=error.errors?.[0]||error;
+    try{marketData=await loadLatestCommonDailyMarket(industryMaps.twse,industryMaps.tpex,minimumDate);}
+    catch(failure){failure.details={...failure.details,primaryCode:primaryError?.code,primarySource:primaryError?.source};throw failure;}
   }
 
 

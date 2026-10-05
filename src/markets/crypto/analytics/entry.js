@@ -1,11 +1,11 @@
-import { loadToolModule } from '../../../components/load-tool-module.js?v=20261005-recover19';
-import { showToolLoadError } from '../../../components/tool-load-error.js?v=20261005-recover19';
+import { loadToolModule } from '../../../components/load-tool-module.js?v=20261005-recovery20';
+import { showToolLoadError } from '../../../components/tool-load-error.js?v=20261005-recovery20';
 import { createToolsRail } from "../../../components/strength/tools-rail.js?v=20261005-stable18";
 // Crypto-only inline tools. Preserve the existing strength calculations and DOM.
 const section = document.querySelector('#view-strength .strength-page');
 if (section) {
   const tabs = [['patterns','型態搜尋'],['bubbles','泡泡圖'],['strength','強弱對比'],['heatmap','熱力圖'],['rotation','板塊輪動'],['flow','主動買賣']];
-  let selected = 'patterns';
+  let selected = globalThis.OXFeatures?.selectedTool?.('crypto')||'patterns';
   const rail = createToolsRail({ tabs, selected, label:'Crypto 指標分類', attribute:'data-crypto-tool', equal:true, mobileCompact:true, onSelect(id){selected=id;unmount();sync();} });
   const nav = rail.element; nav.id='ox-crypto-tools-nav'; nav.hidden=true;
   const ns = rail.shadow;

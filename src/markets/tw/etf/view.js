@@ -1,4 +1,4 @@
-import { etfRequest, rememberHistory, knownHistory } from './api.js?v=20261005-load16';
+import { etfRequest, rememberHistory, knownHistory } from './api.js?v=20261005-recovery20';
 import { matchesCategory } from './model.js';
 import { shell, esc, fmt, money, signed, pct, color, tabs, sourceNote, iconSearch } from './ui.js?v=20261005-stable18';
 import { fundCards, labelMobileTables } from './mobile.js?v=20261005-weeklist4';

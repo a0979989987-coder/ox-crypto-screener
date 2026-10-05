@@ -38,7 +38,7 @@ export function createToolsRail({ tabs, selected, label, attribute = 'data-tool'
     if (next === null) return;
     event.preventDefault(); buttons[next].focus(); buttons[next].click();
   }, { signal: life.signal });
-  document.addEventListener('ox:feature-tool-return', event => { const market=attribute==='data-tw-tool'?'tw':attribute==='data-crypto-tool'?'crypto':null; if(market===event.detail?.market) shadow.querySelector(`[${attribute}="${event.detail.tool}"]`)?.click(); }, {signal:life.signal});
+  document.addEventListener('ox:feature-tool-return', event => { const market=attribute==='data-tw-tool'?'tw':attribute==='data-crypto-tool'?'crypto':null; if(market===event.detail?.market){const button=shadow.querySelector(`[${attribute}="${event.detail.tool}"]`);if(button&&!button.classList.contains('active'))button.click();} }, {signal:life.signal});
   document.addEventListener('ox:feature-news-return', event => { if(attribute==='data-news-tab') shadow.querySelector(`[${attribute}="${event.detail.tab}"]`)?.click(); }, {signal:life.signal});
   // Shared CSS loader replaces link nodes, then dispatches resize after styling.
   window.addEventListener('resize', position, { signal: life.signal });

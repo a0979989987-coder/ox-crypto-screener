@@ -25,3 +25,11 @@ test('TW renders verified risk membership while live radar waits, accepts the ev
 });
 
 test('bundled verified snapshot shares concurrent fetches and reuses success for only sixty seconds',async t=>{let now=Date.now(),calls=0,release;const paused=new Promise(r=>release=r);t.mock.method(Date,'now',()=>now);t.mock.method(globalThis,'fetch',async()=>{calls++;if(calls===1)await paused;return new Response(JSON.stringify({...published,savedAt:now}));});const a=bundledRadarSnapshot(),b=bundledRadarSnapshot();assert.equal(a,b);release();const snapshot=await a;assert.equal(await bundledRadarSnapshot(),snapshot);assert.equal(calls,1);now+=61000;const next=await bundledRadarSnapshot();assert.equal(calls,2);assert.notEqual(next,snapshot);now+=61000;t.mock.method(globalThis,'fetch',async()=>{calls++;throw Error('offline');});await assert.rejects(bundledRadarSnapshot());assert.equal(calls,3);});
+
+test('a later download timestamp cannot replace a newer verified trading date in storage',()=>{
+ const map=new Map(),storage={getItem:k=>map.get(k),setItem:(k,v)=>map.set(k,v)};
+ const newer={...published,savedAt:Date.now()-1000};assert(saveRadarSnapshot(newer,storage));
+ const oldDate=new Date(published.data.dataDate+'T00:00:00Z');oldDate.setUTCDate(oldDate.getUTCDate()-1);const date=oldDate.toISOString().slice(0,10);
+ const older={...published,savedAt:Date.now(),data:{...published.data,dataDate:date,modesMeta:{...published.data.modesMeta,asOf:date}}};
+ assert(validRadarSnapshot(older));assert.equal(saveRadarSnapshot(older,storage),false);assert.equal(savedRadarSnapshot(storage).data.dataDate,published.data.dataDate);
+});

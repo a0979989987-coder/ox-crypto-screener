@@ -1,4 +1,4 @@
-import { twProvider } from './api.js?v=20261001-tiercomb1';
+import { twProvider } from './api.js?v=20261005-recovery20';
 import { renderTWCandles } from './radar-card.js';
 import { escape, number, pct, money, direction, stockRows } from './research-ui.js';
 import { readWatchlist, toggleWatch } from './research-data.js?v=20261001-twhome1';

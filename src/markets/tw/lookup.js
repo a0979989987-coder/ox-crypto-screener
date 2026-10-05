@@ -1,4 +1,4 @@
-import { twProvider } from "./api.js?v=20261001-tiercomb1";
+import { twProvider } from "./api.js?v=20261005-recovery20";
 
 let input = "";
 let status = "idle";
