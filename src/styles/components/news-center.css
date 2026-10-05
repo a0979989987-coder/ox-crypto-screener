@@ -428,6 +428,14 @@ body.theme-light.theme-light .oxn-root .oxn-importance-toggle[aria-pressed="true
 
 .oxn-event-summary{font-size:14px;line-height:1.6;white-space:normal;margin:0;color:inherit}.oxn-event-icon img{display:block;object-fit:contain}
 .oxn-root .oxn-day-more{border:0;background:transparent;padding:0;text-align:left;cursor:pointer}
+.oxn-root .oxn-upcoming-day{margin:0 0 20px;min-width:0}
+.oxn-root .oxn-upcoming-day>.oxn-caption{padding:10px 4px;margin:0;line-height:1.5}
+.oxn-root .oxn-upcoming-day .oxn-event-row{display:flex;flex-direction:column;align-items:stretch;width:100%;text-align:left;padding:15px 8px;border:0;border-bottom:1px solid var(--oxn-line);border-radius:0;background:transparent}
+.oxn-root .oxn-day.is-market-closed{background:#d4b87a0c!important;outline:2px solid #d9bd83;outline-offset:-3px;box-shadow:inset 0 0 10px #d9bd831a!important}
+.oxn-root .oxn-market-closed-label{position:absolute;right:5px;top:5px;font-size:9px;color:#e1c58d;line-height:12px;pointer-events:none}
+body.theme-light.theme-light .oxn-root .oxn-day.is-market-closed{outline-color:#a98c52;background:#fff8e8!important}
+body.theme-light.theme-light .oxn-root .oxn-market-closed-label{color:#82632d!important}
+.oxn-root .oxn-week-date.is-market-closed{outline:1.5px solid #bd9b59;outline-offset:-2px}
 .oxn-time-panel .oxn-time-options,.oxn-time-panel .oxn-panel-actions{display:flex;flex-wrap:nowrap!important;overflow-x:auto;gap:8px;max-width:100%;padding:3px 1px 8px;scrollbar-width:thin}
 .oxn-time-panel :is(.oxn-time-options,.oxn-panel-actions)>button{flex:0 0 auto;white-space:nowrap}
 .oxn-time-panel .oxn-custom-time{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:8px;align-items:center;margin-top:8px}

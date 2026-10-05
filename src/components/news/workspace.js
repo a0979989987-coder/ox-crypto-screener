@@ -1,6 +1,6 @@
 import { createToolsRail } from '../strength/tools-rail.js';
-import { MARKET_NAMES, CATEGORY_NAMES, MARKET_CATEGORIES, TIME_CHOICES, sourceName } from './config.js?v=20261004-markets2';
-import { defaultState, taipeiDay, validDate, monthGrid, shiftMonth, eventDay, eventCategory, importance, matchesImportance, newsBase, filterNews, hotWords, ranking, sourcesFor, coverage, safeLink, plain, agendaDays } from './model.js?v=20261005-time9';
+import { MARKET_NAMES, CATEGORY_NAMES, MARKET_CATEGORIES, TIME_CHOICES, sourceName } from './config.js?v=20261005-calendar10';
+import { defaultState, taipeiDay, validDate, monthGrid, shiftMonth, eventDay, eventCategory, importance, matchesImportance, newsBase, filterNews, hotWords, ranking, sourcesFor, coverage, safeLink, plain, agendaDays } from './model.js?v=20261005-calendar10';
 import { macroResult, macroValue } from './macro.js?v=20261005-macro1';
 import { node, button, anchoredPanel, modal } from './layers.js';
 const fmt = value => Number.isFinite(Date.parse(value)) ? new Intl.DateTimeFormat('zh-TW', { timeZone: 'Asia/Taipei', dateStyle: 'short', timeStyle: 'short', hour12: false }).format(new Date(value)) : '時間待確認';
@@ -14,6 +14,7 @@ export function mountNewsWorkspace(host, api) {
   const key = `ox-news-v2-${api.scope}`;
   let saved; try { saved = JSON.parse(sessionStorage.getItem(key) || 'null'); } catch {}
   const state = { ...defaultState(), ...saved }, life = new AbortController();
+  state.selectedDay = taipeiDay(); state.month = state.selectedDay.slice(0,7);
   if (saved?.timePresetVersion !== 2) { state.times = ['week']; state.customTime = null; state.timePresetVersion = 2; }
   if (state.importance !== true) state.importance = null;
   if (!Object.hasOwn(MARKET_NAMES, state.market)) state.market = 'all';
@@ -128,15 +129,22 @@ export function mountNewsWorkspace(host, api) {
     const start = new Date(selected+'T12:00:00Z'); start.setUTCDate(start.getUTCDate() - (start.getUTCDay()+6)%7);
     for (let i=0;i<7;i++) { const d=new Date(start); d.setUTCDate(d.getUTCDate()+i); const day=d.toISOString().slice(0,10);
       const b=button('',day,()=>{state.selectedDay=day;state.month=day.slice(0,7);persist();renderControls();renderContent();},'oxn-week-date');
+      if(scope()!=='crypto'&&(data.snapshot.events||[]).some(e=>eventDay(e)===day&&isTaiwanClosed(e))){b.classList.add('is-market-closed');b.title='台股休市';}
       b.append(node('small','','一二三四五六日'[i]),node('strong','',String(d.getUTCDate())));b.setAttribute('aria-pressed',String(day===selected));if(day===taipeiDay())b.setAttribute('aria-current','date');week.append(b);
     }
     const toggle=button(monthExpanded?'收起行事曆 ▴':'展開行事曆 ▾','展開或收起完整月份行事曆',()=>{monthExpanded=!monthExpanded;renderContent();},'oxn-month-expand');toggle.setAttribute('aria-expanded',String(monthExpanded));shell.append(week,toggle);content.append(shell);
     if(monthExpanded) { renderCalendar(); content.querySelector('.oxn-day-events')?.remove(); }
-    const section=node('section','oxn-mobile-events');section.append(node('h2','',`${selected.replaceAll('-','/')} 事件`));
-    const entries=(data.snapshot.events||[]).filter(e=>eventDay(e)===selected&&(scope()==='all'||e.markets?.includes(scope()))&&(state.categories===null||state.categories.includes(eventCategory(e)))&&matchesImportance(e,state.importance)).sort((a,b)=>(a.occursAt||'').localeCompare(b.occursAt||'')||label(a).localeCompare(label(b)));
-    for(const item of entries) { const row=eventRow(item,()=>api.navigate({day:selected,event:item.id}));row.append(node('small','oxn-card-source',`${sourceName(item)} · ${statusLabel(item)}`));section.append(row); }
-    if(!entries.length)section.append(node('p','oxn-empty','這一天目前沒有符合篩選的已收錄事件。'));
-    content.append(section);
+    renderUpcomingEvents(selected,true);
+  }
+  function isTaiwanClosed(item) { return eventCategory(item)==='holiday' && item.sourceId==='twse-holidays' && item.marketClosed!==false && !/開始交易|最後交易/.test(label(item)); }
+  function renderUpcomingEvents(start,mobile) {
+    const section=node('section',mobile?'oxn-mobile-events oxn-upcoming-events':'oxn-day-events oxn-upcoming-events');section.setAttribute('aria-label','起始日期與未來七天事件');
+    for(let i=0;i<=7;i++){const d=new Date(start+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+i);const day=d.toISOString().slice(0,10);const group=node('section','oxn-upcoming-day');group.dataset.date=day;
+      const heading=node('div','oxn-day-events-heading');heading.append(node('h2','',`${day.replaceAll('-','/')} ${day===taipeiDay()?'今天・':''}事件`),button('完整列表',`查看 ${day} 完整事件`,()=>api.navigate({day}),'oxn-text-button'));group.append(heading);
+      const entries=(data.snapshot.events||[]).filter(e=>eventDay(e)===day&&(scope()==='all'||e.markets?.includes(scope()))&&(state.categories===null||state.categories.includes(eventCategory(e)))&&matchesImportance(e,state.importance)).sort((a,b)=>(a.occursAt||'').localeCompare(b.occursAt||'')||label(a).localeCompare(label(b)));
+      for(const item of entries){const row=eventRow(item,()=>api.navigate({day,event:item.id}));row.append(node('small','oxn-card-source',`${sourceName(item)} · ${statusLabel(item)}`));group.append(row);}
+      if(!entries.length)group.append(node('p','oxn-caption','目前沒有符合篩選的已收錄事件。'));section.append(group);
+    }content.append(section);
   }
   function renderCalendar() {
     const mobile = innerWidth <= 600;
@@ -160,6 +168,8 @@ export function mountNewsWorkspace(host, api) {
       const selectDay = () => { state.selectedDay=cell.date; persist(); renderContent(); };
       b.addEventListener('click', () => { selectDay(); if(mobile && entries.length)api.navigate({day:cell.date}); });
       if (cell.outside) b.classList.add('is-outside'); if (cell.date === taipeiDay()) { b.classList.add('is-today'); b.setAttribute('aria-current', 'date'); }
+      const closures=(data.snapshot.events||[]).filter(e=>eventDay(e)===cell.date&&isTaiwanClosed(e));
+      if(scope()!=='crypto'&&closures.length){b.classList.add('is-market-closed');b.title=closures.map(label).join('／');b.append(node('span','oxn-market-closed-label','休市'));}
       b.append(button(String(cell.day), `${cell.date}，${entries.length} 個已收錄事件`, e => { e.stopPropagation(); selectDay(); if(!mobile || entries.length)api.navigate({day:cell.date}); }, 'oxn-day-number'));
       if(entries.length)b.append(button(`${entries.length} 件`,`${cell.date}，開啟當日 ${entries.length} 個事件`,e=>{e.stopPropagation();state.selectedDay=cell.date;persist();api.navigate({day:cell.date});},'oxn-day-count'));
       for (const item of entries.slice(0, 2)) { const short = button(item.shortTitle || label(item).replace(/美國 \d{4} 年 \d+ 月/, ''), `${CATEGORY_NAMES[eventCategory(item)] || '事件'}：${label(item)}`, e => { e.stopPropagation(); api.navigate({ day: cell.date, event: item.id }); }, 'oxn-calendar-event'); short.title = label(item); short.dataset.category = eventCategory(item) || ''; short.dataset.tone = calendarTone(eventCategory(item)); b.append(short); }
@@ -172,13 +182,7 @@ export function mountNewsWorkspace(host, api) {
     calendar.append(weekdays, grid, caption); content.append(calendar);
     const selected=state.selectedDay?.slice(0,7)===state.month?state.selectedDay:taipeiDay().slice(0,7)===state.month?taipeiDay():[...map.keys()].sort()[0]||`${state.month}-01`;
     grid.querySelector(`[data-date="${selected}"]`)?.classList.add('is-selected');
-    const section=node('section','oxn-day-events');section.setAttribute('aria-label','所選日期完整事件');
-    const heading=node('div','oxn-day-events-heading');heading.append(node('h2','',`${selected.replaceAll('-','／')} 事件`),button('完整列表','查看所選日期完整列表',()=>api.navigate({day:selected}),'oxn-text-button'));section.append(heading);
-    const entries=[...(map.get(selected)||[])].sort((a,b)=>(a.occursAt||'').localeCompare(b.occursAt||'')||label(a).localeCompare(label(b)));
-    const cards=node('div','oxn-event-carousel');cards.tabIndex=0;cards.setAttribute('aria-label',mobile?'所選日期事件列表':'事件卡片，左右滑動瀏覽');
-    for(const item of entries){const card=eventRow(item,()=>api.navigate({day:selected,event:item.id}));card.classList.add('oxn-event-card');card.append(node('small','oxn-card-source',`${sourceName(item)} · ${statusLabel(item)}`));cards.append(card);}
-    if(!entries.length)cards.append(node('p','oxn-caption','這一天目前沒有符合篩選條件的已收錄事件；不代表沒有事件。'));
-    section.append(cards);content.append(section);
+    if(!mobile)renderUpcomingEvents(selected,false);
   }
   function eventRow(item, action) {
     const b = button('', label(item), action, 'oxn-event-row');
@@ -191,7 +195,7 @@ export function mountNewsWorkspace(host, api) {
     const icon = flag || ({BTC:'₿',ETH:'◆',SOL:'◎',APT:'A',AAVE:'A'}[symbol]) || ({macro:'◷',unlock:'🔓',network:'⚙',listing:'⇄',governance:'🗳',airdrop:'🎁',burn:'🔥',regulation:'⚖',dividend:'💰',payment:'💵',earnings:'📊',holiday:'🗓'}[eventCategory(item)] || '🗓');
     const identity=node('span','oxn-event-icon',icon);
     if(!flag&&symbol&&typeof OX_COIN_LOGOS!=='undefined'){ const path=OX_COIN_LOGOS[String(symbol).toLowerCase()];if(path){const img=node('img');img.src=new URL(path,document.baseURI).href;img.alt=symbol;img.width=28;img.height=28;img.addEventListener('error',()=>identity.replaceChildren(document.createTextNode(icon)),{once:true});identity.replaceChildren(img);} }
-    const meta=node('div','oxn-event-meta');meta.append(identity,node('time','',item.date?'全天／待公布':fmt(item.occursAt)),node('span','oxn-event-type',CATEGORY_NAMES[eventCategory(item)]||'事件'),rating);
+    const meta=node('div','oxn-event-meta');meta.append(identity,node('time','',item.date?item.originalTimezone==='America/New_York'?'美東交易日':item.allDay?'全天':'時間待公布':fmt(item.occursAt)),node('span','oxn-event-type',CATEGORY_NAMES[eventCategory(item)]||'事件'),rating);
     b.append(meta,title);
     const facts=[];
     if(['dividend','dividend-preview','payment'].includes(eventCategory(item))) { if(item.cashDividend!=null)facts.push(`現金股利 ${item.cashDividend} 元／股`);if(item.stockDividend!=null)facts.push(`股票股利 ${item.stockDividend} 元／股`);if(item.paymentDate)facts.push(`發放 ${item.paymentDate}`); }
@@ -265,7 +269,7 @@ export function mountNewsWorkspace(host, api) {
       detail = modal('事件詳情', api.back);
       if (!item) { detail.body.append(node('p', 'oxn-empty', data.snapshot ? '事件未收錄於目前來源快照。' : '正在讀取事件…')); return; }
       const category = eventCategory(item); detail.body.append(node('span', 'oxn-detail-type', `${CATEGORY_NAMES[category] || '事件'}・${statusLabel(item)}`), node('h2', '', label(item)));
-      const fields = [['適用市場', item.markets?.map(m => MARKET_NAMES[m]).join('／')], ['日期／台北時間', item.date ? `${item.date}・${item.allDay ? '全天' : '時間待公布'}` : fmt(item.occursAt)]];
+      const fields = [['適用市場', item.markets?.map(m => MARKET_NAMES[m]).join('／')], [item.date&&item.originalTimezone==='America/New_York'?'交易日／美東':'日期／台北時間', item.date ? `${item.date}・${item.allDay ? '全天' : '時間待公布'}` : fmt(item.occursAt)]];
       if (['dividend', 'payment', 'dividend-preview', 'earnings'].includes(category)) fields.push(['公司／代號', `${item.company || '資料未提供'} ${item.symbol || ''}`]);
       if (category === 'dividend' || category === 'dividend-preview') fields.push(['除權息日', item.exDividendDate || item.date], ['現金股利（元／股）', item.cashDividend], ['股票股利（元／股）', item.stockDividend], ['合計配發（元／股）', item.totalDividend], ['現金發放日', item.paymentDate]);
       if (category === 'payment') fields.push(['發放日期', item.paymentDate || item.date], ['對應除息日', item.exDividendDate], ['配發金額（元／股）', item.cashDividend]);
@@ -297,7 +301,7 @@ export function mountNewsWorkspace(host, api) {
         box.append(node('small', 'oxn-caption', `公布：${item.releasedAt ? fmt(item.releasedAt) : '待公布'} · 更新：${item.updatedAt ? fmt(item.updatedAt) : '待更新'}`));
         detail.body.append(box);
       }
-      if (category === 'governance') detail.body.append(fieldList([['議案原文（翻譯待補）', item.proposalTitle], ['投票開始／台北時間', fmt(item.startsAt)], ['投票截止／台北時間', fmt(item.occursAt)]]));
+      if (category === 'governance') detail.body.append(fieldList([['議案原文（翻譯待補）', item.proposalTitle], ['投票開始／台北時間', fmt(item.startsAt)], ['投票截止／台北時間', fmt(item.endsAt||item.occursAt)]]));
       if (item.eventTimeType) detail.body.append(node('p', 'oxn-caption', item.eventTimeType === 'software-release-publication' ? '此時間為官方軟體版本發布時間，不是主網硬分叉生效時間。' : item.eventTimeType));
       if (category === 'unlock') { const counter = node('p', 'oxn-countdown', api.unlockCountdown(item)); detail.body.append(counter); if (item.status === 'confirmed' && item.occursAt && !item.date) countdown = setInterval(() => { counter.textContent = api.unlockCountdown(item); }, 1000); }
       if (item.scheduleBasis) detail.body.append(node('p', 'oxn-caption', item.scheduleBasis));
