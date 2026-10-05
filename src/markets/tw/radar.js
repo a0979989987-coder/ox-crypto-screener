@@ -1,4 +1,4 @@
-import { mountTWChartRadar } from './chart-radar.js?v=20261005-clarity1';
+import { mountTWChartRadar } from './chart-radar.js?v=20261005-load16';
 import { radarAvailability } from './recovery.js?v=20261001-tiercomb1';
 import { TW_RADAR_MODES, normalizeTWStockCard, rowsForTWMode, renderTWStockCard } from "./radar-card.js";
 import { observeTWMiniCandles, resetTWMiniCandles, openTWStockDetail } from "./radar-candles.js?v=20261005-weeklist4";
@@ -122,7 +122,7 @@ async function showScreener(host){
   if(screenerHost===host)return;
   stopScreener();screenerHost=host;const generation=screenerGeneration;
   host.textContent="篩選器載入中…";
-  try{const {mountScreener}=await import("./screener/view.js?v=20261005-tools12");
+  try{const {mountScreener}=await import("./screener/view.js?v=20261005-load16");
     if(generation!==screenerGeneration||activeMode!=="screener"||!host.isConnected)return;
     host.replaceChildren();screener=mountScreener(host,{onOpenRadar(symbol){document.dispatchEvent(new CustomEvent("ox:tw-chart-symbol",{detail:{symbol}}));}});
   }catch{if(generation===screenerGeneration){host.textContent="篩選器暫時無法載入";screenerHost=null;}}

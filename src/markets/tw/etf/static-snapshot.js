@@ -1,3 +1,4 @@
+import { withDeadline } from '../../../components/resource-deadline.js';
 // Cancelling one view must not cancel data shared with the next mounted tool.
 export function waitForSignal(task, signal) {
   if (!signal) return task;
@@ -10,20 +11,21 @@ export function waitForSignal(task, signal) {
 }
 // Both hosts serve validated daily files; concurrent symbol requests share
 // one file download, without sharing a mounted view's cancellation signal.
-export function createSnapshotLoader(fetcher, rootUrl) {
+export function createSnapshotLoader(fetcher, rootUrl, timeoutMs = 8000) {
   const cache = new Map(), pending = new Map();
   function read(file, { refresh = false, signal } = {}) {
     const saved = cache.get(file);
     if (!refresh && saved && Date.now() - saved.at < 300000) return waitForSignal(Promise.resolve(saved.data), signal);
     let task = pending.get(file);
     if (!task) {
-      task = (async () => {
+      task = withDeadline(async signal => {
         const url = new URL(`data/${file}`, rootUrl);
         if (refresh) url.searchParams.set('check', String(Date.now()));
-        const response = await fetcher(url, { cache: 'no-store', signal: AbortSignal.timeout(8000) });
+        const response = await fetcher(url, { cache: 'no-cache', signal });
         if (!response.ok) throw Error(`已發布的 ETF 資料暫時無法下載（${response.status}）`);
-        const data = await response.json(); cache.set(file, { at: Date.now(), data }); return data;
-      })().finally(() => pending.delete(file));
+        const data = await response.json(); if(signal.aborted)throw signal.reason;
+        cache.set(file, { at: Date.now(), data }); return data;
+      }, timeoutMs, 'ETF 資料下載逾時，請重試').finally(() => pending.delete(file));
       pending.set(file, task);
     }
     return waitForSignal(task, signal);

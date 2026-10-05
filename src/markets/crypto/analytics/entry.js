@@ -1,5 +1,5 @@
 import { loadToolModule } from '../../../components/load-tool-module.js';
-import { createToolsRail } from "../../../components/strength/tools-rail.js?v=20261005-styleready2";
+import { createToolsRail } from "../../../components/strength/tools-rail.js?v=20261005-load16";
 // Crypto-only inline tools. Preserve the existing strength calculations and DOM.
 const section = document.querySelector('#view-strength .strength-page');
 if (section) {
@@ -57,18 +57,18 @@ if (section) {
     pending = true;loading.hidden=false;loading.innerHTML=window.OXLoading?.markup('工具載入中')||'工具載入中…';const token = ++generation;
     try {
       if(selected==='bubbles'){
-        const { mountCryptoBubbles } = await loadToolModule(new URL('../bubbles/view.js?v=20261005-styleready2',import.meta.url).href,{current:()=>token===generation&&active()});
+        const { mountCryptoBubbles } = await loadToolModule(new URL('../bubbles/view.js?v=20261005-load16',import.meta.url).href,{current:()=>token===generation&&active()});
         if(token!==generation||!active())return;
         instance=mountCryptoBubbles(host);
         return;
       }
       if(selected==='patterns'){
-        const { mountPatternSearch } = await loadToolModule(new URL('../patterns/view.js?v=20261005-styleready2',import.meta.url).href,{current:()=>token===generation&&active()});
+        const { mountPatternSearch } = await loadToolModule(new URL('../patterns/view.js?v=20261005-load16',import.meta.url).href,{current:()=>token===generation&&active()});
         if(token!==generation||!active())return;
         instance=mountPatternSearch(host);
         return;
       }
-      const { mountCryptoFlow } = await loadToolModule(new URL('./flow-view.js?v=20261005-styleready2',import.meta.url).href,{current:()=>token===generation&&active()});
+      const { mountCryptoFlow } = await loadToolModule(new URL('./flow-view.js?v=20261005-load16',import.meta.url).href,{current:()=>token===generation&&active()});
       if (token !== generation || !active()) return;
       instance = mountCryptoFlow(host, { initialTab:selected, autoRefresh:true, onExit() { ns.querySelector('[data-crypto-tool="strength"]').click(); } });
       const style = document.createElement('style');

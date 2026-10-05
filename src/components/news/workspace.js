@@ -1,6 +1,6 @@
 import { createToolsRail } from '../strength/tools-rail.js';
 import { MARKET_NAMES, CATEGORY_NAMES, MARKET_CATEGORIES, TIME_CHOICES, sourceName } from './config.js?v=20261005-calendar11';
-import { defaultState, taipeiDay, validDate, monthGrid, shiftMonth, eventDay, eventCategory, importance, matchesImportance, newsBase, filterNews, hotWords, ranking, sourcesFor, coverage, safeLink, plain, agendaDays, inMarket, upcomingEventDays } from './model.js?v=20261005-calendar11';
+import { defaultState, taipeiDay, validDate, monthGrid, shiftMonth, eventDay, eventCategory, importance, matchesImportance, newsBase, filterNews, hotWords, ranking, sourcesFor, coverage, safeLink, plain, agendaDays, inMarket, upcomingEventDays } from './model.js?v=20261005-load16';
 import { macroResult, macroValue } from './macro.js?v=20261005-macro1';
 import { node, button, anchoredPanel, modal } from './layers.js';
 const fmt = value => Number.isFinite(Date.parse(value)) ? new Intl.DateTimeFormat('zh-TW', { timeZone: 'Asia/Taipei', dateStyle: 'short', timeStyle: 'short', hour12: false }).format(new Date(value)) : '時間待確認';
@@ -254,8 +254,9 @@ export function mountNewsWorkspace(host, api) {
     summary.append(meta, node('h3', '', label(item)), node('span', 'oxn-expand', '＋'));
     const tags = node('div', 'oxn-article-tags'); for (const asset of (item.assets || []).slice(0, 4)) tags.append(node('span', '', `${asset.symbol} ${asset.name}`)); if (item.translationStatus !== 'translated') tags.append(node('span', '', '翻譯待補')); if (tags.children.length) summary.append(tags);
     const body = node('div', 'oxn-article-body');
-    if (item.summaryZh) { body.append(node('small', 'oxn-caption', item.summaryType === 'system' ? '系統整理' : '來源摘要'), node('p', '', plain(item.summaryZh))); } else body.append(node('p', 'oxn-caption', item.translationStatus === 'translated' ? '來源未提供已核對的繁中摘要，完整內容請見原文。' : '繁體中文翻譯待補，保留原文供查核。'));
-    if (item.title !== item.titleZh) body.append(node('p', 'oxn-original', item.title));
+    if(item.translationMethod==='machine-title-only')body.append(node('small','oxn-caption','標題機器翻譯・原文保留供核對'));
+    if (item.summaryZh) { body.append(node('small', 'oxn-caption', item.summaryType === 'system' ? '系統整理' : '來源摘要'), node('p', '', plain(item.summaryZh))); } else body.append(node('p', 'oxn-caption', item.translationStatus === 'translated' ? '來源未提供摘要，可點下方閱讀原文。' : '來源尚未提供繁中內容，可點下方閱讀原文。'));
+    if (item.titleZh && item.title && item.title !== item.titleZh) body.append(node('p', 'oxn-original', item.title));
     if(item.aggregation)body.append(node('p','oxn-caption',`公開標題由 ${item.aggregation} 聚合 · ${item.publisher?`原始發布者：${item.publisher}`:`入口來源：${sourceName(item)}`}；非官方 API，不轉載全文。`));
     const actions = node('div', 'oxn-article-actions'), original = link(item.aggregation?'前往聚合連結／原文':'閱讀原文', item.link); if (original) actions.append(original);
     const read = button((api.preferences().read || []).includes(item.id) ? '標為未讀' : '標為已讀', '', () => { const set = new Set(api.preferences().read || []); set.has(item.id) ? set.delete(item.id) : set.add(item.id); api.save({ read: [...set] }); read.textContent = set.has(item.id) ? '標為未讀' : '標為已讀'; row.classList.toggle('is-read', set.has(item.id)); });

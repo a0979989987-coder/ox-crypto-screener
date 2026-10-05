@@ -1,4 +1,5 @@
 import { aggregateCandles } from './model.js';
+import { withDeadline } from '../../../components/resource-deadline.js';
 import { classifyTWSeries } from '../classic.js?v=20261002-rank8';
 import { qualifyPatternMatches } from '../../crypto/patterns/matcher.js?v=20261002-rank8';
 // Official candles and named-pattern classifications are built once on the server.
@@ -26,8 +27,8 @@ export async function preloadBundle({force=false,silent=false}={}){
  if(pending)return pending;if(!force&&manifest&&Date.now()-checkedAt<300000)return bundleState();
  const loading=silent?null:globalThis.OXLoading?.begin('tw','載入台股標的',{views:['radar','strength']});
  pending=(async()=>{
-  const response=await fetch(manifestURL,{cache:'no-cache'});if(!response.ok)throw Error('全市場分類索引更新中');
-  const next=await response.json();if(![5,6].includes(next.algorithmVersion)||!Array.isArray(next.chunks)||!next.date)throw Error('分類索引版本不符');
+  const next=await withDeadline(async signal=>{const response=await fetch(manifestURL,{cache:'no-cache',signal});if(!response.ok)throw Error('全市場分類索引更新中');return response.json();},8000,'分類索引載入逾時');
+  if(![5,6].includes(next.algorithmVersion)||!Array.isArray(next.chunks)||!next.date)throw Error('分類索引版本不符');
   if(manifest?.date===next.date&&manifest?.updatedAt===next.updatedAt&&entries.size===next.classified){checkedAt=Date.now();return bundleState();}
   manifest=next;failed=0;
   for(const [key,e]of entries)if(e.data.dataDate!==next.date)entries.delete(key);
@@ -36,8 +37,9 @@ export async function preloadBundle({force=false,silent=false}={}){
   let cursor=0;await Promise.all(Array.from({length:2},async()=>{while(cursor<next.chunks.length){
    const chunk=next.chunks[cursor++];try{
     if(!/^daily-\d+\.json(?:\.gz)?$/.test(chunk.file))throw Error('分類資料路徑異常');
-    const result=await fetch(new URL(chunk.file+'?date='+next.date+'&revision='+encodeURIComponent(next.updatedAt||''),manifestURL),{cache:'no-cache'});if(!result.ok)throw Error('分類資料尚未取得');const payload=chunk.file.endsWith('.gz')&&!result.headers.get('content-encoding')?.includes('gzip')?await new Response(result.body.pipeThrough(new DecompressionStream('gzip'))).json():await result.json();
+    const payload=await withDeadline(async signal=>{const result=await fetch(new URL(chunk.file+'?date='+next.date+'&revision='+encodeURIComponent(next.updatedAt||''),manifestURL),{cache:'no-cache',signal});if(!result.ok)throw Error('分類資料尚未取得');return chunk.file.endsWith('.gz')&&!result.headers.get('content-encoding')?.includes('gzip')?new Response(result.body.pipeThrough(new DecompressionStream('gzip'))).json():result.json();},12000,'分類資料載入逾時');
     if(payload.date!==next.date||![5,6].includes(payload.algorithmVersion)||!Array.isArray(payload.entries))throw Error('分類資料日期不符');
+    let yieldedAt=performance.now();
     for(const [index,e]of payload.entries.entries()){
       if(e.key!==e.data?.symbol+':1D'||e.data.dataDate!==next.date||e.data.candles?.length<35||!e.matches)throw Error('分類資料格式異常');
       const qualify=(candles,frame,matches)=>{
@@ -47,7 +49,7 @@ export async function preloadBundle({force=false,silent=false}={}){
       const daily=qualify(e.data.candles,'1D',e.matches);
       const frames=Object.fromEntries(Object.entries(e.frames||{}).map(([frame,prepared])=>[frame,qualify(aggregateCandles(e.data.candles,frame,next.date),frame,prepared.matches)]));
       entries.set(e.key,{...e,...daily,data:{...e.data,classic:daily.classic},frames});
-      if(index===0||index%30===29){loading?.update(entries.size+failed,next.classified);emit();await new Promise(resolve=>setTimeout(resolve,0));}
+      if(index===0||performance.now()-yieldedAt>=8){loading?.update(entries.size+failed,next.classified);emit();await new Promise(resolve=>setTimeout(resolve,0));yieldedAt=performance.now();}
     }
    }catch{failed+=chunk.count;}loading?.update(entries.size+failed,next.classified);emit();
   }}));checkedAt=failed?0:Date.now();return bundleState();
