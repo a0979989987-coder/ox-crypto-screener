@@ -29,7 +29,7 @@ export function stopPatternPreload(){warmController?.abort();}
 export function preloadPatternSearch(){
   if(warmTask)return warmTask;
   if(document.hidden||document.body.dataset.market!=='crypto'||!window.OXFeatures?.canPreload?.('crypto.patterns')||Date.now()-warmAt<60000)return Promise.resolve();
-  let worker;try{worker=new Worker(new URL('./worker.js?v=20261002-rank8',import.meta.url),{type:'module'});}catch{return Promise.resolve();}
+  let worker;try{worker=new Worker(new URL('../../../generated/pattern-worker.js?v=20261005-first24',import.meta.url),{type:'module'});}catch{return Promise.resolve();}
   const controller=warmController=new AbortController(),signal=controller.signal;
   let serial=0,pending=new Map();
   const rejectAll=error=>{for(const job of pending.values())job.reject(error);pending.clear();};
@@ -41,7 +41,7 @@ export function preloadPatternSearch(){
     const pool=await cryptoSource.fetchUniverse(signal,80,transport);
     await cryptoSource.scanUniverse(pool,['4H','1H'],{signal,concurrency:1,transport,onProgress:()=>{},onSeries:async data=>{
       if(signal.aborted)throw new DOMException('Aborted','AbortError');
-      const indexed=await new Promise((resolve,reject)=>{const id=++serial;pending.set(id,{resolve,reject});worker.postMessage({type:'index',id,key:data.symbol+':'+data.frame,candles:data.candles});});
+      const indexed=await new Promise((resolve,reject)=>{const id=++serial,timer=setTimeout(()=>{controller.abort();},8000);pending.set(id,{resolve:value=>{clearTimeout(timer);resolve(value);},reject:error=>{clearTimeout(timer);reject(error);}});worker.postMessage({type:'index',id,key:data.symbol+':'+data.frame,candles:data.candles});});
       if(!signal.aborted)await cryptoCache.saveIndex({...data,classic:indexed.classic},indexed.matches);
     }});warmAt=Date.now();
   }catch(error){if(error.name!=='AbortError')warmAt=Date.now();}finally{worker.terminate();rejectAll(new DOMException('Aborted','AbortError'));if(warmController===controller)warmController=null;warmTask=null;}})();
@@ -60,14 +60,14 @@ export function mountPatternSearch(host,options={}){
   const shadow=host.shadowRoot||host.attachShadow({mode:'open'}),life=new AbortController();
   let frames=[...saved.frames],limit=saved.limit,query=saved.query,strokes=structuredClone(saved.strokes),universe=null,controller=null,version=0,busy=false,lastScan=0,resumePending=false;
   let rows=new Map(),shown=24,tierFilter='all',progress={done:0,total:0,failed:0,coinsDone:0,coinsTotal:0},paintTimer=0,drawTimer=0,boardRAF=0,scanFinishTimer=0,lastSignature='',selectedRow=null,detailChart=null,detailController=null,detailVersion=0,detailFrame=null;
-  let chartInstances=[],chartObserver=null,worker=null,workerId=0,jobs=new Map(),fallback=new Map();
+  let chartInstances=[],chartObserver=null,worker=null,workerFailed=false,workerId=0,jobs=new Map(),fallback=new Map();
   let glowEnded=0,moreObserver=null;const reducedMotion=matchMedia('(prefers-reduced-motion:reduce)').matches;
   let entries=new Map(),queryVersion=0,searchRunning=false,searchPending=false,disposed=false,lastError='',backgroundScan=false;
   const hydrated=new Set();
   const session=sessionsByMarket.get(sessionKey);
   if(session){entries=new Map(session.entries);rows=new Map(session.rows);universe=session.universe;lastScan=session.lastScan;progress={...session.progress};shown=session.shown;tierFilter=session.tierFilter;}
   let searchSignature=session?JSON.stringify([query,frames,limit]):'';
-  shadow.innerHTML=`<link rel="stylesheet" href="${new URL('./patterns.css?v=20261005-smooth22',import.meta.url)}"><main class="px" data-style-pending="true" inert style="visibility:hidden!important"><section class="px-board" aria-label="型態畫板"><canvas tabindex="0" aria-label="在整個畫板由左向右畫走勢，完成後自動比對；亦可使用型態選單"></canvas><div class="px-controls"><button class="px-control" data-action="timeframes" aria-haspopup="dialog" aria-expanded="false"><span data-frame-label></span>${icon('down')}</button><button class="px-control" data-action="patterns" aria-haspopup="dialog" aria-expanded="false"><span data-pattern-label>型態</span>${icon('down')}</button></div><span class="px-hint">畫出走勢，或選擇型態</span><div class="px-board-bottom"><button class="px-mode-toggle" data-action="toggle-mode" hidden aria-label="切換搜尋模式" title="切換搜尋模式"><span class="px-mode-glyph" aria-hidden="true">⌁</span><span data-mode-label></span></button><button class="px-icon" data-action="undo" aria-label="清除上一筆" title="清除上一筆">${icon('undo')}</button><div class="px-tier-filters" role="group" aria-label="OX 品質分級"><button data-tier-filter="all" aria-pressed="true">全部</button><button data-tier-filter="1" aria-pressed="false">T1</button><button data-tier-filter="2" aria-pressed="false">T2</button><button data-tier-filter="3" aria-pressed="false">T3</button></div></div></section><button class="px-refresh-pill" data-action="refresh" aria-label="重新掃描" title="重新掃描"><svg class="px-pill-progress" viewBox="0 0 40 40" aria-hidden="true"><circle class="px-pill-track" cx="20" cy="20" r="17"/><circle class="px-pill-arc" cx="20" cy="20" r="17"/></svg><span class="px-refresh-glyph">${icon('scan')}</span></button><div class="px-results"><div class="px-status-row"><span class="px-local-loading" hidden></span><span class="px-status" role="status" aria-live="polite">${esc(source.label||'Bitget · USDT 永續')}</span></div><section class="px-grid" aria-label="依 T1 T2 T3 排列的${asset}"><div class="px-empty">等待畫入型態</div></section></div><button class="px-more" data-action="more" hidden>顯示更多</button><dialog class="px-dialog px-presets" aria-label="選擇型態"><div class="px-dialog-head"><span>型態</span><button class="px-icon" data-action="close" aria-label="關閉型態選單">${icon('close')}</button></div><div class="px-dialog-body"><input class="px-search" aria-label="搜尋型態" placeholder="搜尋型態"><div class="px-count-status" aria-live="polite"></div><div class="px-options"></div></div></dialog><dialog class="px-dialog px-settings" aria-label="時間級別"><div class="px-dialog-head"><span>時間級別</span><button class="px-icon" data-action="close" aria-label="關閉時間級別">${icon('close')}</button></div><div class="px-dialog-body"><div class="px-frames">${Object.keys(TIMEFRAMES).map(f=>`<button class="px-frame-option" data-frame="${f}">${f}</button>`).join('')}</div><label class="px-setting"><span>成交額觀察池</span><select data-limit aria-label="掃描${asset}數"><option value="80">前 80 ${asset}</option><option value="160">前 160 ${asset}</option><option value="0">全部合資格${asset}</option></select></label><details class="px-help"></details></div></dialog><dialog class="px-dialog px-detail" aria-label="型態 K 線詳情"><div class="px-dialog-head"><span class="px-detail-title"></span><div class="px-detail-tools"><button class="px-to-radar" data-action="open-radar" aria-label="在雷達查看這個${asset}">前往雷達</button><button class="px-icon" data-action="reset-chart" aria-label="重設圖表範圍">${icon('refresh')}</button><button class="px-icon" data-action="close" aria-label="關閉圖表">${icon('close')}</button></div></div><div class="px-detail-frames" role="group" aria-label="K 線時間級別">${Object.keys(TIMEFRAMES).map(f=>`<button data-detail-frame="${f}" aria-pressed="false">${f}</button>`).join('')}</div><div class="px-detail-stage"><canvas aria-label="可拖曳及雙指縮放的 K 線圖"></canvas><div class="px-detail-loading" role="status" hidden></div></div><div class="px-detail-footer"></div></dialog></main>`;
+  shadow.innerHTML=`<link rel="stylesheet" href="${new URL('./patterns.css?v=20261005-first24',import.meta.url)}"><main class="px" data-style-pending="true" inert style="visibility:hidden!important"><section class="px-board" aria-label="型態畫板"><canvas tabindex="0" aria-label="在整個畫板由左向右畫走勢，完成後自動比對；亦可使用型態選單"></canvas><div class="px-controls"><button class="px-control" data-action="timeframes" aria-haspopup="dialog" aria-expanded="false"><span data-frame-label></span>${icon('down')}</button><button class="px-control" data-action="patterns" aria-haspopup="dialog" aria-expanded="false"><span data-pattern-label>型態</span>${icon('down')}</button></div><span class="px-hint">畫出走勢，或選擇型態</span><div class="px-board-bottom"><button class="px-mode-toggle" data-action="toggle-mode" hidden aria-label="切換搜尋模式" title="切換搜尋模式"><span class="px-mode-glyph" aria-hidden="true">⌁</span><span data-mode-label></span></button><button class="px-icon" data-action="undo" aria-label="清除上一筆" title="清除上一筆">${icon('undo')}</button><div class="px-tier-filters" role="group" aria-label="OX 品質分級"><button data-tier-filter="all" aria-pressed="true">全部</button><button data-tier-filter="1" aria-pressed="false">T1</button><button data-tier-filter="2" aria-pressed="false">T2</button><button data-tier-filter="3" aria-pressed="false">T3</button></div></div></section><button class="px-refresh-pill" data-action="refresh" aria-label="重新掃描" title="重新掃描"><svg class="px-pill-progress" viewBox="0 0 40 40" aria-hidden="true"><circle class="px-pill-track" cx="20" cy="20" r="17"/><circle class="px-pill-arc" cx="20" cy="20" r="17"/></svg><span class="px-refresh-glyph">${icon('scan')}</span></button><div class="px-results"><div class="px-status-row"><span class="px-local-loading" hidden></span><span class="px-status" role="status" aria-live="polite">${esc(source.label||'Bitget · USDT 永續')}</span></div><section class="px-grid" aria-label="依 T1 T2 T3 排列的${asset}"><div class="px-empty">等待畫入型態</div></section></div><button class="px-more" data-action="more" hidden>顯示更多</button><dialog class="px-dialog px-presets" aria-label="選擇型態"><div class="px-dialog-head"><span>型態</span><button class="px-icon" data-action="close" aria-label="關閉型態選單">${icon('close')}</button></div><div class="px-dialog-body"><input class="px-search" aria-label="搜尋型態" placeholder="搜尋型態"><div class="px-count-status" aria-live="polite"></div><div class="px-options"></div></div></dialog><dialog class="px-dialog px-settings" aria-label="時間級別"><div class="px-dialog-head"><span>時間級別</span><button class="px-icon" data-action="close" aria-label="關閉時間級別">${icon('close')}</button></div><div class="px-dialog-body"><div class="px-frames">${Object.keys(TIMEFRAMES).map(f=>`<button class="px-frame-option" data-frame="${f}">${f}</button>`).join('')}</div><label class="px-setting"><span>成交額觀察池</span><select data-limit aria-label="掃描${asset}數"><option value="80">前 80 ${asset}</option><option value="160">前 160 ${asset}</option><option value="0">全部合資格${asset}</option></select></label><details class="px-help"></details></div></dialog><dialog class="px-dialog px-detail" aria-label="型態 K 線詳情"><div class="px-dialog-head"><span class="px-detail-title"></span><div class="px-detail-tools"><button class="px-to-radar" data-action="open-radar" aria-label="在雷達查看這個${asset}">前往雷達</button><button class="px-icon" data-action="reset-chart" aria-label="重設圖表範圍">${icon('refresh')}</button><button class="px-icon" data-action="close" aria-label="關閉圖表">${icon('close')}</button></div></div><div class="px-detail-frames" role="group" aria-label="K 線時間級別">${Object.keys(TIMEFRAMES).map(f=>`<button data-detail-frame="${f}" aria-pressed="false">${f}</button>`).join('')}</div><div class="px-detail-stage"><canvas aria-label="可拖曳及雙指縮放的 K 線圖"></canvas><div class="px-detail-loading" role="status" hidden></div></div><div class="px-detail-footer"></div></dialog></main>`;
  revealStyledShadow(shadow,life.signal);
  document.addEventListener('ox:themechange',()=>requestAnimationFrame(drawBoard),{signal:life.signal});
  if(market==='tw'){host.style.setProperty('--ox-light-up','#ce3c4d');host.style.setProperty('--ox-light-down','#168366');}
@@ -98,14 +98,32 @@ export function mountPatternSearch(host,options={}){
   }
   const scheduleBoard=()=>{if(!boardRAF)boardRAF=requestAnimationFrame(drawBoard);};const resize=new ResizeObserver(scheduleBoard);resize.observe(board);
   function resetWorker(){worker?.terminate();worker=null;for(const j of jobs.values())j.reject(new DOMException('Aborted','AbortError'));jobs.clear();fallback.clear();hydrated.clear();}
-  function compute(message){
-    if(!worker){try{worker=new Worker(new URL('./worker.js?v=20261002-rank8',import.meta.url),{type:'module'});worker.onmessage=({data})=>{const job=jobs.get(data.id);jobs.delete(data.id);if(job)data.error?job.reject(Error(data.error)):job.resolve(data.result);};worker.onerror=()=>{for(const j of jobs.values())j.reject(Error('型態計算失敗'));jobs.clear();worker?.terminate();worker=null;hydrated.clear();};}catch{}}
-    if(!worker)return new Promise(resolve=>setTimeout(()=>{
-      if(message.type==='index'){const context=prepareCandles(message.candles);fallback.set(message.key,context);resolve(indexPrepared(context,message.matches));}
-      else if(message.type==='prepare'){for(const entry of message.entries)fallback.set(entry.key,prepareCandles(entry.candles));resolve(true);}
-      else resolve(message.keys.flatMap(key=>{const context=fallback.get(key),match=context&&matchPrepared(context,message.query);return match?[{key,match}]:[];}));
+  function computeFallback(message){
+    return new Promise((resolve,reject)=>setTimeout(()=>{
+      if(disposed)return reject(new DOMException('Aborted','AbortError'));
+      try{
+        if(message.type==='index'){const context=prepareCandles(message.candles);fallback.set(message.key,context);resolve(indexPrepared(context,message.matches));}
+        else if(message.type==='prepare'){for(const entry of message.entries)fallback.set(entry.key,prepareCandles(entry.candles));resolve(true);}
+        else resolve(message.keys.flatMap(key=>{let context=fallback.get(key);if(!context&&entries.has(key)){context=prepareCandles(entries.get(key).data.candles);fallback.set(key,context);}const match=context&&matchPrepared(context,message.query);return match?[{key,match}]:[];}));
+      }catch(error){reject(error);}
     },0));
-    return new Promise((resolve,reject)=>{const id=++workerId;jobs.set(id,{resolve,reject});worker.postMessage({...message,id});});
+  }
+  function failWorker(){
+    workerFailed=true;worker?.terminate();worker=null;hydrated.clear();
+    for(const job of jobs.values())job.reject(Error('型態計算改用備援'));jobs.clear();
+  }
+  function compute(message){
+    if(!worker&&!workerFailed){try{
+      worker=new Worker(new URL('../../../generated/pattern-worker.js?v=20261005-first24',import.meta.url),{type:'module'});
+      worker.onmessage=({data})=>{const job=jobs.get(data.id);jobs.delete(data.id);if(job)data.error?job.reject(Error(data.error)):job.resolve(data.result);};
+      worker.onerror=event=>{event.preventDefault();failWorker();};
+    }catch{workerFailed=true;}}
+    if(!worker)return computeFallback(message);
+    return new Promise((resolve,reject)=>{
+      const id=++workerId,timer=setTimeout(failWorker,8000);
+      jobs.set(id,{resolve:value=>{clearTimeout(timer);resolve(value);},reject:error=>{clearTimeout(timer);reject(error);}});
+      try{worker.postMessage({...message,id});}catch{failWorker();}
+    }).catch(error=>{if(error.name==='AbortError'||disposed)throw error;return computeFallback(message);});
   }
   function activeEntries(){
     let list=[...entries.values()].filter(e=>frames.includes(e.data.frame)&&(entryCurrent(e)||backgroundScan&&classificationCurrent(e,INDEX_VERSION)));
@@ -129,7 +147,7 @@ export function mountPatternSearch(host,options={}){
   }
   function setRows(matches){
     const qualified=rankPatternMatches(matches);
-    rows=new Map(qualified.map(({entry,match})=>[entry.key,{...entry.data,classicSignal:match.classicSignal,oxScore:match.classicSignal.qualityScore,match,similarity:match.similarity}]));renderResults(!rows.size);updateStatus();
+    rows=new Map(qualified.map(({entry,match})=>[entry.key,{...entry.data,classicSignal:match.classicSignal,oxScore:match.classicSignal.qualityScore,match:entry.classifying?{...match,stage:'走勢已取得 · 型態分類中'}:match,similarity:match.similarity}]));renderResults(!rows.size);updateStatus();
   }
 
   async function search(){
@@ -179,7 +197,12 @@ export function mountPatternSearch(host,options={}){
     qa('.px-card').forEach(card=>{const r=card.getBoundingClientRect();if(r.bottom>-150&&r.top<innerHeight+150)mountCard(card);else chartObserver.observe(card);});
     moreObserver?.disconnect();moreObserver=new IntersectionObserver(items=>{if(items.some(e=>e.isIntersecting)&&!q('.px-more').hidden){shown+=24;renderResults(true);}},{rootMargin:'180px'});if(!q('.px-more').hidden)moreObserver.observe(q('.px-more'));
   }
-  function queueRender(){if(!paintTimer)paintTimer=setTimeout(()=>{paintTimer=0;search();},250);}
+  function queueRender(){
+    // Publish the first available match before waiting for another series.
+    // Subsequent arrivals share a short paint window while the scan continues.
+    if(!rows.size&&!searchRunning){clearTimeout(paintTimer);paintTimer=0;void search();return;}
+    if(!paintTimer)paintTimer=setTimeout(()=>{paintTimer=0;void search();},100);
+  }
   function status(text){q('.px-status').textContent=text;}
   function stop(){version++;controller?.abort();controller=null;busy=false;clearTimeout(paintTimer);paintTimer=0;clearTimeout(scanFinishTimer);q('.px-board').classList.remove('is-scanning');q('.px-refresh-pill').classList.remove('is-scanning','is-complete');}
   async function hydrate(entry){
@@ -198,7 +221,7 @@ export function mountPatternSearch(host,options={}){
       const cached=entries.size?[]:await readIndex(frames);if(run!==version)return;
       backgroundScan=backgroundScan||cached.length>0&&hasBaseline([...entries.values(),...cached]);
       if(!backgroundScan){loading=window.OXLoading?.begin(market,`掃描${asset}`,{signal,views:['strength'],target:q('.px-local-loading')});q('.px-pill-arc').style.strokeDashoffset='107';q('.px-board').classList.add('is-scanning');q('.px-refresh-pill').classList.add('is-scanning');}updateStatus();
-      for(let i=0;i<cached.length;i++){if(run!==version)return;await hydrate(cached[i]);if(i%20===19){search();await new Promise(resolve=>setTimeout(resolve,0));}}
+      for(let i=0;i<cached.length;i++){if(run!==version)return;await hydrate(cached[i]);queueRender();if(i%10===9)await new Promise(resolve=>setTimeout(resolve,0));}
       search();
       if(!universe||market==='tw'||market!=='tw'&&(Date.now()-universe.serverTime>60000||frames.some(f=>Math.floor(Date.now()/1000/TIMEFRAMES[f])!==Math.floor(universe.serverTime/1000/TIMEFRAMES[f]))))universe=await fetchUniverse(signal,limit);
       if(run!==version)return;const pool=universe;progress.total=pool.tickers.length*frames.length;progress.coinsTotal=pool.tickers.length;loading?.update(0,progress.coinsTotal);updateStatus();
@@ -206,6 +229,7 @@ export function mountPatternSearch(host,options={}){
         if(run!==version)return;const key=data.symbol+':'+data.frame,existing=entries.get(key),same=existing&&entryCurrent(existing,data.serverTime)&&existing.data.candles.at(-1).time===data.candles.at(-1).time&&(!data.candles.at(-1).provisional||existing.data.serverTime===data.serverTime);
         const reuse=same&&classificationCurrent(existing,INDEX_VERSION);
         const preclassified=data.preclassified&&classificationCurrent({version:INDEX_VERSION,data,matches:data.preclassified},INDEX_VERSION);
+        if(!preclassified&&!reuse){entries.set(key,{key,data,matches:{},version:INDEX_VERSION,classifying:true});queueRender();await new Promise(resolve=>setTimeout(resolve,0));}
         const indexed=preclassified?{matches:data.preclassified,classic:data.classic}:reuse?
           {matches:existing.matches,classic:existing.data.classic}:await compute({type:'index',key,candles:data.candles});
         if(run!==version)return;if(!data.preclassified&&!reuse)hydrated.add(key);

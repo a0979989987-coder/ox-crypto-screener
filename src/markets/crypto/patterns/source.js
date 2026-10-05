@@ -49,7 +49,10 @@ export async function fetchUniverse(signal,limit=80,transport={}){
   if(!Number.isFinite(serverTime)||Math.abs(Date.now()-serverTime)>300000)throw Error('行情時間戳過期，請稍後重試');
   const eligible=selectUniverse(quotes.data,metadata.data,0),radar=new Set(radarSymbols());
   const selected=selectUniverse(quotes.data,metadata.data,limit);
-  const tickers=[...eligible.filter(t=>radar.has(t.symbol)),...selected.filter(t=>!radar.has(t.symbol))];
+  const tickers=[...eligible.filter(t=>radar.has(t.symbol)),...selected.filter(t=>!radar.has(t.symbol))].sort((a,b)=>
+    Number(radar.has(b.symbol))-Number(radar.has(a.symbol))||
+    Number(Number(b.usdtVolume)>=3000000)-Number(Number(a.usdtVolume)>=3000000)||
+    Math.abs(Number(b.change24h))-Math.abs(Number(a.change24h))||Number(b.usdtVolume)-Number(a.usdtVolume));
   if(!tickers.length)throw Error('沒有符合流動性條件的加密合約');
   const allowed=new Set(metadata.data.filter(i=>i.symbolType==='crypto'&&i.type==='perpetual'&&i.status==='online'&&i.quoteCoin==='USDT').map(i=>i.symbol));
   return {tickers,allTickers:quotes.data.filter(t=>allowed.has(t.symbol)&&[t.lastPr,t.change24h,t.usdtVolume].every(v=>v!==''&&Number.isFinite(Number(v)))),serverTime};

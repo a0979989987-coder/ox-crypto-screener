@@ -2,6 +2,12 @@ const WATCH_STAR_SVG = '<svg class="watch-star-icon" viewBox="0 0 24 24" aria-hi
 
 const RADAR_RETAIN_MS=2*60*60*1000;
 const RADAR_SNAPSHOT_KEY = 'ox-radar-snapshot-v8-liquidity';
+// Scan active liquid markets first; eligibility and final T1/T2/T3 ranking
+// still use the unchanged structural/volume engine after fetching candles.
+function orderCryptoScanTickers(tickers){return [...tickers].sort((a,b)=>
+  Number(['BTCUSDT','ETHUSDT'].includes(b.symbol))-Number(['BTCUSDT','ETHUSDT'].includes(a.symbol))||
+  Number(num(b.usdtVolume)>=3000000)-Number(num(a.usdtVolume)>=3000000)||
+  Math.abs(num(b.change24h))-Math.abs(num(a.change24h))||num(b.usdtVolume)-num(a.usdtVolume));}
 function restoreRadarSnapshot() {
   if (state.radarSnapshotChecked) return;
   state.radarSnapshotChecked = true;
@@ -123,10 +129,10 @@ async function refreshMarketTickers() {
     // Rank the whole active crypto universe. The former 3m turnover cutoff
     // silently removed genuine lower-turnover setups before they were scored.
     const eligible = state.tickers.filter(t => num(t.usdtVolume) > 0);
-    eligible.sort((a, b) => num(b.usdtVolume) - num(a.usdtVolume));
+    const scanOrder=orderCryptoScanTickers(eligible);
     
     if (!state.scanQueue.length) {
-      state.scanQueue = eligible.map(t => t.symbol);
+      state.scanQueue = scanOrder.map(t => t.symbol);
       state.scanIndex = 0;
     }
 
@@ -153,7 +159,7 @@ async function refreshMarketTickers() {
 let radarPaintTimer=0, initialScanLoading=null, passCompleted=0, passFailed=0;
 function publishRadarProgress(immediate=false) {
   if (!immediate) {
-    if (!radarPaintTimer) radarPaintTimer=setTimeout(()=>publishRadarProgress(true),150);
+    if (!radarPaintTimer) radarPaintTimer=setTimeout(()=>publishRadarProgress(true),100);
     return;
   }
   clearTimeout(radarPaintTimer);radarPaintTimer=0;
@@ -230,7 +236,10 @@ async function runScanQueueLoop() {
           change24h:num(ticker.change24h),ret1h:candleReturn(candles,1),ret4h:candleReturn(candles,4),
           ret24h:candleReturn(candles,24),
         },ticker.usdtVolume));
-        passCompleted++;publishRadarProgress();
+        passCompleted++;
+        const firstCandidate=(signal.eligible||signal.observationEligible)&&
+          !['t1','t2','t3'].some(tier=>['long','short'].some(side=>state.tierMapBySide?.[side]?.[tier]?.length));
+        publishRadarProgress(firstCandidate);
       } catch (e) {if(state.activeMarket==='crypto'&&['home','radar'].includes(state.activeView))passFailed++;} finally { const n=(initialScanLoading?.done||0)+1;if(initialScanLoading){initialScanLoading.done=n;initialScanLoading.update(n,state.scanQueue.length);} }
     }));
 
@@ -242,8 +251,7 @@ async function runScanQueueLoop() {
       initialScanLoading?.finish();initialScanLoading=null;
       // Refresh the universe between full passes so newly listed contracts
       // can enter the radar without a page reload.
-      state.scanQueue=state.tickers.filter(t=>num(t.usdtVolume)>0)
-        .sort((a,b)=>num(b.usdtVolume)-num(a.usdtVolume)).map(t=>t.symbol);
+      state.scanQueue=orderCryptoScanTickers(state.tickers.filter(t=>num(t.usdtVolume)>0)).map(t=>t.symbol);
       state.scanIndex = 0;
       state.radarSnapshotReady = passCompleted>0&&passFailed===0;
       state.radarScanFailed = passFailed>0||passCompleted===0;
