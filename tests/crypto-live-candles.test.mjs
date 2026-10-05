@@ -55,6 +55,10 @@ test('initial HTTP failure recovers by itself, and unsupported intervals use pol
   let fail=true;const h=harness(()=>fail?Promise.reject(new Error('offline')):Promise.resolve([candle()]));
   const feed=h.subscribe('3m');await assert.rejects(feed.load());assert.equal(h.sockets.length,0);fail=false;await h.advance(5000);assert.equal(h.updates.at(-1)[0].close,10);feed.stop();
 });
+test('silent candle stream refreshes within five seconds without waiting for disconnect',async()=>{
+ const h=harness(),feed=h.subscribe();h.sockets[0].open();await feed.load();h.sockets[0].push([candle(60,12)],61000);
+ const before=h.calls.length;await h.advance(6000);assert(h.calls.length>before);feed.stop();
+});
 test('live updates retain loaded history and do not call setData for same-bar ticks or new bars',()=>{
   const h=harness(),writes=[];const series={setData:data=>writes.push(['set',data]),update:c=>writes.push(['update',c])};
   const previous=[candle(0),candle(60)];let data=h.updateCryptoLiveSeries(series,null,previous,[candle(60,12)]);assert.equal(data.length,2);assert.equal(writes[0][0],'update');

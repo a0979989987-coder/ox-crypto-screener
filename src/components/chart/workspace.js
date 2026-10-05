@@ -1,7 +1,10 @@
 function getChartRightOffset() {
   const spacing = state.chart?.timeScale().options().barSpacing || 6;
-  // Only reserve the text itself plus a small gap to the last candle.
-  return ((state.chartPriceAxisWidth || 44) + 16) / spacing;
+  const labelSpace = (state.chartPriceAxisWidth || 44) + 16;
+  // Mobile needs room for the complete last candle and its price/countdown label.
+  const futureSpace = window.matchMedia('(max-width: 720px)').matches
+    ? Math.max(labelSpace, Math.min(110, window.innerWidth * .25)) : labelSpace;
+  return futureSpace / spacing;
 }
 
 let chartPriceOverlayFrame = 0;

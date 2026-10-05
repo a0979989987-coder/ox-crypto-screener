@@ -8,7 +8,9 @@
     function pump(){clearTimeout(wake);wake=0;if(active.size>=concurrency)return;
       queue.sort((a,b)=>b.priority-a.priority||a.id-b.id);
       const now=Date.now();let next=Infinity;
-      for(const job of [...queue]){if(active.size>=concurrency)break;if(job.done)continue;const host=hosts.get(job.host)||{next:0,cool:0};hosts.set(job.host,host);const at=Math.max(host.next,host.cool,job.retryAt||0);if(at>now){next=Math.min(next,at);continue;}
+      for(const job of [...queue]){if(active.size>=concurrency)break;if(job.done)continue;
+        // Leave one connection available for a chart while scans are in flight.
+        if(concurrency>1&&job.priority<100&&active.size>=concurrency-1)continue;const host=hosts.get(job.host)||{next:0,cool:0};hosts.set(job.host,host);const at=Math.max(host.next,host.cool,job.retryAt||0);if(at>now){next=Math.min(next,at);continue;}
         queue.splice(queue.indexOf(job),1);host.next=now+intervalMs;active.add(job);run(job,host);
       }
       if(queue.length&&active.size<concurrency){wake=setTimeout(pump,Math.max(1,(Number.isFinite(next)?next:Date.now()+intervalMs)-Date.now()));}
