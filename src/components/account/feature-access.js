@@ -92,7 +92,7 @@
     else if(id==='media')window.switchAppView?.('media');
     else {const tool=id.split('.')[1];const view=['home','radar'].includes(tool)?tool:'strength';if(view==='strength')selected[market]=tool;window.switchAppView?.(view);if(view==='strength')document.dispatchEvent(new CustomEvent('ox:feature-tool-return',{detail:{market,tool}}));}
   }
-  function restore(){if(!returning||!policies||!started)return;returning=false;const apply=()=>navigate(returnId);if(enter(returnId,apply))apply();}
+  function restore(){if(!returning||!started)return;returning=false;const apply=()=>navigate(returnId);if(enter(returnId,apply))apply();}
   window.OXFeatures=Object.freeze({enter,enterView,enterTool,refresh,selectedTool:market=>selected[market],get returning(){return returning;},get ready(){return !!policies;},get newsTab(){return newsSelected;}});
   document.addEventListener('ox:accountchange',()=>{sessionUsable=!!window.OXAuth?.user;replay();if(returning)restore();});
   document.addEventListener('ox:marketchange',()=>{const id=viewFeature(document.body.dataset.view||'radar');if(id)enter(id,()=>window.switchAppView?.(document.body.dataset.view||'radar'));});
@@ -100,8 +100,14 @@
   document.addEventListener('ox:runtime-ready',()=>{const parts=currentFeature?.split('.');if(parts&&['crypto','tw'].includes(parts[0])&&document.body.dataset.view==='strength')document.dispatchEvent(new CustomEvent('ox:feature-tool-return',{detail:{market:parts[0],tool:parts[1]}}));});
   // Start the shared policy request before blocking styles or the runtime graph.
   const initial=refresh();
-  const start=()=>{started=true;if(progress&&!progress.isConnected)document.body.append(progress);if(!policies&&policyState==='pending')showPending();initial.then(()=>{if(returning)restore();else replay();});};
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
+  // Queue the requested entry even while policy is pending, so a later replay
+  // cannot replace it with the shell's default radar request.
+  const start=()=>{started=true;if(progress&&!progress.isConnected)document.body.append(progress);if(!policies&&policyState==='pending')showPending();if(returning)restore();initial.then(replay);};
+  // DOMContentLoaded reaches document before the shell's window listener.
+  // A cached policy can resume in between those listeners, before initChart
+  // and MarketController.init. Restore in the next task, after shell setup.
+  const scheduleStart=()=>setTimeout(start,0);
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',scheduleStart,{once:true});else scheduleStart();
   const resume=()=>{if(Date.now()-lastRefresh>30000)refresh();};
   window.addEventListener('focus',resume);document.addEventListener('visibilitychange',()=>{if(!document.hidden)resume();});
   setInterval(()=>{if(!document.hidden)refresh();},60000);
